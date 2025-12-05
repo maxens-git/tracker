@@ -13,6 +13,7 @@ public class ApiDbContext : DbContext
     public DbSet<Show> Shows { get; set; } = null!;
     public DbSet<Season> Seasons { get; set; } = null!;
     public DbSet<Episode> Episodes { get; set; } = null!;
+    public DbSet<MediaList> MediaLists { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,5 +38,17 @@ public class ApiDbContext : DbContext
             .WithOne(episode => episode.Season)
             .HasForeignKey(episode => episode.SeasonId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MediaList>()
+            .HasMany(ml => ml.Movies)
+            .WithMany();
+
+        modelBuilder.Entity<MediaList>()
+            .HasMany(ml => ml.Shows)
+            .WithMany();
+
+        modelBuilder.Entity<MediaList>()
+            .HasIndex(ml => ml.Name)
+            .IsUnique();
     }
 }

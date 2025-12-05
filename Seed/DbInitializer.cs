@@ -65,6 +65,21 @@ public static class DbInitializer
             }
         }
 
+        List<Movie> movies = await context.Movies.ToListAsync();
+        List<Show> shows = await context.Shows.ToListAsync();
+
+        MediaList seen = new MediaList
+        {
+            Name = "Seen",
+            Description = "",
+            Icon = "",
+            IsSystem = true,
+            Movies = movies,
+            Shows = shows
+        };
+
+        context.MediaLists.Add(seen);
+
         await context.SaveChangesAsync();
         logger.LogInformation("Import terminé");
     }
