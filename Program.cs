@@ -52,10 +52,16 @@ using (var scope = app.Services.CreateScope())
         var tmdbService = services.GetRequiredService<TMDbService>();
         var logger = services.GetRequiredService<ILogger<Program>>();
         var justWatchOptions = services.GetRequiredService<IOptions<JustWatchOptions>>().Value;
-        
-        await DbInitializer.InitializeAsync(context, tmdbService, logger, justWatchOptions.ExportFilePath);
-        
-        logger.LogInformation("Base de données initialisée avec succès.");
+
+        if (justWatchOptions.EnableImport)
+        {
+            await DbInitializer.InitializeAsync(context, tmdbService, logger, justWatchOptions.ExportFilePath);
+            logger.LogInformation("Base de données initialisée avec succès.");
+        }
+        else
+        {
+            logger.LogInformation("Import JustWatch désactivé.");
+        }
     }
     catch (Exception ex)
     {
