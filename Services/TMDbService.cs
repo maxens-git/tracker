@@ -45,15 +45,29 @@ public class TMDbService
 
     public async Task<TMDbSeasonResponse?> GetSeasonAsync(int showTmdbId, int seasonNumber)
     {
-        var url = $"{BaseUrl}/tv/{showTmdbId}/season/{seasonNumber}?api_key={_apiKey}&language=fr-FR";
+        string url = $"{BaseUrl}/tv/{showTmdbId}/season/{seasonNumber}?api_key={_apiKey}&language=fr-FR";
         
-        var response = await _httpClient.GetAsync(url);
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
         if (!response.IsSuccessStatusCode)
         {
             return null;
         }
 
-        var json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TMDbSeasonResponse>(json);
+    }
+
+    public async Task<TMDbSearchResponse?> SearchMultiAsync(string query, int page = 1)
+    {
+        string url = $"{BaseUrl}/search/multi?api_key={_apiKey}&language=fr-FR&query={Uri.EscapeDataString(query)}&page={page}";
+        
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
     }
 }
