@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
+using Tracker.Models.TMDbResponses;
 using Tracker.ModelsDTO;
+using Tracker.Services;
 
 namespace Tracker.Controllers;
 
@@ -11,11 +13,13 @@ namespace Tracker.Controllers;
 public class MediaListsController : ControllerBase
 {
     private readonly ApiDbContext _context;
+    private readonly TMDbService _tmdbService;
     private const int PageSize = 20;
 
-    public MediaListsController(ApiDbContext context)
+    public MediaListsController(ApiDbContext context, TMDbService tmdbService)
     {
         _context = context;
+        _tmdbService = tmdbService;
     }
 
     [HttpGet]
@@ -176,8 +180,8 @@ public class MediaListsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id}/movies/{movieId}")]
-    public async Task<IActionResult> AddMovie(int id, int movieId)
+    [HttpPost("{id}/movies/{tmdbId}")]
+    public async Task<IActionResult> AddMovie(int id, int tmdbId)
     {
         MediaList? mediaList = await _context.MediaLists
             .Include(ml => ml.Movies)
@@ -186,11 +190,39 @@ public class MediaListsController : ControllerBase
         if (mediaList == null)
             return NotFound("List not found");
 
-        Movie? movie = await _context.Movies.FindAsync(movieId);
+        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        
         if (movie == null)
-            return NotFound("Movie not found");
+        {
+            TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
+            if (tmdbMovie == null)
+                return NotFound("Movie not found on TMDb");
 
-        if (mediaList.Movies.Any(m => m.Id == movieId))
+            movie = new Movie
+            {
+                TmdbId = tmdbMovie.Id,
+                Title = tmdbMovie.Title,
+                OriginalTitle = tmdbMovie.OriginalTitle,
+                Overview = tmdbMovie.Overview,
+                Status = tmdbMovie.Status,
+                Tagline = tmdbMovie.Tagline,
+                PosterPath = tmdbMovie.PosterPath,
+                BackdropPath = tmdbMovie.BackdropPath,
+                VoteAverage = tmdbMovie.VoteAverage,
+                VoteCount = tmdbMovie.VoteCount,
+                Popularity = tmdbMovie.Popularity,
+                ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
+                Runtime = tmdbMovie.Runtime,
+                Budget = tmdbMovie.Budget,
+                Revenue = tmdbMovie.Revenue,
+                ImdbId = tmdbMovie.ImdbId,
+                Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
+            };
+
+            _context.Movies.Add(movie);
+        }
+
+        if (mediaList.Movies.Any(m => m.TmdbId == tmdbId))
             return BadRequest("Movie already in list");
 
         mediaList.Movies.Add(movie);
@@ -200,8 +232,8 @@ public class MediaListsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}/movies/{movieId}")]
-    public async Task<IActionResult> RemoveMovie(int id, int movieId)
+    [HttpDelete("{id}/movies/{tmdbId}")]
+    public async Task<IActionResult> RemoveMovie(int id, int tmdbId)
     {
         MediaList? mediaList = await _context.MediaLists
             .Include(ml => ml.Movies)
@@ -210,7 +242,7 @@ public class MediaListsController : ControllerBase
         if (mediaList == null)
             return NotFound("List not found");
 
-        Movie? movie = mediaList.Movies.FirstOrDefault(m => m.Id == movieId);
+        Movie? movie = mediaList.Movies.FirstOrDefault(m => m.TmdbId == tmdbId);
         if (movie == null)
             return NotFound("Movie not in list");
 
@@ -221,8 +253,8 @@ public class MediaListsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id}/shows/{showId}")]
-    public async Task<IActionResult> AddShow(int id, int showId)
+    [HttpPost("{id}/shows/{tmdbId}")]
+    public async Task<IActionResult> AddShow(int id, int tmdbId)
     {
         MediaList? mediaList = await _context.MediaLists
             .Include(ml => ml.Shows)
@@ -231,11 +263,38 @@ public class MediaListsController : ControllerBase
         if (mediaList == null)
             return NotFound("List not found");
 
-        Show? show = await _context.Shows.FindAsync(showId);
-        if (show == null)
-            return NotFound("Show not found");
+        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
 
-        if (mediaList.Shows.Any(s => s.Id == showId))
+        if (show == null)
+        {
+            TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
+            if (tmdbShow == null)
+                return NotFound("Show not found on TMDb");
+
+            show = new Show
+            {
+                TmdbId = tmdbShow.Id,
+                Title = tmdbShow.Name,
+                OriginalTitle = tmdbShow.OriginalName,
+                Overview = tmdbShow.Overview,
+                Status = tmdbShow.Status,
+                Tagline = tmdbShow.Tagline,
+                PosterPath = tmdbShow.PosterPath,
+                BackdropPath = tmdbShow.BackdropPath,
+                VoteAverage = tmdbShow.VoteAverage,
+                VoteCount = tmdbShow.VoteCount,
+                Popularity = tmdbShow.Popularity,
+                ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
+                LastAirDate = ParseDate(tmdbShow.LastAirDate),
+                NumberOfSeasons = tmdbShow.NumberOfSeasons,
+                NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
+                Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
+            };
+
+            _context.Shows.Add(show);
+        }
+
+        if (mediaList.Shows.Any(s => s.TmdbId == tmdbId))
             return BadRequest("Show already in list");
 
         mediaList.Shows.Add(show);
@@ -245,8 +304,8 @@ public class MediaListsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}/shows/{showId}")]
-    public async Task<IActionResult> RemoveShow(int id, int showId)
+    [HttpDelete("{id}/shows/{tmdbId}")]
+    public async Task<IActionResult> RemoveShow(int id, int tmdbId)
     {
         MediaList? mediaList = await _context.MediaLists
             .Include(ml => ml.Shows)
@@ -255,7 +314,7 @@ public class MediaListsController : ControllerBase
         if (mediaList == null)
             return NotFound("List not found");
 
-        Show? show = mediaList.Shows.FirstOrDefault(s => s.Id == showId);
+        Show? show = mediaList.Shows.FirstOrDefault(s => s.TmdbId == tmdbId);
         if (show == null)
             return NotFound("Show not in list");
 
@@ -264,5 +323,12 @@ public class MediaListsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static DateTime? ParseDate(string? dateString)
+    {
+        if (string.IsNullOrEmpty(dateString))
+            return null;
+        return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 }
