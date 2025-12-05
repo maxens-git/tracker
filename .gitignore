@@ -1,0 +1,33 @@
+##################################
+# ASP.NET Core / Visual Studio
+##################################
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+*.pdb
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vspscc
+*.vssscc
+*.bak
+*.ncb
+*.aps
+
+# Packages
+# Laissez ceci si vous utilisez le format de projet SDK moderne
+# sinon, ignorez-le. Le modèle par défaut ASP.NET Core l'utilise.
+# Packages
+
+# Tests
+TestResults/
+.vstest/
+
+# VS Code (si utilisé)
+.vscode/
+
+# Temp
+*~
