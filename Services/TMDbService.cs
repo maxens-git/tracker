@@ -70,4 +70,60 @@ public class TMDbService
         string json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
     }
+
+    public async Task<TMDbSearchResponse?> GetTrendingAsync(string mediaType = "all", string timeWindow = "week")
+    {
+        string url = $"{BaseUrl}/trending/{mediaType}/{timeWindow}?api_key={_apiKey}&language=fr-FR";
+        
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
+
+    public async Task<TMDbSearchResponse?> GetPopularMoviesAsync(int page = 1)
+    {
+        string url = $"{BaseUrl}/movie/popular?api_key={_apiKey}&language=fr-FR&page={page}";
+        
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
+
+    public async Task<TMDbSearchResponse?> GetPopularShowsAsync(int page = 1)
+    {
+        string url = $"{BaseUrl}/tv/popular?api_key={_apiKey}&language=fr-FR&page={page}";
+        
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
+
+    public async Task<TMDbSearchResponse?> GetTopRatedAsync(string mediaType = "movie", int page = 1)
+    {
+        string url = $"{BaseUrl}/{mediaType}/top_rated?api_key={_apiKey}&language=fr-FR&page={page}";
+        
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
 }
