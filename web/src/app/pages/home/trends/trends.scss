@@ -1,0 +1,41 @@
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.movie-card {
+  cursor: pointer;
+  
+  .movie-poster {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .no-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: bold;
+    }
+  }
+  
+  &:hover .movie-poster img {
+    transform: scale(1.025);
+  }
+}

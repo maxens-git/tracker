@@ -1,0 +1,53 @@
+<p-panel header="Films populaire" class="m-2">
+  @if (trends()?.popularMovies) {
+    <div class="movies-grid">
+      @for (movie of trends()!.popularMovies; track movie.id) {
+        <div class="movie-card">
+          <div class="movie-poster">
+            @if (movie.poster_path) {
+              <img [src]="'https://image.tmdb.org/t/p/w500' + movie.poster_path" [alt]="movie.title || movie.name" />
+            } @else {
+              <div class="no-poster">No Image</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</p-panel>
+
+<p-panel header="Shows populaire" class="m-2">
+  @if (trends()?.popularShows) {
+    <div class="movies-grid">
+      @for (show of trends()!.popularShows; track show.id) {
+        <div class="movie-card">
+          <div class="movie-poster">
+            @if (show.poster_path) {
+              <img [src]="'https://image.tmdb.org/t/p/w500' + show.poster_path" [alt]="show.title || show.name" />
+            } @else {
+              <div class="no-poster">No Image</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</p-panel>
+
+<p-panel header="Top notés" class="m-2">
+  @if (trends()?.topRated) {
+    <div class="movies-grid">
+      @for (item of trends()!.topRated; track item.id) {
+        <div class="movie-card">
+          <div class="movie-poster">
+            @if (item.poster_path) {
+              <img [src]="'https://image.tmdb.org/t/p/w500' + item.poster_path" [alt]="item.title || item.name" />
+            } @else {
+              <div class="no-poster">No Image</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</p-panel>
