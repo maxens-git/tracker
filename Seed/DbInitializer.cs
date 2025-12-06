@@ -151,6 +151,21 @@ public static class DbInitializer
             context.MediaLists.Update(likesList);
         }
 
+        if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "Watchlist"))
+        {
+            MediaList watchlist = new MediaList
+            {
+                Name = "Watchlist",
+                Description = "Titres à voir prochainement",
+                Icon = "📌",
+                IsSystem = true,
+                Movies = new List<Movie>(),
+                Shows = new List<Show>()
+            };
+
+            context.MediaLists.Add(watchlist);
+        }
+
         await context.SaveChangesAsync();
         logger.LogInformation("Import terminé");
     }

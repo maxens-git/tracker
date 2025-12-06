@@ -1,3 +1,19 @@
+/* Spinner for dark background */
+.spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255,255,255,0.18);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 :host {
   display: block;
   --primary: #5f68ff;
@@ -203,7 +219,8 @@
 }
 
 .like-btn,
-.seen-btn {
+.seen-btn,
+.list-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -227,6 +244,8 @@
   
   .pi-eye { color: var(--text-muted); font-size: 1.1rem; }
   .pi-eye.seen { color: var(--accent); }
+
+  .pi-plus { color: var(--text-muted); font-size: 1.1rem; }
 }
 
 .tagline {
@@ -381,4 +400,179 @@
   .hero-shell { padding: 16px 12px; }
   .poster { max-width: 180px; }
   .similar-row { grid-auto-columns: minmax(120px, 1fr); gap: 10px; }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, rgba(12, 14, 22, 0.98) 0%, rgba(7, 9, 16, 0.96) 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+
+  .empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+  }
+}
+
+.skeleton-list-item {
+  pointer-events: none;
+  cursor: default;
+
+  &:hover {
+    transform: none;
+  }
+
+  .skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  .skeleton-text {
+    height: 1em;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+
+    &.skeleton-list-name {
+      width: 60%;
+      height: 18px;
+    }
+
+    &.skeleton-list-desc {
+      width: 80%;
+      height: 14px;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  color: var(--text);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent);
+  }
+}
+
+.list-icon {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.list-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.list-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }

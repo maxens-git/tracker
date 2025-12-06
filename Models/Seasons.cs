@@ -30,4 +30,22 @@ public class Season
     public Show Show { get; set; } = null!;
 
     public List<Episode> Episodes { get; set; } = new();
+    public ModelsDTO.SeasonDto ToDto()
+    {
+        return new ModelsDTO.SeasonDto
+        {
+            Id = Id,
+            TmdbId = TmdbId,
+            Name = Name,
+            Overview = Overview,
+            SeasonNumber = SeasonNumber,
+            EpisodeCount = EpisodeCount,
+            AirDate = AirDate,
+            PosterPath = PosterPath,
+            Seen = Seen,
+            ShowId = ShowId,
+            Episodes = Episodes?.ConvertAll(e => e.ToDto()) ?? new List<ModelsDTO.EpisodeDto>(),
+            ListIds = new List<int>() // Optionally populate if you add list support for seasons
+        };
+    }
 }

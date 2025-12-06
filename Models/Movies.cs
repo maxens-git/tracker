@@ -12,4 +12,65 @@ public class Movie : BaseMedia
     
     [MaxLength(50)]
     public string? ImdbId { get; set; }
+
+    public List<MediaList> MediaLists { get; set; } = new();
+
+    public Movie() {}
+
+    public Movie(ModelsDTO.MovieDto dto)
+    {
+        Id = dto.Id;
+        TmdbId = dto.TmdbId;
+        Title = dto.Title;
+        OriginalTitle = dto.OriginalTitle;
+        Overview = dto.Overview;
+        Status = dto.Status;
+        Tagline = dto.Tagline;
+        PosterPath = dto.PosterPath;
+        BackdropPath = dto.BackdropPath;
+        VoteAverage = dto.VoteAverage;
+        VoteCount = dto.VoteCount;
+        Popularity = dto.Popularity;
+        Liked = dto.Liked;
+        Seen = dto.Seen;
+        ReleaseDate = dto.ReleaseDate;
+        Genres = dto.Genres;
+        AddedAt = dto.AddedAt;
+        LastUpdated = dto.LastUpdated;
+        Runtime = dto.Runtime;
+        Budget = dto.Budget;
+        Revenue = dto.Revenue;
+        ImdbId = dto.ImdbId;
+        // MediaLists will be handled separately
+    }
+
+    public ModelsDTO.MovieDto ToDto()
+    {
+        return new ModelsDTO.MovieDto
+        {
+            Id = Id,
+            TmdbId = TmdbId,
+            Title = Title,
+            OriginalTitle = OriginalTitle,
+            Overview = Overview,
+            Status = Status,
+            Tagline = Tagline,
+            PosterPath = PosterPath,
+            BackdropPath = BackdropPath,
+            VoteAverage = VoteAverage,
+            VoteCount = VoteCount,
+            Popularity = Popularity,
+            Liked = Liked,
+            Seen = Seen,
+            ReleaseDate = ReleaseDate,
+            Genres = Genres,
+            AddedAt = AddedAt,
+            LastUpdated = LastUpdated,
+            Runtime = Runtime,
+            Budget = Budget,
+            Revenue = Revenue,
+            ImdbId = ImdbId,
+            ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
+        };
+    }
 }

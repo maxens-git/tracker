@@ -1,3 +1,4 @@
+
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaDetailsService } from '../../services/media-details.service';
@@ -7,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { MovieDetails } from '../../interfaces/media-details.interface';
 import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
 import { PosterCardComponent } from '../poster-card/poster-card';
+import { MediaListSummary } from '../../interfaces/media-list.interface';
 
 @Component({
   selector: 'app-movie-details',
@@ -16,6 +18,7 @@ import { PosterCardComponent } from '../poster-card/poster-card';
   styleUrl: './movie-details.scss'
 })
 export class MovieDetailsComponent implements OnInit {
+    protected listActionLoading = signal<{ [listId: number]: boolean }>({});
   protected movieDetails = signal<MovieDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
@@ -23,6 +26,9 @@ export class MovieDetailsComponent implements OnInit {
   protected error = signal<string | null>(null);
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
+  protected showListModal = signal<boolean>(false);
+  protected lists = signal<MediaListSummary[]>([]);
+  protected listLoading = signal<boolean>(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -95,6 +101,40 @@ export class MovieDetailsComponent implements OnInit {
     });
   }
 
+  protected openListModal(): void {
+    this.showListModal.set(true);
+    this.listLoading.set(true);
+    this.mediaListsService.getAll().subscribe({
+      next: (data) => {
+        this.lists.set(data);
+        this.listLoading.set(false);
+      },
+      error: () => {
+        this.listLoading.set(false);
+      }
+    });
+  }
+
+  protected closeListModal(): void {
+    this.showListModal.set(false);
+  }
+
+  protected addToList(listId: number): void {
+    const movie = this.movieDetails();
+    if (!movie) return;
+    this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: true }));
+    this.mediaListsService.addMovieToList(listId, movie.tmdbId).subscribe({
+      next: () => {
+        this.movieDetails.update(current => current ? { ...current, listIds: [...(current.listIds || []), listId] } : current);
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+      },
+      error: (err) => {
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+        console.error('Error adding movie to list:', err);
+      }
+    });
+  }
+
   private fetchMovie(tmdbId: number): void {
     this.loading.set(true);
     this.error.set(null);
@@ -112,5 +152,27 @@ export class MovieDetailsComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  protected isInList(listId: number): boolean {
+    const movie = this.movieDetails();
+    return !!movie?.listIds?.includes(listId);
+  }
+
+  protected removeFromList(listId: number): void {
+    const movie = this.movieDetails();
+    if (!movie) return;
+    this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: true }));
+    this.mediaListsService.removeMovieFromList(listId, movie.tmdbId).subscribe({
+      next: () => {
+        this.movieDetails.update(current => current ? { ...current, listIds: (current.listIds || []).filter(id => id !== listId) } : current);
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+      },
+      error: (err) => {
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+        console.error('Error removing movie from list:', err);
+      }
+    });
+    
   }
 }

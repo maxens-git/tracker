@@ -92,5 +92,21 @@ export class MediaListsService {
       params: { page: page.toString() }
     });
   }
+
+  addMovieToList(listId: number, tmdbId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${listId}/movies/${tmdbId}`, null);
+  }
+
+  removeMovieFromList(listId: number, tmdbId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${listId}/movies/${tmdbId}`);
+  }
+
+  addShowToList(listId: number, tmdbId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${listId}/shows/${tmdbId}`, null);
+  }
+
+  removeShowFromList(listId: number, tmdbId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${listId}/shows/${tmdbId}`);
+  }
 }
 

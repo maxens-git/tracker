@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.Models.TMDbResponses;
+using Tracker.ModelsDTO;
 using Tracker.Services;
 
 namespace Tracker.Controllers;
@@ -21,9 +22,11 @@ public class MoviesController : ControllerBase
     }
 
     [HttpGet("{tmdbId}")]
-    public async Task<ActionResult<Movie>> GetByTmdbId(int tmdbId)
+    public async Task<ActionResult<MovieDto>> GetByTmdbId(int tmdbId)
     {
-        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        Movie? movie = await _context.Movies
+            .Include(m => m.MediaLists)
+            .FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
 
         if (movie == null)
         {
@@ -56,7 +59,7 @@ public class MoviesController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        return movie;
+        return MapToDto(movie);
     }
 
     [HttpPost("{id}/seen")]
@@ -93,5 +96,35 @@ public class MoviesController : ControllerBase
         if (string.IsNullOrEmpty(dateString))
             return null;
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
+    }
+
+    private static MovieDto MapToDto(Movie movie)
+    {
+        return new MovieDto
+        {
+            Id = movie.Id,
+            TmdbId = movie.TmdbId,
+            Title = movie.Title,
+            OriginalTitle = movie.OriginalTitle,
+            Overview = movie.Overview,
+            Status = movie.Status,
+            Tagline = movie.Tagline,
+            PosterPath = movie.PosterPath,
+            BackdropPath = movie.BackdropPath,
+            VoteAverage = movie.VoteAverage,
+            VoteCount = movie.VoteCount,
+            Popularity = movie.Popularity,
+            Liked = movie.Liked,
+            Seen = movie.Seen,
+            ReleaseDate = movie.ReleaseDate,
+            Genres = movie.Genres,
+            AddedAt = movie.AddedAt,
+            LastUpdated = movie.LastUpdated,
+            Runtime = movie.Runtime,
+            Budget = movie.Budget,
+            Revenue = movie.Revenue,
+            ImdbId = movie.ImdbId,
+            ListIds = movie.MediaLists.Select(ml => ml.Id).ToList()
+        };
     }
 }

@@ -39,13 +39,24 @@ public class ApiDbContext : DbContext
             .HasForeignKey(episode => episode.SeasonId)
             .OnDelete(DeleteBehavior.Cascade);
 
+
         modelBuilder.Entity<MediaList>()
             .HasMany(ml => ml.Movies)
-            .WithMany();
+            .WithMany(m => m.MediaLists)
+            .UsingEntity<Dictionary<string, object>>(
+                "MediaListMovie",
+                j => j.HasOne<Movie>().WithMany().HasForeignKey("MovieId"),
+                j => j.HasOne<MediaList>().WithMany().HasForeignKey("MediaListId")
+            );
 
         modelBuilder.Entity<MediaList>()
             .HasMany(ml => ml.Shows)
-            .WithMany();
+            .WithMany(s => s.MediaLists)
+            .UsingEntity<Dictionary<string, object>>(
+                "MediaListShow",
+                j => j.HasOne<Show>().WithMany().HasForeignKey("ShowId"),
+                j => j.HasOne<MediaList>().WithMany().HasForeignKey("MediaListId")
+            );
 
         modelBuilder.Entity<MediaList>()
             .HasIndex(ml => ml.Name)

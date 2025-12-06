@@ -66,6 +66,10 @@
 								<span class="pi pi-eye" [class.seen]="movie.seen"></span>
 								{{ movie.seen ? "Marquer non vu" : "Marquer vu" }}
 							</button>
+							<button class="list-btn" type="button" (click)="openListModal()">
+								<span class="pi pi-plus"></span>
+								Ajouter à une liste
+							</button>
 						</div>
 					</div>
 					@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
@@ -152,3 +156,57 @@
 		}
 	}
 </section>
+
+@if (showListModal()) {
+	<div class="modal-overlay" (click)="closeListModal()">
+		<div class="modal-content" (click)="$event.stopPropagation()">
+			<div class="modal-header">
+				<h2>Ajouter à une liste</h2>
+				<button class="modal-close" type="button" (click)="closeListModal()">
+					<span class="pi pi-times"></span>
+				</button>
+			</div>
+			<div class="modal-body">
+				@if (listLoading()) {
+					<div class="list-grid">
+						@for (i of [1,2,3,4]; track i) {
+							<div class="list-item skeleton-list-item">
+								<div class="skeleton-icon"></div>
+								<div class="list-info">
+									<div class="skeleton-text skeleton-list-name"></div>
+									<div class="skeleton-text skeleton-list-desc"></div>
+								</div>
+							</div>
+						}
+					</div>
+				} @else if (lists().length === 0) {
+					<div class="empty">Aucune liste disponible</div>
+				} @else {
+					<div class="list-grid">
+						@for (list of lists(); track list.id) {
+							<button class="list-item" type="button"
+								[disabled]="listActionLoading()[list.id]"
+								(click)="isInList(list.id) ? removeFromList(list.id) : addToList(list.id)">
+								<span class="list-icon">{{ list.icon || '📁' }}</span>
+								<div class="list-info">
+									<p class="list-name">{{ list.name }}</p>
+									@if (list.description) {
+										<p class="list-desc">{{ list.description }}</p>
+									}
+								</div>
+								<span class="list-action">
+									<ng-container *ngIf="listActionLoading()[list.id]; else actionText">
+										<span class="spinner" aria-label="Chargement..."></span>
+									</ng-container>
+									<ng-template #actionText>
+										{{ isInList(list.id) ? 'Retirer' : 'Ajouter' }}
+									</ng-template>
+								</span>
+							</button>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}

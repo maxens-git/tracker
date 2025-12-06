@@ -24,6 +24,7 @@ export interface MovieDetails {
   budget: number | null;
   revenue: number | null;
   imdbId: string | null;
+  listIds?: number[];
 }
 
 export interface EpisodeSummary {
@@ -71,4 +72,5 @@ export interface ShowDetails {
   numberOfEpisodes: number | null;
   genres: string | null;
   seasons: SeasonSummary[];
+  listIds?: number[];
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.Models.TMDbResponses;
+using Tracker.ModelsDTO;
 using Tracker.Services;
 
 namespace Tracker.Controllers;
@@ -21,11 +22,12 @@ public class ShowsController : ControllerBase
     }
 
     [HttpGet("{tmdbId}")]
-    public async Task<ActionResult<Show>> GetByTmdbId(int tmdbId)
+    public async Task<ActionResult<ShowDto>> GetByTmdbId(int tmdbId)
     {
         Show? show = await _context.Shows
             .Include(s => s.Seasons)
                 .ThenInclude(s => s.Episodes)
+            .Include(s => s.MediaLists)
             .FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
 
         if (show == null)
@@ -101,10 +103,11 @@ public class ShowsController : ControllerBase
             show = await _context.Shows
                 .Include(s => s.Seasons)
                     .ThenInclude(s => s.Episodes)
+                .Include(s => s.MediaLists)
                 .FirstAsync(s => s.Id == show.Id);
         }
 
-        return show;
+        return MapToDto(show);
     }
 
     [HttpPost("{id}/seen")]
@@ -150,7 +153,7 @@ public class ShowsController : ControllerBase
     }
 
     [HttpPost("seasons/{id}/seen")]
-    public async Task<ActionResult<Season>> MarkSeasonAsSeen(int id, [FromBody] bool seen = true)
+    public async Task<ActionResult<ModelsDTO.SeasonDto>> MarkSeasonAsSeen(int id, [FromBody] bool seen = true)
     {
         Season? season = await _context.Seasons
             .Include(s => s.Episodes)
@@ -180,11 +183,11 @@ public class ShowsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
-        return season;
+        return season.ToDto();
     }
 
     [HttpPost("episodes/{id}/seen")]
-    public async Task<ActionResult<Episode>> MarkEpisodeAsSeen(int id, [FromBody] bool seen = true)
+    public async Task<ActionResult<ModelsDTO.EpisodeDto>> MarkEpisodeAsSeen(int id, [FromBody] bool seen = true)
     {
         Episode? episode = await _context.Episodes
             .Include(e => e.Season)
@@ -210,7 +213,7 @@ public class ShowsController : ControllerBase
         }
         
         await _context.SaveChangesAsync();
-        return episode;
+        return episode.ToDto();
     }
 
     private static DateTime? ParseDate(string? dateString)
@@ -218,5 +221,35 @@ public class ShowsController : ControllerBase
         if (string.IsNullOrEmpty(dateString))
             return null;
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
+    }
+
+    private static ShowDto MapToDto(Show show)
+    {
+        return new ShowDto
+        {
+            Id = show.Id,
+            TmdbId = show.TmdbId,
+            Title = show.Title,
+            OriginalTitle = show.OriginalTitle,
+            Overview = show.Overview,
+            Status = show.Status,
+            Tagline = show.Tagline,
+            PosterPath = show.PosterPath,
+            BackdropPath = show.BackdropPath,
+            VoteAverage = show.VoteAverage,
+            VoteCount = show.VoteCount,
+            Popularity = show.Popularity,
+            Liked = show.Liked,
+            Seen = show.Seen,
+            ReleaseDate = show.ReleaseDate,
+            Genres = show.Genres,
+            AddedAt = show.AddedAt,
+            LastUpdated = show.LastUpdated,
+            NumberOfSeasons = show.NumberOfSeasons,
+            NumberOfEpisodes = show.NumberOfEpisodes,
+            LastAirDate = show.LastAirDate,
+            Seasons = show.Seasons,
+            ListIds = show.MediaLists.Select(ml => ml.Id).ToList()
+        };
     }
 }

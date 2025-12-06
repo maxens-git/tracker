@@ -12,4 +12,63 @@ public class Show : BaseMedia
     public DateTime? LastAirDate { get; set; }
 
     public List<Season> Seasons { get; set; } = new();
+    public List<MediaList> MediaLists { get; set; } = new();
+
+    public Show() {}
+
+    public Show(ModelsDTO.ShowDto dto)
+    {
+        Id = dto.Id;
+        TmdbId = dto.TmdbId;
+        Title = dto.Title;
+        OriginalTitle = dto.OriginalTitle;
+        Overview = dto.Overview;
+        Status = dto.Status;
+        Tagline = dto.Tagline;
+        PosterPath = dto.PosterPath;
+        BackdropPath = dto.BackdropPath;
+        VoteAverage = dto.VoteAverage;
+        VoteCount = dto.VoteCount;
+        Popularity = dto.Popularity;
+        Liked = dto.Liked;
+        Seen = dto.Seen;
+        ReleaseDate = dto.ReleaseDate;
+        Genres = dto.Genres;
+        AddedAt = dto.AddedAt;
+        LastUpdated = dto.LastUpdated;
+        NumberOfSeasons = dto.NumberOfSeasons;
+        NumberOfEpisodes = dto.NumberOfEpisodes;
+        LastAirDate = dto.LastAirDate;
+        // Seasons and MediaLists handled separately
+    }
+
+    public ModelsDTO.ShowDto ToDto()
+    {
+        return new ModelsDTO.ShowDto
+        {
+            Id = Id,
+            TmdbId = TmdbId,
+            Title = Title,
+            OriginalTitle = OriginalTitle,
+            Overview = Overview,
+            Status = Status,
+            Tagline = Tagline,
+            PosterPath = PosterPath,
+            BackdropPath = BackdropPath,
+            VoteAverage = VoteAverage,
+            VoteCount = VoteCount,
+            Popularity = Popularity,
+            Liked = Liked,
+            Seen = Seen,
+            ReleaseDate = ReleaseDate,
+            Genres = Genres,
+            AddedAt = AddedAt,
+            LastUpdated = LastUpdated,
+            NumberOfSeasons = NumberOfSeasons,
+            NumberOfEpisodes = NumberOfEpisodes,
+            LastAirDate = LastAirDate,
+            Seasons = Seasons,
+            ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
+        };
+    }
 }

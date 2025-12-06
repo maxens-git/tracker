@@ -44,20 +44,21 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("liked/movies")]
-    public async Task<ActionResult<PaginatedResult<Movie>>> GetLikedMovies([FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetLikedMovies([FromQuery] int page = 1)
     {
         int totalCount = await _context.Movies.CountAsync(m => m.Liked);
 
         List<Movie> movies = await _context.Movies
             .Where(m => m.Liked)
+            .Include(m => m.MediaLists)
             .OrderByDescending(m => m.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Movie>
+        return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies,
+            Items = movies.Select(m => m.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -66,20 +67,21 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("liked/shows")]
-    public async Task<ActionResult<PaginatedResult<Show>>> GetLikedShows([FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetLikedShows([FromQuery] int page = 1)
     {
         int totalCount = await _context.Shows.CountAsync(s => s.Liked);
 
         List<Show> shows = await _context.Shows
             .Where(s => s.Liked)
+            .Include(s => s.MediaLists)
             .OrderByDescending(s => s.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Show>
+        return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows,
+            Items = shows.Select(s => s.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -88,20 +90,21 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("seen/movies")]
-    public async Task<ActionResult<PaginatedResult<Movie>>> GetSeenMovies([FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetSeenMovies([FromQuery] int page = 1)
     {
         int totalCount = await _context.Movies.CountAsync(m => m.Seen);
 
         List<Movie> movies = await _context.Movies
             .Where(m => m.Seen)
+            .Include(m => m.MediaLists)
             .OrderByDescending(m => m.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Movie>
+        return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies,
+            Items = movies.Select(m => m.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -110,20 +113,21 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("seen/shows")]
-    public async Task<ActionResult<PaginatedResult<Show>>> GetSeenShows([FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetSeenShows([FromQuery] int page = 1)
     {
         int totalCount = await _context.Shows.CountAsync(s => s.Seen);
 
         List<Show> shows = await _context.Shows
             .Where(s => s.Seen)
+            .Include(s => s.MediaLists)
             .OrderByDescending(s => s.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Show>
+        return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows,
+            Items = shows.Select(s => s.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -157,7 +161,7 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("{id}/movies")]
-    public async Task<ActionResult<PaginatedResult<Movie>>> GetMovies(int id, [FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetMovies(int id, [FromQuery] int page = 1)
     {
         bool exists = await _context.MediaLists.AnyAsync(ml => ml.Id == id);
         if (!exists)
@@ -171,13 +175,14 @@ public class MediaListsController : ControllerBase
         List<Movie> movies = await _context.MediaLists
             .Where(ml => ml.Id == id)
             .SelectMany(ml => ml.Movies)
+            .Include(m => m.MediaLists)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Movie>
+        return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies,
+            Items = movies.Select(m => m.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -186,7 +191,7 @@ public class MediaListsController : ControllerBase
     }
 
     [HttpGet("{id}/shows")]
-    public async Task<ActionResult<PaginatedResult<Show>>> GetShows(int id, [FromQuery] int page = 1)
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetShows(int id, [FromQuery] int page = 1)
     {
         bool exists = await _context.MediaLists.AnyAsync(ml => ml.Id == id);
         if (!exists)
@@ -200,13 +205,14 @@ public class MediaListsController : ControllerBase
         List<Show> shows = await _context.MediaLists
             .Where(ml => ml.Id == id)
             .SelectMany(ml => ml.Shows)
+            .Include(s => s.MediaLists)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        return new PaginatedResult<Show>
+        return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows,
+            Items = shows.Select(s => s.ToDto()).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
