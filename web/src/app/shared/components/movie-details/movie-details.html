@@ -82,7 +82,7 @@
 				</div>
 				<div class="similar-row">
 					@for (item of similar(); track item.id) {
-						<app-poster-card [item]="item"></app-poster-card>
+						<app-poster-card [item]="item" (select)="onSimilarSelect($event)"></app-poster-card>
 					}
 				</div>
 			</section>

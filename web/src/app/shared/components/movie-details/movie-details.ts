@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MediaDetailsService } from '../../services/media-details.service';
 import { SimilarService } from '../../services/similar.service';
 import { CommonModule } from '@angular/common';
@@ -23,24 +23,16 @@ export class MovieDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private mediaDetailsService: MediaDetailsService,
     private similarService: SimilarService
   ) {}
 
   ngOnInit(): void {
-    const tmdbId = this.route.snapshot.params['id'];
-    
-    this.mediaDetailsService.getMovieDetails(Number(tmdbId)).subscribe({
-      next: (data) => {
-        this.movieDetails.set(data);
-        this.loading.set(false);
-        this.loadSimilarMovies(tmdbId);
-      },
-      error: (err) => {
-        console.error(err);
-        this.error.set('Erreur lors du chargement du film');
-        this.loading.set(false);
-      }
+    this.route.paramMap.subscribe(params => {
+      const tmdbId = Number(params.get('id'));
+      if (!tmdbId) return;
+      this.fetchMovie(tmdbId);
     });
   }
 
@@ -54,6 +46,29 @@ export class MovieDetailsComponent implements OnInit {
       error: () => {
         this.similar.set([]);
         this.similarLoading.set(false);
+      }
+    });
+  }
+
+  protected onSimilarSelect(tmdbId: number): void {
+    if (!tmdbId) return;
+    this.router.navigate(['/movies', tmdbId]);
+  }
+
+  private fetchMovie(tmdbId: number): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.movieDetails.set(undefined);
+
+    this.mediaDetailsService.getMovieDetails(tmdbId).subscribe({
+      next: (data) => {
+        this.movieDetails.set(data);
+        this.loading.set(false);
+        this.loadSimilarMovies(tmdbId);
+      },
+      error: () => {
+        this.error.set('Erreur lors du chargement du film');
+        this.loading.set(false);
       }
     });
   }
