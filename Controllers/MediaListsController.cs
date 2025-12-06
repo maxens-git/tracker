@@ -43,6 +43,94 @@ public class MediaListsController : ControllerBase
         return lists;
     }
 
+    [HttpGet("liked/movies")]
+    public async Task<ActionResult<PaginatedResult<Movie>>> GetLikedMovies([FromQuery] int page = 1)
+    {
+        int totalCount = await _context.Movies.CountAsync(m => m.Liked);
+
+        List<Movie> movies = await _context.Movies
+            .Where(m => m.Liked)
+            .OrderByDescending(m => m.LastUpdated)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Movie>
+        {
+            Items = movies,
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
+    [HttpGet("liked/shows")]
+    public async Task<ActionResult<PaginatedResult<Show>>> GetLikedShows([FromQuery] int page = 1)
+    {
+        int totalCount = await _context.Shows.CountAsync(s => s.Liked);
+
+        List<Show> shows = await _context.Shows
+            .Where(s => s.Liked)
+            .OrderByDescending(s => s.LastUpdated)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Show>
+        {
+            Items = shows,
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
+    [HttpGet("seen/movies")]
+    public async Task<ActionResult<PaginatedResult<Movie>>> GetSeenMovies([FromQuery] int page = 1)
+    {
+        int totalCount = await _context.Movies.CountAsync(m => m.Seen);
+
+        List<Movie> movies = await _context.Movies
+            .Where(m => m.Seen)
+            .OrderByDescending(m => m.LastUpdated)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Movie>
+        {
+            Items = movies,
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
+    [HttpGet("seen/shows")]
+    public async Task<ActionResult<PaginatedResult<Show>>> GetSeenShows([FromQuery] int page = 1)
+    {
+        int totalCount = await _context.Shows.CountAsync(s => s.Seen);
+
+        List<Show> shows = await _context.Shows
+            .Where(s => s.Seen)
+            .OrderByDescending(s => s.LastUpdated)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<Show>
+        {
+            Items = shows,
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<MediaListSummaryDto>> GetById(int id)
     {

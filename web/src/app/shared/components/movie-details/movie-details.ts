@@ -19,6 +19,7 @@ export class MovieDetailsComponent implements OnInit {
   protected movieDetails = signal<MovieDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
+  protected seenLoading = signal<boolean>(false);
   protected error = signal<string | null>(null);
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
@@ -76,6 +77,24 @@ export class MovieDetailsComponent implements OnInit {
     });
   }
 
+  protected toggleSeen(): void {
+    const movie = this.movieDetails();
+    if (!movie) return;
+
+    this.seenLoading.set(true);
+    const next = !movie.seen;
+
+    this.mediaListsService.setMovieSeen(movie.id, next).subscribe({
+      next: (res) => {
+        this.movieDetails.update((current) => current ? { ...current, seen: res.seen } : current);
+        this.seenLoading.set(false);
+      },
+      error: () => {
+        this.seenLoading.set(false);
+      }
+    });
+  }
+
   private fetchMovie(tmdbId: number): void {
     this.loading.set(true);
     this.error.set(null);
@@ -86,6 +105,7 @@ export class MovieDetailsComponent implements OnInit {
         this.movieDetails.set(data);
         this.loading.set(false);
         this.loadSimilarMovies(tmdbId);
+        console.log(data)
       },
       error: () => {
         this.error.set('Erreur lors du chargement du film');

@@ -1,0 +1,21 @@
+@if (loading) {
+	<div class="media-grid-loading soft-card" aria-live="polite">
+		<div class="spinner" role="status" aria-label="Chargement"></div>
+		<p>Chargement...</p>
+	</div>
+}
+
+@if (!loading && items.length === 0) {
+	<div class="media-grid-empty soft-card">{{ emptyMessage }}</div>
+}
+
+@if (!loading && items.length > 0) {
+	<div class="media-grid">
+		@for (item of items; track item.id) {
+			<app-poster-card 
+				[item]="convertToTMDbResult(item)" 
+				(select)="onMediaSelect($event, item.type)">
+			</app-poster-card>
+		}
+	</div>
+}

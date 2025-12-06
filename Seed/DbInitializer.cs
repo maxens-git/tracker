@@ -65,37 +65,90 @@ public static class DbInitializer
             }
         }
 
-        List<Movie> movies = await context.Movies.ToListAsync();
-        List<Show> shows = await context.Shows.ToListAsync();
+        List<Movie> seenMovies = await context.Movies.Where(m => m.Seen).ToListAsync();
+        List<Show> seenShows = await context.Shows.Where(s => s.Seen).ToListAsync();
 
-        if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "Seen"))
+        MediaList? seenList = await context.MediaLists
+            .Include(ml => ml.Movies)
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
+
+        if (seenList == null)
         {
-            MediaList seen = new MediaList
+            seenList = new MediaList
             {
                 Name = "Seen",
                 Description = "",
                 Icon = "",
                 IsSystem = true,
-                Movies = movies,
-                Shows = shows
+                Movies = seenMovies,
+                Shows = seenShows
             };
 
-            context.MediaLists.Add(seen);
+            context.MediaLists.Add(seenList);
+        }
+        else
+        {
+            foreach (Movie movie in seenMovies)
+            {
+                if (!seenList.Movies.Any(m => m.Id == movie.Id))
+                {
+                    seenList.Movies.Add(movie);
+                }
+            }
+
+            foreach (Show show in seenShows)
+            {
+                if (!seenList.Shows.Any(s => s.Id == show.Id))
+                {
+                    seenList.Shows.Add(show);
+                }
+            }
+
+            context.MediaLists.Update(seenList);
         }
 
-        if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "J'aime"))
+        List<Movie> likedMovies = await context.Movies.Where(m => m.Liked).ToListAsync();
+        List<Show> likedShows = await context.Shows.Where(s => s.Liked).ToListAsync();
+
+        MediaList? likesList = await context.MediaLists
+            .Include(ml => ml.Movies)
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
+
+        if (likesList == null)
         {
-            MediaList likes = new MediaList
+            likesList = new MediaList
             {
                 Name = "J'aime",
                 Description = "Titres que vous aimez",
                 Icon = "❤",
                 IsSystem = true,
-                Movies = movies.Where(m => m.Liked).ToList(),
-                Shows = shows.Where(s => s.Liked).ToList()
+                Movies = likedMovies,
+                Shows = likedShows
             };
 
-            context.MediaLists.Add(likes);
+            context.MediaLists.Add(likesList);
+        }
+        else
+        {
+            foreach (Movie movie in likedMovies)
+            {
+                if (!likesList.Movies.Any(m => m.Id == movie.Id))
+                {
+                    likesList.Movies.Add(movie);
+                }
+            }
+
+            foreach (Show show in likedShows)
+            {
+                if (!likesList.Shows.Any(s => s.Id == show.Id))
+                {
+                    likesList.Shows.Add(show);
+                }
+            }
+
+            context.MediaLists.Update(likesList);
         }
 
         await context.SaveChangesAsync();
@@ -104,8 +157,12 @@ public static class DbInitializer
 
     private static async Task ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger)
     {
-        if (await context.Movies.AnyAsync(m => m.TmdbId == tmdbId))
+        Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (m != null)
         {
+            m.Seen = true;
+            context.Movies.Update(m);
+            await context.SaveChangesAsync();
             logger.LogDebug("Film déjà existant: TMDb {TmdbId}", tmdbId);
             return;
         }
@@ -140,13 +197,29 @@ public static class DbInitializer
         };
 
         context.Movies.Add(movie);
+        await context.SaveChangesAsync();
         logger.LogInformation("Film ajouté: {Title}", movie.Title);
     }
 
     private static async Task ImportShowAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger)
     {
-        if (await context.Shows.AnyAsync(s => s.TmdbId == tmdbId))
+        Show? db = await context.Shows
+            .Include(s => s.Seasons)
+            .ThenInclude(s => s.Episodes)
+            .FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+        if (db != null)
         {
+            db.Seen = true;
+            foreach (Season s in db.Seasons)
+            {
+                s.Seen = true;
+                foreach (Episode e in s.Episodes)
+                {
+                    e.Seen = true;
+                }
+            }
+            context.Shows.Update(db);
+            await context.SaveChangesAsync();
             logger.LogDebug("Série déjà existante: TMDb {TmdbId}", tmdbId);
             return;
         }

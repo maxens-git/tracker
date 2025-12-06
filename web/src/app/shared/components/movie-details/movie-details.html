@@ -26,10 +26,16 @@
 					<p class="eyebrow">Film</p>
 					<div class="title-row">
 						<h1 class="title">{{ movie.title }}</h1>
-						<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
-							<span class="pi pi-heart" [class.liked]="movie.liked"></span>
-							{{ movie.liked ? "Retirer des J'aime" : "J'aime" }}
-						</button>
+						<div class="actions">
+							<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
+								<span class="pi pi-heart" [class.liked]="movie.liked"></span>
+								{{ movie.liked ? "Retirer des J'aime" : "J'aime" }}
+							</button>
+							<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
+								<span class="pi pi-eye" [class.seen]="movie.seen"></span>
+								{{ movie.seen ? "Marquer non vu" : "Marquer vu" }}
+							</button>
+						</div>
 					</div>
 					@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
 

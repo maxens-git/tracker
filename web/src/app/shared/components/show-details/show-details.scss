@@ -105,7 +105,14 @@
 	flex-wrap: wrap;
 }
 
-.like-btn {
+.actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.like-btn,
+.seen-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
@@ -126,6 +133,9 @@
 
 	.pi-heart { color: var(--text-muted); font-size: 1.1rem; }
 	.pi-heart.liked { color: #ff4d6d; }
+	
+	.pi-eye { color: var(--text-muted); font-size: 1.1rem; }
+	.pi-eye.seen { color: var(--accent); }
 }
 
 .tagline {
@@ -221,6 +231,13 @@
 	scrollbar-width: thin;
 	align-items: stretch;
 }
+
+.season-card-wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
 .season-card {
 	text-align: left;
 	cursor: pointer;
@@ -279,6 +296,33 @@
 	}
 }
 
+.season-seen-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	background: rgba(12, 14, 22, 0.9);
+	color: var(--text);
+	cursor: pointer;
+	transition: all 120ms ease;
+	z-index: 10;
+
+	&:hover:not(:disabled) {
+		background: rgba(12, 14, 22, 0.95);
+		border-color: var(--accent);
+	}
+	&:disabled { opacity: 0.6; cursor: not-allowed; }
+
+	.pi-eye { color: var(--text-muted); font-size: 1.2rem; }
+	.pi-eye.seen { color: var(--accent); }
+}
+
 .episodes-section {
 	max-width: 1200px;
 	margin: 20px auto 0;
@@ -308,7 +352,7 @@
 
 .episode-row {
 	display: grid;
-	grid-template-columns: auto 1fr;
+	grid-template-columns: auto 1fr auto;
 	gap: 10px;
 	padding: 10px 12px;
 	border: 1px solid var(--border);
@@ -397,6 +441,29 @@
 	text-decoration: none;
 
 	&:hover { text-decoration: underline; }
+}
+
+.episode-seen-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	background: rgba(12, 14, 22, 0.85);
+	color: var(--text);
+	cursor: pointer;
+	transition: all 120ms ease;
+
+	&:hover:not(:disabled) {
+		background: rgba(12, 14, 22, 0.95);
+		border-color: var(--accent);
+	}
+	&:disabled { opacity: 0.6; cursor: not-allowed; }
+
+	.pi-eye { color: var(--text-muted); font-size: 1.2rem; }
+	.pi-eye.seen { color: var(--accent); }
 }
 
 .similar-section {

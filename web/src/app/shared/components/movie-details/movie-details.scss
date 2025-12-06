@@ -100,7 +100,14 @@
   flex-wrap: wrap;
 }
 
-.like-btn {
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.like-btn,
+.seen-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -121,6 +128,9 @@
 
   .pi-heart { color: var(--text-muted); font-size: 1.1rem; }
   .pi-heart.liked { color: #ff4d6d; }
+  
+  .pi-eye { color: var(--text-muted); font-size: 1.1rem; }
+  .pi-eye.seen { color: var(--accent); }
 }
 
 .tagline {

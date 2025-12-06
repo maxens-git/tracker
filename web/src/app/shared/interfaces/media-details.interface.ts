@@ -18,6 +18,7 @@ export interface MovieDetails {
   voteCount: number | null;
   popularity: number | null;
   liked: boolean;
+  seen: boolean;
   status: string | null;
   genres: string | null;
   budget: number | null;
@@ -34,6 +35,7 @@ export interface EpisodeSummary {
   voteAverage: number;
   airDate: string | null;
   stillPath: string | null;
+  seen: boolean;
 }
 
 export interface SeasonSummary {
@@ -44,6 +46,7 @@ export interface SeasonSummary {
   seasonNumber?: number | null;
   overview?: string | null;
   airDate?: string | null;
+  seen: boolean;
   episodes?: EpisodeSummary[];
 }
 
@@ -62,6 +65,7 @@ export interface ShowDetails {
   voteCount: number | null;
   popularity: number | null;
   liked: boolean;
+  seen: boolean;
   status: string | null;
   numberOfSeasons: number | null;
   numberOfEpisodes: number | null;

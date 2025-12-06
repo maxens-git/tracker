@@ -26,10 +26,16 @@
 					<p class="eyebrow">Série</p>
 					<div class="title-row">
 						<h1 class="title">{{ show.title }}</h1>
-						<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
-							<span class="pi pi-heart" [class.liked]="show.liked"></span>
-							{{ show.liked ? "Retirer des J'aime" : "J'aime" }}
-						</button>
+						<div class="actions">
+							<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
+								<span class="pi pi-heart" [class.liked]="show.liked"></span>
+								{{ show.liked ? "Retirer des J'aime" : "J'aime" }}
+							</button>
+							<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
+								<span class="pi pi-eye" [class.seen]="show.seen"></span>
+								{{ show.seen ? "Marquer non vue" : "Marquer vue" }}
+							</button>
+						</div>
 					</div>
 					@if (show.tagline) { <p class="tagline">{{ show.tagline }}</p> }
 
@@ -80,22 +86,27 @@
 				</div>
 				<div class="seasons-grid">
 					@for (season of show.seasons; track season.id) {
-						<button class="season-card" type="button" (click)="toggleSeason(season.id)" [class.expanded]="expandedSeasonId() === season.id">
-							@if (season.posterPath) {
-								<img [src]="'https://image.tmdb.org/t/p/w300' + season.posterPath" [alt]="season.name" />
-							} @else {
-								<div class="no-poster small">Aucune affiche</div>
-							}
-							<div class="season-body">
-								<p class="season-name">{{ season.name }}</p>
-								<p class="season-meta">
-									Saison {{ season.seasonNumber ?? '—' }} · {{ season.episodeCount }} épisode(s)
-								</p>
-								@if (season.overview) {
-									<p class="season-overview">{{ season.overview }}</p>
+						<div class="season-card-wrapper">
+							<button class="season-card" type="button" (click)="toggleSeason(season.id)" [class.expanded]="expandedSeasonId() === season.id">
+								@if (season.posterPath) {
+									<img [src]="'https://image.tmdb.org/t/p/w300' + season.posterPath" [alt]="season.name" />
+								} @else {
+									<div class="no-poster small">Aucune affiche</div>
 								}
-							</div>
-						</button>
+								<div class="season-body">
+									<p class="season-name">{{ season.name }}</p>
+									<p class="season-meta">
+										Saison {{ season.seasonNumber ?? '—' }} · {{ season.episodeCount }} épisode(s)
+									</p>
+									@if (season.overview) {
+										<p class="season-overview">{{ season.overview }}</p>
+									}
+								</div>
+							</button>
+							<button class="season-seen-btn" type="button" (click)="toggleSeasonSeen(season.id); $event.stopPropagation()" [disabled]="seasonSeenLoading().get(season.id)">
+								<span class="pi pi-eye" [class.seen]="season.seen"></span>
+							</button>
+						</div>
 					}
 				</div>
 			</section>
@@ -131,6 +142,9 @@
 										</button>
 									}
 								</div>
+								<button class="episode-seen-btn" type="button" (click)="toggleEpisodeSeen(ep.id)" [disabled]="episodeSeenLoading().get(ep.id)">
+									<span class="pi pi-eye" [class.seen]="ep.seen"></span>
+								</button>
 							</div>
 						}
 					</div>

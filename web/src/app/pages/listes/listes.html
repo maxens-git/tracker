@@ -6,42 +6,87 @@
 			<p class="subtitle">Retrouvez vos listes personnalisées et systèmes.</p>
 		</header>
 
+		<nav class="tabs-nav">
+			<button 
+				class="tab-button" 
+				[class.active]="activeTab() === 'lists'"
+				(click)="setActiveTab('lists')"
+				type="button">
+				<span class="pi pi-folder"></span>
+				<span>Mes listes</span>
+			</button>
+			<button 
+				class="tab-button" 
+				[class.active]="activeTab() === 'seen'"
+				(click)="setActiveTab('seen')"
+				type="button">
+				<span class="pi pi-eye"></span>
+				<span>Vus</span>
+			</button>
+			<button 
+				class="tab-button" 
+				[class.active]="activeTab() === 'liked'"
+				(click)="setActiveTab('liked')"
+				type="button">
+				<span class="pi pi-heart-fill"></span>
+				<span>J'aime</span>
+			</button>
+		</nav>
+
 		<div class="lists-content">
-			@if (loading()) {
-				<div class="lists-loading soft-card" aria-live="polite">
-					<div class="spinner" role="status" aria-label="Chargement"></div>
-					<p>Chargement des listes...</p>
-				</div>
+			@if (activeTab() === 'lists') {
+				@if (loading()) {
+					<div class="lists-loading soft-card" aria-live="polite">
+						<div class="spinner" role="status" aria-label="Chargement"></div>
+						<p>Chargement des listes...</p>
+					</div>
+				}
+
+				@if (error()) {
+					<div class="alert alert-danger soft-card">{{ error() }}</div>
+				}
+
+				@if (!loading() && lists()?.length) {
+					<div class="lists-grid">
+						@for (list of lists(); track list.id) {
+							<article class="list-card">
+								<div class="list-icon" aria-hidden="true">{{ list.icon || '📁' }}</div>
+								<div class="list-content">
+									<div class="list-header-row">
+										<h2>{{ list.name }}</h2>
+										<span class="badge" [class.badge-system]="list.isSystem">{{ list.isSystem ? 'Système' : 'Perso' }}</span>
+									</div>
+									@if (list.description) {
+										<p class="list-description">{{ list.description }}</p>
+									}
+									<div class="list-meta">
+										<span><span class="pi pi-video"></span> {{ list.moviesCount }} film(s)</span>
+										<span>·</span>
+										<span><span class="pi pi-tv"></span> {{ list.showsCount }} série(s)</span>
+									</div>
+								</div>
+							</article>
+						}
+					</div>
+				} @else if (!loading() && !lists()?.length) {
+					<div class="lists-empty soft-card">Aucune liste pour le moment.</div>
+				}
 			}
 
-			@if (error()) {
-				<div class="alert alert-danger soft-card">{{ error() }}</div>
+			@if (activeTab() === 'seen') {
+				<app-media-grid 
+					[items]="seenItems()" 
+					[loading]="loadingSeen()" 
+					[emptyMessage]="'Aucun contenu vu pour le moment.'">
+				</app-media-grid>
 			}
 
-			@if (!loading() && lists()?.length) {
-				<div class="lists-grid">
-					@for (list of lists(); track list.id) {
-						<article class="list-card">
-							<div class="list-icon" aria-hidden="true">{{ list.icon || '📁' }}</div>
-							<div class="list-content">
-								<div class="list-header-row">
-									<h2>{{ list.name }}</h2>
-									<span class="badge" [class.badge-system]="list.isSystem">{{ list.isSystem ? 'Système' : 'Perso' }}</span>
-								</div>
-								@if (list.description) {
-									<p class="list-description">{{ list.description }}</p>
-								}
-								<div class="list-meta">
-									<span><span class="pi pi-video"></span> {{ list.moviesCount }} film(s)</span>
-									<span>·</span>
-									<span><span class="pi pi-tv"></span> {{ list.showsCount }} série(s)</span>
-								</div>
-							</div>
-						</article>
-					}
-				</div>
-			} @else if (!loading() && !lists()?.length) {
-				<div class="lists-empty soft-card">Aucune liste pour le moment.</div>
+			@if (activeTab() === 'liked') {
+				<app-media-grid 
+					[items]="likedItems()" 
+					[loading]="loadingLiked()" 
+					[emptyMessage]="'Aucun contenu aimé pour le moment.'">
+				</app-media-grid>
 			}
 		</div>
 	</div>

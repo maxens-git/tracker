@@ -19,6 +19,9 @@ export class ShowDetailsComponent implements OnInit {
   protected showDetails = signal<ShowDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
+  protected seenLoading = signal<boolean>(false);
+  protected seasonSeenLoading = signal<Map<number, boolean>>(new Map());
+  protected episodeSeenLoading = signal<Map<number, boolean>>(new Map());
   protected error = signal<string | null>(null);
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
@@ -92,6 +95,109 @@ export class ShowDetailsComponent implements OnInit {
       },
       error: () => {
         this.likeLoading.set(false);
+      }
+    });
+  }
+
+  protected toggleSeen(): void {
+    const show = this.showDetails();
+    if (!show) return;
+
+    this.seenLoading.set(true);
+    const next = !show.seen;
+
+    this.mediaListsService.setShowSeen(show.id, next).subscribe({
+      next: (res) => {
+        this.showDetails.update((current) => {
+          if (!current) return current;
+          const updated = { ...current, seen: res.seen };
+          updated.seasons = updated.seasons.map(s => ({ ...s, seen: res.seen, episodes: s.episodes?.map(e => ({ ...e, seen: res.seen })) }));
+          return updated;
+        });
+        this.seenLoading.set(false);
+      },
+      error: () => {
+        this.seenLoading.set(false);
+      }
+    });
+  }
+
+  protected toggleSeasonSeen(seasonId: number): void {
+    const show = this.showDetails();
+    if (!show) return;
+
+    const loadingMap = new Map(this.seasonSeenLoading());
+    loadingMap.set(seasonId, true);
+    this.seasonSeenLoading.set(loadingMap);
+
+    const season = show.seasons.find(s => s.id === seasonId);
+    if (!season) return;
+
+    const next = !season.seen;
+
+    this.mediaListsService.setSeasonSeen(seasonId, next).subscribe({
+      next: (res) => {
+        this.showDetails.update((current) => {
+          if (!current) return current;
+          const updated = { ...current };
+          updated.seasons = updated.seasons.map(s => 
+            s.id === seasonId 
+              ? { ...s, seen: res.seen, episodes: s.episodes?.map(e => ({ ...e, seen: res.seen })) }
+              : s
+          );
+          return updated;
+        });
+        const newLoadingMap = new Map(this.seasonSeenLoading());
+        newLoadingMap.delete(seasonId);
+        this.seasonSeenLoading.set(newLoadingMap);
+      },
+      error: () => {
+        const newLoadingMap = new Map(this.seasonSeenLoading());
+        newLoadingMap.delete(seasonId);
+        this.seasonSeenLoading.set(newLoadingMap);
+      }
+    });
+  }
+
+  protected toggleEpisodeSeen(episodeId: number): void {
+    const show = this.showDetails();
+    if (!show) return;
+
+    const loadingMap = new Map(this.episodeSeenLoading());
+    loadingMap.set(episodeId, true);
+    this.episodeSeenLoading.set(loadingMap);
+
+    let episode: any = null;
+    for (const season of show.seasons) {
+      episode = season.episodes?.find(e => e.id === episodeId);
+      if (episode) break;
+    }
+
+    if (!episode) return;
+
+    const next = !episode.seen;
+
+    this.mediaListsService.setEpisodeSeen(episodeId, next).subscribe({
+      next: (res) => {
+        this.showDetails.update((current) => {
+          if (!current) return current;
+          const updated = { ...current };
+          updated.seasons = updated.seasons.map(s => ({
+            ...s,
+            episodes: s.episodes?.map(e => 
+              e.id === episodeId ? { ...e, seen: res.seen } : e
+            )
+          }));
+          return updated;
+        });
+        const newLoadingMap = new Map(this.episodeSeenLoading());
+        newLoadingMap.delete(episodeId);
+        this.episodeSeenLoading.set(newLoadingMap);
+      },
+      error: () => {
+        const newLoadingMap = new Map(this.episodeSeenLoading());
+        newLoadingMap.delete(episodeId);
+        this.episodeSeenLoading.set(newLoadingMap);
       }
     });
   }
