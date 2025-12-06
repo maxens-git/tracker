@@ -69,5 +69,23 @@
 				</div>
 			</div>
 		</div>
+
+		@if (similarLoading()) {
+			<div class="loading-card">Chargement des recommandations...</div>
+		}
+
+		@if (!similarLoading() && similar().length) {
+			<section class="similar-section">
+				<div class="similar-header">
+					<p class="eyebrow">Recommandations</p>
+					<h2>Films similaires</h2>
+				</div>
+				<div class="similar-row">
+					@for (item of similar(); track item.id) {
+						<app-poster-card [item]="item"></app-poster-card>
+					}
+				</div>
+			</section>
+		}
 	}
 </section>

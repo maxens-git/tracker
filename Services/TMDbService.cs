@@ -126,4 +126,32 @@ public class TMDbService
         string json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
     }
+
+    public async Task<TMDbSearchResponse?> GetSimilarMoviesAsync(int tmdbId, int page = 1)
+    {
+        string url = $"{BaseUrl}/movie/{tmdbId}/similar?api_key={_apiKey}&language=fr-FR&page={page}";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
+
+    public async Task<TMDbSearchResponse?> GetSimilarShowsAsync(int tmdbId, int page = 1)
+    {
+        string url = $"{BaseUrl}/tv/{tmdbId}/similar?api_key={_apiKey}&language=fr-FR&page={page}";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
+    }
 }
