@@ -1,1 +1,20 @@
-<app-trends [trends]="trends()"></app-trends>
+<section class="home-container">
+	@if (loading()) {
+		<div class="home-loading" aria-live="polite">
+			<div class="spinner" role="status" aria-label="Chargement"></div>
+			<p>Chargement des tendances...</p>
+		</div>
+	}
+
+	@if (error()) {
+		<div class="alert alert-danger">{{ error() }}</div>
+	}
+
+	@if (!loading() && trends()) {
+		<app-trends [trends]="trends()"></app-trends>
+	}
+
+	@if (!loading() && !trends()) {
+		<div class="home-empty">Aucune donnée disponible pour l'instant.</div>
+	}
+</section>

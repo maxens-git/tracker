@@ -4,6 +4,33 @@
   background-color: var(--surface-ground);
 }
 
+.home-loading,
+.home-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #f5f6ff;
+  gap: 12px;
+}
+
+.home-empty {
+  color: rgba(245, 246, 255, 0.8);
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 4px solid rgba(var(--primary-color-rgb), 0.18);
+  border-top-color: var(--primary-color);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .search-section {
   padding: 2rem 1rem;
   background: var(--surface-card);

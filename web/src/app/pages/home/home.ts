@@ -23,16 +23,24 @@ import { CommonModule } from '@angular/common';
 export class Home implements OnInit {
   protected searchValue: string = "";
   protected trends = signal<TrendingHomeData | undefined>(undefined);
+  protected loading = signal<boolean>(true);
+  protected error = signal<string | null>(null);
 
   constructor(private trendsService: TrendsService) {}
 
   ngOnInit(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
     this.trendsService.getHomeData().subscribe({
       next: (data: TrendingHomeData) => {
         this.trends.set(data);
+        this.loading.set(false);
       },
       error: (err) => {
         console.log(err);
+        this.error.set('Impossible de charger les tendances pour le moment.');
+        this.loading.set(false);
       }
     });
   }
