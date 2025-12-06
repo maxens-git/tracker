@@ -171,6 +171,24 @@
   padding: 12px 14px;
   box-shadow: 0 12px 22px rgba(0, 0, 0, 0.32);
 
+  &.imdb-card {
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+
+    &:hover {
+      border-color: var(--accent);
+      background: rgba(12, 14, 22, 0.96);
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.36);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  }
+
   .label {
     margin: 0 0 4px;
     text-transform: uppercase;
@@ -181,6 +199,15 @@
 
   .value {
     margin: 0;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .imdb-value {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-weight: 700;
     color: var(--text);
   }

@@ -67,10 +67,20 @@
 							<p class="label">Titre original</p>
 							<p class="value">{{ movie.originalTitle || 'Non renseigné' }}</p>
 						</div>
-						<div class="info-card">
-							<p class="label">Identifiant IMDB</p>
-							<p class="value">{{ movie.imdbId || '—' }}</p>
-						</div>
+						@if (movie.imdbId) {
+							<a class="info-card imdb-card" [href]="'https://www.imdb.com/title/' + movie.imdbId" target="_blank" rel="noopener noreferrer">
+								<p class="label">Identifiant IMDB</p>
+								<p class="imdb-value">
+									<span class="pi pi-external-link"></span>
+									{{ movie.imdbId }}
+								</p>
+							</a>
+						} @else {
+							<div class="info-card">
+								<p class="label">Identifiant IMDB</p>
+								<p class="value">—</p>
+							</div>
+						}
 					</div>
 				</div>
 			</div>
