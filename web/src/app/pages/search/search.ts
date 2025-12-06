@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { TMDbSearchResult } from '../../shared/interfaces/tmdb-trending.interface';
@@ -28,7 +29,10 @@ export class Search implements OnDestroy {
   private debounceHandle?: ReturnType<typeof setTimeout>;
   private searchSub?: Subscription;
 
-  constructor(private readonly searchService: SearchService) {}
+  constructor(
+    private readonly searchService: SearchService,
+    private readonly router: Router
+  ) {}
 
   ngOnDestroy(): void {
     clearTimeout(this.debounceHandle);
@@ -110,6 +114,12 @@ export class Search implements OnDestroy {
         this.loadingMore.set(false);
       }
     });
+  }
+
+  protected onSelect(item: TMDbSearchResult): void {
+    if (!item?.id) return;
+    const target = item.media_type === 'tv' ? '/shows' : '/movies';
+    this.router.navigate([target, item.id]);
   }
 
 

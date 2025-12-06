@@ -59,7 +59,7 @@
 			<div class="row g-4 results-grid">
 				@for (item of results(); track item.id) {
 					<div class="col-6 col-md-3 col-lg-2 col-xl-2">
-						<app-poster-card [item]="item"></app-poster-card>
+						<app-poster-card [item]="item" (select)="onSelect(item)"></app-poster-card>
 					</div>
 				}
 			</div>
