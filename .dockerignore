@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.swp
+.git
+.gitignore
+Dockerfile
+node_modules
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+web/node_modules
+web/dist

@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: tracker-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Server=db;Port=3306;Database=tracker;Uid=tracker;Pwd=tracker;
+      TMDb__ApiKey: ${TMDB_API_KEY:-changeme}
+      JustWatch__EnableImport: "false"
+    restart: unless-stopped

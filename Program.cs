@@ -52,6 +52,9 @@ builder.Services.AddScoped<TMDbService>(sp =>
 
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.UseRouting();
 app.UseCors("AllowAngular");
 
 if (app.Environment.IsDevelopment())
@@ -89,5 +92,6 @@ using (var scope = app.Services.CreateScope())
 
 app.UseAuthorization();
 app.MapControllers();
+app.MapFallbackToFile("/index.html");
 
 app.Run();
