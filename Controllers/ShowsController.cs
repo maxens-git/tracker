@@ -110,6 +110,85 @@ public class ShowsController : ControllerBase
         return MapToDto(show);
     }
 
+    [HttpPost("{tmdbId}/watchlist")]
+    public async Task<IActionResult> AddToWatchlist(int tmdbId)
+    {
+        Show? show = await _context.Shows.Include(s => s.MediaLists).FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+        if (show == null)
+        {
+            TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
+            if (tmdbShow == null)
+                return NotFound("Show not found on TMDb");
+
+            show = new Show
+            {
+                TmdbId = tmdbShow.Id,
+                Title = tmdbShow.Name,
+                OriginalTitle = tmdbShow.OriginalName,
+                Overview = tmdbShow.Overview,
+                Status = tmdbShow.Status,
+                Tagline = tmdbShow.Tagline,
+                PosterPath = tmdbShow.PosterPath,
+                BackdropPath = tmdbShow.BackdropPath,
+                VoteAverage = tmdbShow.VoteAverage,
+                VoteCount = tmdbShow.VoteCount,
+                Popularity = tmdbShow.Popularity,
+                ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
+                LastAirDate = ParseDate(tmdbShow.LastAirDate),
+                NumberOfSeasons = tmdbShow.NumberOfSeasons,
+                NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
+                Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
+            };
+            _context.Shows.Add(show);
+            await _context.SaveChangesAsync();
+        }
+
+        MediaList? watchlist = await _context.MediaLists.Include(l => l.Shows)
+            .FirstOrDefaultAsync(l => l.IsSystem && l.Name == "Watchlist");
+        if (watchlist == null)
+        {
+            watchlist = new MediaList
+            {
+                Name = "Watchlist",
+                IsSystem = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.MediaLists.Add(watchlist);
+            await _context.SaveChangesAsync();
+        }
+
+        if (watchlist.Shows.Any(s => s.TmdbId == tmdbId))
+            return BadRequest("Show already in watchlist");
+
+        watchlist.Shows.Add(show);
+        watchlist.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{tmdbId}/watchlist")]
+    public async Task<IActionResult> RemoveFromWatchlist(int tmdbId)
+    {
+        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+        if (show == null)
+            return NotFound("Show not found");
+
+        MediaList? watchlist = await _context.MediaLists.Include(l => l.Shows)
+            .FirstOrDefaultAsync(l => l.IsSystem && l.Name == "Watchlist");
+        if (watchlist == null)
+            return NotFound("Watchlist not found");
+
+        Show? existing = watchlist.Shows.FirstOrDefault(s => s.TmdbId == tmdbId || s.Id == show.Id);
+        if (existing == null)
+            return NotFound("Show not in watchlist");
+
+        watchlist.Shows.Remove(existing);
+        watchlist.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpPost("{id}/seen")]
     public async Task<ActionResult<Show>> MarkAsSeen(int id, [FromBody] bool seen = true)
     {

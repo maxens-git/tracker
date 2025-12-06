@@ -66,6 +66,10 @@
 								<span class="pi pi-eye" [class.seen]="movie.seen"></span>
 								{{ movie.seen ? "Marquer non vu" : "Marquer vu" }}
 							</button>
+							<button class="watchlist-btn" type="button" (click)="toggleWatchlist()" [disabled]="watchlistLoading()">
+								<span class="pi pi-bookmark" [class.in]="inWatchlist()"></span>
+								{{ inWatchlist() ? 'Retirer de la watchlist' : 'Ajouter à la watchlist' }}
+							</button>
 							<button class="list-btn" type="button" (click)="openListModal()">
 								<span class="pi pi-plus"></span>
 								Ajouter à une liste

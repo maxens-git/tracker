@@ -108,5 +108,21 @@ export class MediaListsService {
   removeShowFromList(listId: number, tmdbId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${listId}/shows/${tmdbId}`);
   }
+
+  addMovieToWatchlist(tmdbId: number): Observable<void> {
+    return this.http.post<void>(`/api/movies/${tmdbId}/watchlist`, null);
+  }
+
+  removeMovieFromWatchlist(tmdbId: number): Observable<void> {
+    return this.http.delete<void>(`/api/movies/${tmdbId}/watchlist`);
+  }
+
+  addShowToWatchlist(tmdbId: number): Observable<void> {
+    return this.http.post<void>(`/api/shows/${tmdbId}/watchlist`, null);
+  }
+
+  removeShowFromWatchlist(tmdbId: number): Observable<void> {
+    return this.http.delete<void>(`/api/shows/${tmdbId}/watchlist`);
+  }
 }
 

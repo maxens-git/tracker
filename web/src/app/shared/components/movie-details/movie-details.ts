@@ -23,6 +23,9 @@ export class MovieDetailsComponent implements OnInit {
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
   protected seenLoading = signal<boolean>(false);
+  protected watchlistLoading = signal<boolean>(false);
+  protected inWatchlist = signal<boolean>(false);
+  protected watchlistId = signal<number | null>(null);
   protected error = signal<string | null>(null);
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
@@ -144,12 +147,34 @@ export class MovieDetailsComponent implements OnInit {
       next: (data) => {
         this.movieDetails.set(data);
         this.loading.set(false);
+        this.setWatchlistState(data);
         this.loadSimilarMovies(tmdbId);
         console.log(data)
       },
       error: () => {
         this.error.set('Erreur lors du chargement du film');
         this.loading.set(false);
+      }
+    });
+  }
+
+  // Determine watchlist id and whether movie is in it
+  private setWatchlistState(movie: MovieDetails): void {
+    this.mediaListsService.getAll().subscribe({
+      next: (lists) => {
+        this.lists.set(lists);
+        const watch = lists.find(l => l.isSystem && l.name === 'Watchlist');
+        if (watch) {
+          this.watchlistId.set(watch.id);
+          this.inWatchlist.set(!!movie.listIds?.includes(watch.id));
+        } else {
+          this.watchlistId.set(null);
+          this.inWatchlist.set(false);
+        }
+      },
+      error: () => {
+        this.watchlistId.set(null);
+        this.inWatchlist.set(false);
       }
     });
   }
@@ -174,5 +199,42 @@ export class MovieDetailsComponent implements OnInit {
       }
     });
     
+  }
+
+  protected toggleWatchlist(): void {
+    const movie = this.movieDetails();
+    if (!movie) return;
+
+    this.watchlistLoading.set(true);
+    if (this.inWatchlist()) {
+      this.mediaListsService.removeMovieFromWatchlist(movie.tmdbId).subscribe({
+        next: () => {
+          this.inWatchlist.set(false);
+          // remove watchlist id from movie.listIds if known
+          const wid = this.watchlistId();
+          if (wid) {
+            this.movieDetails.update(current => current ? { ...current, listIds: (current.listIds || []).filter(id => id !== wid) } : current);
+          }
+          this.watchlistLoading.set(false);
+        },
+        error: () => {
+          this.watchlistLoading.set(false);
+        }
+      });
+    } else {
+      this.mediaListsService.addMovieToWatchlist(movie.tmdbId).subscribe({
+        next: () => {
+          this.inWatchlist.set(true);
+          const wid = this.watchlistId();
+          if (wid) {
+            this.movieDetails.update(current => current ? { ...current, listIds: [...(current.listIds || []), wid] } : current);
+          }
+          this.watchlistLoading.set(false);
+        },
+        error: () => {
+          this.watchlistLoading.set(false);
+        }
+      });
+    }
   }
 }

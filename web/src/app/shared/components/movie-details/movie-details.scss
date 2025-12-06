@@ -220,6 +220,7 @@
 
 .like-btn,
 .seen-btn,
+.watchlist-btn,
 .list-btn {
   display: inline-flex;
   align-items: center;
@@ -244,6 +245,9 @@
   
   .pi-eye { color: var(--text-muted); font-size: 1.1rem; }
   .pi-eye.seen { color: var(--accent); }
+
+  .pi-bookmark { color: var(--text-muted); font-size: 1.1rem; }
+  .pi-bookmark.in { color: var(--accent); }
 
   .pi-plus { color: var(--text-muted); font-size: 1.1rem; }
 }

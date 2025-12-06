@@ -62,6 +62,86 @@ public class MoviesController : ControllerBase
         return MapToDto(movie);
     }
 
+    [HttpPost("{tmdbId}/watchlist")]
+    public async Task<IActionResult> AddToWatchlist(int tmdbId)
+    {
+        Movie? movie = await _context.Movies.Include(m => m.MediaLists).FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (movie == null)
+        {
+            TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
+            if (tmdbMovie == null)
+                return NotFound("Movie not found on TMDb");
+
+            movie = new Movie
+            {
+                TmdbId = tmdbMovie.Id,
+                Title = tmdbMovie.Title,
+                OriginalTitle = tmdbMovie.OriginalTitle,
+                Overview = tmdbMovie.Overview,
+                Status = tmdbMovie.Status,
+                Tagline = tmdbMovie.Tagline,
+                PosterPath = tmdbMovie.PosterPath,
+                BackdropPath = tmdbMovie.BackdropPath,
+                VoteAverage = tmdbMovie.VoteAverage,
+                VoteCount = tmdbMovie.VoteCount,
+                Popularity = tmdbMovie.Popularity,
+                ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
+                Runtime = tmdbMovie.Runtime,
+                Budget = tmdbMovie.Budget,
+                Revenue = tmdbMovie.Revenue,
+                ImdbId = tmdbMovie.ImdbId,
+                Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
+            };
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+        }
+
+        MediaList? watchlist = await _context.MediaLists.Include(l => l.Movies)
+            .FirstOrDefaultAsync(l => l.IsSystem && l.Name == "Watchlist");
+        if (watchlist == null)
+        {
+            watchlist = new MediaList
+            {
+                Name = "Watchlist",
+                IsSystem = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.MediaLists.Add(watchlist);
+            await _context.SaveChangesAsync();
+        }
+
+        if (watchlist.Movies.Any(m => m.TmdbId == tmdbId))
+            return BadRequest("Movie already in watchlist");
+
+        watchlist.Movies.Add(movie);
+        watchlist.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{tmdbId}/watchlist")]
+    public async Task<IActionResult> RemoveFromWatchlist(int tmdbId)
+    {
+        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (movie == null)
+            return NotFound("Movie not found");
+
+        MediaList? watchlist = await _context.MediaLists.Include(l => l.Movies)
+            .FirstOrDefaultAsync(l => l.IsSystem && l.Name == "Watchlist");
+        if (watchlist == null)
+            return NotFound("Watchlist not found");
+
+        Movie? existing = watchlist.Movies.FirstOrDefault(m => m.TmdbId == tmdbId || m.Id == movie.Id);
+        if (existing == null)
+            return NotFound("Movie not in watchlist");
+
+        watchlist.Movies.Remove(existing);
+        watchlist.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpPost("{id}/seen")]
     public async Task<ActionResult<Movie>> MarkAsSeen(int id, [FromBody] bool seen = true)
     {
