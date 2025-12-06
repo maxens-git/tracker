@@ -138,6 +138,60 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+@keyframes shimmer {
+	0% { background-position: -1000px 0; }
+	100% { background-position: 1000px 0; }
+}
+
+.skeleton-text,
+.skeleton-icon {
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0.05) 0%,
+		rgba(255, 255, 255, 0.1) 50%,
+		rgba(255, 255, 255, 0.05) 100%
+	);
+	background-size: 1000px 100%;
+	animation: shimmer 2s infinite linear;
+	border-radius: 8px;
+}
+
+.skeleton-list-card {
+	pointer-events: none;
+	
+	.skeleton-icon {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+	}
+	
+	.skeleton-text {
+		height: 1em;
+		display: inline-block;
+		
+		&.skeleton-list-title {
+			width: 60%;
+			height: 18px;
+			margin-bottom: 2px;
+		}
+		
+		&.skeleton-badge {
+			width: 70px;
+			height: 22px;
+		}
+		
+		&.skeleton-description {
+			width: 90%;
+			height: 14px;
+		}
+		
+		&.skeleton-meta-item {
+			width: 80px;
+			height: 14px;
+		}
+	}
+}
+
 .lists-grid {
 	margin: 0;
 	display: grid;

@@ -1,6 +1,37 @@
 <section class="movie-page">
 	@if (loading()) {
-		<div class="loading-card">Chargement des détails du film...</div>
+		<div class="hero skeleton-hero">
+			<div class="hero-overlay"></div>
+			<div class="hero-shell">
+				<div class="poster skeleton-poster"></div>
+				<div class="hero-body">
+					<p class="skeleton-text skeleton-eyebrow"></p>
+					<div class="title-row">
+						<h1 class="skeleton-text skeleton-title"></h1>
+						<div class="actions">
+							<div class="skeleton-button"></div>
+							<div class="skeleton-button"></div>
+						</div>
+					</div>
+					<p class="skeleton-text skeleton-tagline"></p>
+					<div class="meta-row">
+						@for (i of [1,2,3,4,5]; track i) {
+							<span class="skeleton-pill"></span>
+						}
+					</div>
+					<div class="skeleton-text skeleton-overview"></div>
+					<div class="skeleton-text skeleton-overview short"></div>
+					<div class="info-grid">
+						@for (i of [1,2,3,4,5,6]; track i) {
+							<div class="info-card skeleton-info-card">
+								<p class="skeleton-text skeleton-label"></p>
+								<p class="skeleton-text skeleton-value"></p>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
 	}
 
 	@if (error()) {
@@ -93,7 +124,17 @@
 		</div>
 
 		@if (similarLoading()) {
-			<div class="loading-card">Chargement des recommandations...</div>
+			<section class="similar-section">
+				<div class="similar-header">
+					<p class="skeleton-text skeleton-eyebrow"></p>
+					<h2 class="skeleton-text skeleton-section-title"></h2>
+				</div>
+				<div class="similar-row">
+					@for (i of [1,2,3,4,5,6]; track i) {
+						<div class="skeleton-card"></div>
+					}
+				</div>
+			</section>
 		}
 
 		@if (!similarLoading() && similar().length) {
