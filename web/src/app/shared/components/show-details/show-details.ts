@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaDetailsService } from '../../services/media-details.service';
 import { SimilarService } from '../../services/similar.service';
+import { MediaListsService } from '../../services/media-lists.service';
 import { CommonModule } from '@angular/common';
 import { ShowDetails } from '../../interfaces/media-details.interface';
 import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
@@ -17,6 +18,7 @@ import { PosterCardComponent } from '../poster-card/poster-card';
 export class ShowDetailsComponent implements OnInit {
   protected showDetails = signal<ShowDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
+  protected likeLoading = signal<boolean>(false);
   protected error = signal<string | null>(null);
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
@@ -27,7 +29,8 @@ export class ShowDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private mediaDetailsService: MediaDetailsService,
-    private similarService: SimilarService
+    private similarService: SimilarService,
+    private mediaListsService: MediaListsService
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +76,24 @@ export class ShowDetailsComponent implements OnInit {
   protected onSimilarSelect(tmdbId: number): void {
     if (!tmdbId) return;
     this.router.navigate(['/shows', tmdbId]);
+  }
+
+  protected toggleLike(): void {
+    const show = this.showDetails();
+    if (!show) return;
+
+    this.likeLoading.set(true);
+    const next = !show.liked;
+
+    this.mediaListsService.setShowLiked(show.tmdbId, next).subscribe({
+      next: (res) => {
+        this.showDetails.update((current) => current ? { ...current, liked: res.liked } : current);
+        this.likeLoading.set(false);
+      },
+      error: () => {
+        this.likeLoading.set(false);
+      }
+    });
   }
 
   protected toggleSeason(seasonId: number): void {

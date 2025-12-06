@@ -5,6 +5,7 @@ export interface Genre {
 
 export interface MovieDetails {
   id: number;
+  tmdbId: number;
   title: string;
   originalTitle: string | null;
   overview: string;
@@ -16,6 +17,7 @@ export interface MovieDetails {
   voteAverage: number | null;
   voteCount: number | null;
   popularity: number | null;
+  liked: boolean;
   status: string | null;
   genres: string | null;
   budget: number | null;
@@ -47,7 +49,8 @@ export interface SeasonSummary {
 
 export interface ShowDetails {
   id: number;
-  name: string;
+  tmdbId: number;
+  title: string;
   originalTitle: string | null;
   overview: string;
   posterPath: string | null;
@@ -58,6 +61,7 @@ export interface ShowDetails {
   voteAverage: number | null;
   voteCount: number | null;
   popularity: number | null;
+  liked: boolean;
   status: string | null;
   numberOfSeasons: number | null;
   numberOfEpisodes: number | null;

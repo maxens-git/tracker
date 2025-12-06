@@ -191,7 +191,7 @@ public class MediaListsController : ControllerBase
             return NotFound("List not found");
 
         Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-        
+
         if (movie == null)
         {
             TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
@@ -325,10 +325,156 @@ public class MediaListsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("movies/{tmdbId}/like")]
+    public async Task<IActionResult> LikeMovie(int tmdbId, [FromQuery] bool liked = true)
+    {
+        Movie? movie = await EnsureMovieExists(tmdbId);
+
+        if (movie == null)
+            return NotFound("Movie not found on TMDb");
+
+        movie.Liked = liked;
+        movie.LastUpdated = DateTime.UtcNow;
+
+        MediaList? likesList = await _context.MediaLists
+            .Include(ml => ml.Movies)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
+        if (likesList != null)
+        {
+            if (liked)
+            {
+                if (!likesList.Movies.Any(m => m.TmdbId == tmdbId))
+                    likesList.Movies.Add(movie);
+            }
+            else
+            {
+                Movie? existing = likesList.Movies.FirstOrDefault(m => m.TmdbId == tmdbId);
+                if (existing != null)
+                    likesList.Movies.Remove(existing);
+            }
+
+            likesList.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { movie.TmdbId, movie.Liked });
+    }
+
+    [HttpPost("shows/{tmdbId}/like")]
+    public async Task<IActionResult> LikeShow(int tmdbId, [FromQuery] bool liked = true)
+    {
+        Show? show = await EnsureShowExists(tmdbId);
+
+        if (show == null)
+            return NotFound("Show not found on TMDb");
+
+        show.Liked = liked;
+        show.LastUpdated = DateTime.UtcNow;
+
+        MediaList? likesList = await _context.MediaLists
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
+        if (likesList != null)
+        {
+            if (liked)
+            {
+                if (!likesList.Shows.Any(s => s.TmdbId == tmdbId))
+                    likesList.Shows.Add(show);
+            }
+            else
+            {
+                Show? existing = likesList.Shows.FirstOrDefault(s => s.TmdbId == tmdbId);
+                if (existing != null)
+                    likesList.Shows.Remove(existing);
+            }
+
+            likesList.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { show.TmdbId, show.Liked });
+    }
+
     private static DateTime? ParseDate(string? dateString)
     {
         if (string.IsNullOrEmpty(dateString))
             return null;
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
+
+    private async Task<Movie?> EnsureMovieExists(int tmdbId)
+    {
+        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (movie != null)
+            return movie;
+
+        TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
+        if (tmdbMovie == null)
+            return null;
+
+        movie = new Movie
+        {
+            TmdbId = tmdbMovie.Id,
+            Title = tmdbMovie.Title,
+            OriginalTitle = tmdbMovie.OriginalTitle,
+            Overview = tmdbMovie.Overview,
+            Status = tmdbMovie.Status,
+            Tagline = tmdbMovie.Tagline,
+            PosterPath = tmdbMovie.PosterPath,
+            BackdropPath = tmdbMovie.BackdropPath,
+            VoteAverage = tmdbMovie.VoteAverage,
+            VoteCount = tmdbMovie.VoteCount,
+            Popularity = tmdbMovie.Popularity,
+            ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
+            Runtime = tmdbMovie.Runtime,
+            Budget = tmdbMovie.Budget,
+            Revenue = tmdbMovie.Revenue,
+            ImdbId = tmdbMovie.ImdbId,
+            Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
+        };
+
+        _context.Movies.Add(movie);
+        await _context.SaveChangesAsync();
+
+        return movie;
+    }
+
+    private async Task<Show?> EnsureShowExists(int tmdbId)
+    {
+        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+        if (show != null)
+            return show;
+
+        TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
+        if (tmdbShow == null)
+            return null;
+
+        show = new Show
+        {
+            TmdbId = tmdbShow.Id,
+            Title = tmdbShow.Name,
+            OriginalTitle = tmdbShow.OriginalName,
+            Overview = tmdbShow.Overview,
+            Status = tmdbShow.Status,
+            Tagline = tmdbShow.Tagline,
+            PosterPath = tmdbShow.PosterPath,
+            BackdropPath = tmdbShow.BackdropPath,
+            VoteAverage = tmdbShow.VoteAverage,
+            VoteCount = tmdbShow.VoteCount,
+            Popularity = tmdbShow.Popularity,
+            ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
+            LastAirDate = ParseDate(tmdbShow.LastAirDate),
+            NumberOfSeasons = tmdbShow.NumberOfSeasons,
+            NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
+            Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
+        };
+
+        _context.Shows.Add(show);
+        await _context.SaveChangesAsync();
+
+        return show;
+    }
+
 }

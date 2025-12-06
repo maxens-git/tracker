@@ -24,7 +24,13 @@
 
 				<div class="hero-body">
 					<p class="eyebrow">Film</p>
-					<h1 class="title">{{ movie.title }}</h1>
+					<div class="title-row">
+						<h1 class="title">{{ movie.title }}</h1>
+						<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
+							<span class="pi pi-heart" [class.liked]="movie.liked"></span>
+							{{ movie.liked ? "Retirer des J'aime" : "J'aime" }}
+						</button>
+					</div>
 					@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
 
 					<div class="meta-row">
