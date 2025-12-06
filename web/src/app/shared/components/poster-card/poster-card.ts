@@ -34,4 +34,12 @@ export class PosterCardComponent {
     }
     return this.item.vote_average.toFixed(1);
   }
+  getType(): string {
+    if (this.item?.media_type === 'movie') {
+      return 'Film';
+    } else if (this.item?.media_type === 'tv') {
+      return 'Série';
+    }
+    return '';
+  }
 }

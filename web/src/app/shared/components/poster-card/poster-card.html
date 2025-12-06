@@ -10,7 +10,10 @@
         <span class="pi pi-star"></span>
         {{ getRating() }}
       </span>
-      <span class="badge year">{{ getYear() }}</span>
+      <div style="display: flex; justify-content: space-between; width: 100%; position: absolute; left: 0; bottom: 0; padding: 0.5rem; pointer-events: none;">
+        <span class="badge type" style="pointer-events: auto;">{{ getType() }}</span>
+        <span class="badge year" style="pointer-events: auto;">{{ getYear() }}</span>
+      </div>
     </div>
   </div>
 </button>
