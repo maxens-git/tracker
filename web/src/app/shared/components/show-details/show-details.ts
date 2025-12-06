@@ -21,6 +21,7 @@ export class ShowDetailsComponent implements OnInit {
   protected similar = signal<TMDbSearchResult[]>([]);
   protected similarLoading = signal<boolean>(true);
   protected expandedSeasonId = signal<number | null>(null);
+  protected expandedEpisodes = signal<Set<number>>(new Set());
 
   constructor(
     private route: ActivatedRoute,
@@ -76,7 +77,9 @@ export class ShowDetailsComponent implements OnInit {
 
   protected toggleSeason(seasonId: number): void {
     if (!seasonId) return;
-    this.expandedSeasonId.set(this.expandedSeasonId() === seasonId ? null : seasonId);
+    const nextSeason = this.expandedSeasonId() === seasonId ? null : seasonId;
+    this.expandedSeasonId.set(nextSeason);
+    this.expandedEpisodes.set(new Set());
   }
 
   protected expandedSeason() {
@@ -84,5 +87,20 @@ export class ShowDetailsComponent implements OnInit {
     const id = this.expandedSeasonId();
     if (!show || id === null) return undefined;
     return show.seasons.find(s => s.id === id);
+  }
+
+  protected isEpisodeExpanded(episodeId: number): boolean {
+    return this.expandedEpisodes().has(episodeId);
+  }
+
+  protected toggleEpisode(episodeId: number): void {
+    if (!episodeId) return;
+    const next = new Set(this.expandedEpisodes());
+    if (next.has(episodeId)) {
+      next.delete(episodeId);
+    } else {
+      next.add(episodeId);
+    }
+    this.expandedEpisodes.set(next);
   }
 }

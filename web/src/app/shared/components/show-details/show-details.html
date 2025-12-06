@@ -119,7 +119,10 @@
 										</div>
 									</div>
 									@if (ep.overview) {
-										<p class="episode-overview">{{ ep.overview }}</p>
+										<p class="episode-overview" [class.expanded]="isEpisodeExpanded(ep.id)">{{ ep.overview }}</p>
+										<button type="button" class="episode-toggle" (click)="toggleEpisode(ep.id)">
+											{{ isEpisodeExpanded(ep.id) ? 'Voir moins' : 'Voir plus' }}
+										</button>
 									}
 								</div>
 							</div>

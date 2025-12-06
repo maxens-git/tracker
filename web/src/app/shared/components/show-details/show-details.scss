@@ -183,8 +183,13 @@
 }
 .seasons-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(160px, 220px);
 	gap: 12px;
+	overflow-x: auto;
+	padding-bottom: 6px;
+	scrollbar-width: thin;
+	align-items: stretch;
 }
 .season-card {
 	text-align: left;
@@ -231,7 +236,17 @@
 
 	.season-name { margin: 0; font-weight: 700; color: var(--text); }
 	.season-meta { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
-	.season-overview { margin: 2px 0 6px; color: var(--text-muted); font-size: 0.92rem; line-height: 1.4; }
+	.season-overview {
+		margin: 2px 0 6px;
+		color: var(--text-muted);
+		font-size: 0.92rem;
+		line-height: 1.4;
+		display: -webkit-box;
+		-webkit-line-clamp: 4;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 
 .episodes-section {
@@ -320,12 +335,38 @@
 	color: var(--text-muted);
 	line-height: 1.45;
 	font-size: 0.92rem;
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	&.expanded {
+		display: block;
+		-webkit-line-clamp: unset;
+		-webkit-box-orient: unset;
+		overflow: visible;
+	}
 }
 
 .episode-more {
 	margin: 4px 0 0;
 	font-size: 0.9rem;
 	color: var(--text-muted);
+}
+
+.episode-toggle {
+	margin: 6px 0 0;
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--primary);
+	font-weight: 700;
+	font-size: 0.9rem;
+	cursor: pointer;
+	text-decoration: none;
+
+	&:hover { text-decoration: underline; }
 }
 
 .similar-section {
@@ -384,12 +425,12 @@
 	.poster { max-width: 220px; }
 	.meta-row { flex-direction: column; align-items: flex-start; }
 	.pill { width: 100%; justify-content: center; }
-	.seasons-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+	.seasons-grid { grid-auto-columns: minmax(150px, 200px); }
 }
 
 @media (max-width: 480px) {
 	.hero-shell { padding: 16px 12px; }
 	.poster { max-width: 180px; }
 	.similar-row { grid-auto-columns: minmax(120px, 1fr); gap: 10px; }
-	.seasons-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+	.seasons-grid { grid-auto-columns: minmax(140px, 180px); }
 }
