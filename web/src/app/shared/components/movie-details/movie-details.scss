@@ -127,7 +127,6 @@
   border-radius: 18px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(12, 14, 22, 0.96) 0%, rgba(7, 9, 16, 0.94) 100%);
-  border: 1px solid var(--border);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
   background-size: cover;
   background-position: center;
@@ -135,8 +134,8 @@
 
 .hero-overlay {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(140deg, rgba(9, 12, 20, 0.8) 0%, rgba(9, 12, 20, 0.35) 55%, rgba(9, 12, 20, 0.9) 100%);
+  inset: -1px;
+  background: linear-gradient(135deg, rgba(9, 12, 20, 0.92) 0%, rgba(9, 12, 20, 0.5) 50%, rgba(9, 12, 20, 0.92) 100%);
 }
 
 .hero-shell {
