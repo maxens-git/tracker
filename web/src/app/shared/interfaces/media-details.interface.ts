@@ -23,11 +23,26 @@ export interface MovieDetails {
   imdbId: string | null;
 }
 
+export interface EpisodeSummary {
+  id: number;
+  name: string;
+  overview: string | null;
+  episodeNumber: number;
+  runtime: number;
+  voteAverage: number;
+  airDate: string | null;
+  stillPath: string | null;
+}
+
 export interface SeasonSummary {
   id: number;
   name: string;
   posterPath: string | null;
   episodeCount: number;
+  seasonNumber?: number | null;
+  overview?: string | null;
+  airDate?: string | null;
+  episodes?: EpisodeSummary[];
 }
 
 export interface ShowDetails {
