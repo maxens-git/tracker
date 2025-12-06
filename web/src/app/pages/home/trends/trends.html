@@ -27,7 +27,8 @@
           <img 
             [src]="'https://image.tmdb.org/t/p/w500' + featured.poster_path" 
             [alt]="getDisplayTitle(featured)" 
-            priority /> 
+            loading="lazy"
+            decoding="async" /> 
         } @else {
           <div class="no-poster large">No Image</div>
         }
