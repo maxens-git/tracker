@@ -1,0 +1,21 @@
+<section class="search-page container-fluid py-4">
+	<div class="search-bar mb-4">
+		<input pInputText type="search" [(ngModel)]="query" placeholder="Rechercher un film ou une série" />
+		<p-button type="button" label="Rechercher" icon="pi pi-search" iconPos="left" (click)="fetchResults()"></p-button>
+	</div>
+
+	@if (loading()) {
+	  <div class="text-muted mb-3">Chargement des résultats...</div>
+	}
+	@if (error()) {
+	  <div class="alert alert-danger" role="alert">{{ error() }}</div>
+	}
+
+	<div class="row g-3">
+		@for (item of results(); track item.id) {
+			<div class="col-6 col-md-3 col-lg-2 col-xl-2">
+				<app-poster-card [item]="item"></app-poster-card>
+			</div>
+		}
+	</div>
+</section>

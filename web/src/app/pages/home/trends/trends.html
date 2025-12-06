@@ -1,27 +1,5 @@
 @let data = trends();
 
-<ng-template #mediaCard let-item="item" let-handler="handler">
-  <button class="movie-card" (click)="handler(item.id)">
-    <div class="movie-poster">
-      @if (item.poster_path) {
-        <img 
-          [src]="'https://image.tmdb.org/t/p/w500' + item.poster_path" 
-          [alt]="getDisplayTitle(item)" 
-          loading="lazy" />
-      } @else {
-        <div class="no-poster">{{ getDisplayTitle(item) }}</div>
-      }
-      <div class="poster-badges">
-        <span class="badge rating">
-          <span class="pi pi-star"></span>
-          {{ getRating(item) }}
-        </span>
-        <span class="badge year">{{ getYear(item) }}</span>
-      </div>
-    </div>
-  </button>
-</ng-template>
-
 @if (data?.featuredItem; as featured) {
   <section class="featured-section" 
     [style.background-image]="featured.backdrop_path ? 'url(https://image.tmdb.org/t/p/w1280' + featured.backdrop_path + ')' : ''">
@@ -73,7 +51,7 @@
           @if (data.popularMovies.length) {
             <div class="movies-grid">
               @for (movie of data!.popularMovies; track movie.id) {
-                <ng-container *ngTemplateOutlet="mediaCard; context: {item: movie, handler: navigateToMovie.bind(this)}"></ng-container>
+                <app-poster-card [item]="movie" (select)="navigateToMovie($event)"></app-poster-card>
               }
             </div>
           } @else {
@@ -92,7 +70,7 @@
           @if (data.popularShows.length) {
             <div class="movies-grid">
               @for (show of data!.popularShows; track show.id) {
-                <ng-container *ngTemplateOutlet="mediaCard; context: {item: show, handler: navigateToShow.bind(this)}"></ng-container>
+                <app-poster-card [item]="show" (select)="navigateToShow($event)"></app-poster-card>
               }
             </div>
           } @else {

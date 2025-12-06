@@ -1,0 +1,16 @@
+<button class="poster-card" type="button" (click)="onSelect()">
+  <div class="poster-card__image">
+    @if (item.poster_path) {
+      <img [src]="'https://image.tmdb.org/t/p/w500' + item.poster_path" [alt]="getDisplayTitle()" loading="lazy" />
+    } @else {
+      <div class="poster-card__placeholder">{{ getDisplayTitle() }}</div>
+    }
+    <div class="poster-card__badges">
+      <span class="badge rating">
+        <span class="pi pi-star"></span>
+        {{ getRating() }}
+      </span>
+      <span class="badge year">{{ getYear() }}</span>
+    </div>
+  </div>
+</button>

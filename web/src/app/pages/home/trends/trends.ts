@@ -2,13 +2,14 @@ import { Component, input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrendingHomeData, TMDbSearchResult } from '../../../shared/interfaces/tmdb-trending.interface';
+import { PosterCardComponent } from '../../../shared/components/poster-card/poster-card';
 
 @Component({
   selector: 'app-trends',
   templateUrl: './trends.html',
   styleUrls: ['./trends.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PosterCardComponent],
 })
 export class Trends {
   trends = input<TrendingHomeData | undefined>();

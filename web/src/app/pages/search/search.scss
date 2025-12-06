@@ -1,0 +1,31 @@
+
+.search-page {
+	.search-card {
+		border: 1px solid var(--card-border);
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: var(--card-shadow);
+		background: rgba(20, 24, 34, 0.96);
+		color: #f8f9fb;
+
+		&__poster {
+			width: 96px;
+			object-fit: cover;
+		}
+	}
+
+	p {
+		color: #e2e6f0;
+	}
+
+	.text-muted {
+		color: rgba(226, 230, 240, 0.72) !important;
+	}
+
+	.line-clamp-3 {
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}

@@ -1,15 +1,22 @@
 import { Component } from '@angular/core';
-import { Menubar } from 'primeng/menubar';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { Avatar } from 'primeng/avatar';
+import { AvatarModule } from 'primeng/avatar';
+import { MenubarModule } from 'primeng/menubar';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
 
 @Component({
   selector: 'app-tab-bar',
-  imports: [Menubar, Avatar],
+  imports: [MenubarModule, AvatarModule, InputTextModule, ButtonModule, FormsModule],
   templateUrl: './tab-bar.html',
   styleUrl: './tab-bar.scss',
 })
 export class TabBar {
+  private readonly router: Router;
+
   items: MenuItem[] = [
     {
       label: 'Accueil',
@@ -19,7 +26,11 @@ export class TabBar {
     {
       label: 'Listes',
       icon: 'pi pi-search',
-      routerLink: '/discover'
+      routerLink: '/search'
     }
   ];
+
+  constructor(router: Router) {
+    this.router = router;
+  }
 }

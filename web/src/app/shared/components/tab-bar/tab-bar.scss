@@ -1,0 +1,36 @@
+
+.tabbar {
+  border-radius: 12px;
+  margin: 0 0.75rem;
+}
+
+.tabbar__search {
+  position: relative;
+}
+
+.tabbar__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--card-border, #e0e0e0);
+  border-radius: 8px;
+  z-index: 1000;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.tabbar__suggestion {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.tabbar__suggestion:hover {
+  background: #f5f7fb;
+}
