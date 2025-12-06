@@ -3,20 +3,6 @@
 	min-height: 100vh;
 	padding: 64px 0 96px;
 	color: #f5f6ff;
-	background:
-		radial-gradient(circle at 12% 12%, rgba(95, 104, 255, 0.14), transparent 32%),
-		radial-gradient(circle at 82% 4%, rgba(73, 213, 196, 0.12), transparent 28%),
-		linear-gradient(135deg, #0f121b 0%, #090c14 100%);
-	overflow: hidden;
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
-		mask-image: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.42), transparent 55%);
-		pointer-events: none;
-	}
 }
 
 .lists-shell {
