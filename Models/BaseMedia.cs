@@ -34,6 +34,8 @@ public abstract class BaseMedia
     public int VoteCount { get; set; }
     public double Popularity { get; set; }
 
+    public bool Liked { get; set; } = false;
+
     public DateTime? ReleaseDate { get; set; }
 
     public string? Genres { get; set; } 

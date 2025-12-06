@@ -68,17 +68,35 @@ public static class DbInitializer
         List<Movie> movies = await context.Movies.ToListAsync();
         List<Show> shows = await context.Shows.ToListAsync();
 
-        MediaList seen = new MediaList
+        if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "Seen"))
         {
-            Name = "Seen",
-            Description = "",
-            Icon = "",
-            IsSystem = true,
-            Movies = movies,
-            Shows = shows
-        };
+            MediaList seen = new MediaList
+            {
+                Name = "Seen",
+                Description = "",
+                Icon = "",
+                IsSystem = true,
+                Movies = movies,
+                Shows = shows
+            };
 
-        context.MediaLists.Add(seen);
+            context.MediaLists.Add(seen);
+        }
+
+        if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "J'aime"))
+        {
+            MediaList likes = new MediaList
+            {
+                Name = "J'aime",
+                Description = "Titres que vous aimez",
+                Icon = "❤",
+                IsSystem = true,
+                Movies = movies.Where(m => m.Liked).ToList(),
+                Shows = shows.Where(s => s.Liked).ToList()
+            };
+
+            context.MediaLists.Add(likes);
+        }
 
         await context.SaveChangesAsync();
         logger.LogInformation("Import terminé");
