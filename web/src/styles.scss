@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+@import "primeicons/primeicons.css";
+
+html {
+  font-size: 14px;
+}
+
+html {
+  --body-bg: #f9fafc;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --card-border: rgba(0, 0, 0, 0.1);
+  --text-muted-color: #6c757d;
+}
+html.p-dark {
+  --body-bg: #181a20;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-muted-color: rgba(255, 255, 255, 0.6);
+}
+body {
+  background-color: var(--body-bg) !important;
+}
+
+.text-muted {
+  color: var(--text-muted-color) !important;
+}

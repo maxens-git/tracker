@@ -1,53 +1,140 @@
-<p-panel header="Films populaire" class="m-2">
-  @if (trends()?.popularMovies) {
-    <div class="movies-grid">
-      @for (movie of trends()!.popularMovies; track movie.id) {
-        <div class="movie-card">
-          <div class="movie-poster">
-            @if (movie.poster_path) {
-              <img [src]="'https://image.tmdb.org/t/p/w500' + movie.poster_path" [alt]="movie.title || movie.name" />
-            } @else {
-              <div class="no-poster">No Image</div>
-            }
-          </div>
-        </div>
-      }
-    </div>
-  }
-</p-panel>
+@let data = trends();
 
-<p-panel header="Shows populaire" class="m-2">
-  @if (trends()?.popularShows) {
-    <div class="movies-grid">
-      @for (show of trends()!.popularShows; track show.id) {
-        <div class="movie-card">
-          <div class="movie-poster">
-            @if (show.poster_path) {
-              <img [src]="'https://image.tmdb.org/t/p/w500' + show.poster_path" [alt]="show.title || show.name" />
-            } @else {
-              <div class="no-poster">No Image</div>
-            }
-          </div>
-        </div>
+<ng-template #mediaCard let-item="item" let-handler="handler">
+  <button class="movie-card" (click)="handler(item.id)">
+    <div class="movie-poster">
+      @if (item.poster_path) {
+        <img 
+          [src]="'https://image.tmdb.org/t/p/w500' + item.poster_path" 
+          [alt]="getDisplayTitle(item)" 
+          loading="lazy" />
+      } @else {
+        <div class="no-poster">{{ getDisplayTitle(item) }}</div>
       }
+      <div class="poster-badges">
+        <span class="badge rating">
+          <span class="pi pi-star"></span>
+          {{ getRating(item) }}
+        </span>
+        <span class="badge year">{{ getYear(item) }}</span>
+      </div>
     </div>
-  }
-</p-panel>
+  </button>
+</ng-template>
 
-<p-panel header="Top notés" class="m-2">
-  @if (trends()?.topRated) {
-    <div class="movies-grid">
-      @for (item of trends()!.topRated; track item.id) {
-        <div class="movie-card">
-          <div class="movie-poster">
-            @if (item.poster_path) {
-              <img [src]="'https://image.tmdb.org/t/p/w500' + item.poster_path" [alt]="item.title || item.name" />
-            } @else {
-              <div class="no-poster">No Image</div>
+@if (data?.featuredItem; as featured) {
+  <section class="featured-section" 
+    [style.background-image]="featured.backdrop_path ? 'url(https://image.tmdb.org/t/p/w1280' + featured.backdrop_path + ')' : ''">
+    <div class="featured-overlay"></div>
+    <div class="featured-content">
+      <div class="featured-text">
+        <span class="eyebrow">À la une</span>
+        <h2>{{ getDisplayTitle(featured) }}</h2>
+        @if (featured.overview) {
+          <p class="featured-overview">{{ featured.overview }}</p>
+        }
+        <div class="featured-meta">
+          <span class="metatag rating">
+            <span class="rating-icon">&#9733;</span>{{ getRating(featured) }}
+          </span>
+          <span class="metatag year">{{ getYear(featured) }}</span>
+        </div>
+        <button class="primary-button" type="button" (click)="navigateToMedia(featured)">
+          Voir les détails
+        </button>
+      </div>
+      
+      <button class="featured-visual" (click)="navigateToMedia(featured)" aria-label="Voir l'affiche">
+        @if (featured.poster_path) {
+          <img 
+            [src]="'https://image.tmdb.org/t/p/w500' + featured.poster_path" 
+            [alt]="getDisplayTitle(featured)" 
+            priority /> 
+        } @else {
+          <div class="no-poster large">No Image</div>
+        }
+      </button>
+    </div>
+  </section>
+}
+
+@if (data) {
+  <section class="trends-layout">
+    <div class="trend-main">
+      <div class="trend-collections">
+        <section class="trend-section">
+          <header class="section-header">
+            <h3>
+              <span class="section-title">Films populaires</span>
+              @if (data.popularMovies.length) { <span class="section-subtitle">Incontournables du moment</span> }
+            </h3>
+          </header>
+          
+          @if (data.popularMovies.length) {
+            <div class="movies-grid">
+              @for (movie of data!.popularMovies; track movie.id) {
+                <ng-container *ngTemplateOutlet="mediaCard; context: {item: movie, handler: navigateToMovie.bind(this)}"></ng-container>
+              }
+            </div>
+          } @else {
+            <div class="empty-state minimal">Aucun film populaire pour le moment.</div>
+          }
+        </section>
+
+        <section class="trend-section">
+          <header class="section-header">
+            <h3>
+              <span class="section-title">Séries populaires</span>
+              @if (data.popularShows.length) { <span class="section-subtitle">À binge-watcher sans attendre</span> }
+            </h3>
+          </header>
+
+          @if (data.popularShows.length) {
+            <div class="movies-grid">
+              @for (show of data!.popularShows; track show.id) {
+                <ng-container *ngTemplateOutlet="mediaCard; context: {item: show, handler: navigateToShow.bind(this)}"></ng-container>
+              }
+            </div>
+          } @else {
+            <div class="empty-state minimal">Aucune série populaire pour le moment.</div>
+          }
+        </section>
+      </div>
+    </div>
+
+    <aside class="trend-side">
+      <section class="trend-section top-rated">
+        <header class="section-header">
+          <h3>
+            <span class="section-title">Mieux notés</span>
+            @if (data.topRated.length) { <span class="section-subtitle">Les favoris de la communauté</span> }
+          </h3>
+        </header>
+
+        @if (data.topRated.length) {
+          <div class="top-rated-list">
+            @for (item of data!.topRated; track item.id; let idx = $index) {
+              <button class="top-rated-item" type="button" (click)="navigateToMedia(item)">
+                <span class="rank">{{ idx + 1 }}</span>
+                @if (item.poster_path) {
+                  <img class="thumb" [src]="'https://image.tmdb.org/t/p/w185' + item.poster_path" [alt]="getDisplayTitle(item)" loading="lazy" />
+                } @else {
+                  <span class="thumb placeholder">?</span>
+                }
+                <span class="details">
+                  <span class="title">{{ getDisplayTitle(item) }}</span>
+                  <span class="meta">
+                    <span class="year">{{ getYear(item) }}</span>
+                    <span class="rating"><span class="pi pi-star"></span> {{ getRating(item) }}</span>
+                  </span>
+                </span>
+              </button>
             }
           </div>
-        </div>
-      }
-    </div>
-  }
-</p-panel>
+        } @else {
+          <div class="empty-state minimal">Aucun titre hautement noté.</div>
+        }
+      </section>
+    </aside>
+  </section>
+}
