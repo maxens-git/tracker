@@ -135,7 +135,8 @@ public static class DbInitializer
             Budget = tmdbMovie.Budget,
             Revenue = tmdbMovie.Revenue,
             ImdbId = tmdbMovie.ImdbId,
-            Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
+            Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name)),
+            Seen = true
         };
 
         context.Movies.Add(movie);
@@ -174,7 +175,8 @@ public static class DbInitializer
             LastAirDate = ParseDate(tmdbShow.LastAirDate),
             NumberOfSeasons = tmdbShow.NumberOfSeasons,
             NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
-            Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
+            Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name)),
+            Seen = true
         };
 
         context.Shows.Add(show);
@@ -194,7 +196,8 @@ public static class DbInitializer
                 EpisodeCount = tmdbSeason.Episodes.Count,
                 AirDate = ParseDate(tmdbSeason.AirDate),
                 PosterPath = tmdbSeason.PosterPath,
-                ShowId = show.Id
+                ShowId = show.Id,
+                Seen = true
             };
 
             context.Seasons.Add(season);
@@ -212,7 +215,8 @@ public static class DbInitializer
                     VoteAverage = tmdbEpisode.VoteAverage,
                     AirDate = ParseDate(tmdbEpisode.AirDate),
                     StillPath = tmdbEpisode.StillPath,
-                    SeasonId = season.Id
+                    SeasonId = season.Id,
+                    Seen = true
                 };
 
                 context.Episodes.Add(episode);

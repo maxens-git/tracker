@@ -35,6 +35,7 @@ public abstract class BaseMedia
     public double Popularity { get; set; }
 
     public bool Liked { get; set; } = false;
+    public bool Seen { get; set; } = false;
 
     public DateTime? ReleaseDate { get; set; }
 

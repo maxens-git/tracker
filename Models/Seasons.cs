@@ -23,6 +23,8 @@ public class Season
     [MaxLength(255)]
     public string? PosterPath { get; set; }
 
+    public bool Seen { get; set; } = false;
+
     public int ShowId { get; set; }
     [ForeignKey("ShowId")]
     public Show Show { get; set; } = null!;

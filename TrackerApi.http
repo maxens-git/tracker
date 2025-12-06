@@ -4,3 +4,43 @@ GET {{TrackerApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Marquer un film comme vu
+POST {{TrackerApi_HostAddress}}/api/movies/1/seen
+Content-Type: application/json
+
+true
+
+###
+
+# Marquer un film comme non vu
+POST {{TrackerApi_HostAddress}}/api/movies/1/seen
+Content-Type: application/json
+
+false
+
+###
+
+# Marquer une série comme vue
+POST {{TrackerApi_HostAddress}}/api/shows/1/seen
+Content-Type: application/json
+
+true
+
+###
+
+# Marquer une saison comme vue (marque aussi tous les épisodes)
+POST {{TrackerApi_HostAddress}}/api/shows/seasons/1/seen
+Content-Type: application/json
+
+true
+
+###
+
+# Marquer un épisode comme vu
+POST {{TrackerApi_HostAddress}}/api/shows/episodes/1/seen
+Content-Type: application/json
+
+true
+
+###

@@ -59,6 +59,35 @@ public class MoviesController : ControllerBase
         return movie;
     }
 
+    [HttpPost("{id}/seen")]
+    public async Task<ActionResult<Movie>> MarkAsSeen(int id, [FromBody] bool seen = true)
+    {
+        Movie? movie = await _context.Movies.FindAsync(id);
+        if (movie == null)
+            return NotFound("Movie not found");
+
+        movie.Seen = seen;
+        
+        MediaList? seenList = await _context.MediaLists
+            .Include(ml => ml.Movies)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
+
+        if (seenList != null)
+        {
+            if (seen && !seenList.Movies.Any(m => m.Id == movie.Id))
+            {
+                seenList.Movies.Add(movie);
+            }
+            else if (!seen)
+            {
+                seenList.Movies.Remove(movie);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return movie;
+    }
+
     private static DateTime? ParseDate(string? dateString)
     {
         if (string.IsNullOrEmpty(dateString))

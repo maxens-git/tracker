@@ -24,6 +24,8 @@ public class Episode
     [MaxLength(255)]
     public string? StillPath { get; set; }
 
+    public bool Seen { get; set; } = false;
+
     public int SeasonId { get; set; }
     [ForeignKey("SeasonId")]
     public Season Season { get; set; } = null!;

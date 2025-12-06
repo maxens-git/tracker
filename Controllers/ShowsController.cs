@@ -107,6 +107,112 @@ public class ShowsController : ControllerBase
         return show;
     }
 
+    [HttpPost("{id}/seen")]
+    public async Task<ActionResult<Show>> MarkAsSeen(int id, [FromBody] bool seen = true)
+    {
+        Show? show = await _context.Shows
+            .Include(s => s.Seasons)
+                .ThenInclude(s => s.Episodes)
+            .FirstOrDefaultAsync(s => s.Id == id);
+            
+        if (show == null)
+            return NotFound("Show not found");
+
+        show.Seen = seen;
+        
+        foreach (Season season in show.Seasons)
+        {
+            season.Seen = seen;
+            foreach (Episode episode in season.Episodes)
+            {
+                episode.Seen = seen;
+            }
+        }
+        
+        MediaList? seenList = await _context.MediaLists
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
+
+        if (seenList != null)
+        {
+            if (seen && !seenList.Shows.Any(s => s.Id == show.Id))
+            {
+                seenList.Shows.Add(show);
+            }
+            else if (!seen)
+            {
+                seenList.Shows.Remove(show);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return show;
+    }
+
+    [HttpPost("seasons/{id}/seen")]
+    public async Task<ActionResult<Season>> MarkSeasonAsSeen(int id, [FromBody] bool seen = true)
+    {
+        Season? season = await _context.Seasons
+            .Include(s => s.Episodes)
+            .Include(s => s.Show)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (season == null)
+            return NotFound("Season not found");
+
+        season.Seen = seen;
+        
+        foreach (Episode episode in season.Episodes)
+        {
+            episode.Seen = seen;
+        }
+        
+        MediaList? seenList = await _context.MediaLists
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
+
+        if (seenList != null && seen)
+        {
+            if (!seenList.Shows.Any(s => s.Id == season.ShowId))
+            {
+                seenList.Shows.Add(season.Show);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return season;
+    }
+
+    [HttpPost("episodes/{id}/seen")]
+    public async Task<ActionResult<Episode>> MarkEpisodeAsSeen(int id, [FromBody] bool seen = true)
+    {
+        Episode? episode = await _context.Episodes
+            .Include(e => e.Season)
+                .ThenInclude(s => s.Show)
+            .FirstOrDefaultAsync(e => e.Id == id);
+            
+        if (episode == null)
+            return NotFound("Episode not found");
+
+        episode.Seen = seen;
+        
+        MediaList? seenList = await _context.MediaLists
+            .Include(ml => ml.Shows)
+            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
+
+        if (seenList != null && seen)
+        {
+            Show show = episode.Season.Show;
+            if (!seenList.Shows.Any(s => s.Id == show.Id))
+            {
+                seenList.Shows.Add(show);
+            }
+        }
+        
+        await _context.SaveChangesAsync();
+        return episode;
+    }
+
     private static DateTime? ParseDate(string? dateString)
     {
         if (string.IsNullOrEmpty(dateString))
