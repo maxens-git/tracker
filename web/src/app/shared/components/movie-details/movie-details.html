@@ -1,0 +1,73 @@
+<section class="movie-page">
+	@if (loading()) {
+		<div class="loading-card">Chargement des détails du film...</div>
+	}
+
+	@if (error()) {
+		<div class="alert alert-danger">{{ error() }}</div>
+	}
+
+	@if (!loading() && movieDetails(); as movie) {
+		<div
+			class="hero"
+			[style.background-image]="movie.backdropPath ? 'url(https://image.tmdb.org/t/p/w1280' + movie.backdropPath + ')' : ''"
+		>
+			<div class="hero-overlay"></div>
+			<div class="hero-shell">
+				<div class="poster">
+					@if (movie.posterPath) {
+						<img [src]="'https://image.tmdb.org/t/p/w500' + movie.posterPath" [alt]="movie.title" />
+					} @else {
+						<div class="no-poster">Aucune affiche</div>
+					}
+				</div>
+
+				<div class="hero-body">
+					<p class="eyebrow">Film</p>
+					<h1 class="title">{{ movie.title }}</h1>
+					@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
+
+					<div class="meta-row">
+						<span class="pill is-primary">
+							<span class="pi pi-star"></span>
+							{{ movie.voteAverage !== null ? (movie.voteAverage | number: '1.1-1') : '—' }} / 10
+						</span>
+						<span class="pill">{{ movie.voteCount !== null ? (movie.voteCount | number: '1.0-0') + ' votes' : 'Votes inconnus' }}</span>
+						<span class="pill">{{ movie.releaseDate ? (movie.releaseDate | date: 'longDate') : 'Date inconnue' }}</span>
+						<span class="pill">{{ movie.runtime ? movie.runtime + ' min' : 'Durée inconnue' }}</span>
+						<span class="pill">{{ movie.status || 'Statut inconnu' }}</span>
+					</div>
+
+					<p class="overview">{{ movie.overview || 'Aucun résumé disponible.' }}</p>
+
+					<div class="info-grid">
+						<div class="info-card">
+							<p class="label">Genres</p>
+							<p class="value">{{ movie.genres || 'Non renseigné' }}</p>
+						</div>
+						<div class="info-card">
+							<p class="label">Popularité</p>
+							<p class="value">{{ movie.popularity !== null ? (movie.popularity | number: '1.0-0') : '—' }}</p>
+						</div>
+						<div class="info-card">
+							<p class="label">Budget</p>
+							<p class="value">{{ movie.budget ? (movie.budget | currency: 'USD':'symbol':'1.0-0') : '—' }}</p>
+						</div>
+						<div class="info-card">
+							<p class="label">Revenus</p>
+							<p class="value">{{ movie.revenue ? (movie.revenue | currency: 'USD':'symbol':'1.0-0') : '—' }}</p>
+						</div>
+						<div class="info-card">
+							<p class="label">Titre original</p>
+							<p class="value">{{ movie.originalTitle || 'Non renseigné' }}</p>
+						</div>
+						<div class="info-card">
+							<p class="label">Identifiant IMDB</p>
+							<p class="value">{{ movie.imdbId || '—' }}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+</section>

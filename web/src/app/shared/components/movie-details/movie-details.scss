@@ -1,0 +1,200 @@
+:host {
+	display: block;
+	--primary: #5f68ff;
+	--accent: #46d1c4;
+	--text: #f5f6ff;
+	--text-muted: rgba(245, 246, 255, 0.72);
+	--card: rgba(12, 14, 22, 0.94);
+	--border: rgba(255, 255, 255, 0.12);
+}
+
+.movie-page {
+	position: relative;
+	min-height: 70vh;
+	padding: 48px 0 72px;
+	background:
+		radial-gradient(circle at 14% 12%, rgba(95, 104, 255, 0.14), transparent 32%),
+		radial-gradient(circle at 84% 6%, rgba(70, 209, 196, 0.12), transparent 30%),
+		linear-gradient(135deg, #0f121b 0%, #090c14 100%);
+	color: var(--text);
+}
+
+@media (min-width: 1024px) {
+	.movie-page {
+		min-height: 100vh;
+	}
+}
+
+.hero {
+	position: relative;
+	max-width: 1200px;
+	margin: 0 auto;
+	border-radius: 18px;
+	overflow: hidden;
+	background: linear-gradient(180deg, rgba(12, 14, 22, 0.96) 0%, rgba(7, 9, 16, 0.94) 100%);
+	border: 1px solid var(--border);
+	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+	background-size: cover;
+	background-position: center;
+}
+
+.hero-overlay {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(140deg, rgba(9, 12, 20, 0.8) 0%, rgba(9, 12, 20, 0.35) 55%, rgba(9, 12, 20, 0.9) 100%);
+}
+
+.hero-shell {
+	position: relative;
+	display: grid;
+	grid-template-columns: minmax(240px, 320px) 1fr;
+	gap: 24px;
+	padding: 24px 22px 26px;
+	align-items: flex-start;
+	z-index: 1;
+}
+
+.poster {
+	background: rgba(12, 14, 22, 0.85);
+	border-radius: 14px;
+	padding: 10px;
+	border: 1px solid var(--border);
+	box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+
+	img,
+	.no-poster {
+		display: block;
+		width: 100%;
+		border-radius: 12px;
+		aspect-ratio: 2/3;
+		object-fit: cover;
+		background: linear-gradient(135deg, #1a1d2a 0%, #0f121b 100%);
+		border: 1px solid var(--border);
+	}
+
+	.no-poster {
+		display: grid;
+		place-items: center;
+		text-transform: uppercase;
+		font-weight: 700;
+		color: var(--text-muted);
+		letter-spacing: 0.08em;
+	}
+}
+
+.hero-body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.eyebrow {
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	font-weight: 700;
+	font-size: 0.78rem;
+	color: var(--text-muted);
+	margin: 0;
+}
+
+.title {
+	margin: 0;
+	font-size: clamp(1.9rem, 3vw, 2.6rem);
+	font-weight: 800;
+}
+
+.tagline {
+	margin: 0;
+	color: var(--text-muted);
+	font-style: italic;
+	font-weight: 600;
+}
+
+.meta-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	border-radius: 999px;
+	padding: 8px 14px;
+	font-weight: 600;
+	font-size: 0.95rem;
+	border: 1px solid var(--border);
+	background: rgba(12, 14, 22, 0.82);
+	color: var(--text);
+
+	&.is-primary {
+		background: linear-gradient(135deg, var(--primary), var(--accent));
+		color: #0e1421;
+		border: none;
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+	}
+}
+
+.overview {
+	margin: 4px 0 10px;
+	line-height: 1.6;
+	color: var(--text-muted);
+}
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px;
+}
+
+.info-card {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 12px 14px;
+	box-shadow: 0 12px 22px rgba(0, 0, 0, 0.32);
+
+	.label {
+		margin: 0 0 4px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+
+	.value {
+		margin: 0;
+		font-weight: 700;
+		color: var(--text);
+	}
+}
+
+.loading-card,
+.alert {
+	max-width: 960px;
+	margin: 0 auto 16px;
+	padding: 18px 16px;
+	border-radius: 12px;
+	border: 1px solid var(--border);
+	background: var(--card);
+	box-shadow: 0 12px 22px rgba(0, 0, 0, 0.32);
+}
+
+.alert.alert-danger {
+	background-color: rgba(255, 77, 109, 0.16);
+	border-color: rgba(255, 77, 109, 0.5);
+	color: #ffdce5;
+}
+
+@media (max-width: 992px) {
+	.hero-shell { grid-template-columns: 1fr; }
+	.poster { max-width: 340px; margin: 0 auto; }
+}
+
+@media (max-width: 640px) {
+	.movie-page { padding: 48px 0 72px; }
+	.hero-shell { padding: 24px 18px; }
+	.meta-row { flex-direction: column; align-items: flex-start; }
+	.pill { width: 100%; justify-content: center; }
+}
