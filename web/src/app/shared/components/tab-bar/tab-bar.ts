@@ -24,9 +24,14 @@ export class TabBar {
       routerLink: '/'
     },
     {
-      label: 'Listes',
+      label: 'Recherche',
       icon: 'pi pi-search',
       routerLink: '/search'
+    },
+    {
+      label: 'Mes listes',
+      icon: 'pi pi-list',
+      routerLink: '/listes'
     }
   ];
 

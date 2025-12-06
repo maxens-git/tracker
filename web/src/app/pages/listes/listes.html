@@ -1,0 +1,48 @@
+<section class="lists-page">
+	<div class="lists-shell">
+		<header class="lists-hero">
+			<p class="eyebrow">Organisation</p>
+			<h1>Mes listes</h1>
+			<p class="subtitle">Retrouvez vos listes personnalisées et systèmes.</p>
+		</header>
+
+		<div class="lists-content">
+			@if (loading()) {
+				<div class="lists-loading soft-card" aria-live="polite">
+					<div class="spinner" role="status" aria-label="Chargement"></div>
+					<p>Chargement des listes...</p>
+				</div>
+			}
+
+			@if (error()) {
+				<div class="alert alert-danger soft-card">{{ error() }}</div>
+			}
+
+			@if (!loading() && lists()?.length) {
+				<div class="lists-grid">
+					@for (list of lists(); track list.id) {
+						<article class="list-card">
+							<div class="list-icon" aria-hidden="true">{{ list.icon || '📁' }}</div>
+							<div class="list-content">
+								<div class="list-header-row">
+									<h2>{{ list.name }}</h2>
+									<span class="badge" [class.badge-system]="list.isSystem">{{ list.isSystem ? 'Système' : 'Perso' }}</span>
+								</div>
+								@if (list.description) {
+									<p class="list-description">{{ list.description }}</p>
+								}
+								<div class="list-meta">
+									<span><span class="pi pi-video"></span> {{ list.moviesCount }} film(s)</span>
+									<span>·</span>
+									<span><span class="pi pi-tv"></span> {{ list.showsCount }} série(s)</span>
+								</div>
+							</div>
+						</article>
+					}
+				</div>
+			} @else if (!loading() && !lists()?.length) {
+				<div class="lists-empty soft-card">Aucune liste pour le moment.</div>
+			}
+		</div>
+	</div>
+</section>
