@@ -43,6 +43,58 @@ public class MediaListsController : ControllerBase
         return lists;
     }
 
+    [HttpGet("watchlist/movies")]
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetWatchlistMovies([FromQuery] int page = 1)
+    {
+        IQueryable<Movie> query = _context.MediaLists
+            .Where(ml => ml.IsSystem && ml.Name == "Watchlist")
+            .SelectMany(ml => ml.Movies)
+            .Include(m => m.MediaLists)
+            .OrderByDescending(m => m.LastUpdated);
+
+        int totalCount = await query.CountAsync();
+
+        List<Movie> movies = await query
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<ModelsDTO.MovieDto>
+        {
+            Items = movies.Select(m => m.ToDto()).ToList(),
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
+    [HttpGet("watchlist/shows")]
+    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetWatchlistShows([FromQuery] int page = 1)
+    {
+        IQueryable<Show> query = _context.MediaLists
+            .Where(ml => ml.IsSystem && ml.Name == "Watchlist")
+            .SelectMany(ml => ml.Shows)
+            .Include(s => s.MediaLists)
+            .OrderByDescending(s => s.LastUpdated);
+
+        int totalCount = await query.CountAsync();
+
+        List<Show> shows = await query
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<ModelsDTO.ShowDto>
+        {
+            Items = shows.Select(s => s.ToDto()).ToList(),
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
     [HttpGet("liked/movies")]
     public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetLikedMovies([FromQuery] int page = 1)
     {

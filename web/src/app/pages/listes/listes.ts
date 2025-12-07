@@ -6,7 +6,7 @@ import { MovieDetails, ShowDetails } from '../../shared/interfaces/media-details
 import { MediaGrid, MediaItem } from './media-grid/media-grid';
 import { forkJoin } from 'rxjs';
 
-type TabType = 'lists' | 'seen' | 'liked';
+type TabType = 'lists' | 'seen' | 'liked' | 'watchlist';
 
 @Component({
   selector: 'app-listes',
@@ -23,13 +23,17 @@ export class Listes implements OnInit {
   protected activeTab = signal<TabType>('lists');
   protected seenItems = signal<MediaItem[]>([]);
   protected likedItems = signal<MediaItem[]>([]);
+  protected watchlistItems = signal<MediaItem[]>([]);
   protected loadingSeen = signal<boolean>(false);
   protected loadingLiked = signal<boolean>(false);
+  protected loadingWatchlist = signal<boolean>(false);
 
   private seenPage = 1;
   private likedPage = 1;
+  private watchlistPage = 1;
   private seenTotalPages = 1;
   private likedTotalPages = 1;
+  private watchlistTotalPages = 1;
   private isLoadingMore = false;
 
   constructor(private mediaListsService: MediaListsService) {}
@@ -50,6 +54,8 @@ export class Listes implements OnInit {
         this.loadMoreSeen();
       } else if (this.activeTab() === 'liked' && this.likedPage < this.likedTotalPages) {
         this.loadMoreLiked();
+      } else if (this.activeTab() === 'watchlist' && this.watchlistPage < this.watchlistTotalPages) {
+        this.loadMoreWatchlist();
       }
     }
   }
@@ -61,6 +67,8 @@ export class Listes implements OnInit {
       this.fetchSeenItems();
     } else if (tab === 'liked' && this.likedItems().length === 0) {
       this.fetchLikedItems();
+    } else if (tab === 'watchlist' && this.watchlistItems().length === 0) {
+      this.fetchWatchlistItems();
     }
   }
 
@@ -201,6 +209,46 @@ export class Listes implements OnInit {
     });
   }
 
+  private fetchWatchlistItems(): void {
+    this.loadingWatchlist.set(true);
+    this.watchlistPage = 1;
+
+    forkJoin({
+      movies: this.mediaListsService.getWatchlistMovies(this.watchlistPage),
+      shows: this.mediaListsService.getWatchlistShows(this.watchlistPage)
+    }).subscribe({
+      next: ({ movies, shows }) => {
+        this.watchlistTotalPages = Math.max(movies.totalPages, shows.totalPages);
+
+        const movieItems: MediaItem[] = movies.items.map(movie => ({
+          id: movie.id,
+          tmdbId: movie.tmdbId,
+          title: movie.title,
+          posterPath: movie.posterPath,
+          releaseDate: movie.releaseDate,
+          voteAverage: movie.voteAverage,
+          type: 'movie' as const
+        }));
+
+        const showItems: MediaItem[] = shows.items.map(show => ({
+          id: show.id,
+          tmdbId: show.tmdbId,
+          title: show.title,
+          posterPath: show.posterPath,
+          releaseDate: show.releaseDate,
+          voteAverage: show.voteAverage,
+          type: 'show' as const
+        }));
+
+        this.watchlistItems.set([...movieItems, ...showItems]);
+        this.loadingWatchlist.set(false);
+      },
+      error: () => {
+        this.loadingWatchlist.set(false);
+      }
+    });
+  }
+
   private loadMoreLiked(): void {
     if (this.isLoadingMore) return;
     
@@ -237,6 +285,47 @@ export class Listes implements OnInit {
       },
       error: () => {
         this.likedPage--;
+        this.isLoadingMore = false;
+      }
+    });
+  }
+
+  private loadMoreWatchlist(): void {
+    if (this.isLoadingMore) return;
+    
+    this.isLoadingMore = true;
+    this.watchlistPage++;
+
+    forkJoin({
+      movies: this.mediaListsService.getWatchlistMovies(this.watchlistPage),
+      shows: this.mediaListsService.getWatchlistShows(this.watchlistPage)
+    }).subscribe({
+      next: ({ movies, shows }) => {
+        const movieItems: MediaItem[] = movies.items.map(movie => ({
+          id: movie.id,
+          tmdbId: movie.tmdbId,
+          title: movie.title,
+          posterPath: movie.posterPath,
+          releaseDate: movie.releaseDate,
+          voteAverage: movie.voteAverage,
+          type: 'movie' as const
+        }));
+
+        const showItems: MediaItem[] = shows.items.map(show => ({
+          id: show.id,
+          tmdbId: show.tmdbId,
+          title: show.title,
+          posterPath: show.posterPath,
+          releaseDate: show.releaseDate,
+          voteAverage: show.voteAverage,
+          type: 'show' as const
+        }));
+
+        this.watchlistItems.set([...this.watchlistItems(), ...movieItems, ...showItems]);
+        this.isLoadingMore = false;
+      },
+      error: () => {
+        this.watchlistPage--;
         this.isLoadingMore = false;
       }
     });

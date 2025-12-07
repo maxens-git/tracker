@@ -93,6 +93,18 @@ export class MediaListsService {
     });
   }
 
+  getWatchlistMovies(page: number = 1): Observable<PaginatedResult<MovieDetails>> {
+    return this.http.get<PaginatedResult<MovieDetails>>(`${this.apiUrl}/watchlist/movies`, {
+      params: { page: page.toString() }
+    });
+  }
+
+  getWatchlistShows(page: number = 1): Observable<PaginatedResult<ShowDetails>> {
+    return this.http.get<PaginatedResult<ShowDetails>>(`${this.apiUrl}/watchlist/shows`, {
+      params: { page: page.toString() }
+    });
+  }
+
   addMovieToList(listId: number, tmdbId: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${listId}/movies/${tmdbId}`, null);
   }
