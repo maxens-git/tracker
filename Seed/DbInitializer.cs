@@ -23,17 +23,21 @@ public static class DbInitializer
             resolvedExportPath = Path.Combine(AppContext.BaseDirectory, resolvedExportPath);
         }
 
-        await ImportMediaAsync(context, tmdbService, logger, resolvedExportPath);
+        string logDirectory = Path.GetDirectoryName(resolvedExportPath) ?? Path.Combine(AppContext.BaseDirectory, "Seed", "Data");
+        string errorLogPath = Path.Combine(logDirectory, "import_errors.log");
+
+        await ImportMediaAsync(context, tmdbService, logger, resolvedExportPath, errorLogPath);
         await CreateOrUpdateSystemListsAsync(context, logger);
 
         logger.LogInformation("Import terminé");
     }
 
-    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string exportFilePath)
+    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string exportFilePath, string errorLogPath)
     {
         if (!File.Exists(exportFilePath))
         {
             logger.LogWarning("Fichier export JustWatch non trouvé: {Path}", exportFilePath);
+            await AppendImportErrorAsync(errorLogPath, "File", null, null, $"Export introuvable: {exportFilePath}");
             return;
         }
 
@@ -43,6 +47,7 @@ public static class DbInitializer
         if (items == null || items.Count == 0)
         {
             logger.LogWarning("Aucun élément trouvé dans le fichier export");
+            await AppendImportErrorAsync(errorLogPath, "File", null, null, "Fichier export vide ou invalide");
             return;
         }
 
@@ -56,16 +61,17 @@ public static class DbInitializer
                 {
                     if (item.IsMovie)
                     {
-                        await ImportMovieAsync(context, tmdbService, tmdbId, logger, item.ImdbId);
+                        await ImportMovieAsync(context, tmdbService, tmdbId, logger, item.ImdbId, errorLogPath);
                     }
                     else if (item.IsShow)
                     {
-                        await ImportShowAsync(context, tmdbService, tmdbId, logger);
+                        await ImportShowAsync(context, tmdbService, tmdbId, logger, errorLogPath);
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Erreur lors de l'import de {Title} (TMDb: {TmdbId})", item.Title, tmdbId);
+                    await AppendImportErrorAsync(errorLogPath, item.IsMovie ? "Movie" : item.IsShow ? "Show" : "Unknown", tmdbId, item.Title, ex.Message);
                     if (ex is InvalidOperationException)
                     {
                         throw;
@@ -75,6 +81,7 @@ public static class DbInitializer
             else
             {
                 logger.LogWarning("TmdbId invalide pour {Title}", item.Title);
+                await AppendImportErrorAsync(errorLogPath, item.IsMovie ? "Movie" : item.IsShow ? "Show" : "Unknown", null, item.Title, "TmdbId invalide");
             }
         }
     }
@@ -185,7 +192,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
     }
 
-    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string? imdbId)
+    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string? imdbId, string errorLogPath)
     {
         Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
         if (m != null)
@@ -201,6 +208,7 @@ public static class DbInitializer
         if (tmdbMovie == null)
         {
             logger.LogWarning("Film non trouvé sur TMDb: {TmdbId}", tmdbId);
+            await AppendImportErrorAsync(errorLogPath, "Movie", tmdbId, imdbId, "Film introuvable sur TMDb");
             return null;
         }
 
@@ -229,9 +237,7 @@ public static class DbInitializer
         if (!string.IsNullOrEmpty(imdbId) && movie.ImdbId != imdbId)
         {
             logger.LogError("IMDbId incohérent pour {Title}: attendu {Expected}, obtenu {Actual}", movie.Title, imdbId, movie.ImdbId);
-            InvalidOperationException mismatch = new InvalidOperationException("IMDbId mismatch during import");
-            mismatch.Data["Movie"] = movie;
-            throw mismatch;
+            await AppendImportErrorAsync(errorLogPath, "Movie", tmdbId, movie.Title, $"IMDbId attendu {imdbId}, obtenu {movie.ImdbId}");
         }
 
         context.Movies.Add(movie);
@@ -240,7 +246,7 @@ public static class DbInitializer
         return movie;
     }
 
-    private static async Task ImportShowAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger)
+    private static async Task ImportShowAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string errorLogPath)
     {
         Show? db = await context.Shows
             .Include(s => s.Seasons)
@@ -267,6 +273,7 @@ public static class DbInitializer
         if (tmdbShow == null)
         {
             logger.LogWarning("Série non trouvée sur TMDb: {TmdbId}", tmdbId);
+            await AppendImportErrorAsync(errorLogPath, "Show", tmdbId, null, "Série introuvable sur TMDb");
             return;
         }
 
@@ -349,5 +356,17 @@ public static class DbInitializer
             return date;
 
         return null;
+    }
+
+    private static async Task AppendImportErrorAsync(string logPath, string kind, int? tmdbId, string? title, string message)
+    {
+        string? directory = Path.GetDirectoryName(logPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        string line = $"{DateTime.UtcNow:O}\t{kind}\tTMDb:{tmdbId?.ToString() ?? "N/A"}\tTitle:{title ?? "N/A"}\t{message}";
+        await File.AppendAllTextAsync(logPath, line + Environment.NewLine);
     }
 }
