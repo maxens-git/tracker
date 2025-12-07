@@ -25,6 +25,18 @@ export class MediaListsService {
     return this.http.get<MediaListSummary[]>(this.apiUrl);
   }
 
+  getListMovies(listId: number, page: number = 1): Observable<PaginatedResult<MovieDetails>> {
+    return this.http.get<PaginatedResult<MovieDetails>>(`${this.apiUrl}/${listId}/movies`, {
+      params: { page: page.toString() }
+    });
+  }
+
+  getListShows(listId: number, page: number = 1): Observable<PaginatedResult<ShowDetails>> {
+    return this.http.get<PaginatedResult<ShowDetails>>(`${this.apiUrl}/${listId}/shows`, {
+      params: { page: page.toString() }
+    });
+  }
+
   setMovieLiked(tmdbId: number, liked: boolean): Observable<LikeResponse> {
     return this.http.post<LikeResponse>(`${this.apiUrl}/movies/${tmdbId}/like`, null, {
       params: { liked }

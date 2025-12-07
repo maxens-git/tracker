@@ -2,7 +2,6 @@ import { Component, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MediaListsService } from '../../shared/services/media-lists.service';
 import { MediaListSummary } from '../../shared/interfaces/media-list.interface';
-import { MovieDetails, ShowDetails } from '../../shared/interfaces/media-details.interface';
 import { MediaGrid, MediaItem } from './media-grid/media-grid';
 import { forkJoin } from 'rxjs';
 
@@ -21,6 +20,9 @@ export class Listes implements OnInit {
   protected error = signal<string | null>(null);
 
   protected activeTab = signal<TabType>('lists');
+  protected selectedList = signal<MediaListSummary | null>(null);
+  protected selectedListItems = signal<MediaItem[]>([]);
+  protected loadingSelectedList = signal<boolean>(false);
   protected seenItems = signal<MediaItem[]>([]);
   protected likedItems = signal<MediaItem[]>([]);
   protected watchlistItems = signal<MediaItem[]>([]);
@@ -34,6 +36,8 @@ export class Listes implements OnInit {
   private seenTotalPages = 1;
   private likedTotalPages = 1;
   private watchlistTotalPages = 1;
+  private selectedListPage = 1;
+  private selectedListTotalPages = 1;
   private isLoadingMore = false;
 
   constructor(private mediaListsService: MediaListsService) {}
@@ -56,6 +60,8 @@ export class Listes implements OnInit {
         this.loadMoreLiked();
       } else if (this.activeTab() === 'watchlist' && this.watchlistPage < this.watchlistTotalPages) {
         this.loadMoreWatchlist();
+      } else if (this.activeTab() === 'lists' && this.selectedList() && this.selectedListPage < this.selectedListTotalPages) {
+        this.loadMoreSelectedListItems();
       }
     }
   }
@@ -72,6 +78,27 @@ export class Listes implements OnInit {
     }
   }
 
+  protected onListSelect(list: MediaListSummary): void {
+    if (this.selectedList()?.id === list.id && this.selectedListItems().length > 0) {
+      return;
+    }
+
+    this.selectedList.set(list);
+    this.selectedListPage = 1;
+    this.selectedListTotalPages = 1;
+    this.selectedListItems.set([]);
+    this.fetchSelectedListItems(list.id);
+  }
+
+  protected clearSelectedList(): void {
+    this.selectedList.set(null);
+    this.selectedListItems.set([]);
+    this.loadingSelectedList.set(false);
+    this.isLoadingMore = false;
+    this.selectedListPage = 1;
+    this.selectedListTotalPages = 1;
+  }
+
   private fetchLists(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -84,6 +111,45 @@ export class Listes implements OnInit {
       error: () => {
         this.error.set('Impossible de charger vos listes pour le moment.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  private fetchSelectedListItems(listId: number): void {
+    this.loadingSelectedList.set(true);
+
+    forkJoin({
+      movies: this.mediaListsService.getListMovies(listId, this.selectedListPage),
+      shows: this.mediaListsService.getListShows(listId, this.selectedListPage)
+    }).subscribe({
+      next: ({ movies, shows }) => {
+        this.selectedListTotalPages = Math.max(movies.totalPages, shows.totalPages);
+
+        const movieItems: MediaItem[] = movies.items.map(movie => ({
+          id: movie.id,
+          tmdbId: movie.tmdbId,
+          title: movie.title,
+          posterPath: movie.posterPath,
+          releaseDate: movie.releaseDate,
+          voteAverage: movie.voteAverage,
+          type: 'movie' as const
+        }));
+
+        const showItems: MediaItem[] = shows.items.map(show => ({
+          id: show.id,
+          tmdbId: show.tmdbId,
+          title: show.title,
+          posterPath: show.posterPath,
+          releaseDate: show.releaseDate,
+          voteAverage: show.voteAverage,
+          type: 'show' as const
+        }));
+
+        this.selectedListItems.set([...movieItems, ...showItems]);
+        this.loadingSelectedList.set(false);
+      },
+      error: () => {
+        this.loadingSelectedList.set(false);
       }
     });
   }
@@ -326,6 +392,47 @@ export class Listes implements OnInit {
       },
       error: () => {
         this.watchlistPage--;
+        this.isLoadingMore = false;
+      }
+    });
+  }
+
+  private loadMoreSelectedListItems(): void {
+    if (this.isLoadingMore || !this.selectedList()) return;
+    
+    this.isLoadingMore = true;
+    this.selectedListPage++;
+
+    forkJoin({
+      movies: this.mediaListsService.getListMovies(this.selectedList()!.id, this.selectedListPage),
+      shows: this.mediaListsService.getListShows(this.selectedList()!.id, this.selectedListPage)
+    }).subscribe({
+      next: ({ movies, shows }) => {
+        const movieItems: MediaItem[] = movies.items.map(movie => ({
+          id: movie.id,
+          tmdbId: movie.tmdbId,
+          title: movie.title,
+          posterPath: movie.posterPath,
+          releaseDate: movie.releaseDate,
+          voteAverage: movie.voteAverage,
+          type: 'movie' as const
+        }));
+
+        const showItems: MediaItem[] = shows.items.map(show => ({
+          id: show.id,
+          tmdbId: show.tmdbId,
+          title: show.title,
+          posterPath: show.posterPath,
+          releaseDate: show.releaseDate,
+          voteAverage: show.voteAverage,
+          type: 'show' as const
+        }));
+
+        this.selectedListItems.set([...this.selectedListItems(), ...movieItems, ...showItems]);
+        this.isLoadingMore = false;
+      },
+      error: () => {
+        this.selectedListPage--;
         this.isLoadingMore = false;
       }
     });

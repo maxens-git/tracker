@@ -72,7 +72,12 @@
 				@if (!loading() && lists()?.length) {
 					<div class="lists-grid">
 						@for (list of lists(); track list.id) {
-							<article class="list-card">
+							<article 
+								class="list-card"
+								[class.selected]="selectedList()?.id === list.id"
+								(click)="onListSelect(list)"
+								role="button"
+								tabindex="0">
 								<div class="list-icon" aria-hidden="true">{{ list.icon || '📁' }}</div>
 								<div class="list-content">
 									<div class="list-header-row">
@@ -91,6 +96,32 @@
 							</article>
 						}
 					</div>
+
+					@if (selectedList()) {
+						<div class="list-selection soft-card">
+							<div class="list-selection__header">
+								<div class="list-selection__titles">
+									<p class="eyebrow">Contenu de la liste</p>
+									<h3>{{ selectedList()?.name }}</h3>
+									@if (selectedList()?.description) {
+										<p class="list-selection__description">{{ selectedList()?.description }}</p>
+									}
+									<div class="list-selection__meta">
+										<span><span class="pi pi-video"></span> {{ selectedList()?.moviesCount }} film(s)</span>
+										<span>·</span>
+										<span><span class="pi pi-tv"></span> {{ selectedList()?.showsCount }} série(s)</span>
+									</div>
+								</div>
+								<button class="ghost-button" type="button" (click)="clearSelectedList()">Effacer la sélection</button>
+							</div>
+
+							<app-media-grid 
+								[items]="selectedListItems()" 
+								[loading]="loadingSelectedList()" 
+								[emptyMessage]="'Aucun contenu dans cette liste.'">
+							</app-media-grid>
+						</div>
+					}
 				} @else if (!loading() && !lists()?.length) {
 					<div class="lists-empty soft-card">Aucune liste pour le moment.</div>
 				}

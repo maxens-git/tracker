@@ -11,8 +11,54 @@
 }
 
 @if (!loading && items.length > 0) {
+	<div class="media-grid-toolbar">
+		<div class="toolbar-group">
+			<span class="toolbar-label">Type</span>
+			<div class="pill-switch">
+				<button 
+					type="button"
+					[class.active]="filterType === 'all'"
+					(click)="changeFilterType('all')">
+					Tous
+				</button>
+				<button 
+					type="button"
+					[class.active]="filterType === 'movie'"
+					(click)="changeFilterType('movie')">
+					Films
+				</button>
+				<button 
+					type="button"
+					[class.active]="filterType === 'show'"
+					(click)="changeFilterType('show')">
+					Séries
+				</button>
+			</div>
+		</div>
+
+		<div class="toolbar-group">
+			<span class="toolbar-label">Trier par</span>
+			<div class="select-row">
+				<select 
+					[value]="sortKey"
+					(change)="changeSort($any($event.target).value, sortDirection)">
+					<option value="date">Date de sortie</option>
+					<option value="rating">Note</option>
+					<option value="title">Titre</option>
+				</select>
+				<button 
+					type="button"
+					(click)="changeSort(sortKey, sortDirection === 'desc' ? 'asc' : 'desc')"
+					[title]="sortDirection === 'desc' ? 'Ordre décroissant' : 'Ordre croissant'"
+					class="sort-toggle">
+					<span class="pi" [class.pi-sort-amount-down-alt]="sortDirection === 'desc'" [class.pi-sort-amount-up-alt]="sortDirection === 'asc'"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<div class="media-grid">
-		@for (item of items; track item.id) {
+		@for (item of filteredAndSortedItems; track item.id) {
 			<app-poster-card 
 				[item]="convertToTMDbResult(item)" 
 				(select)="onMediaSelect($event, item.type)">
