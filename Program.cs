@@ -7,6 +7,14 @@ using Tracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var justWatchForLogging = builder.Configuration.GetSection(JustWatchOptions.SectionName).Get<JustWatchOptions>();
+if (justWatchForLogging?.EnableImport == true)
+{
+    builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+    builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Error);
+    builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+}
+
 builder.Services.Configure<ConnectionStringsOptions>(builder.Configuration.GetSection(ConnectionStringsOptions.SectionName));
 builder.Services.Configure<TMDbOptions>(builder.Configuration.GetSection(TMDbOptions.SectionName));
 builder.Services.Configure<JustWatchOptions>(builder.Configuration.GetSection(JustWatchOptions.SectionName));
