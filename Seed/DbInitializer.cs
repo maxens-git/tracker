@@ -13,15 +13,24 @@ public static class DbInitializer
     {
         await context.Database.MigrateAsync();
 
-        if (string.IsNullOrEmpty(exportFilePath))
+        string resolvedExportPath = exportFilePath ?? string.Empty;
+        if (string.IsNullOrEmpty(resolvedExportPath))
         {
-            exportFilePath = Path.Combine(AppContext.BaseDirectory, "Seed", "Data", "export_justwatch.json");
+            resolvedExportPath = Path.Combine(AppContext.BaseDirectory, "Seed", "Data", "export_justwatch.json");
         }
-        else if (!Path.IsPathRooted(exportFilePath))
+        else if (!Path.IsPathRooted(resolvedExportPath))
         {
-            exportFilePath = Path.Combine(AppContext.BaseDirectory, exportFilePath);
+            resolvedExportPath = Path.Combine(AppContext.BaseDirectory, resolvedExportPath);
         }
 
+        await ImportMediaAsync(context, tmdbService, logger, resolvedExportPath);
+        await CreateOrUpdateSystemListsAsync(context, logger);
+
+        logger.LogInformation("Import terminé");
+    }
+
+    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string exportFilePath)
+    {
         if (!File.Exists(exportFilePath))
         {
             logger.LogWarning("Fichier export JustWatch non trouvé: {Path}", exportFilePath);
@@ -47,7 +56,7 @@ public static class DbInitializer
                 {
                     if (item.IsMovie)
                     {
-                        await ImportMovieAsync(context, tmdbService, tmdbId, logger);
+                        await ImportMovieAsync(context, tmdbService, tmdbId, logger, item.ImdbId);
                     }
                     else if (item.IsShow)
                     {
@@ -57,14 +66,21 @@ public static class DbInitializer
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Erreur lors de l'import de {Title} (TMDb: {TmdbId})", item.Title, tmdbId);
+                    if (ex is InvalidOperationException)
+                    {
+                        throw;
+                    }
                 }
-            } 
-            else 
+            }
+            else
             {
                 logger.LogWarning("TmdbId invalide pour {Title}", item.Title);
             }
         }
+    }
 
+    private static async Task CreateOrUpdateSystemListsAsync(ApiDbContext context, ILogger logger)
+    {
         List<Movie> seenMovies = await context.Movies.Where(m => m.Seen).ToListAsync();
         List<Show> seenShows = await context.Shows.Where(s => s.Seen).ToListAsync();
 
@@ -78,7 +94,7 @@ public static class DbInitializer
             seenList = new MediaList
             {
                 Name = "Seen",
-                Description = "",
+                Description = "Titre vus",
                 Icon = "",
                 IsSystem = true,
                 Movies = seenMovies,
@@ -167,10 +183,9 @@ public static class DbInitializer
         }
 
         await context.SaveChangesAsync();
-        logger.LogInformation("Import terminé");
     }
 
-    private static async Task ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger)
+    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string? imdbId)
     {
         Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
         if (m != null)
@@ -179,14 +194,14 @@ public static class DbInitializer
             context.Movies.Update(m);
             await context.SaveChangesAsync();
             logger.LogDebug("Film déjà existant: TMDb {TmdbId}", tmdbId);
-            return;
+            return m;
         }
 
         TMDbMovieResponse? tmdbMovie = await tmdbService.GetMovieAsync(tmdbId);
         if (tmdbMovie == null)
         {
             logger.LogWarning("Film non trouvé sur TMDb: {TmdbId}", tmdbId);
-            return;
+            return null;
         }
 
         Movie movie = new Movie
@@ -211,9 +226,18 @@ public static class DbInitializer
             Seen = true
         };
 
+        if (!string.IsNullOrEmpty(imdbId) && movie.ImdbId != imdbId)
+        {
+            logger.LogError("IMDbId incohérent pour {Title}: attendu {Expected}, obtenu {Actual}", movie.Title, imdbId, movie.ImdbId);
+            InvalidOperationException mismatch = new InvalidOperationException("IMDbId mismatch during import");
+            mismatch.Data["Movie"] = movie;
+            throw mismatch;
+        }
+
         context.Movies.Add(movie);
         await context.SaveChangesAsync();
         logger.LogInformation("Film ajouté: {Title}", movie.Title);
+        return movie;
     }
 
     private static async Task ImportShowAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger)
