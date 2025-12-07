@@ -128,27 +128,33 @@
 			}
 
 			@if (activeTab() === 'seen') {
-				<app-media-grid 
-					[items]="seenItems()" 
-					[loading]="loadingSeen()" 
-					[emptyMessage]="'Aucun contenu vu pour le moment.'">
-				</app-media-grid>
+				<div class="soft-card tab-panel">
+					<app-media-grid 
+						[items]="seenItems()" 
+						[loading]="loadingSeen()" 
+						[emptyMessage]="'Aucun contenu vu pour le moment.'">
+					</app-media-grid>
+				</div>
 			}
 
 			@if (activeTab() === 'liked') {
-				<app-media-grid 
-					[items]="likedItems()" 
-					[loading]="loadingLiked()" 
-					[emptyMessage]="'Aucun contenu aimé pour le moment.'">
-				</app-media-grid>
+				<div class="soft-card tab-panel">
+					<app-media-grid 
+						[items]="likedItems()" 
+						[loading]="loadingLiked()" 
+						[emptyMessage]="'Aucun contenu aimé pour le moment.'">
+					</app-media-grid>
+				</div>
 			}
 
 			@if (activeTab() === 'watchlist') {
-				<app-media-grid 
-					[items]="watchlistItems()" 
-					[loading]="loadingWatchlist()" 
-					[emptyMessage]="'Aucun contenu dans la watchlist pour le moment.'">
-				</app-media-grid>
+				<div class="soft-card tab-panel">
+					<app-media-grid 
+						[items]="watchlistItems()" 
+						[loading]="loadingWatchlist()" 
+						[emptyMessage]="'Aucun contenu dans la watchlist pour le moment.'">
+					</app-media-grid>
+				</div>
 			}
 		</div>
 	</div>
