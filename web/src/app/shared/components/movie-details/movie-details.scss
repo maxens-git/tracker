@@ -128,7 +128,7 @@
 .movie-page {
   position: relative;
   min-height: 70vh;
-  padding: 40px 0 64px;
+  padding: 28px 16px 56px;
   color: var(--text);
 }
 
@@ -345,7 +345,11 @@
 .similar-section {
   max-width: 1200px;
   margin: 28px auto 0;
-  padding: 0 8px;
+  padding: 14px 16px 18px;
+  background: rgba(12, 14, 22, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
 }
 
 .similar-header {
@@ -360,14 +364,14 @@
 .similar-row {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(140px, 1fr);
-  gap: 12px;
+  grid-auto-columns: minmax(170px, 220px);
+  gap: 14px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding: 0 6px 6px;
   scrollbar-width: thin;
   align-items: stretch;
 
-  app-poster-card { min-width: 140px; }
+  app-poster-card { min-width: 170px; }
 }
 
 .loading-card,
@@ -393,17 +397,40 @@
 }
 
 @media (max-width: 640px) {
-  .movie-page { padding: 32px 0 56px; }
+  .movie-page { padding: 22px 14px 48px; }
   .hero-shell { padding: 18px 16px; gap: 18px; }
   .poster { max-width: 220px; }
-  .meta-row { flex-direction: column; align-items: flex-start; }
+  .meta-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
   .pill { width: 100%; justify-content: center; }
+
+  .info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .similar-row {
+    grid-auto-columns: 150px;
+    gap: 14px;
+    padding-inline: 8px;
+
+    app-poster-card { min-width: 150px; }
+  }
 }
 
 @media (max-width: 480px) {
   .hero-shell { padding: 16px 12px; }
   .poster { max-width: 180px; }
-  .similar-row { grid-auto-columns: minmax(120px, 1fr); gap: 10px; }
+  .similar-row {
+    grid-auto-columns: 140px;
+    gap: 12px;
+    padding-inline: 6px;
+
+    app-poster-card { min-width: 140px; }
+  }
 }
 
 .modal-overlay {
