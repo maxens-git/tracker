@@ -35,7 +35,7 @@ export class TabBar {
     },
     {
       label: 'Statistiques',
-      icon: 'pi-chart-bar',
+      icon: 'pi pi-chart-bar',
       routerLink: '/stats'
     }
   ];
