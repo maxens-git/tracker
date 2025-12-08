@@ -4,6 +4,7 @@ import { MovieDetailsComponent } from './shared/components/movie-details/movie-d
 import { ShowDetailsComponent } from './shared/components/show-details/show-details';
 import { Search } from './pages/search/search';
 import { Listes } from './pages/listes/listes';
+import { Stats } from './pages/stats/stats';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -11,4 +12,5 @@ export const routes: Routes = [
     { path: 'shows/:id', component: ShowDetailsComponent },
     { path: 'search', component: Search },
     { path: 'listes', component: Listes },
+    { path: 'stats', component: Stats}
 ];

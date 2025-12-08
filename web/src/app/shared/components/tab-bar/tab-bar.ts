@@ -32,6 +32,11 @@ export class TabBar {
       label: 'Mes listes',
       icon: 'pi pi-list',
       routerLink: '/listes'
+    },
+    {
+      label: 'Statistiques',
+      icon: 'pi-chart-bar',
+      routerLink: '/stats'
     }
   ];
 
