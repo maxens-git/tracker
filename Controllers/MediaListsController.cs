@@ -228,6 +228,7 @@ public class MediaListsController : ControllerBase
             .Where(ml => ml.Id == id)
             .SelectMany(ml => ml.Movies)
             .Include(m => m.MediaLists)
+            .OrderByDescending(m => m.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
@@ -258,6 +259,7 @@ public class MediaListsController : ControllerBase
             .Where(ml => ml.Id == id)
             .SelectMany(ml => ml.Shows)
             .Include(s => s.MediaLists)
+            .OrderByDescending(s => s.LastUpdated)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
