@@ -46,22 +46,22 @@ public class MediaListsController : ControllerBase
     [HttpGet("watchlist/movies")]
     public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetWatchlistMovies([FromQuery] int page = 1)
     {
-        IQueryable<Movie> query = _context.MediaLists
-            .Where(ml => ml.IsSystem && ml.Name == "Watchlist")
-            .SelectMany(ml => ml.Movies)
-            .Include(m => m.MediaLists)
-            .OrderByDescending(m => m.LastUpdated);
+        IQueryable<MediaListMovie> query = _context.MediaListMovies
+            .Include(x => x.Movie)
+            .ThenInclude(m => m.MediaLists)
+            .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
+            .OrderByDescending(x => x.AddedAt);
 
         int totalCount = await query.CountAsync();
 
-        List<Movie> movies = await query
+        List<MediaListMovie> movies = await query
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.ToDto()).ToList(),
+            Items = movies.Select(m => m.Movie.ToDto(m.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -72,22 +72,22 @@ public class MediaListsController : ControllerBase
     [HttpGet("watchlist/shows")]
     public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetWatchlistShows([FromQuery] int page = 1)
     {
-        IQueryable<Show> query = _context.MediaLists
-            .Where(ml => ml.IsSystem && ml.Name == "Watchlist")
-            .SelectMany(ml => ml.Shows)
-            .Include(s => s.MediaLists)
-            .OrderByDescending(s => s.LastUpdated);
+        IQueryable<MediaListShow> query = _context.MediaListShows
+            .Include(x => x.Show)
+            .ThenInclude(s => s.MediaLists)
+            .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
+            .OrderByDescending(x => x.AddedAt);
 
         int totalCount = await query.CountAsync();
 
-        List<Show> shows = await query
+        List<MediaListShow> shows = await query
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.ToDto()).ToList(),
+            Items = shows.Select(s => s.Show.ToDto(s.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -219,23 +219,22 @@ public class MediaListsController : ControllerBase
         if (!exists)
             return NotFound("List not found");
 
-        int totalCount = await _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Movies)
-            .CountAsync();
+        IQueryable<MediaListMovie> query = _context.MediaListMovies
+            .Include(x => x.Movie)
+            .ThenInclude(m => m.MediaLists)
+            .Where(x => x.MediaListId == id)
+            .OrderByDescending(x => x.AddedAt);
 
-        List<Movie> movies = await _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Movies)
-            .Include(m => m.MediaLists)
-            .OrderByDescending(m => m.LastUpdated)
+        int totalCount = await query.CountAsync();
+
+        List<MediaListMovie> movies = await query
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.ToDto()).ToList(),
+            Items = movies.Select(m => m.Movie.ToDto(m.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -250,23 +249,22 @@ public class MediaListsController : ControllerBase
         if (!exists)
             return NotFound("List not found");
 
-        int totalCount = await _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Shows)
-            .CountAsync();
+        IQueryable<MediaListShow> query = _context.MediaListShows
+            .Include(x => x.Show)
+            .ThenInclude(s => s.MediaLists)
+            .Where(x => x.MediaListId == id)
+            .OrderByDescending(x => x.AddedAt);
 
-        List<Show> shows = await _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Shows)
-            .Include(s => s.MediaLists)
-            .OrderByDescending(s => s.LastUpdated)
+        int totalCount = await query.CountAsync();
+
+        List<MediaListShow> shows = await query
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.ToDto()).ToList(),
+            Items = shows.Select(s => s.Show.ToDto(s.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -290,37 +288,35 @@ public class MediaListsController : ControllerBase
 
         string normalized = query.Trim().ToLower();
 
-        IQueryable<MediaListSearchItemDto> movieQuery = _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Movies)
-            .Where(m => m.Title.ToLower().Contains(normalized))
+        IQueryable<MediaListSearchItemDto> movieQuery = _context.MediaListMovies
+            .Where(x => x.MediaListId == id && x.Movie.Title.ToLower().Contains(normalized))
             .Select(m => new MediaListSearchItemDto
             {
-                Id = m.Id,
-                TmdbId = m.TmdbId,
-                Title = m.Title,
-                PosterPath = m.PosterPath,
-                ReleaseDate = m.ReleaseDate,
-                VoteAverage = m.VoteAverage,
-                Popularity = m.Popularity,
-                LastUpdated = m.LastUpdated,
+                Id = m.MovieId,
+                TmdbId = m.Movie.TmdbId,
+                Title = m.Movie.Title,
+                PosterPath = m.Movie.PosterPath,
+                ReleaseDate = m.Movie.ReleaseDate,
+                VoteAverage = m.Movie.VoteAverage,
+                Popularity = m.Movie.Popularity,
+                LastUpdated = m.Movie.LastUpdated,
+                AddedAt = m.AddedAt,
                 MediaType = "movie"
             });
 
-        IQueryable<MediaListSearchItemDto> showQuery = _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .SelectMany(ml => ml.Shows)
-            .Where(s => s.Title.ToLower().Contains(normalized))
+        IQueryable<MediaListSearchItemDto> showQuery = _context.MediaListShows
+            .Where(x => x.MediaListId == id && x.Show.Title.ToLower().Contains(normalized))
             .Select(s => new MediaListSearchItemDto
             {
-                Id = s.Id,
-                TmdbId = s.TmdbId,
-                Title = s.Title,
-                PosterPath = s.PosterPath,
-                ReleaseDate = s.ReleaseDate,
-                VoteAverage = s.VoteAverage,
-                Popularity = s.Popularity,
-                LastUpdated = s.LastUpdated,
+                Id = s.ShowId,
+                TmdbId = s.Show.TmdbId,
+                Title = s.Show.Title,
+                PosterPath = s.Show.PosterPath,
+                ReleaseDate = s.Show.ReleaseDate,
+                VoteAverage = s.Show.VoteAverage,
+                Popularity = s.Show.Popularity,
+                LastUpdated = s.Show.LastUpdated,
+                AddedAt = s.AddedAt,
                 MediaType = "show"
             });
 
@@ -334,7 +330,7 @@ public class MediaListsController : ControllerBase
         int totalCount = await combinedQuery.CountAsync();
 
         List<MediaListSearchItemDto> items = await combinedQuery
-            .OrderByDescending(i => i.LastUpdated ?? DateTime.MinValue)
+            .OrderByDescending(i => i.AddedAt ?? DateTime.MinValue)
             .ThenByDescending(i => i.Popularity ?? 0)
             .ThenByDescending(i => i.VoteAverage ?? 0)
             .Skip((page - 1) * PageSize)

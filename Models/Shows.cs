@@ -13,6 +13,7 @@ public class Show : BaseMedia
 
     public List<Season> Seasons { get; set; } = new();
     public List<MediaList> MediaLists { get; set; } = new();
+    public List<MediaListShow> MediaListShows { get; set; } = new();
 
     public Show() {}
 
@@ -70,5 +71,12 @@ public class Show : BaseMedia
             Seasons = Seasons,
             ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
         };
+    }
+
+    public ModelsDTO.ShowDto ToDto(DateTime? listAddedAt)
+    {
+        ModelsDTO.ShowDto dto = ToDto();
+        dto.ListAddedAt = listAddedAt;
+        return dto;
     }
 }

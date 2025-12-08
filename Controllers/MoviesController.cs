@@ -178,7 +178,7 @@ public class MoviesController : ControllerBase
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 
-    private static MovieDto MapToDto(Movie movie)
+    private static MovieDto MapToDto(Movie movie, DateTime? listAddedAt = null)
     {
         return new MovieDto
         {
@@ -204,7 +204,8 @@ public class MoviesController : ControllerBase
             Budget = movie.Budget,
             Revenue = movie.Revenue,
             ImdbId = movie.ImdbId,
-            ListIds = movie.MediaLists.Select(ml => ml.Id).ToList()
+            ListIds = movie.MediaLists.Select(ml => ml.Id).ToList(),
+            ListAddedAt = listAddedAt
         };
     }
 }

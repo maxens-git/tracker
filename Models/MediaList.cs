@@ -26,4 +26,7 @@ public class MediaList
 
     public List<Movie> Movies { get; set; } = new();
     public List<Show> Shows { get; set; } = new();
+
+    public List<MediaListMovie> MediaListMovies { get; set; } = new();
+    public List<MediaListShow> MediaListShows { get; set; } = new();
 }

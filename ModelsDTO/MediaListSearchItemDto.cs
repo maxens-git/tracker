@@ -10,5 +10,6 @@ public class MediaListSearchItemDto
     public double? VoteAverage { get; set; }
     public double? Popularity { get; set; }
     public DateTime? LastUpdated { get; set; }
+    public DateTime? AddedAt { get; set; }
     public string MediaType { get; set; } = string.Empty;
 }

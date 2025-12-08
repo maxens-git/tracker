@@ -22,6 +22,7 @@ public class ShowDto
     public string? Genres { get; set; }
     public DateTime AddedAt { get; set; }
     public DateTime LastUpdated { get; set; }
+    public DateTime? ListAddedAt { get; set; }
     
     public int NumberOfSeasons { get; set; }
     public int NumberOfEpisodes { get; set; }

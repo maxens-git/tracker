@@ -14,6 +14,8 @@ public class ApiDbContext : DbContext
     public DbSet<Season> Seasons { get; set; } = null!;
     public DbSet<Episode> Episodes { get; set; } = null!;
     public DbSet<MediaList> MediaLists { get; set; } = null!;
+    public DbSet<MediaListMovie> MediaListMovies { get; set; } = null!;
+    public DbSet<MediaListShow> MediaListShows { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,20 +45,28 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<MediaList>()
             .HasMany(ml => ml.Movies)
             .WithMany(m => m.MediaLists)
-            .UsingEntity<Dictionary<string, object>>(
-                "MediaListMovie",
-                j => j.HasOne<Movie>().WithMany().HasForeignKey("MovieId"),
-                j => j.HasOne<MediaList>().WithMany().HasForeignKey("MediaListId")
-            );
+            .UsingEntity<MediaListMovie>(
+                j => j.HasOne(x => x.Movie).WithMany(m => m.MediaListMovies).HasForeignKey(x => x.MovieId),
+                j => j.HasOne(x => x.MediaList).WithMany(ml => ml.MediaListMovies).HasForeignKey(x => x.MediaListId))
+            .Property(x => x.AddedAt)
+            .HasColumnType("datetime(6)")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
         modelBuilder.Entity<MediaList>()
             .HasMany(ml => ml.Shows)
             .WithMany(s => s.MediaLists)
-            .UsingEntity<Dictionary<string, object>>(
-                "MediaListShow",
-                j => j.HasOne<Show>().WithMany().HasForeignKey("ShowId"),
-                j => j.HasOne<MediaList>().WithMany().HasForeignKey("MediaListId")
-            );
+            .UsingEntity<MediaListShow>(
+                j => j.HasOne(x => x.Show).WithMany(s => s.MediaListShows).HasForeignKey(x => x.ShowId),
+                j => j.HasOne(x => x.MediaList).WithMany(ml => ml.MediaListShows).HasForeignKey(x => x.MediaListId))
+            .Property(x => x.AddedAt)
+            .HasColumnType("datetime(6)")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
+        modelBuilder.Entity<MediaListMovie>()
+            .HasKey(x => new { x.MediaListId, x.MovieId });
+
+        modelBuilder.Entity<MediaListShow>()
+            .HasKey(x => new { x.MediaListId, x.ShowId });
 
         modelBuilder.Entity<MediaList>()
             .HasIndex(ml => ml.Name)

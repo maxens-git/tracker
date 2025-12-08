@@ -14,6 +14,7 @@ public class Movie : BaseMedia
     public string? ImdbId { get; set; }
 
     public List<MediaList> MediaLists { get; set; } = new();
+    public List<MediaListMovie> MediaListMovies { get; set; } = new();
 
     public Movie() {}
 
@@ -72,5 +73,12 @@ public class Movie : BaseMedia
             ImdbId = ImdbId,
             ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
         };
+    }
+
+    public ModelsDTO.MovieDto ToDto(DateTime? listAddedAt)
+    {
+        ModelsDTO.MovieDto dto = ToDto();
+        dto.ListAddedAt = listAddedAt;
+        return dto;
     }
 }

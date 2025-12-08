@@ -302,7 +302,7 @@ public class ShowsController : ControllerBase
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 
-    private static ShowDto MapToDto(Show show)
+    private static ShowDto MapToDto(Show show, DateTime? listAddedAt = null)
     {
         return new ShowDto
         {
@@ -328,7 +328,8 @@ public class ShowsController : ControllerBase
             NumberOfEpisodes = show.NumberOfEpisodes,
             LastAirDate = show.LastAirDate,
             Seasons = show.Seasons,
-            ListIds = show.MediaLists.Select(ml => ml.Id).ToList()
+            ListIds = show.MediaLists.Select(ml => ml.Id).ToList(),
+            ListAddedAt = listAddedAt
         };
     }
 }
