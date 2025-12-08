@@ -112,7 +112,27 @@
 										<span><span class="pi pi-tv"></span> {{ selectedList()?.showsCount }} série(s)</span>
 									</div>
 								</div>
-								<button class="ghost-button" type="button" (click)="clearSelectedList()">Effacer la sélection</button>
+								<div class="list-selection__actions">
+									<div class="list-selection__controls">
+										<div class="list-search">
+											<span class="pi pi-search" aria-hidden="true"></span>
+											<input 
+												pInputText 
+												type="search" 
+												[(ngModel)]="listSearchTerm" 
+												(ngModelChange)="onListSearchChange($event)" 
+												placeholder="Rechercher dans cette liste" 
+												aria-label="Rechercher dans la liste"
+											/>
+											@if (listSearchTerm.trim()) {
+												<button class="clear-input" type="button" (click)="resetListSearch()" aria-label="Effacer la recherche">
+													<span class="pi pi-times"></span>
+												</button>
+											}
+										</div>
+										<button class="ghost-button" type="button" (click)="clearSelectedList()">Effacer la sélection</button>
+									</div>
+								</div>
 							</div>
 
 							<app-media-grid 

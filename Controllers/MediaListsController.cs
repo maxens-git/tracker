@@ -272,6 +272,83 @@ public class MediaListsController : ControllerBase
         };
     }
 
+    [HttpGet("{id}/search")]
+    public async Task<ActionResult<PaginatedResult<MediaListSearchItemDto>>> SearchListItems(
+        int id,
+        [FromQuery] string query = "",
+        [FromQuery] int page = 1,
+        [FromQuery] string type = "all")
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("Query cannot be empty");
+
+        MediaList? mediaList = await _context.MediaLists.FirstOrDefaultAsync(ml => ml.Id == id);
+        if (mediaList == null)
+            return NotFound("List not found");
+
+        string normalized = query.Trim().ToLower();
+
+        IQueryable<MediaListSearchItemDto> movieQuery = _context.MediaLists
+            .Where(ml => ml.Id == id)
+            .SelectMany(ml => ml.Movies)
+            .Where(m => m.Title.ToLower().Contains(normalized))
+            .Select(m => new MediaListSearchItemDto
+            {
+                Id = m.Id,
+                TmdbId = m.TmdbId,
+                Title = m.Title,
+                PosterPath = m.PosterPath,
+                ReleaseDate = m.ReleaseDate,
+                VoteAverage = m.VoteAverage,
+                Popularity = m.Popularity,
+                LastUpdated = m.LastUpdated,
+                MediaType = "movie"
+            });
+
+        IQueryable<MediaListSearchItemDto> showQuery = _context.MediaLists
+            .Where(ml => ml.Id == id)
+            .SelectMany(ml => ml.Shows)
+            .Where(s => s.Title.ToLower().Contains(normalized))
+            .Select(s => new MediaListSearchItemDto
+            {
+                Id = s.Id,
+                TmdbId = s.TmdbId,
+                Title = s.Title,
+                PosterPath = s.PosterPath,
+                ReleaseDate = s.ReleaseDate,
+                VoteAverage = s.VoteAverage,
+                Popularity = s.Popularity,
+                LastUpdated = s.LastUpdated,
+                MediaType = "show"
+            });
+
+        IQueryable<MediaListSearchItemDto> combinedQuery = type.ToLower() switch
+        {
+            "movie" => movieQuery,
+            "show" => showQuery,
+            _ => movieQuery.Concat(showQuery)
+        };
+
+        int totalCount = await combinedQuery.CountAsync();
+
+        List<MediaListSearchItemDto> items = await combinedQuery
+            .OrderByDescending(i => i.LastUpdated ?? DateTime.MinValue)
+            .ThenByDescending(i => i.Popularity ?? 0)
+            .ThenByDescending(i => i.VoteAverage ?? 0)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<MediaListSearchItemDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
+        };
+    }
+
     [HttpPost]
     public async Task<ActionResult<MediaList>> Create(MediaListCreateDto dto)
     {

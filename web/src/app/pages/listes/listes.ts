@@ -1,16 +1,18 @@
 import { Component, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MediaListsService } from '../../shared/services/media-lists.service';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { MediaListsService, MediaListSearchItem } from '../../shared/services/media-lists.service';
 import { MediaListSummary } from '../../shared/interfaces/media-list.interface';
 import { MediaGrid, MediaItem } from './media-grid/media-grid';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
 type TabType = 'lists' | 'seen' | 'liked' | 'watchlist';
 
 @Component({
   selector: 'app-listes',
   standalone: true,
-  imports: [CommonModule, MediaGrid],
+  imports: [CommonModule, FormsModule, InputTextModule, MediaGrid],
   templateUrl: './listes.html',
   styleUrl: './listes.scss',
 })
@@ -40,6 +42,13 @@ export class Listes implements OnInit {
   private selectedListTotalPages = 1;
   private isLoadingMore = false;
 
+  protected listSearchTerm: string = '';
+  private listSearchPage = 1;
+  private listSearchTotalPages = 1;
+  private isSearchingList = false;
+  private listSearchDebounce?: ReturnType<typeof setTimeout>;
+  private listSearchSub?: Subscription;
+
   constructor(private mediaListsService: MediaListsService) {}
 
   ngOnInit(): void {
@@ -60,8 +69,12 @@ export class Listes implements OnInit {
         this.loadMoreLiked();
       } else if (this.activeTab() === 'watchlist' && this.watchlistPage < this.watchlistTotalPages) {
         this.loadMoreWatchlist();
-      } else if (this.activeTab() === 'lists' && this.selectedList() && this.selectedListPage < this.selectedListTotalPages) {
-        this.loadMoreSelectedListItems();
+      } else if (this.activeTab() === 'lists' && this.selectedList()) {
+        if (this.isSearchingList && this.listSearchPage < this.listSearchTotalPages) {
+          this.loadMoreSelectedListItems();
+        } else if (!this.isSearchingList && this.selectedListPage < this.selectedListTotalPages) {
+          this.loadMoreSelectedListItems();
+        }
       }
     }
   }
@@ -87,6 +100,7 @@ export class Listes implements OnInit {
     this.selectedListPage = 1;
     this.selectedListTotalPages = 1;
     this.selectedListItems.set([]);
+    this.resetListSearchState();
     this.fetchSelectedListItems(list.id);
   }
 
@@ -97,6 +111,33 @@ export class Listes implements OnInit {
     this.isLoadingMore = false;
     this.selectedListPage = 1;
     this.selectedListTotalPages = 1;
+    this.resetListSearchState();
+  }
+
+  protected onListSearchChange(value: string): void {
+    this.listSearchTerm = value ?? '';
+    const trimmed = this.listSearchTerm.trim();
+
+    clearTimeout(this.listSearchDebounce);
+    this.listSearchSub?.unsubscribe();
+
+    if (!this.selectedList()) return;
+
+    if (!trimmed) {
+      this.resetListSearchState();
+      this.fetchSelectedListItems(this.selectedList()!.id);
+      return;
+    }
+
+    this.listSearchDebounce = setTimeout(() => this.searchSelectedListItems(trimmed), 250);
+  }
+
+  protected resetListSearch(): void {
+    this.listSearchTerm = '';
+    this.resetListSearchState();
+    if (this.selectedList()) {
+      this.fetchSelectedListItems(this.selectedList()!.id);
+    }
   }
 
   private fetchLists(): void {
@@ -117,6 +158,10 @@ export class Listes implements OnInit {
 
   private fetchSelectedListItems(listId: number): void {
     this.loadingSelectedList.set(true);
+    this.isSearchingList = false;
+    this.listSearchPage = 1;
+    this.listSearchTotalPages = 1;
+    this.listSearchSub?.unsubscribe();
 
     forkJoin({
       movies: this.mediaListsService.getListMovies(listId, this.selectedListPage),
@@ -152,6 +197,63 @@ export class Listes implements OnInit {
         this.loadingSelectedList.set(false);
       }
     });
+  }
+
+  private searchSelectedListItems(query: string, page: number = 1, append: boolean = false): void {
+    if (!this.selectedList()) return;
+
+    const listId = this.selectedList()!.id;
+    this.isSearchingList = true;
+    if (!append) {
+      this.loadingSelectedList.set(true);
+      this.selectedListItems.set([]);
+      this.listSearchPage = 1;
+    } else {
+      this.isLoadingMore = true;
+    }
+
+    this.listSearchSub?.unsubscribe();
+    this.listSearchSub = this.mediaListsService.searchListItems(listId, query, page).subscribe({
+      next: (response) => {
+        const mapped: MediaItem[] = response.items.map((item: MediaListSearchItem) => ({
+          id: item.id,
+          tmdbId: item.tmdbId,
+          title: item.title,
+          posterPath: item.posterPath,
+          releaseDate: item.releaseDate ?? null,
+          voteAverage: item.voteAverage ?? null,
+          type: item.mediaType
+        }));
+
+        this.listSearchPage = response.page;
+        this.listSearchTotalPages = response.totalPages;
+
+        if (append) {
+          this.selectedListItems.set([...this.selectedListItems(), ...mapped]);
+        } else {
+          this.selectedListItems.set(mapped);
+        }
+
+        this.loadingSelectedList.set(false);
+        this.isLoadingMore = false;
+      },
+      error: () => {
+        if (append) {
+          this.listSearchPage = Math.max(1, this.listSearchPage - 1);
+        }
+        this.loadingSelectedList.set(false);
+        this.isLoadingMore = false;
+      }
+    });
+  }
+
+  private resetListSearchState(): void {
+    this.isSearchingList = false;
+    this.listSearchTerm = '';
+    this.listSearchPage = 1;
+    this.listSearchTotalPages = 1;
+    clearTimeout(this.listSearchDebounce);
+    this.listSearchSub?.unsubscribe();
   }
 
   private fetchSeenItems(): void {
@@ -401,6 +503,12 @@ export class Listes implements OnInit {
     if (this.isLoadingMore || !this.selectedList()) return;
     
     this.isLoadingMore = true;
+    if (this.isSearchingList) {
+      const nextPage = this.listSearchPage + 1;
+      this.searchSelectedListItems(this.listSearchTerm.trim(), nextPage, true);
+      return;
+    }
+
     this.selectedListPage++;
 
     forkJoin({

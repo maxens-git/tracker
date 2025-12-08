@@ -15,6 +15,16 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export interface MediaListSearchItem {
+  id: number;
+  tmdbId: number;
+  title: string;
+  posterPath: string | null;
+  releaseDate?: string | null;
+  voteAverage?: number | null;
+  mediaType: 'movie' | 'show';
+}
+
 @Injectable({ providedIn: 'root' })
 export class MediaListsService {
   private readonly apiUrl = '/api/medialists';
@@ -34,6 +44,12 @@ export class MediaListsService {
   getListShows(listId: number, page: number = 1): Observable<PaginatedResult<ShowDetails>> {
     return this.http.get<PaginatedResult<ShowDetails>>(`${this.apiUrl}/${listId}/shows`, {
       params: { page: page.toString() }
+    });
+  }
+
+  searchListItems(listId: number, query: string, page: number = 1, type: 'all' | 'movie' | 'show' = 'all'): Observable<PaginatedResult<MediaListSearchItem>> {
+    return this.http.get<PaginatedResult<MediaListSearchItem>>(`${this.apiUrl}/${listId}/search`, {
+      params: { query, page: page.toString(), type }
     });
   }
 
