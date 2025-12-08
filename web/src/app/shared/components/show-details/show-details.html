@@ -79,10 +79,10 @@
 					@if (show.tagline) { <p class="tagline">{{ show.tagline }}</p> }
 
 					<div class="meta-row">
-						<span class="pill is-primary">
+						<button class="pill is-primary rating-pill" type="button" (click)="openRatingModal()">
 							<span class="pi pi-star"></span>
 							{{ show.voteAverage !== null ? (show.voteAverage | number: '1.1-1') : '—' }} / 10
-						</span>
+						</button>
 						<span class="pill">{{ show.voteCount !== null ? (show.voteCount | number: '1.0-0') + ' votes' : 'Votes inconnus' }}</span>
 						<span class="pill">Première diffusion {{ show.releaseDate ? (show.releaseDate | date: 'longDate') : 'inconnue' }}</span>
 						<span class="pill">Dernier épisode {{ show.lastAirDate ? (show.lastAirDate | date: 'longDate') : 'inconnu' }}</span>
@@ -222,6 +222,47 @@
 		}
 	}
 </section>
+
+@if (ratingModalOpen()) {
+	<div class="modal-overlay" (click)="closeRatingModal()">
+		<div class="modal-content ratings-modal" (click)="$event.stopPropagation()">
+			<div class="modal-header">
+				<h2>Notes par épisode</h2>
+				<button class="modal-close" type="button" (click)="closeRatingModal()">
+					<span class="pi pi-times"></span>
+				</button>
+			</div>
+			<div class="modal-body rating-body">
+				@if (!ratingSeasons().length) {
+					<div class="empty">Aucune note disponible</div>
+				} @else if (!ratingTableRows().length) {
+					<div class="empty">Pas de notes d'épisodes.</div>
+				} @else {
+					<div class="rating-table" [style.gridTemplateColumns]="'80px repeat(' + ratingSeasons().length + ', 1fr)'">
+						<div class="rating-header">
+							<div class="corner-cell">Ep</div>
+							@for (season of ratingSeasons(); track season.id) {
+								<div class="header-cell">S{{ season.seasonNumber ?? '—' }}</div>
+							}
+						</div>
+						<div class="rating-rows">
+							@for (row of ratingTableRows(); track row.episodeNumber) {
+								<div class="rating-row">
+									<div class="row-label">E{{ row.episodeNumber }}</div>
+									@for (score of row.scores; track $index) {
+										<div class="score-cell" [ngClass]="ratingClass(score)">
+											{{ score !== null ? (score | number: '1.1-1') : '—' }}
+										</div>
+									}
+								</div>
+							}
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}
 
 @if (showListModal()) {
 	<div class="modal-overlay" (click)="closeListModal()">

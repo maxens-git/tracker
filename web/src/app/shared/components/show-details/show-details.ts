@@ -35,6 +35,7 @@ export class ShowDetailsComponent implements OnInit {
   protected similarLoading = signal<boolean>(true);
   protected expandedSeasonId = signal<number | null>(null);
   protected expandedEpisodes = signal<Set<number>>(new Set());
+  protected ratingModalOpen = signal<boolean>(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -350,5 +351,54 @@ export class ShowDetailsComponent implements OnInit {
       next.add(episodeId);
     }
     this.expandedEpisodes.set(next);
+  }
+
+  protected openRatingModal(): void {
+    if (!this.showDetails()) return;
+    this.ratingModalOpen.set(true);
+  }
+
+  protected closeRatingModal(): void {
+    this.ratingModalOpen.set(false);
+  }
+
+  protected ratingSeasons() {
+    const show = this.showDetails();
+    if (!show) return [];
+
+    return [...show.seasons]
+      .sort((a, b) => (a.seasonNumber ?? 0) - (b.seasonNumber ?? 0))
+      .map((season) => ({
+        ...season,
+        episodes: [...(season.episodes ?? [])].sort((a, b) => a.episodeNumber - b.episodeNumber)
+      }));
+  }
+
+  protected ratingTableRows() {
+    const seasons = this.ratingSeasons();
+    if (!seasons.length) return [];
+
+    const maxEpisodes = Math.max(...seasons.map((s) => s.episodes.length));
+    const rows: { episodeNumber: number; scores: (number | null)[] }[] = [];
+
+    for (let ep = 1; ep <= maxEpisodes; ep++) {
+      const scores = seasons.map((season) => {
+        const match = season.episodes.find((e) => e.episodeNumber === ep);
+        return match?.voteAverage ?? null;
+      });
+      rows.push({ episodeNumber: ep, scores });
+    }
+
+    return rows;
+  }
+
+  protected ratingClass(score: number | null): string {
+    if (score === null) return 'score-none';
+    if (score >= 8.5) return 'score-elite';
+    if (score >= 7.5) return 'score-strong';
+    if (score >= 6.5) return 'score-good';
+    if (score >= 5.5) return 'score-ok';
+    if (score >= 4.5) return 'score-weak';
+    return 'score-bad';
   }
 }

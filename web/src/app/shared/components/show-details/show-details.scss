@@ -859,3 +859,89 @@
 		font-size: 0.9rem;
 		color: var(--text-muted);
 	}
+
+	.rating-pill {
+		cursor: pointer;
+		border: none;
+	}
+
+	.ratings-modal {
+		max-width: 1100px;
+	}
+
+	.rating-body {
+		background: rgba(255, 255, 255, 0.02);
+	}
+
+	.rating-table {
+		display: grid;
+		gap: 0;
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgba(12, 14, 22, 0.9);
+		box-shadow: 0 12px 22px rgba(0, 0, 0, 0.32);
+	}
+
+	.rating-header {
+		display: contents;
+	}
+
+	.corner-cell,
+	.header-cell {
+		padding: 12px 10px;
+		background: rgba(255, 255, 255, 0.04);
+		border-bottom: 1px solid var(--border);
+		border-right: 1px solid var(--border);
+		font-weight: 800;
+		color: var(--text);
+		text-align: center;
+	}
+
+	.header-cell:last-child { border-right: none; }
+	.corner-cell { text-align: left; padding-left: 14px; }
+
+	.rating-rows {
+		display: contents;
+	}
+
+	.rating-row {
+		display: contents;
+	}
+
+	.row-label,
+	.score-cell {
+		padding: 10px 12px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+		border-right: 1px solid rgba(255, 255, 255, 0.06);
+		color: var(--text);
+		text-align: center;
+	}
+
+	.row-label {
+		text-align: left;
+		font-weight: 700;
+		background: rgba(255, 255, 255, 0.02);
+	}
+
+	.score-cell { font-weight: 800; }
+	.score-cell:last-child { border-right: none; }
+	.rating-rows .rating-row:last-child .row-label,
+	.rating-rows .rating-row:last-child .score-cell { border-bottom: none; }
+
+	.score-none { color: var(--text-muted); background: rgba(255, 255, 255, 0.04); }
+	.score-elite { color: #c9f5dc; background: linear-gradient(135deg, rgba(34, 197, 94, 0.28), rgba(22, 163, 74, 0.32)); }
+	.score-strong { color: #c9f5e8; background: linear-gradient(135deg, rgba(52, 211, 153, 0.24), rgba(45, 212, 191, 0.28)); }
+	.score-good { color: #d9f7e7; background: linear-gradient(135deg, rgba(74, 222, 128, 0.20), rgba(34, 197, 94, 0.22)); }
+	.score-ok { color: #f7edd1; background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.20)); }
+	.score-weak { color: #f7d9d9; background: linear-gradient(135deg, rgba(248, 113, 113, 0.18), rgba(239, 68, 68, 0.20)); }
+	.score-bad { color: #f6cccc; background: linear-gradient(135deg, rgba(220, 38, 38, 0.22), rgba(185, 28, 28, 0.24)); }
+
+	@media (max-width: 640px) {
+		.rating-table { overflow-x: auto; display: block; }
+		.rating-header,
+		.rating-row {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+		}
+	}
