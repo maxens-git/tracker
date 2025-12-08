@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { ShowDetails } from '../../interfaces/media-details.interface';
 import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
 import { PosterCardComponent } from '../poster-card/poster-card';
+import { MediaListSummary } from '../../interfaces/media-list.interface';
 
 @Component({
   selector: 'app-show-details',
@@ -16,10 +17,17 @@ import { PosterCardComponent } from '../poster-card/poster-card';
   styleUrl: './show-details.scss'
 })
 export class ShowDetailsComponent implements OnInit {
+  protected listActionLoading = signal<{ [listId: number]: boolean }>({});
   protected showDetails = signal<ShowDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
   protected seenLoading = signal<boolean>(false);
+  protected watchlistLoading = signal<boolean>(false);
+  protected inWatchlist = signal<boolean>(false);
+  protected watchlistId = signal<number | null>(null);
+  protected showListModal = signal<boolean>(false);
+  protected lists = signal<MediaListSummary[]>([]);
+  protected listLoading = signal<boolean>(false);
   protected seasonSeenLoading = signal<Map<number, boolean>>(new Map());
   protected episodeSeenLoading = signal<Map<number, boolean>>(new Map());
   protected error = signal<string | null>(null);
@@ -53,11 +61,33 @@ export class ShowDetailsComponent implements OnInit {
       next: (data) => {
         this.showDetails.set(data);
         this.loading.set(false);
+        this.setWatchlistState(data);
         this.loadSimilarShows(tmdbId);
       },
       error: () => {
         this.error.set('Erreur lors du chargement de la série');
         this.loading.set(false);
+      }
+    });
+  }
+
+  // Determine watchlist id and whether show is in it
+  private setWatchlistState(show: ShowDetails): void {
+    this.mediaListsService.getAll().subscribe({
+      next: (lists) => {
+        this.lists.set(lists);
+        const watch = lists.find(l => l.isSystem && l.name === 'Watchlist');
+        if (watch) {
+          this.watchlistId.set(watch.id);
+          this.inWatchlist.set(!!show.listIds?.includes(watch.id));
+        } else {
+          this.watchlistId.set(null);
+          this.inWatchlist.set(false);
+        }
+      },
+      error: () => {
+        this.watchlistId.set(null);
+        this.inWatchlist.set(false);
       }
     });
   }
@@ -74,6 +104,97 @@ export class ShowDetailsComponent implements OnInit {
         this.similarLoading.set(false);
       }
     });
+  }
+
+  protected openListModal(): void {
+    this.showListModal.set(true);
+    this.listLoading.set(true);
+    this.mediaListsService.getAll().subscribe({
+      next: (data) => {
+        this.lists.set(data);
+        this.listLoading.set(false);
+      },
+      error: () => {
+        this.listLoading.set(false);
+      }
+    });
+  }
+
+  protected closeListModal(): void {
+    this.showListModal.set(false);
+  }
+
+  protected addToList(listId: number): void {
+    const show = this.showDetails();
+    if (!show) return;
+    this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: true }));
+    this.mediaListsService.addShowToList(listId, show.tmdbId).subscribe({
+      next: () => {
+        this.showDetails.update(current => current ? { ...current, listIds: [...(current.listIds || []), listId] } : current);
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+      },
+      error: (err) => {
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+        console.error('Error adding show to list:', err);
+      }
+    });
+  }
+
+  protected removeFromList(listId: number): void {
+    const show = this.showDetails();
+    if (!show) return;
+    this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: true }));
+    this.mediaListsService.removeShowFromList(listId, show.tmdbId).subscribe({
+      next: () => {
+        this.showDetails.update(current => current ? { ...current, listIds: (current.listIds || []).filter(id => id !== listId) } : current);
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+      },
+      error: (err) => {
+        this.listActionLoading.update((state: { [listId: number]: boolean }) => ({ ...state, [listId]: false }));
+        console.error('Error removing show from list:', err);
+      }
+    });
+  }
+
+  protected isInList(listId: number): boolean {
+    const show = this.showDetails();
+    return !!show?.listIds?.includes(listId);
+  }
+
+  protected toggleWatchlist(): void {
+    const show = this.showDetails();
+    if (!show) return;
+
+    this.watchlistLoading.set(true);
+    if (this.inWatchlist()) {
+      this.mediaListsService.removeShowFromWatchlist(show.tmdbId).subscribe({
+        next: () => {
+          this.inWatchlist.set(false);
+          const wid = this.watchlistId();
+          if (wid) {
+            this.showDetails.update(current => current ? { ...current, listIds: (current.listIds || []).filter(id => id !== wid) } : current);
+          }
+          this.watchlistLoading.set(false);
+        },
+        error: () => {
+          this.watchlistLoading.set(false);
+        }
+      });
+    } else {
+      this.mediaListsService.addShowToWatchlist(show.tmdbId).subscribe({
+        next: () => {
+          this.inWatchlist.set(true);
+          const wid = this.watchlistId();
+          if (wid) {
+            this.showDetails.update(current => current ? { ...current, listIds: [...(current.listIds || []), wid] } : current);
+          }
+          this.watchlistLoading.set(false);
+        },
+        error: () => {
+          this.watchlistLoading.set(false);
+        }
+      });
+    }
   }
 
   protected onSimilarSelect(tmdbId: number): void {
