@@ -27,48 +27,17 @@ export class MediaGrid {
   @Input() emptyMessage: string = 'Aucun contenu pour le moment.';
 
   protected filterType: 'all' | 'movie' | 'show' = 'all';
-  protected sortKey: 'date' | 'rating' | 'title' = 'date';
-  protected sortDirection: 'asc' | 'desc' = 'desc';
 
   constructor(private router: Router) {}
 
-  protected get filteredAndSortedItems(): MediaItem[] {
-    const filtered = this.filterType === 'all'
+  protected get filteredItems(): MediaItem[] {
+    return this.filterType === 'all'
       ? this.items
       : this.items.filter(item => item.type === this.filterType);
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (this.sortKey === 'date') {
-        const aDate = this.parseDate(a.releaseDate);
-        const bDate = this.parseDate(b.releaseDate);
-        const aValue = aDate?.getTime() ?? 0;
-        const bValue = bDate?.getTime() ?? 0;
-        return this.sortDirection === 'desc' ? bValue - aValue : aValue - bValue;
-      }
-
-      if (this.sortKey === 'rating') {
-        const aValue = a.voteAverage ?? 0;
-        const bValue = b.voteAverage ?? 0;
-        return this.sortDirection === 'desc' ? bValue - aValue : aValue - bValue;
-      }
-
-      const aTitle = a.title.toLowerCase();
-      const bTitle = b.title.toLowerCase();
-      if (aTitle === bTitle) return 0;
-      const comparison = aTitle < bTitle ? -1 : 1;
-      return this.sortDirection === 'desc' ? -comparison : comparison;
-    });
-
-    return sorted;
   }
 
   protected changeFilterType(type: 'all' | 'movie' | 'show'): void {
     this.filterType = type;
-  }
-
-  protected changeSort(key: 'date' | 'rating' | 'title', direction: 'asc' | 'desc'): void {
-    this.sortKey = key;
-    this.sortDirection = direction;
   }
 
   protected convertToTMDbResult(item: MediaItem): TMDbSearchResult {
@@ -89,11 +58,5 @@ export class MediaGrid {
   protected onMediaSelect(tmdbId: number, mediaType: string): void {
     const route = mediaType === 'movie' ? '/movies' : '/shows';
     this.router.navigate([route, tmdbId.toString()]);
-  }
-
-  private parseDate(dateString?: string | null): Date | null {
-    if (!dateString) return null;
-    const parsed = new Date(dateString);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 }

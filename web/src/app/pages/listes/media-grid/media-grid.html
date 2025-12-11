@@ -35,30 +35,10 @@
 				</button>
 			</div>
 		</div>
-
-		<div class="toolbar-group">
-			<span class="toolbar-label">Trier par</span>
-			<div class="select-row">
-				<select 
-					[value]="sortKey"
-					(change)="changeSort($any($event.target).value, sortDirection)">
-					<option value="date">Date de sortie</option>
-					<option value="rating">Note</option>
-					<option value="title">Titre</option>
-				</select>
-				<button 
-					type="button"
-					(click)="changeSort(sortKey, sortDirection === 'desc' ? 'asc' : 'desc')"
-					[title]="sortDirection === 'desc' ? 'Ordre décroissant' : 'Ordre croissant'"
-					class="sort-toggle">
-					<span class="pi" [class.pi-sort-amount-down-alt]="sortDirection === 'desc'" [class.pi-sort-amount-up-alt]="sortDirection === 'asc'"></span>
-				</button>
-			</div>
-		</div>
 	</div>
 
 	<div class="media-grid">
-		@for (item of filteredAndSortedItems; track item.id) {
+		@for (item of filteredItems; track item.id) {
 			<app-poster-card 
 				[item]="convertToTMDbResult(item)" 
 				(select)="onMediaSelect($event, item.type)">

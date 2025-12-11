@@ -67,44 +67,6 @@
 	}
 }
 
-.select-row {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-}
-
-select {
-	background: rgba(255, 255, 255, 0.06);
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	border-radius: 10px;
-	color: #f5f6ff;
-	padding: 10px 12px;
-	font-weight: 600;
-	min-width: 160px;
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
-
-	option { color: #000; }
-}
-
-.sort-toggle {
-	height: 40px;
-	width: 40px;
-	border-radius: 10px;
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	background: rgba(255, 255, 255, 0.06);
-	color: #f5f6ff;
-	cursor: pointer;
-	display: grid;
-	place-items: center;
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
-	transition: all 0.2s ease;
-
-	&:hover {
-		border-color: rgba(var(--primary-color-rgb), 0.4);
-		color: var(--primary-color);
-	}
-}
-
 .spinner {
 	width: 48px;
 	height: 48px;

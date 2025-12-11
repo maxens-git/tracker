@@ -104,6 +104,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Liked)
             .Include(m => m.MediaLists)
             .OrderByDescending(m => m.LastUpdated)
+            .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
@@ -127,6 +128,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Liked)
             .Include(s => s.MediaLists)
             .OrderByDescending(s => s.LastUpdated)
+            .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
@@ -150,6 +152,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Seen)
             .Include(m => m.MediaLists)
             .OrderByDescending(m => m.LastUpdated)
+            .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
@@ -173,6 +176,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Seen)
             .Include(s => s.MediaLists)
             .OrderByDescending(s => s.LastUpdated)
+            .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
