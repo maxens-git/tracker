@@ -177,7 +177,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -187,7 +188,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.selectedListItems.set([...movieItems, ...showItems]);
@@ -222,7 +224,8 @@ export class Listes implements OnInit {
           posterPath: item.posterPath,
           releaseDate: item.releaseDate ?? null,
           voteAverage: item.voteAverage ?? null,
-          type: item.mediaType
+          type: item.mediaType,
+          seen: item.seen
         }));
 
         this.listSearchPage = response.page;
@@ -274,7 +277,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -284,7 +288,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.seenItems.set([...movieItems, ...showItems]);
@@ -314,7 +319,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -324,7 +330,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.seenItems.set([...this.seenItems(), ...movieItems, ...showItems]);
@@ -355,7 +362,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -365,7 +373,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.likedItems.set([...movieItems, ...showItems]);
@@ -395,7 +404,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -405,7 +415,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.watchlistItems.set([...movieItems, ...showItems]);
@@ -435,7 +446,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -445,7 +457,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.likedItems.set([...this.likedItems(), ...movieItems, ...showItems]);
@@ -476,7 +489,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -486,7 +500,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.watchlistItems.set([...this.watchlistItems(), ...movieItems, ...showItems]);
@@ -523,7 +538,8 @@ export class Listes implements OnInit {
           posterPath: movie.posterPath,
           releaseDate: movie.releaseDate,
           voteAverage: movie.voteAverage,
-          type: 'movie' as const
+          type: 'movie' as const,
+          seen: movie.seen
         }));
 
         const showItems: MediaItem[] = shows.items.map(show => ({
@@ -533,7 +549,8 @@ export class Listes implements OnInit {
           posterPath: show.posterPath,
           releaseDate: show.releaseDate,
           voteAverage: show.voteAverage,
-          type: 'show' as const
+          type: 'show' as const,
+          seen: show.seen
         }));
 
         this.selectedListItems.set([...this.selectedListItems(), ...movieItems, ...showItems]);

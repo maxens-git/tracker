@@ -13,6 +13,7 @@ export interface TMDbSearchResult {
   vote_average: number;
   vote_count: number;
   popularity: number;
+  seen?: boolean;
 }
 
 export interface TrendingHomeData {

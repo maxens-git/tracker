@@ -12,6 +12,7 @@ export interface MediaItem {
   releaseDate?: string | null;
   voteAverage?: number | null;
   type: 'movie' | 'show';
+   seen: boolean;
 }
 
 @Component({
@@ -51,7 +52,8 @@ export class MediaGrid {
       first_air_date: item.type === 'show' ? item.releaseDate || undefined : undefined,
       vote_average: item.voteAverage || 0,
       vote_count: 0,
-      popularity: 0
+      popularity: 0,
+      seen: item.seen
     };
   }
 

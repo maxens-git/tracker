@@ -60,4 +60,7 @@ public class TMDbSearchResult
 
     [JsonPropertyName("popularity")]
     public double Popularity { get; set; }
+
+    [JsonPropertyName("seen")]
+    public bool Seen { get; set; }
 }

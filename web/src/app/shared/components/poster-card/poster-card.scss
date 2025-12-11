@@ -95,3 +95,38 @@
     }
   }
 }
+
+.poster-card__status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: rgba(12, 14, 22, 0.78);
+  color: rgba(245, 246, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+
+  &.seen {
+    background: linear-gradient(135deg, rgba(60, 196, 124, 0.35) 0%, rgba(60, 196, 124, 0.18) 100%);
+    color: #d8ffe6;
+    border-color: rgba(60, 196, 124, 0.4);
+  }
+
+  &.unseen {
+    background: linear-gradient(135deg, rgba(255, 190, 92, 0.32) 0%, rgba(255, 190, 92, 0.16) 100%);
+    color: #fff2dd;
+    border-color: rgba(255, 190, 92, 0.38);
+  }
+
+  .pi { font-size: 0.8rem; }
+  .label { line-height: 1; }
+}

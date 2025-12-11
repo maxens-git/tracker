@@ -12,4 +12,5 @@ public class MediaListSearchItemDto
     public DateTime? LastUpdated { get; set; }
     public DateTime? AddedAt { get; set; }
     public string MediaType { get; set; } = string.Empty;
+    public bool Seen { get; set; }
 }

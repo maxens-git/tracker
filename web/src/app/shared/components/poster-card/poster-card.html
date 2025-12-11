@@ -5,6 +5,14 @@
     } @else {
       <div class="poster-card__placeholder">{{ getDisplayTitle() }}</div>
     }
+    <div 
+      class="poster-card__status"
+      [class.seen]="isSeen() === true"
+      [class.unseen]="isSeen() === false"
+      [class.unknown]="isSeen() === null">
+      <span class="pi" [ngClass]="isSeen() === true ? 'pi-eye' : 'pi-eye-slash'"></span>
+      <span class="label">{{ getSeenLabel() }}</span>
+    </div>
     <div class="poster-card__badges">
       <span class="badge rating">
         <span class="pi pi-star"></span>

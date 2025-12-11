@@ -305,7 +305,8 @@ public class MediaListsController : ControllerBase
                 Popularity = m.Movie.Popularity,
                 LastUpdated = m.Movie.LastUpdated,
                 AddedAt = m.AddedAt,
-                MediaType = "movie"
+                MediaType = "movie",
+                Seen = m.Movie.Seen
             });
 
         IQueryable<MediaListSearchItemDto> showQuery = _context.MediaListShows
@@ -321,7 +322,8 @@ public class MediaListsController : ControllerBase
                 Popularity = s.Show.Popularity,
                 LastUpdated = s.Show.LastUpdated,
                 AddedAt = s.AddedAt,
-                MediaType = "show"
+                MediaType = "show",
+                Seen = s.Show.Seen
             });
 
         IQueryable<MediaListSearchItemDto> combinedQuery = type.ToLower() switch

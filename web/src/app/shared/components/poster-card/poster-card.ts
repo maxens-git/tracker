@@ -34,6 +34,16 @@ export class PosterCardComponent {
     }
     return this.item.vote_average.toFixed(1);
   }
+
+  isSeen(): boolean | null {
+    if (this.item?.seen === true) return true;
+    if (this.item?.seen === false) return false;
+    return null;
+  }
+
+  getSeenLabel(): string {
+    return this.isSeen() === true ? 'Vu' : 'A voir';
+  }
   getType(): string {
     if (this.item?.media_type === 'movie') {
       return 'Film';

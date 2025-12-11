@@ -23,6 +23,7 @@ export interface MediaListSearchItem {
   releaseDate?: string | null;
   voteAverage?: number | null;
   mediaType: 'movie' | 'show';
+  seen: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
