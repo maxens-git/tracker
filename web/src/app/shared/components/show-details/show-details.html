@@ -81,9 +81,18 @@
 					<div class="meta-row">
 						<button class="pill is-primary rating-pill" type="button" (click)="openRatingModal()">
 							<span class="pi pi-star"></span>
-							{{ show.voteAverage !== null ? (show.voteAverage | number: '1.1-1') : '—' }} / 10
+							TMDb {{ tmdbRating(show) !== null ? (tmdbRating(show)! | number: '1.1-1') : '—' }} / 10
+							<ng-container *ngIf="tmdbVotes(show) !== null"> · {{ tmdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
 						</button>
-						<span class="pill">{{ show.voteCount !== null ? (show.voteCount | number: '1.0-0') + ' votes' : 'Votes inconnus' }}</span>
+						<span class="pill">
+							<span class="pi pi-video"></span>
+							IMDb {{ imdbRating(show) !== null ? (imdbRating(show)! | number: '1.1-1') : '—' }} / 10
+							<ng-container *ngIf="imdbVotes(show) !== null"> · {{ imdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
+						</span>
+						<span class="pill">
+							<span class="pi pi-percentage"></span>
+							Rotten Tomatoes {{ rottenRating(show) !== null ? (rottenRating(show)! | number: '1.0-0') + '%' : '—' }}
+						</span>
 						<span class="pill">Première diffusion {{ show.releaseDate ? (show.releaseDate | date: 'longDate') : 'inconnue' }}</span>
 						<span class="pill">Dernier épisode {{ show.lastAirDate ? (show.lastAirDate | date: 'longDate') : 'inconnu' }}</span>
 						<span class="pill">{{ show.status || 'Statut inconnu' }}</span>

@@ -236,5 +236,26 @@ export class MovieDetailsComponent implements OnInit {
         }
       });
     }
+
+  }
+
+  protected tmdbRating(movie: MovieDetails): number | null {
+    return movie.ratings?.tmdbRating ?? movie.voteAverage ?? null;
+  }
+
+  protected tmdbVotes(movie: MovieDetails): number | null {
+    return movie.ratings?.tmdbVotes ?? movie.voteCount ?? null;
+  }
+
+  protected imdbRating(movie: MovieDetails): number | null {
+    return movie.ratings?.imdbRating ?? null;
+  }
+
+  protected imdbVotes(movie: MovieDetails): number | null {
+    return movie.ratings?.imdbVotes ?? null;
+  }
+
+  protected rottenRating(movie: MovieDetails): number | null {
+    return movie.ratings?.rottenTomatoesRating ?? null;
   }
 }

@@ -3,6 +3,14 @@ export interface Genre {
   name: string;
 }
 
+export interface MediaRatings {
+  tmdbRating: number | null;
+  tmdbVotes: number | null;
+  imdbRating: number | null;
+  imdbVotes: number | null;
+  rottenTomatoesRating: number | null;
+}
+
 export interface MovieDetails {
   id: number;
   tmdbId: number;
@@ -17,6 +25,7 @@ export interface MovieDetails {
   voteAverage: number | null;
   voteCount: number | null;
   popularity: number | null;
+  ratings?: MediaRatings | null;
   liked: boolean;
   seen: boolean;
   status: string | null;
@@ -65,6 +74,7 @@ export interface ShowDetails {
   voteAverage: number | null;
   voteCount: number | null;
   popularity: number | null;
+  ratings?: MediaRatings | null;
   liked: boolean;
   seen: boolean;
   status: string | null;

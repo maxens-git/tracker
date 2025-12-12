@@ -81,9 +81,18 @@
 					<div class="meta-row">
 						<span class="pill is-primary">
 							<span class="pi pi-star"></span>
-							{{ movie.voteAverage !== null ? (movie.voteAverage | number: '1.1-1') : '—' }} / 10
+							TMDb {{ tmdbRating(movie) !== null ? (tmdbRating(movie)! | number: '1.1-1') : '—' }} / 10
+							<ng-container *ngIf="tmdbVotes(movie) !== null"> · {{ tmdbVotes(movie)! | number: '1.0-0' }} votes</ng-container>
 						</span>
-						<span class="pill">{{ movie.voteCount !== null ? (movie.voteCount | number: '1.0-0') + ' votes' : 'Votes inconnus' }}</span>
+						<span class="pill">
+							<span class="pi pi-video"></span>
+							IMDb {{ imdbRating(movie) !== null ? (imdbRating(movie)! | number: '1.1-1') : '—' }} / 10
+							<ng-container *ngIf="imdbVotes(movie) !== null"> · {{ imdbVotes(movie)! | number: '1.0-0' }} votes</ng-container>
+						</span>
+						<span class="pill">
+							<span class="pi pi-percentage"></span>
+							Rotten Tomatoes {{ rottenRating(movie) !== null ? (rottenRating(movie)! | number: '1.0-0') + '%' : '—' }}
+						</span>
 						<span class="pill">{{ movie.releaseDate ? (movie.releaseDate | date: 'longDate') : 'Date inconnue' }}</span>
 						<span class="pill">{{ movie.runtime ? movie.runtime + ' min' : 'Durée inconnue' }}</span>
 						<span class="pill">{{ movie.status || 'Statut inconnu' }}</span>

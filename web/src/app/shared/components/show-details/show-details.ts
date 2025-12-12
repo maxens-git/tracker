@@ -401,4 +401,24 @@ export class ShowDetailsComponent implements OnInit {
     if (score >= 4.5) return 'score-weak';
     return 'score-bad';
   }
+
+  protected tmdbRating(show: ShowDetails): number | null {
+    return show.ratings?.tmdbRating ?? show.voteAverage ?? null;
+  }
+
+  protected tmdbVotes(show: ShowDetails): number | null {
+    return show.ratings?.tmdbVotes ?? show.voteCount ?? null;
+  }
+
+  protected imdbRating(show: ShowDetails): number | null {
+    return show.ratings?.imdbRating ?? null;
+  }
+
+  protected imdbVotes(show: ShowDetails): number | null {
+    return show.ratings?.imdbVotes ?? null;
+  }
+
+  protected rottenRating(show: ShowDetails): number | null {
+    return show.ratings?.rottenTomatoesRating ?? null;
+  }
 }
