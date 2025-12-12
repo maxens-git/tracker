@@ -287,6 +287,26 @@
 	}
 }
 
+.brand-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 18px;
+	margin-right: 6px;
+	flex-shrink: 0;
+	position: relative;
+	top: 1px;
+
+	svg {
+		width: 100%;
+		height: 100%;
+		display: block;
+		border-radius: 6px;
+		overflow: hidden;
+	}
+}
+
 .overview {
 	margin: 4px 0 10px;
 	line-height: 1.6;

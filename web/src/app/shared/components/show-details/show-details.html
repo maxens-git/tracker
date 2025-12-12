@@ -79,18 +79,34 @@
 					@if (show.tagline) { <p class="tagline">{{ show.tagline }}</p> }
 
 					<div class="meta-row">
-						<button class="pill is-primary rating-pill" type="button" (click)="openRatingModal()">
-							<span class="pi pi-star"></span>
-							TMDb {{ tmdbRating(show) !== null ? (tmdbRating(show)! | number: '1.1-1') : '—' }} / 10
+						<span class="pill">
+							<span class="brand-icon imdb" aria-label="IMDb">
+								<svg viewBox="0 0 68 28" role="img" aria-hidden="true">
+									<rect width="68" height="28" rx="4" fill="#f5c518"></rect>
+									<text x="10" y="19" fill="#121212" font-weight="800" font-size="16" font-family="'Inter', 'Segoe UI', sans-serif">IMDb</text>
+								</svg>
+							</span>
+							{{ imdbRating(show) !== null ? (imdbRating(show)! | number: '1.1-1') : '—' }} / 10
+							<ng-container *ngIf="imdbVotes(show) !== null"> · {{ imdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
+						</span>
+						<button class="pill rating-pill" type="button" (click)="openRatingModal()">
+							<span class="brand-icon tmdb" aria-label="TMDb">
+								<svg viewBox="0 0 68 28" role="img" aria-hidden="true">
+									<rect width="68" height="28" rx="4" fill="#01d277"></rect>
+									<text x="8" y="19" fill="#0b1b12" font-weight="800" font-size="16" font-family="'Inter', 'Segoe UI', sans-serif">TMDb</text>
+								</svg>
+							</span>
+							{{ tmdbRating(show) !== null ? (tmdbRating(show)! | number: '1.1-1') : '—' }} / 10
 							<ng-container *ngIf="tmdbVotes(show) !== null"> · {{ tmdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
 						</button>
 						<span class="pill">
-							<span class="pi pi-video"></span>
-							IMDb {{ imdbRating(show) !== null ? (imdbRating(show)! | number: '1.1-1') : '—' }} / 10
-							<ng-container *ngIf="imdbVotes(show) !== null"> · {{ imdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
-						</span>
-						<span class="pill">
-							<span class="pi pi-percentage"></span>
+							<span class="brand-icon rt" aria-label="Rotten Tomatoes">
+								<svg viewBox="0 0 32 28" role="img" aria-hidden="true">
+									<circle cx="16" cy="16" r="10" fill="#fa320a"></circle>
+									<path d="M16 6c0-2.2 1.8-4 4-4" stroke="#2e9b4f" stroke-width="3" stroke-linecap="round"></path>
+									<path d="M12 7.5c1.6-.8 4-.5 4-.5" stroke="#2e9b4f" stroke-width="2" stroke-linecap="round"></path>
+								</svg>
+							</span>
 							Rotten Tomatoes {{ rottenRating(show) !== null ? (rottenRating(show)! | number: '1.0-0') + '%' : '—' }}
 						</span>
 						<span class="pill">Première diffusion {{ show.releaseDate ? (show.releaseDate | date: 'longDate') : 'inconnue' }}</span>
