@@ -36,6 +36,10 @@ public class ShowsController : ControllerBase
             if (tmdbShow == null)
                 return NotFound("Show not found on TMDb");
 
+            List<TMDbSeasonSummary> regularSeasons = tmdbShow.Seasons
+                .Where(s => s.SeasonNumber > 0)
+                .ToList();
+
             show = new Show
             {
                 TmdbId = tmdbShow.Id,
@@ -51,15 +55,17 @@ public class ShowsController : ControllerBase
                 Popularity = tmdbShow.Popularity,
                 ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
                 LastAirDate = ParseDate(tmdbShow.LastAirDate),
-                NumberOfSeasons = tmdbShow.NumberOfSeasons,
-                NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
+                NumberOfSeasons = regularSeasons.Count,
+                NumberOfEpisodes = 0,
                 Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
             };
 
             _context.Shows.Add(show);
             await _context.SaveChangesAsync();
 
-            foreach (TMDbSeasonSummary seasonSummary in tmdbShow.Seasons)
+            int totalEpisodeCount = 0;
+
+            foreach (TMDbSeasonSummary seasonSummary in regularSeasons)
             {
                 TMDbSeasonResponse? tmdbSeason = await _tmdbService.GetSeasonAsync(tmdbId, seasonSummary.SeasonNumber);
                 if (tmdbSeason == null) continue;
@@ -97,8 +103,13 @@ public class ShowsController : ControllerBase
                     _context.Episodes.Add(episode);
                 }
 
+                totalEpisodeCount += tmdbSeason.Episodes.Count;
+
                 await _context.SaveChangesAsync();
             }
+
+            show.NumberOfEpisodes = totalEpisodeCount;
+            await _context.SaveChangesAsync();
 
             show = await _context.Shows
                 .Include(s => s.Seasons)
@@ -324,10 +335,14 @@ public class ShowsController : ControllerBase
             Genres = show.Genres,
             AddedAt = show.AddedAt,
             LastUpdated = show.LastUpdated,
-            NumberOfSeasons = show.NumberOfSeasons,
-            NumberOfEpisodes = show.NumberOfEpisodes,
+            NumberOfSeasons = show.Seasons.Count(s => s.SeasonNumber > 0),
+            NumberOfEpisodes = show.Seasons
+                .Where(s => s.SeasonNumber > 0)
+                .Sum(s => s.Episodes?.Count ?? 0),
             LastAirDate = show.LastAirDate,
-            Seasons = show.Seasons,
+            Seasons = show.Seasons
+                .Where(s => s.SeasonNumber > 0)
+                .ToList(),
             ListIds = show.MediaLists.Select(ml => ml.Id).ToList(),
             ListAddedAt = listAddedAt
         };
