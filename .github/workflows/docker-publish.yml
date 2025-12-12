@@ -63,3 +63,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          
+      # 7. Trigger Portainer Update (Nouvelle étape)
+      - name: Trigger Portainer Webhook
+        if: github.event_name != 'pull_request'
+        run: curl -X POST ${{ secrets.PORTAINER_WEBHOOK_URL }}
