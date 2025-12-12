@@ -30,15 +30,17 @@ public static class DbInitializer
         string watchlistPath = Path.Combine(listDirectory, "export_justwatch_watchlist.json");
         string likelistPath = Path.Combine(listDirectory, "export_justwatch_likelist.json");
 
-        await ImportMediaAsync(context, tmdbService, omdbService, logger, resolvedExportPath, errorLogPath);
-        await ImportMediaListAsync(context, tmdbService, omdbService, logger, watchlistPath, errorLogPath, "Watchlist", markSeen: false, markLiked: false);
-        await ImportMediaListAsync(context, tmdbService, omdbService, logger, likelistPath, errorLogPath, "J'aime", markSeen: false, markLiked: true);
+        OmdbFetchState omdbState = new OmdbFetchState();
+
+        await ImportMediaAsync(context, tmdbService, omdbService, omdbState, logger, resolvedExportPath, errorLogPath);
+        await ImportMediaListAsync(context, tmdbService, omdbService, omdbState, logger, watchlistPath, errorLogPath, "Watchlist", markSeen: false, markLiked: false);
+        await ImportMediaListAsync(context, tmdbService, omdbService, omdbState, logger, likelistPath, errorLogPath, "J'aime", markSeen: false, markLiked: true);
         await CreateOrUpdateSystemListsAsync(context, logger);
 
         logger.LogInformation("Import terminé");
     }
 
-    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, ILogger logger, string exportFilePath, string errorLogPath)
+    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, ILogger logger, string exportFilePath, string errorLogPath)
     {
         if (!File.Exists(exportFilePath))
         {
@@ -67,11 +69,11 @@ public static class DbInitializer
                 {
                     if (item.IsMovie)
                     {
-                        await ImportMovieAsync(context, tmdbService, omdbService, tmdbId, logger, item.ImdbId, errorLogPath);
+                        await ImportMovieAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, item.ImdbId, errorLogPath);
                     }
                     else if (item.IsShow)
                     {
-                        await ImportShowAsync(context, tmdbService, omdbService, tmdbId, logger, errorLogPath);
+                        await ImportShowAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, errorLogPath);
                     }
                 }
                 catch (Exception ex)
@@ -92,7 +94,7 @@ public static class DbInitializer
         }
     }
 
-    private static async Task ImportMediaListAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, ILogger logger, string exportFilePath, string errorLogPath, string listName, bool markSeen, bool markLiked)
+    private static async Task ImportMediaListAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, ILogger logger, string exportFilePath, string errorLogPath, string listName, bool markSeen, bool markLiked)
     {
         if (!File.Exists(exportFilePath))
         {
@@ -135,7 +137,7 @@ public static class DbInitializer
             {
                 if (item.IsMovie)
                 {
-                    Movie? movie = await ImportMovieAsync(context, tmdbService, omdbService, tmdbId, logger, item.ImdbId, errorLogPath, markSeen, markLiked);
+                    Movie? movie = await ImportMovieAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, item.ImdbId, errorLogPath, markSeen, markLiked);
                     if (movie != null)
                     {
                         AddMovieToList(targetList, movie, item.CreatedAt);
@@ -143,7 +145,7 @@ public static class DbInitializer
                 }
                 else if (item.IsShow)
                 {
-                    Show? show = await ImportShowAsync(context, tmdbService, omdbService, tmdbId, logger, errorLogPath, markSeen, markLiked);
+                    Show? show = await ImportShowAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, errorLogPath, markSeen, markLiked);
                     if (show != null)
                     {
                         AddShowToList(targetList, show, item.CreatedAt);
@@ -271,7 +273,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
     }
 
-    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false)
     {
         Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
         if (m != null)
@@ -280,6 +282,25 @@ public static class DbInitializer
             m.Liked = m.Liked || markLiked;
             context.Movies.Update(m);
             await context.SaveChangesAsync();
+
+            if (!omdbState.RateLimitHit && NeedsExternalRatings(m))
+            {
+                OmdbRatingsResult res = await omdbService.GetExternalRatingsAsync(m.ImdbId ?? imdbId, m.Title, m.ReleaseDate?.Year);
+                if (res.RateLimited)
+                {
+                    omdbState.RateLimitHit = true;
+                    logger.LogWarning("OMDb rate limit reached while updating {Title}; external ratings fetch disabled for the rest of this run", m.Title);
+                }
+                if (res.Ratings != null)
+                {
+                    m.ImdbRating = res.Ratings.ImdbRating;
+                    m.ImdbVotes = res.Ratings.ImdbVotes;
+                    m.RottenTomatoesRating = res.Ratings.RottenTomatoesRating;
+                    logger.LogInformation("Applied OMDb ratings to existing movie {Title} (TMDb {TmdbId})", m.Title, m.TmdbId);
+                    context.Movies.Update(m);
+                    await context.SaveChangesAsync();
+                }
+            }
             logger.LogDebug("Film déjà existant: TMDb {TmdbId}", tmdbId);
             return m;
         }
@@ -315,12 +336,21 @@ public static class DbInitializer
             Liked = markLiked
         };
 
-        MediaRatings? externalRatings = await omdbService.GetExternalRatingsAsync(movie.ImdbId ?? imdbId, movie.Title, ParseDate(tmdbMovie.ReleaseDate)?.Year);
-        if (externalRatings != null)
+        if (!omdbState.RateLimitHit)
         {
-            movie.ImdbRating = externalRatings.ImdbRating;
-            movie.ImdbVotes = externalRatings.ImdbVotes;
-            movie.RottenTomatoesRating = externalRatings.RottenTomatoesRating;
+            OmdbRatingsResult externalRatings = await omdbService.GetExternalRatingsAsync(movie.ImdbId ?? imdbId, movie.Title, ParseDate(tmdbMovie.ReleaseDate)?.Year);
+            if (externalRatings.RateLimited)
+            {
+                omdbState.RateLimitHit = true;
+                logger.LogWarning("OMDb rate limit reached while importing {Title}; external ratings fetch disabled for the rest of this run", movie.Title);
+            }
+            if (externalRatings.Ratings != null)
+            {
+                movie.ImdbRating = externalRatings.Ratings.ImdbRating;
+                movie.ImdbVotes = externalRatings.Ratings.ImdbVotes;
+                movie.RottenTomatoesRating = externalRatings.Ratings.RottenTomatoesRating;
+                logger.LogInformation("Applied OMDb ratings to new movie {Title} (TMDb {TmdbId})", movie.Title, movie.TmdbId);
+            }
         }
 
         if (!string.IsNullOrEmpty(imdbId) && movie.ImdbId != imdbId)
@@ -335,7 +365,7 @@ public static class DbInitializer
         return movie;
     }
 
-    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false)
     {
         Show? db = await context.Shows
             .Include(s => s.Seasons)
@@ -369,6 +399,25 @@ public static class DbInitializer
             {
                 context.Shows.Update(db);
                 await context.SaveChangesAsync();
+            }
+
+            if (!omdbState.RateLimitHit && NeedsExternalRatings(db))
+            {
+                OmdbRatingsResult res = await omdbService.GetExternalRatingsAsync(null, db.Title, db.ReleaseDate?.Year);
+                if (res.RateLimited)
+                {
+                    omdbState.RateLimitHit = true;
+                    logger.LogWarning("OMDb rate limit reached while updating {Title}; external ratings fetch disabled for the rest of this run", db.Title);
+                }
+                if (res.Ratings != null)
+                {
+                    db.ImdbRating = res.Ratings.ImdbRating;
+                    db.ImdbVotes = res.Ratings.ImdbVotes;
+                    db.RottenTomatoesRating = res.Ratings.RottenTomatoesRating;
+                    logger.LogInformation("Applied OMDb ratings to existing show {Title} (TMDb {TmdbId})", db.Title, db.TmdbId);
+                    context.Shows.Update(db);
+                    await context.SaveChangesAsync();
+                }
             }
 
             logger.LogDebug("Série déjà existante: TMDb {TmdbId}", tmdbId);
@@ -409,12 +458,21 @@ public static class DbInitializer
             Liked = markLiked
         };
 
-        MediaRatings? externalRatings = await omdbService.GetExternalRatingsAsync(null, show.Title, ParseDate(tmdbShow.FirstAirDate)?.Year);
-        if (externalRatings != null)
+        if (!omdbState.RateLimitHit)
         {
-            show.ImdbRating = externalRatings.ImdbRating;
-            show.ImdbVotes = externalRatings.ImdbVotes;
-            show.RottenTomatoesRating = externalRatings.RottenTomatoesRating;
+            OmdbRatingsResult externalRatings = await omdbService.GetExternalRatingsAsync(null, show.Title, ParseDate(tmdbShow.FirstAirDate)?.Year);
+            if (externalRatings.RateLimited)
+            {
+                omdbState.RateLimitHit = true;
+                logger.LogWarning("OMDb rate limit reached while importing {Title}; external ratings fetch disabled for the rest of this run", show.Title);
+            }
+            if (externalRatings.Ratings != null)
+            {
+                show.ImdbRating = externalRatings.Ratings.ImdbRating;
+                show.ImdbVotes = externalRatings.Ratings.ImdbVotes;
+                show.RottenTomatoesRating = externalRatings.Ratings.RottenTomatoesRating;
+                logger.LogInformation("Applied OMDb ratings to new show {Title} (TMDb {TmdbId})", show.Title, show.TmdbId);
+            }
         }
 
         context.Shows.Add(show);
@@ -545,6 +603,16 @@ public static class DbInitializer
             return date;
 
         return null;
+    }
+
+    private static bool NeedsExternalRatings(BaseMedia media)
+    {
+        return media.ImdbRating == null || media.ImdbVotes == null || media.RottenTomatoesRating == null;
+    }
+
+    private class OmdbFetchState
+    {
+        public bool RateLimitHit { get; set; }
     }
 
     private static async Task AppendImportErrorAsync(string logPath, string kind, int? tmdbId, string? title, string message)

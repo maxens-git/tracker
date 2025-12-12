@@ -218,15 +218,15 @@ public class MoviesController : ControllerBase
 
     private async Task EnrichWithOmdbAsync(Movie movie, string title, int? year)
     {
-        MediaRatings? ratings = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, title, year);
-        if (ratings == null)
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, title, year);
+        if (result.Ratings == null)
         {
             return;
         }
 
-        movie.ImdbRating = ratings.ImdbRating;
-        movie.ImdbVotes = ratings.ImdbVotes;
-        movie.RottenTomatoesRating = ratings.RottenTomatoesRating;
+        movie.ImdbRating = result.Ratings.ImdbRating;
+        movie.ImdbVotes = result.Ratings.ImdbVotes;
+        movie.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
     }
 
     private static int? ParseYear(string? dateString)

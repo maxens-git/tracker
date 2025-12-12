@@ -17,11 +17,11 @@ public class OmdbService
         _apiKey = apiKey;
     }
 
-    public async Task<MediaRatings?> GetExternalRatingsAsync(string? imdbId, string title, int? year)
+    public async Task<OmdbRatingsResult> GetExternalRatingsAsync(string? imdbId, string title, int? year)
     {
         if (string.IsNullOrWhiteSpace(_apiKey))
         {
-            return null;
+            return new OmdbRatingsResult();
         }
 
         string query = imdbId is not null
@@ -36,25 +36,36 @@ public class OmdbService
         HttpResponseMessage response = await _httpClient.GetAsync(BaseUrl + query);
         if (!response.IsSuccessStatusCode)
         {
-            return null;
+            return new OmdbRatingsResult { RateLimited = IsRateLimitStatus(response.StatusCode) };
         }
 
         OmdbResponse? payload = await response.Content.ReadFromJsonAsync<OmdbResponse>();
         if (payload == null || !string.Equals(payload.Response, "True", StringComparison.OrdinalIgnoreCase))
         {
-            return null;
+            bool limit = payload?.Error != null && payload.Error.Contains("limit", StringComparison.OrdinalIgnoreCase);
+            return new OmdbRatingsResult { RateLimited = limit };
         }
 
         double? imdbRating = TryParseDouble(payload.ImdbRating);
         long? imdbVotes = TryParseVotes(payload.ImdbVotes);
         double? rottenTomatoes = ExtractRottenTomatoes(payload.Ratings);
 
-        return new MediaRatings
+        return new OmdbRatingsResult
         {
-            ImdbRating = imdbRating,
-            ImdbVotes = imdbVotes,
-            RottenTomatoesRating = rottenTomatoes
+            Ratings = new MediaRatings
+            {
+                ImdbRating = imdbRating,
+                ImdbVotes = imdbVotes,
+                RottenTomatoesRating = rottenTomatoes
+            }
         };
+    }
+
+    private static bool IsRateLimitStatus(System.Net.HttpStatusCode statusCode)
+    {
+        return statusCode == System.Net.HttpStatusCode.TooManyRequests
+            || statusCode == System.Net.HttpStatusCode.Forbidden
+            || statusCode == System.Net.HttpStatusCode.Unauthorized;
     }
 
     private static double? ExtractRottenTomatoes(IEnumerable<OmdbRating> ratings)
@@ -107,4 +118,10 @@ public class OmdbService
 
         return null;
     }
+}
+
+public class OmdbRatingsResult
+{
+    public MediaRatings? Ratings { get; set; }
+    public bool RateLimited { get; set; }
 }

@@ -7,6 +7,9 @@ public class OmdbResponse
     [JsonPropertyName("Response")]
     public string? Response { get; set; }
 
+    [JsonPropertyName("Error")]
+    public string? Error { get; set; }
+
     [JsonPropertyName("imdbID")]
     public string? ImdbId { get; set; }
 

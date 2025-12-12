@@ -31,6 +31,11 @@ public class TrendsController : ControllerBase
         if (trending == null || popularMovies == null || popularShows == null || topRated == null)
             return StatusCode(500, "TMDb request failed");
 
+        trending.Results ??= new();
+        popularMovies.Results ??= new();
+        popularShows.Results ??= new();
+        topRated.Results ??= new();
+
         SetMediaType(popularMovies.Results, "movie");
         SetMediaType(popularShows.Results, "tv");
         SetMediaType(topRated.Results, "movie");
@@ -73,6 +78,8 @@ public class TrendsController : ControllerBase
         if (result == null)
             return StatusCode(500, "TMDb request failed");
 
+        result.Results ??= new();
+
         await ApplySeenStatusAsync(result.Results);
 
         return result;
@@ -85,6 +92,8 @@ public class TrendsController : ControllerBase
 
         if (result == null)
             return StatusCode(500, "TMDb request failed");
+
+        result.Results ??= new();
 
         SetMediaType(result.Results, "movie");
 
@@ -100,6 +109,8 @@ public class TrendsController : ControllerBase
 
         if (result == null)
             return StatusCode(500, "TMDb request failed");
+
+        result.Results ??= new();
 
         SetMediaType(result.Results, "tv");
 
@@ -118,6 +129,8 @@ public class TrendsController : ControllerBase
 
         if (result == null)
             return StatusCode(500, "TMDb request failed");
+
+        result.Results ??= new();
 
         SetMediaType(result.Results, mediaType);
 

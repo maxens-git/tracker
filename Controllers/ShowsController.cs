@@ -320,15 +320,15 @@ public class ShowsController : ControllerBase
     private async Task EnrichWithOmdbAsync(Show show, string title, int? year)
     {
         string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? title : show.OriginalTitle!;
-        MediaRatings? ratings = await _omdbService.GetExternalRatingsAsync(null, queryTitle, year);
-        if (ratings == null)
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(null, queryTitle, year);
+        if (result.Ratings == null)
         {
             return;
         }
 
-        show.ImdbRating = ratings.ImdbRating;
-        show.ImdbVotes = ratings.ImdbVotes;
-        show.RottenTomatoesRating = ratings.RottenTomatoesRating;
+        show.ImdbRating = result.Ratings.ImdbRating;
+        show.ImdbVotes = result.Ratings.ImdbVotes;
+        show.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
     }
 
     private static int? ParseYear(string? dateString)
