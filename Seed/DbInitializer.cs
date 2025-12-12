@@ -9,7 +9,7 @@ using Tracker.Services;
 
 public static class DbInitializer
 {
-    public static async Task InitializeAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string? exportFilePath = null)
+    public static async Task InitializeAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, ILogger logger, string? exportFilePath = null)
     {
         await context.Database.MigrateAsync();
 
@@ -30,15 +30,15 @@ public static class DbInitializer
         string watchlistPath = Path.Combine(listDirectory, "export_justwatch_watchlist.json");
         string likelistPath = Path.Combine(listDirectory, "export_justwatch_likelist.json");
 
-        await ImportMediaAsync(context, tmdbService, logger, resolvedExportPath, errorLogPath);
-        await ImportMediaListAsync(context, tmdbService, logger, watchlistPath, errorLogPath, "Watchlist", markSeen: false, markLiked: false);
-        await ImportMediaListAsync(context, tmdbService, logger, likelistPath, errorLogPath, "J'aime", markSeen: false, markLiked: true);
+        await ImportMediaAsync(context, tmdbService, omdbService, logger, resolvedExportPath, errorLogPath);
+        await ImportMediaListAsync(context, tmdbService, omdbService, logger, watchlistPath, errorLogPath, "Watchlist", markSeen: false, markLiked: false);
+        await ImportMediaListAsync(context, tmdbService, omdbService, logger, likelistPath, errorLogPath, "J'aime", markSeen: false, markLiked: true);
         await CreateOrUpdateSystemListsAsync(context, logger);
 
         logger.LogInformation("Import terminé");
     }
 
-    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string exportFilePath, string errorLogPath)
+    private static async Task ImportMediaAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, ILogger logger, string exportFilePath, string errorLogPath)
     {
         if (!File.Exists(exportFilePath))
         {
@@ -67,11 +67,11 @@ public static class DbInitializer
                 {
                     if (item.IsMovie)
                     {
-                        await ImportMovieAsync(context, tmdbService, tmdbId, logger, item.ImdbId, errorLogPath);
+                        await ImportMovieAsync(context, tmdbService, omdbService, tmdbId, logger, item.ImdbId, errorLogPath);
                     }
                     else if (item.IsShow)
                     {
-                        await ImportShowAsync(context, tmdbService, tmdbId, logger, errorLogPath);
+                        await ImportShowAsync(context, tmdbService, omdbService, tmdbId, logger, errorLogPath);
                     }
                 }
                 catch (Exception ex)
@@ -92,7 +92,7 @@ public static class DbInitializer
         }
     }
 
-    private static async Task ImportMediaListAsync(ApiDbContext context, TMDbService tmdbService, ILogger logger, string exportFilePath, string errorLogPath, string listName, bool markSeen, bool markLiked)
+    private static async Task ImportMediaListAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, ILogger logger, string exportFilePath, string errorLogPath, string listName, bool markSeen, bool markLiked)
     {
         if (!File.Exists(exportFilePath))
         {
@@ -135,7 +135,7 @@ public static class DbInitializer
             {
                 if (item.IsMovie)
                 {
-                    Movie? movie = await ImportMovieAsync(context, tmdbService, tmdbId, logger, item.ImdbId, errorLogPath, markSeen, markLiked);
+                    Movie? movie = await ImportMovieAsync(context, tmdbService, omdbService, tmdbId, logger, item.ImdbId, errorLogPath, markSeen, markLiked);
                     if (movie != null)
                     {
                         AddMovieToList(targetList, movie, item.CreatedAt);
@@ -143,7 +143,7 @@ public static class DbInitializer
                 }
                 else if (item.IsShow)
                 {
-                    Show? show = await ImportShowAsync(context, tmdbService, tmdbId, logger, errorLogPath, markSeen, markLiked);
+                    Show? show = await ImportShowAsync(context, tmdbService, omdbService, tmdbId, logger, errorLogPath, markSeen, markLiked);
                     if (show != null)
                     {
                         AddShowToList(targetList, show, item.CreatedAt);
@@ -271,7 +271,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
     }
 
-    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false)
     {
         Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
         if (m != null)
@@ -315,6 +315,14 @@ public static class DbInitializer
             Liked = markLiked
         };
 
+        MediaRatings? externalRatings = await omdbService.GetExternalRatingsAsync(movie.ImdbId ?? imdbId, movie.Title, ParseDate(tmdbMovie.ReleaseDate)?.Year);
+        if (externalRatings != null)
+        {
+            movie.ImdbRating = externalRatings.ImdbRating;
+            movie.ImdbVotes = externalRatings.ImdbVotes;
+            movie.RottenTomatoesRating = externalRatings.RottenTomatoesRating;
+        }
+
         if (!string.IsNullOrEmpty(imdbId) && movie.ImdbId != imdbId)
         {
             logger.LogError("IMDbId incohérent pour {Title}: attendu {Expected}, obtenu {Actual}", movie.Title, imdbId, movie.ImdbId);
@@ -327,7 +335,7 @@ public static class DbInitializer
         return movie;
     }
 
-    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false)
     {
         Show? db = await context.Shows
             .Include(s => s.Seasons)
@@ -400,6 +408,14 @@ public static class DbInitializer
             Seen = markSeen,
             Liked = markLiked
         };
+
+        MediaRatings? externalRatings = await omdbService.GetExternalRatingsAsync(null, show.Title, ParseDate(tmdbShow.FirstAirDate)?.Year);
+        if (externalRatings != null)
+        {
+            show.ImdbRating = externalRatings.ImdbRating;
+            show.ImdbVotes = externalRatings.ImdbVotes;
+            show.RottenTomatoesRating = externalRatings.RottenTomatoesRating;
+        }
 
         context.Shows.Add(show);
         await context.SaveChangesAsync();

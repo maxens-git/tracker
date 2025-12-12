@@ -14,11 +14,13 @@ public class MoviesController : ControllerBase
 {
     private readonly ApiDbContext _context;
     private readonly TMDbService _tmdbService;
+    private readonly OmdbService _omdbService;
 
-    public MoviesController(ApiDbContext context, TMDbService tmdbService)
+    public MoviesController(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService)
     {
         _context = context;
         _tmdbService = tmdbService;
+        _omdbService = omdbService;
     }
 
     [HttpGet("{tmdbId}")]
@@ -54,6 +56,8 @@ public class MoviesController : ControllerBase
                 ImdbId = tmdbMovie.ImdbId,
                 Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
             };
+
+            await EnrichWithOmdbAsync(movie, tmdbMovie.Title, ParseYear(tmdbMovie.ReleaseDate));
 
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();
@@ -92,6 +96,8 @@ public class MoviesController : ControllerBase
                 ImdbId = tmdbMovie.ImdbId,
                 Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
             };
+
+            await EnrichWithOmdbAsync(movie, tmdbMovie.Title, ParseYear(tmdbMovie.ReleaseDate));
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();
         }
@@ -194,6 +200,7 @@ public class MoviesController : ControllerBase
             VoteAverage = movie.VoteAverage,
             VoteCount = movie.VoteCount,
             Popularity = movie.Popularity,
+            Ratings = movie.ToRatings().ToDto(),
             Liked = movie.Liked,
             Seen = movie.Seen,
             ReleaseDate = movie.ReleaseDate,
@@ -207,5 +214,25 @@ public class MoviesController : ControllerBase
             ListIds = movie.MediaLists.Select(ml => ml.Id).ToList(),
             ListAddedAt = listAddedAt
         };
+    }
+
+    private async Task EnrichWithOmdbAsync(Movie movie, string title, int? year)
+    {
+        MediaRatings? ratings = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, title, year);
+        if (ratings == null)
+        {
+            return;
+        }
+
+        movie.ImdbRating = ratings.ImdbRating;
+        movie.ImdbVotes = ratings.ImdbVotes;
+        movie.RottenTomatoesRating = ratings.RottenTomatoesRating;
+    }
+
+    private static int? ParseYear(string? dateString)
+    {
+        if (string.IsNullOrEmpty(dateString))
+            return null;
+        return DateTime.TryParse(dateString, out DateTime date) ? date.Year : null;
     }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tracker.ModelsDTO;
 
 namespace Tracker.Models;
 
@@ -37,10 +38,12 @@ public class Show : BaseMedia
         Genres = dto.Genres;
         AddedAt = dto.AddedAt;
         LastUpdated = dto.LastUpdated;
+        ImdbRating = dto.Ratings?.ImdbRating;
+        ImdbVotes = dto.Ratings?.ImdbVotes;
+        RottenTomatoesRating = dto.Ratings?.RottenTomatoesRating;
         NumberOfSeasons = dto.NumberOfSeasons;
         NumberOfEpisodes = dto.NumberOfEpisodes;
         LastAirDate = dto.LastAirDate;
-        // Seasons and MediaLists handled separately
     }
 
     public ModelsDTO.ShowDto ToDto()
@@ -65,6 +68,7 @@ public class Show : BaseMedia
             Genres = Genres,
             AddedAt = AddedAt,
             LastUpdated = LastUpdated,
+            Ratings = ToRatings().ToDto(),
             NumberOfSeasons = NumberOfSeasons,
             NumberOfEpisodes = NumberOfEpisodes,
             LastAirDate = LastAirDate,

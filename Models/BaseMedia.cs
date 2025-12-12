@@ -34,6 +34,10 @@ public abstract class BaseMedia
     public int VoteCount { get; set; }
     public double Popularity { get; set; }
 
+    public double? ImdbRating { get; set; }
+    public long? ImdbVotes { get; set; }
+    public double? RottenTomatoesRating { get; set; }
+
     public bool Liked { get; set; } = false;
     public bool Seen { get; set; } = false;
 
@@ -43,4 +47,16 @@ public abstract class BaseMedia
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+
+    public MediaRatings ToRatings()
+    {
+        return new MediaRatings
+        {
+            TmdbRating = VoteAverage,
+            TmdbVotes = VoteCount,
+            ImdbRating = ImdbRating,
+            ImdbVotes = ImdbVotes,
+            RottenTomatoesRating = RottenTomatoesRating
+        };
+    }
 }

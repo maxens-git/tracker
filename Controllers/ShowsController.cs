@@ -14,11 +14,13 @@ public class ShowsController : ControllerBase
 {
     private readonly ApiDbContext _context;
     private readonly TMDbService _tmdbService;
+    private readonly OmdbService _omdbService;
 
-    public ShowsController(ApiDbContext context, TMDbService tmdbService)
+    public ShowsController(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService)
     {
         _context = context;
         _tmdbService = tmdbService;
+        _omdbService = omdbService;
     }
 
     [HttpGet("{tmdbId}")]
@@ -59,6 +61,8 @@ public class ShowsController : ControllerBase
                 NumberOfEpisodes = 0,
                 Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
             };
+
+            await EnrichWithOmdbAsync(show, tmdbShow.Name, ParseYear(tmdbShow.FirstAirDate));
 
             _context.Shows.Add(show);
             await _context.SaveChangesAsync();
@@ -313,6 +317,27 @@ public class ShowsController : ControllerBase
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 
+    private async Task EnrichWithOmdbAsync(Show show, string title, int? year)
+    {
+        string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? title : show.OriginalTitle!;
+        MediaRatings? ratings = await _omdbService.GetExternalRatingsAsync(null, queryTitle, year);
+        if (ratings == null)
+        {
+            return;
+        }
+
+        show.ImdbRating = ratings.ImdbRating;
+        show.ImdbVotes = ratings.ImdbVotes;
+        show.RottenTomatoesRating = ratings.RottenTomatoesRating;
+    }
+
+    private static int? ParseYear(string? dateString)
+    {
+        if (string.IsNullOrEmpty(dateString))
+            return null;
+        return DateTime.TryParse(dateString, out DateTime date) ? date.Year : null;
+    }
+
     private static ShowDto MapToDto(Show show, DateTime? listAddedAt = null)
     {
         return new ShowDto
@@ -335,6 +360,7 @@ public class ShowsController : ControllerBase
             Genres = show.Genres,
             AddedAt = show.AddedAt,
             LastUpdated = show.LastUpdated,
+            Ratings = show.ToRatings().ToDto(),
             NumberOfSeasons = show.Seasons.Count(s => s.SeasonNumber > 0),
             NumberOfEpisodes = show.Seasons
                 .Where(s => s.SeasonNumber > 0)

@@ -16,6 +16,7 @@ public class ShowDto
     public double VoteAverage { get; set; }
     public int VoteCount { get; set; }
     public double Popularity { get; set; }
+    public MediaRatingsDto Ratings { get; set; } = new();
     public bool Liked { get; set; }
     public bool Seen { get; set; }
     public DateTime? ReleaseDate { get; set; }

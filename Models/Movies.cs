@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tracker.ModelsDTO;
 
 namespace Tracker.Models;
 
@@ -38,11 +39,13 @@ public class Movie : BaseMedia
         Genres = dto.Genres;
         AddedAt = dto.AddedAt;
         LastUpdated = dto.LastUpdated;
+        ImdbRating = dto.Ratings?.ImdbRating;
+        ImdbVotes = dto.Ratings?.ImdbVotes;
+        RottenTomatoesRating = dto.Ratings?.RottenTomatoesRating;
         Runtime = dto.Runtime;
         Budget = dto.Budget;
         Revenue = dto.Revenue;
         ImdbId = dto.ImdbId;
-        // MediaLists will be handled separately
     }
 
     public ModelsDTO.MovieDto ToDto()
@@ -67,6 +70,7 @@ public class Movie : BaseMedia
             Genres = Genres,
             AddedAt = AddedAt,
             LastUpdated = LastUpdated,
+            Ratings = ToRatings().ToDto(),
             Runtime = Runtime,
             Budget = Budget,
             Revenue = Revenue,

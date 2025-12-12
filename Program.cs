@@ -19,6 +19,7 @@ builder.Services.Configure<ConnectionStringsOptions>(builder.Configuration.GetSe
 builder.Services.Configure<TMDbOptions>(builder.Configuration.GetSection(TMDbOptions.SectionName));
 builder.Services.Configure<JustWatchOptions>(builder.Configuration.GetSection(JustWatchOptions.SectionName));
 builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection(LoggingOptions.SectionName));
+builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection(OmdbOptions.SectionName));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -58,6 +59,14 @@ builder.Services.AddScoped<TMDbService>(sp =>
     return new TMDbService(httpClient, tmdbOptions.ApiKey);
 });
 
+builder.Services.AddHttpClient<OmdbService>();
+builder.Services.AddScoped<OmdbService>(sp =>
+{
+    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
+    var omdbOptions = sp.GetRequiredService<IOptions<OmdbOptions>>().Value;
+    return new OmdbService(httpClient, omdbOptions.ApiKey);
+});
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -78,12 +87,13 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApiDbContext>();
         var tmdbService = services.GetRequiredService<TMDbService>();
+        var omdbService = services.GetRequiredService<OmdbService>();
         var logger = services.GetRequiredService<ILogger<Program>>();
         var justWatchOptions = services.GetRequiredService<IOptions<JustWatchOptions>>().Value;
 
         if (justWatchOptions.EnableImport)
         {
-            await DbInitializer.InitializeAsync(context, tmdbService, logger, justWatchOptions.ExportFilePath);
+            await DbInitializer.InitializeAsync(context, tmdbService, omdbService, logger, justWatchOptions.ExportFilePath);
             logger.LogInformation("Base de données initialisée avec succès.");
         }
         else
