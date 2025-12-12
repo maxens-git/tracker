@@ -375,6 +375,10 @@ public static class DbInitializer
             return null;
         }
 
+        List<TMDbSeasonSummary> regularSeasons = tmdbShow.Seasons
+            .Where(s => s.SeasonNumber > 0)
+            .ToList();
+
         Show show = new Show
         {
             TmdbId = tmdbShow.Id,
@@ -390,8 +394,8 @@ public static class DbInitializer
             Popularity = tmdbShow.Popularity,
             ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
             LastAirDate = ParseDate(tmdbShow.LastAirDate),
-            NumberOfSeasons = tmdbShow.NumberOfSeasons,
-            NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
+            NumberOfSeasons = regularSeasons.Count,
+            NumberOfEpisodes = 0,
             Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name)),
             Seen = markSeen,
             Liked = markLiked
@@ -400,7 +404,9 @@ public static class DbInitializer
         context.Shows.Add(show);
         await context.SaveChangesAsync();
 
-        foreach (TMDbSeasonSummary seasonSummary in tmdbShow.Seasons)
+        int totalEpisodeCount = 0;
+
+        foreach (TMDbSeasonSummary seasonSummary in regularSeasons)
         {
             TMDbSeasonResponse? tmdbSeason = await tmdbService.GetSeasonAsync(tmdbId, seasonSummary.SeasonNumber);
             if (tmdbSeason == null) continue;
@@ -441,7 +447,13 @@ public static class DbInitializer
             }
 
             await context.SaveChangesAsync();
+
+            totalEpisodeCount += tmdbSeason.Episodes.Count;
         }
+
+        show.NumberOfEpisodes = totalEpisodeCount;
+        context.Shows.Update(show);
+        await context.SaveChangesAsync();
 
         logger.LogInformation("Série ajoutée: {Title} ({Seasons} saisons)", show.Title, show.NumberOfSeasons);
         return show;
