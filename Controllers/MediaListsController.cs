@@ -49,8 +49,10 @@ public class MediaListsController : ControllerBase
         IQueryable<MediaListMovie> query = _context.MediaListMovies
             .Include(x => x.Movie)
             .ThenInclude(m => m.MediaLists)
+            .AsSplitQuery()
             .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
-            .OrderByDescending(x => x.AddedAt);
+            .OrderByDescending(x => x.AddedAt)
+            .ThenByDescending(x => x.MovieId);
 
         int totalCount = await query.CountAsync();
 
@@ -75,8 +77,10 @@ public class MediaListsController : ControllerBase
         IQueryable<MediaListShow> query = _context.MediaListShows
             .Include(x => x.Show)
             .ThenInclude(s => s.MediaLists)
+            .AsSplitQuery()
             .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
-            .OrderByDescending(x => x.AddedAt);
+            .OrderByDescending(x => x.AddedAt)
+            .ThenByDescending(x => x.ShowId);
 
         int totalCount = await query.CountAsync();
 
@@ -103,6 +107,7 @@ public class MediaListsController : ControllerBase
         List<Movie> movies = await _context.Movies
             .Where(m => m.Liked)
             .Include(m => m.MediaLists)
+            .AsSplitQuery()
             .OrderByDescending(m => m.LastUpdated)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
@@ -127,6 +132,7 @@ public class MediaListsController : ControllerBase
         List<Show> shows = await _context.Shows
             .Where(s => s.Liked)
             .Include(s => s.MediaLists)
+            .AsSplitQuery()
             .OrderByDescending(s => s.LastUpdated)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
@@ -151,6 +157,7 @@ public class MediaListsController : ControllerBase
         List<Movie> movies = await _context.Movies
             .Where(m => m.Seen)
             .Include(m => m.MediaLists)
+            .AsSplitQuery()
             .OrderByDescending(m => m.LastUpdated)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
@@ -175,6 +182,7 @@ public class MediaListsController : ControllerBase
         List<Show> shows = await _context.Shows
             .Where(s => s.Seen)
             .Include(s => s.MediaLists)
+            .AsSplitQuery()
             .OrderByDescending(s => s.LastUpdated)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
@@ -226,8 +234,10 @@ public class MediaListsController : ControllerBase
         IQueryable<MediaListMovie> query = _context.MediaListMovies
             .Include(x => x.Movie)
             .ThenInclude(m => m.MediaLists)
+            .AsSplitQuery()
             .Where(x => x.MediaListId == id)
-            .OrderByDescending(x => x.AddedAt);
+            .OrderByDescending(x => x.AddedAt)
+            .ThenByDescending(x => x.MovieId);
 
         int totalCount = await query.CountAsync();
 
@@ -256,8 +266,10 @@ public class MediaListsController : ControllerBase
         IQueryable<MediaListShow> query = _context.MediaListShows
             .Include(x => x.Show)
             .ThenInclude(s => s.MediaLists)
+            .AsSplitQuery()
             .Where(x => x.MediaListId == id)
-            .OrderByDescending(x => x.AddedAt);
+            .OrderByDescending(x => x.AddedAt)
+            .ThenByDescending(x => x.ShowId);
 
         int totalCount = await query.CountAsync();
 
