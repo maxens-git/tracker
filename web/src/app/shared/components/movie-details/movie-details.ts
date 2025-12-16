@@ -33,6 +33,9 @@ export class MovieDetailsComponent implements OnInit {
   protected lists = signal<MediaListSummary[]>([]);
   protected listLoading = signal<boolean>(false);
 
+  protected readonly imdbLogo = 'assets/images/imdb.png';
+  protected readonly tmdbLogo = 'assets/images/themoviedatabase.png';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -258,6 +261,13 @@ export class MovieDetailsComponent implements OnInit {
 
   protected rottenRating(movie: MovieDetails): number | null {
     return movie.ratings?.rottenTomatoesRating ?? null;
+  }
+
+  protected rottenLogo(movie: MovieDetails): string {
+    const rating = this.rottenRating(movie);
+    return rating !== null && rating > 60
+      ? 'assets/images/rottentomatoes.png_fresh.png'
+      : 'assets/images/rottentomatoes.png_rotten.png';
   }
 
   private loadRatingsIfNeeded(tmdbId: number, movie: MovieDetails): void {

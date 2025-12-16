@@ -37,6 +37,9 @@ export class ShowDetailsComponent implements OnInit {
   protected expandedEpisodes = signal<Set<number>>(new Set());
   protected ratingModalOpen = signal<boolean>(false);
 
+  protected readonly imdbLogo = 'assets/images/imdb.png';
+  protected readonly tmdbLogo = 'assets/images/themoviedatabase.png';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -421,6 +424,13 @@ export class ShowDetailsComponent implements OnInit {
 
   protected rottenRating(show: ShowDetails): number | null {
     return show.ratings?.rottenTomatoesRating ?? null;
+  }
+
+  protected rottenLogo(show: ShowDetails): string {
+    const rating = this.rottenRating(show);
+    return rating !== null && rating > 60
+      ? 'assets/images/rottentomatoes.png_fresh.png'
+      : 'assets/images/rottentomatoes.png_rotten.png';
   }
 
   private loadRatingsIfNeeded(tmdbId: number, show: ShowDetails): void {
