@@ -148,6 +148,7 @@ export class MovieDetailsComponent implements OnInit {
         this.movieDetails.set(data);
         this.loading.set(false);
         this.setWatchlistState(data);
+        this.loadRatingsIfNeeded(tmdbId, data);
         this.loadSimilarMovies(tmdbId);
         console.log(data)
       },
@@ -257,5 +258,26 @@ export class MovieDetailsComponent implements OnInit {
 
   protected rottenRating(movie: MovieDetails): number | null {
     return movie.ratings?.rottenTomatoesRating ?? null;
+  }
+
+  private loadRatingsIfNeeded(tmdbId: number, movie: MovieDetails): void {
+    if (!this.needsExternalRatings(movie)) {
+      return;
+    }
+
+    this.mediaDetailsService.getMovieRatings(tmdbId).subscribe({
+      next: (ratings) => {
+        if (!ratings) return;
+        this.movieDetails.update((current) => current ? { ...current, ratings } : current);
+      },
+      error: () => {
+        // Fail silently; ratings are optional for initial render.
+      }
+    });
+  }
+
+  private needsExternalRatings(movie: MovieDetails): boolean {
+    const ratings = movie.ratings;
+    return !ratings || (ratings.imdbRating === null && ratings.rottenTomatoesRating === null);
   }
 }

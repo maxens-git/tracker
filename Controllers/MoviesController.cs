@@ -36,28 +36,7 @@ public class MoviesController : ControllerBase
             if (tmdbMovie == null)
                 return NotFound("Movie not found on TMDb");
 
-            movie = new Movie
-            {
-                TmdbId = tmdbMovie.Id,
-                Title = tmdbMovie.Title,
-                OriginalTitle = tmdbMovie.OriginalTitle,
-                Overview = tmdbMovie.Overview,
-                Status = tmdbMovie.Status,
-                Tagline = tmdbMovie.Tagline,
-                PosterPath = tmdbMovie.PosterPath,
-                BackdropPath = tmdbMovie.BackdropPath,
-                VoteAverage = tmdbMovie.VoteAverage,
-                VoteCount = tmdbMovie.VoteCount,
-                Popularity = tmdbMovie.Popularity,
-                ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
-                Runtime = tmdbMovie.Runtime,
-                Budget = tmdbMovie.Budget,
-                Revenue = tmdbMovie.Revenue,
-                ImdbId = tmdbMovie.ImdbId,
-                Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
-            };
-
-            await EnrichWithOmdbAsync(movie, tmdbMovie.Title, ParseYear(tmdbMovie.ReleaseDate));
+            movie = BuildMovieFromTmdb(tmdbMovie);
 
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();
@@ -76,28 +55,7 @@ public class MoviesController : ControllerBase
             if (tmdbMovie == null)
                 return NotFound("Movie not found on TMDb");
 
-            movie = new Movie
-            {
-                TmdbId = tmdbMovie.Id,
-                Title = tmdbMovie.Title,
-                OriginalTitle = tmdbMovie.OriginalTitle,
-                Overview = tmdbMovie.Overview,
-                Status = tmdbMovie.Status,
-                Tagline = tmdbMovie.Tagline,
-                PosterPath = tmdbMovie.PosterPath,
-                BackdropPath = tmdbMovie.BackdropPath,
-                VoteAverage = tmdbMovie.VoteAverage,
-                VoteCount = tmdbMovie.VoteCount,
-                Popularity = tmdbMovie.Popularity,
-                ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
-                Runtime = tmdbMovie.Runtime,
-                Budget = tmdbMovie.Budget,
-                Revenue = tmdbMovie.Revenue,
-                ImdbId = tmdbMovie.ImdbId,
-                Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
-            };
-
-            await EnrichWithOmdbAsync(movie, tmdbMovie.Title, ParseYear(tmdbMovie.ReleaseDate));
+            movie = BuildMovieFromTmdb(tmdbMovie);
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();
         }
@@ -184,6 +142,44 @@ public class MoviesController : ControllerBase
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 
+    [HttpGet("{tmdbId}/ratings")]
+    public async Task<ActionResult<MediaRatingsDto?>> GetRatings(int tmdbId)
+    {
+        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+        if (movie == null)
+        {
+            TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
+            if (tmdbMovie == null)
+            {
+                return NotFound("Movie not found on TMDb");
+            }
+
+            movie = BuildMovieFromTmdb(tmdbMovie);
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+        }
+
+        if (HasStoredExternalRatings(movie))
+        {
+            return movie.ToRatings().ToDto();
+        }
+
+        int? releaseYear = movie.ReleaseDate?.Year;
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, movie.Title, releaseYear);
+        if (result.Ratings == null)
+        {
+            return NoContent();
+        }
+
+        movie.ImdbRating = result.Ratings.ImdbRating;
+        movie.ImdbVotes = result.Ratings.ImdbVotes;
+        movie.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
+
+        await _context.SaveChangesAsync();
+
+        return movie.ToRatings().ToDto();
+    }
+
     private static MovieDto MapToDto(Movie movie, DateTime? listAddedAt = null)
     {
         return new MovieDto
@@ -216,23 +212,32 @@ public class MoviesController : ControllerBase
         };
     }
 
-    private async Task EnrichWithOmdbAsync(Movie movie, string title, int? year)
+    private static Movie BuildMovieFromTmdb(TMDbMovieResponse tmdbMovie)
     {
-        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, title, year);
-        if (result.Ratings == null)
+        return new Movie
         {
-            return;
-        }
-
-        movie.ImdbRating = result.Ratings.ImdbRating;
-        movie.ImdbVotes = result.Ratings.ImdbVotes;
-        movie.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
+            TmdbId = tmdbMovie.Id,
+            Title = tmdbMovie.Title,
+            OriginalTitle = tmdbMovie.OriginalTitle,
+            Overview = tmdbMovie.Overview,
+            Status = tmdbMovie.Status,
+            Tagline = tmdbMovie.Tagline,
+            PosterPath = tmdbMovie.PosterPath,
+            BackdropPath = tmdbMovie.BackdropPath,
+            VoteAverage = tmdbMovie.VoteAverage,
+            VoteCount = tmdbMovie.VoteCount,
+            Popularity = tmdbMovie.Popularity,
+            ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
+            Runtime = tmdbMovie.Runtime,
+            Budget = tmdbMovie.Budget,
+            Revenue = tmdbMovie.Revenue,
+            ImdbId = tmdbMovie.ImdbId,
+            Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
+        };
     }
 
-    private static int? ParseYear(string? dateString)
+    private static bool HasStoredExternalRatings(Movie movie)
     {
-        if (string.IsNullOrEmpty(dateString))
-            return null;
-        return DateTime.TryParse(dateString, out DateTime date) ? date.Year : null;
+        return movie.ImdbRating.HasValue || movie.ImdbVotes.HasValue || movie.RottenTomatoesRating.HasValue;
     }
 }

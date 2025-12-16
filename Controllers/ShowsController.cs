@@ -62,8 +62,6 @@ public class ShowsController : ControllerBase
                 Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
             };
 
-            await EnrichWithOmdbAsync(show, tmdbShow.Name, ParseYear(tmdbShow.FirstAirDate));
-
             _context.Shows.Add(show);
             await _context.SaveChangesAsync();
 
@@ -317,27 +315,6 @@ public class ShowsController : ControllerBase
         return DateTime.TryParse(dateString, out DateTime date) ? date : null;
     }
 
-    private async Task EnrichWithOmdbAsync(Show show, string title, int? year)
-    {
-        string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? title : show.OriginalTitle!;
-        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(null, queryTitle, year);
-        if (result.Ratings == null)
-        {
-            return;
-        }
-
-        show.ImdbRating = result.Ratings.ImdbRating;
-        show.ImdbVotes = result.Ratings.ImdbVotes;
-        show.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
-    }
-
-    private static int? ParseYear(string? dateString)
-    {
-        if (string.IsNullOrEmpty(dateString))
-            return null;
-        return DateTime.TryParse(dateString, out DateTime date) ? date.Year : null;
-    }
-
     private static ShowDto MapToDto(Show show, DateTime? listAddedAt = null)
     {
         return new ShowDto
@@ -372,5 +349,40 @@ public class ShowsController : ControllerBase
             ListIds = show.MediaLists.Select(ml => ml.Id).ToList(),
             ListAddedAt = listAddedAt
         };
+    }
+
+    [HttpGet("{tmdbId}/ratings")]
+    public async Task<ActionResult<MediaRatingsDto?>> GetRatings(int tmdbId)
+    {
+        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+        if (show == null)
+        {
+            return NotFound("Show not found");
+        }
+
+        if (HasStoredExternalRatings(show))
+        {
+            return show.ToRatings().ToDto();
+        }
+
+        string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? show.Title : show.OriginalTitle!;
+        int? releaseYear = show.ReleaseDate?.Year;
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(null, queryTitle, releaseYear);
+        if (result.Ratings == null)
+        {
+            return NoContent();
+        }
+
+        show.ImdbRating = result.Ratings.ImdbRating;
+        show.ImdbVotes = result.Ratings.ImdbVotes;
+        show.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
+        await _context.SaveChangesAsync();
+
+        return show.ToRatings().ToDto();
+    }
+
+    private static bool HasStoredExternalRatings(Show show)
+    {
+        return show.ImdbRating.HasValue || show.ImdbVotes.HasValue || show.RottenTomatoesRating.HasValue;
     }
 }

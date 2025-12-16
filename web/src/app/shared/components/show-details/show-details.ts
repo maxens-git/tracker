@@ -63,6 +63,7 @@ export class ShowDetailsComponent implements OnInit {
         this.showDetails.set(data);
         this.loading.set(false);
         this.setWatchlistState(data);
+        this.loadRatingsIfNeeded(tmdbId, data);
         this.loadSimilarShows(tmdbId);
       },
       error: () => {
@@ -420,5 +421,26 @@ export class ShowDetailsComponent implements OnInit {
 
   protected rottenRating(show: ShowDetails): number | null {
     return show.ratings?.rottenTomatoesRating ?? null;
+  }
+
+  private loadRatingsIfNeeded(tmdbId: number, show: ShowDetails): void {
+    if (!this.needsExternalRatings(show)) {
+      return;
+    }
+
+    this.mediaDetailsService.getShowRatings(tmdbId).subscribe({
+      next: (ratings) => {
+        if (!ratings) return;
+        this.showDetails.update((current) => current ? { ...current, ratings } : current);
+      },
+      error: () => {
+        // Ratings are optional; ignore fetch failures.
+      }
+    });
+  }
+
+  private needsExternalRatings(show: ShowDetails): boolean {
+    const ratings = show.ratings;
+    return !ratings || (ratings.imdbRating === null && ratings.rottenTomatoesRating === null);
   }
 }
