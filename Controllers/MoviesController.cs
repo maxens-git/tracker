@@ -180,6 +180,54 @@ public class MoviesController : ControllerBase
         return movie.ToRatings().ToDto();
     }
 
+    [HttpPost("{tmdbId}/refresh")]
+    public async Task<ActionResult<MovieDto>> RefreshMovie(int tmdbId)
+    {
+        Movie? movie = await _context.Movies
+            .Include(m => m.MediaLists)
+            .FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+
+        if (movie == null)
+            return NotFound("Movie not found in database");
+
+        // Fetch fresh data from TMDb
+        TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
+        if (tmdbMovie == null)
+            return NotFound("Movie not found on TMDb");
+
+        // Update TMDb fields
+        movie.Title = tmdbMovie.Title;
+        movie.OriginalTitle = tmdbMovie.OriginalTitle;
+        movie.Overview = tmdbMovie.Overview;
+        movie.Status = tmdbMovie.Status;
+        movie.Tagline = tmdbMovie.Tagline;
+        movie.PosterPath = tmdbMovie.PosterPath;
+        movie.BackdropPath = tmdbMovie.BackdropPath;
+        movie.VoteAverage = tmdbMovie.VoteAverage;
+        movie.VoteCount = tmdbMovie.VoteCount;
+        movie.Popularity = tmdbMovie.Popularity;
+        movie.ReleaseDate = ParseDate(tmdbMovie.ReleaseDate);
+        movie.Runtime = tmdbMovie.Runtime;
+        movie.Budget = tmdbMovie.Budget;
+        movie.Revenue = tmdbMovie.Revenue;
+        movie.ImdbId = tmdbMovie.ImdbId;
+        movie.Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name));
+        movie.LastUpdated = DateTime.UtcNow;
+
+        // Refresh OMDb ratings
+        string queryTitle = string.IsNullOrWhiteSpace(movie.OriginalTitle) ? movie.Title : movie.OriginalTitle!;
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, queryTitle, movie.ReleaseDate?.Year);
+        if (result.Ratings != null)
+        {
+            movie.ImdbRating = result.Ratings.ImdbRating;
+            movie.ImdbVotes = result.Ratings.ImdbVotes;
+            movie.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
+        }
+
+        await _context.SaveChangesAsync();
+        return MapToDto(movie);
+    }
+
     private static MovieDto MapToDto(Movie movie, DateTime? listAddedAt = null)
     {
         return new MovieDto

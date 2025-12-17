@@ -308,6 +308,136 @@ public class ShowsController : ControllerBase
         return episode.ToDto();
     }
 
+    [HttpPost("{tmdbId}/refresh")]
+    public async Task<ActionResult<ShowDto>> RefreshShow(int tmdbId)
+    {
+        Show? show = await _context.Shows
+            .Include(s => s.Seasons)
+                .ThenInclude(s => s.Episodes)
+            .Include(s => s.MediaLists)
+            .FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
+
+        if (show == null)
+            return NotFound("Show not found in database");
+
+        // Fetch fresh data from TMDb
+        TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
+        if (tmdbShow == null)
+            return NotFound("Show not found on TMDb");
+
+        List<TMDbSeasonSummary> regularSeasons = tmdbShow.Seasons
+            .Where(s => s.SeasonNumber > 0)
+            .ToList();
+
+        // Update show fields
+        show.Title = tmdbShow.Name;
+        show.OriginalTitle = tmdbShow.OriginalName;
+        show.Overview = tmdbShow.Overview;
+        show.Status = tmdbShow.Status;
+        show.Tagline = tmdbShow.Tagline;
+        show.PosterPath = tmdbShow.PosterPath;
+        show.BackdropPath = tmdbShow.BackdropPath;
+        show.VoteAverage = tmdbShow.VoteAverage;
+        show.VoteCount = tmdbShow.VoteCount;
+        show.Popularity = tmdbShow.Popularity;
+        show.ReleaseDate = ParseDate(tmdbShow.FirstAirDate);
+        show.LastAirDate = ParseDate(tmdbShow.LastAirDate);
+        show.Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name));
+        show.LastUpdated = DateTime.UtcNow;
+
+        // Refresh seasons and episodes
+        int totalEpisodeCount = 0;
+        foreach (TMDbSeasonSummary seasonSummary in regularSeasons)
+        {
+            TMDbSeasonResponse? tmdbSeason = await _tmdbService.GetSeasonAsync(tmdbId, seasonSummary.SeasonNumber);
+            if (tmdbSeason == null) continue;
+
+            Season? existingSeason = show.Seasons.FirstOrDefault(s => s.SeasonNumber == tmdbSeason.SeasonNumber);
+            if (existingSeason == null)
+            {
+                existingSeason = new Season
+                {
+                    TmdbId = tmdbSeason.Id,
+                    Name = tmdbSeason.Name,
+                    Overview = tmdbSeason.Overview,
+                    SeasonNumber = tmdbSeason.SeasonNumber,
+                    EpisodeCount = tmdbSeason.Episodes.Count,
+                    AirDate = ParseDate(tmdbSeason.AirDate),
+                    PosterPath = tmdbSeason.PosterPath,
+                    ShowId = show.Id
+                };
+                _context.Seasons.Add(existingSeason);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                existingSeason.TmdbId = tmdbSeason.Id;
+                existingSeason.Name = tmdbSeason.Name;
+                existingSeason.Overview = tmdbSeason.Overview;
+                existingSeason.EpisodeCount = tmdbSeason.Episodes.Count;
+                existingSeason.AirDate = ParseDate(tmdbSeason.AirDate);
+                existingSeason.PosterPath = tmdbSeason.PosterPath;
+            }
+
+            foreach (TMDbEpisodeResponse tmdbEpisode in tmdbSeason.Episodes)
+            {
+                Episode? existingEpisode = existingSeason.Episodes?.FirstOrDefault(e => e.EpisodeNumber == tmdbEpisode.EpisodeNumber);
+                if (existingEpisode == null)
+                {
+                    Episode newEpisode = new Episode
+                    {
+                        TmdbId = tmdbEpisode.Id,
+                        Name = tmdbEpisode.Name,
+                        Overview = tmdbEpisode.Overview,
+                        EpisodeNumber = tmdbEpisode.EpisodeNumber,
+                        Runtime = tmdbEpisode.Runtime ?? 0,
+                        VoteAverage = tmdbEpisode.VoteAverage,
+                        AirDate = ParseDate(tmdbEpisode.AirDate),
+                        StillPath = tmdbEpisode.StillPath,
+                        SeasonId = existingSeason.Id
+                    };
+                    _context.Episodes.Add(newEpisode);
+                }
+                else
+                {
+                    existingEpisode.TmdbId = tmdbEpisode.Id;
+                    existingEpisode.Name = tmdbEpisode.Name;
+                    existingEpisode.Overview = tmdbEpisode.Overview;
+                    existingEpisode.Runtime = tmdbEpisode.Runtime ?? 0;
+                    existingEpisode.VoteAverage = tmdbEpisode.VoteAverage;
+                    existingEpisode.AirDate = ParseDate(tmdbEpisode.AirDate);
+                    existingEpisode.StillPath = tmdbEpisode.StillPath;
+                }
+            }
+
+            totalEpisodeCount += tmdbSeason.Episodes.Count;
+        }
+
+        show.NumberOfSeasons = regularSeasons.Count;
+        show.NumberOfEpisodes = totalEpisodeCount;
+
+        // Refresh OMDb ratings
+        string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? show.Title : show.OriginalTitle!;
+        OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(null, queryTitle, show.ReleaseDate?.Year);
+        if (result.Ratings != null)
+        {
+            show.ImdbRating = result.Ratings.ImdbRating;
+            show.ImdbVotes = result.Ratings.ImdbVotes;
+            show.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Reload with updated data
+        show = await _context.Shows
+            .Include(s => s.Seasons)
+                .ThenInclude(s => s.Episodes)
+            .Include(s => s.MediaLists)
+            .FirstAsync(s => s.Id == show.Id);
+
+        return MapToDto(show);
+    }
+
     private static DateTime? ParseDate(string? dateString)
     {
         if (string.IsNullOrEmpty(dateString))
