@@ -1,7 +1,7 @@
 :host {
-  --primary-glow: #5f68ff;
-  --text-white: #f5f6ff;
-  --text-muted: rgba(245, 246, 255, 0.65);
+  --primary-glow: #AD8B73;
+  --text-white: #FFFBE9;
+  --text-muted: rgba(255, 251, 233, 0.65);
   --card-bg: rgba(12, 14, 22, 0.95);
   --border: rgba(255, 255, 255, 0.12);
 }
@@ -48,6 +48,6 @@
 }
 
 .tabbar__suggestion:hover {
-  background: linear-gradient(135deg, rgba(95, 104, 255, 0.12) 0%, rgba(95, 104, 255, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(173, 139, 115, 0.12) 0%, rgba(173, 139, 115, 0.08) 100%);
   transform: translateX(4px);
 }

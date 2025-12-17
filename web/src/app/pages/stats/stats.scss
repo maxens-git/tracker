@@ -1,6 +1,6 @@
 .stats-page {
 	padding: 24px;
-	color: #f5f6ff;
+	color: #FFFBE9;
 	display: flex;
 	justify-content: center;
 }
@@ -26,9 +26,9 @@
 		letter-spacing: 0.12em;
 		font-weight: 700;
 		margin: 0 0 4px;
-		color: rgba(245,246,255,0.72);
+		color: rgba(255,251,233,0.72);
 	}
-	.muted { margin: 0; color: rgba(245,246,255,0.72); }
+	.muted { margin: 0; color: rgba(255,251,233,0.72); }
 }
 
 .cards {
@@ -45,7 +45,7 @@
 	padding: 14px;
 	box-shadow: 0 12px 22px rgba(0,0,0,0.28);
 
-	.label { margin: 0 0 6px; color: rgba(245,246,255,0.78); font-weight: 700; letter-spacing: 0.01em; }
+	.label { margin: 0 0 6px; color: rgba(255,251,233,0.78); font-weight: 700; letter-spacing: 0.01em; }
 	.value {
 		margin: 0;
 		font-size: 1.8rem;
@@ -53,7 +53,7 @@
 		color: #ffffff;
 		text-shadow: 0 1px 4px rgba(0,0,0,0.35);
 	}
-	.sub { margin: 6px 0 0; color: rgba(245,246,255,0.6); font-size: 0.9rem; }
+	.sub { margin: 6px 0 0; color: rgba(255,251,233,0.6); font-size: 0.9rem; }
 }
 
 .skeleton {
@@ -89,8 +89,8 @@
 	h2 { margin: 0 0 10px; font-size: 1.1rem; }
 
 	table { width: 100%; border-collapse: collapse; }
-	th, td { padding: 8px 6px; text-align: left; color: #f5f6ff; }
-	th { font-weight: 700; color: rgba(245,246,255,0.78); }
+	th, td { padding: 8px 6px; text-align: left; color: #FFFBE9; }
+	th { font-weight: 700; color: rgba(255,251,233,0.78); }
 	tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
 	tr + tr { border-top: 1px solid rgba(255,255,255,0.06); }
 }
