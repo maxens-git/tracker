@@ -1,11 +1,15 @@
 <p-menubar [model]="items" class="tabbar" [breakpoint]="'0px'">
   <ng-template pTemplate="end">
     <div class="d-flex align-items-center gap-2">
-      <p-avatar
+      <p-menu #profileMenu [model]="profileItems" [popup]="true"></p-menu>
+      <p-button
         icon="pi pi-user"
-        shape="circle"
-        [style]="{ 'background-color': '#2196F3', color: '#ffffff', cursor: 'pointer' }">
-      </p-avatar>
+        (onClick)="profileMenu.toggle($event)"
+        size="small"
+        severity="secondary"
+        [rounded]="true"
+        [text]="true">
+      </p-button>
     </div>
   </ng-template>
 </p-menubar>

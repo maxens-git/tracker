@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -8,6 +9,7 @@ using Tracker.Services;
 
 namespace Tracker.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MoviesController : ControllerBase
@@ -190,12 +192,10 @@ public class MoviesController : ControllerBase
         if (movie == null)
             return NotFound("Movie not found in database");
 
-        // Fetch fresh data from TMDb
         TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
         if (tmdbMovie == null)
             return NotFound("Movie not found on TMDb");
 
-        // Update TMDb fields
         movie.Title = tmdbMovie.Title;
         movie.OriginalTitle = tmdbMovie.OriginalTitle;
         movie.Overview = tmdbMovie.Overview;
@@ -214,7 +214,6 @@ public class MoviesController : ControllerBase
         movie.Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name));
         movie.LastUpdated = DateTime.UtcNow;
 
-        // Refresh OMDb ratings
         string queryTitle = string.IsNullOrWhiteSpace(movie.OriginalTitle) ? movie.Title : movie.OriginalTitle!;
         OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, queryTitle, movie.ReleaseDate?.Year);
         if (result.Ratings != null)

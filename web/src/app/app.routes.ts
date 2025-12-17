@@ -5,12 +5,16 @@ import { ShowDetailsComponent } from './shared/components/show-details/show-deta
 import { Search } from './pages/search/search';
 import { Listes } from './pages/listes/listes';
 import { Stats } from './pages/stats/stats';
+import { Login } from './pages/login/login';
+import { authGuard, publicGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '', component: Home },
-    { path: 'movies/:id', component: MovieDetailsComponent },
-    { path: 'shows/:id', component: ShowDetailsComponent },
-    { path: 'search', component: Search },
-    { path: 'listes', component: Listes },
-    { path: 'stats', component: Stats}
+    { path: 'login', component: Login, canActivate: [publicGuard] },
+    { path: '', component: Home, canActivate: [authGuard] },
+    { path: 'movies/:id', component: MovieDetailsComponent, canActivate: [authGuard] },
+    { path: 'shows/:id', component: ShowDetailsComponent, canActivate: [authGuard] },
+    { path: 'search', component: Search, canActivate: [authGuard] },
+    { path: 'listes', component: Listes, canActivate: [authGuard] },
+    { path: 'stats', component: Stats, canActivate: [authGuard] },
+    { path: '**', redirectTo: '' }
 ];

@@ -162,7 +162,6 @@ export class MovieDetailsComponent implements OnInit {
     });
   }
 
-  // Determine watchlist id and whether movie is in it
   private setWatchlistState(movie: MovieDetails): void {
     this.mediaListsService.getAll().subscribe({
       next: (lists) => {
@@ -214,7 +213,6 @@ export class MovieDetailsComponent implements OnInit {
       this.mediaListsService.removeMovieFromWatchlist(movie.tmdbId).subscribe({
         next: () => {
           this.inWatchlist.set(false);
-          // remove watchlist id from movie.listIds if known
           const wid = this.watchlistId();
           if (wid) {
             this.movieDetails.update(current => current ? { ...current, listIds: (current.listIds || []).filter(id => id !== wid) } : current);
@@ -281,7 +279,6 @@ export class MovieDetailsComponent implements OnInit {
         this.movieDetails.update((current) => current ? { ...current, ratings } : current);
       },
       error: () => {
-        // Fail silently; ratings are optional for initial render.
       }
     });
   }

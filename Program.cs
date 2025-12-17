@@ -1,6 +1,9 @@
+using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Tracker.Data;
 using Tracker.Options;
 using Tracker.Services;
@@ -20,6 +23,36 @@ builder.Services.Configure<TMDbOptions>(builder.Configuration.GetSection(TMDbOpt
 builder.Services.Configure<JustWatchOptions>(builder.Configuration.GetSection(JustWatchOptions.SectionName));
 builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection(LoggingOptions.SectionName));
 builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection(OmdbOptions.SectionName));
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<LdapOptions>(builder.Configuration.GetSection(LdapOptions.SectionName));
+
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt configuration is required");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtOptions.Issuer,
+        ValidAudience = jwtOptions.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<ILdapService, LdapService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -74,6 +107,9 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAngular");
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -108,7 +144,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -8,6 +9,7 @@ using Tracker.Services;
 
 namespace Tracker.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ShowsController : ControllerBase
@@ -320,7 +322,6 @@ public class ShowsController : ControllerBase
         if (show == null)
             return NotFound("Show not found in database");
 
-        // Fetch fresh data from TMDb
         TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
         if (tmdbShow == null)
             return NotFound("Show not found on TMDb");
@@ -329,7 +330,6 @@ public class ShowsController : ControllerBase
             .Where(s => s.SeasonNumber > 0)
             .ToList();
 
-        // Update show fields
         show.Title = tmdbShow.Name;
         show.OriginalTitle = tmdbShow.OriginalName;
         show.Overview = tmdbShow.Overview;
@@ -345,7 +345,6 @@ public class ShowsController : ControllerBase
         show.Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name));
         show.LastUpdated = DateTime.UtcNow;
 
-        // Refresh seasons and episodes
         int totalEpisodeCount = 0;
         foreach (TMDbSeasonSummary seasonSummary in regularSeasons)
         {
@@ -416,7 +415,6 @@ public class ShowsController : ControllerBase
         show.NumberOfSeasons = regularSeasons.Count;
         show.NumberOfEpisodes = totalEpisodeCount;
 
-        // Refresh OMDb ratings
         string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? show.Title : show.OriginalTitle!;
         OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(null, queryTitle, show.ReleaseDate?.Year);
         if (result.Ratings != null)
@@ -428,7 +426,6 @@ public class ShowsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        // Reload with updated data
         show = await _context.Shows
             .Include(s => s.Seasons)
                 .ThenInclude(s => s.Episodes)

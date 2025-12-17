@@ -76,7 +76,6 @@ export class ShowDetailsComponent implements OnInit {
     });
   }
 
-  // Determine watchlist id and whether show is in it
   private setWatchlistState(show: ShowDetails): void {
     this.mediaListsService.getAll().subscribe({
       next: (lists) => {
@@ -444,7 +443,6 @@ export class ShowDetailsComponent implements OnInit {
         this.showDetails.update((current) => current ? { ...current, ratings } : current);
       },
       error: () => {
-        // Ratings are optional; ignore fetch failures.
       }
     });
   }

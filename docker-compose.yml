@@ -11,4 +11,18 @@ services:
       ConnectionStrings__DefaultConnection: Server=db;Port=3306;Database=tracker;Uid=tracker;Pwd=tracker;
       TMDb__ApiKey: ${TMDB_API_KEY:-changeme}
       JustWatch__EnableImport: "false"
+      OMDb__ApiKey: ${OMDB_API_KEY:-changeme}
+      Jwt__Secret: ${JWT_SECRET:-changeme}
+      Jwt__Issuer: TrackerApi
+      Jwt__Audience: TrackerApp
+      Jwt__AccessTokenExpirationMinutes: 15
+      Jwt__RefreshTokenExpirationDays: 30
+      Ldap__Server: ${LDAP_SERVER:-changeme}
+      Ldap__Port: 3890
+      Ldap__UseSsl: "false"
+      Ldap__BaseDn: ou=people,dc=maxens,dc=org
+      Ldap__UserDnPattern: uid={0},ou=users,dc=maxens,dc=org
+      Ldap__SearchFilter: (uid={0})
+      Ldap__BindDn: uid=finances,ou=people,dc=maxens,dc=org
+      Ldap__BindPassword: ${LDAP_BIND_PASSWORD:-changeme}
     restart: unless-stopped

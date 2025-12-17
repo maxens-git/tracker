@@ -1,21 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { AvatarModule } from 'primeng/avatar';
 import { MenubarModule } from 'primeng/menubar';
-import { InputTextModule } from 'primeng/inputtext';
+import { MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
-import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-tab-bar',
-  imports: [MenubarModule, AvatarModule, InputTextModule, ButtonModule, FormsModule],
+  imports: [MenubarModule, MenuModule, ButtonModule, FormsModule],
   templateUrl: './tab-bar.html',
   styleUrl: './tab-bar.scss',
 })
 export class TabBar {
-  private readonly router: Router;
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+
+  currentUser = this.authService.currentUser;
 
   items: MenuItem[] = [
     {
@@ -40,7 +42,11 @@ export class TabBar {
     }
   ];
 
-  constructor(router: Router) {
-    this.router = router;
+  profileItems: MenuItem[] = [
+    { label: 'Déconnexion', icon: 'pi pi-sign-out', command: () => this.logout() }
+  ];
+
+  logout(): void {
+    this.authService.logout();
   }
 }
