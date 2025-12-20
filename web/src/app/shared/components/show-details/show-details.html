@@ -1,334 +1,451 @@
 <section class="show-page">
 	@if (loading()) {
-		<div class="hero skeleton-hero">
-			<div class="hero-overlay"></div>
-			<div class="hero-shell">
-				<div class="poster skeleton-poster"></div>
-				<div class="hero-body">
-					<p class="skeleton-text skeleton-eyebrow"></p>
-					<div class="title-row">
-						<h1 class="skeleton-text skeleton-title"></h1>
-						<div class="actions">
-							<div class="skeleton-button"></div>
-							<div class="skeleton-button"></div>
-						</div>
+	<div class="hero skeleton-hero">
+		<div class="hero-overlay"></div>
+		<div class="hero-shell">
+			<div class="poster skeleton-poster"></div>
+			<div class="hero-body">
+				<p class="skeleton-text skeleton-eyebrow"></p>
+				<div class="title-row">
+					<h1 class="skeleton-text skeleton-title"></h1>
+					<div class="actions">
+						<div class="skeleton-button"></div>
+						<div class="skeleton-button"></div>
 					</div>
-					<p class="skeleton-text skeleton-tagline"></p>
-					<div class="meta-row">
-						@for (i of [1,2,3,4,5]; track i) {
-							<span class="skeleton-pill"></span>
-						}
+				</div>
+				<p class="skeleton-text skeleton-tagline"></p>
+				<div class="meta-row">
+					@for (i of [1,2,3,4,5]; track i) {
+					<span class="skeleton-pill"></span>
+					}
+				</div>
+				<div class="skeleton-text skeleton-overview"></div>
+				<div class="skeleton-text skeleton-overview short"></div>
+				<div class="info-grid">
+					@for (i of [1,2,3,4,5]; track i) {
+					<div class="info-card skeleton-info-card">
+						<p class="skeleton-text skeleton-label"></p>
+						<p class="skeleton-text skeleton-value"></p>
 					</div>
-					<div class="skeleton-text skeleton-overview"></div>
-					<div class="skeleton-text skeleton-overview short"></div>
-					<div class="info-grid">
-						@for (i of [1,2,3,4,5]; track i) {
-							<div class="info-card skeleton-info-card">
-								<p class="skeleton-text skeleton-label"></p>
-								<p class="skeleton-text skeleton-value"></p>
-							</div>
-						}
-					</div>
+					}
 				</div>
 			</div>
 		</div>
+	</div>
 	}
 
 	@if (error()) {
-		<div class="alert alert-danger">{{ error() }}</div>
+	<div class="alert alert-danger">{{ error() }}</div>
 	}
 
 	@if (!loading() && showDetails(); as show) {
-		<div
-			class="hero"
-			[style.background-image]="show.backdropPath ? 'url(https://image.tmdb.org/t/p/w1280' + show.backdropPath + ')' : ''"
-		>
-			<div class="hero-overlay"></div>
-			<div class="hero-shell">
-				<div class="poster">
-					@if (show.posterPath) {
-						<img [src]="'https://image.tmdb.org/t/p/w500' + show.posterPath" [alt]="show.title" />
-					} @else {
-						<div class="no-poster">Aucune affiche</div>
-					}
+	<div class="hero"
+		[style.background-image]="show.backdropPath ? 'url(https://image.tmdb.org/t/p/w1280' + show.backdropPath + ')' : ''">
+		<div class="hero-overlay"></div>
+		<div class="hero-shell">
+			<div class="poster">
+				@if (show.posterPath) {
+				<img [src]="'https://image.tmdb.org/t/p/w500' + show.posterPath" [alt]="show.title" />
+				} @else {
+				<div class="no-poster">Aucune affiche</div>
+				}
+			</div>
+
+			<div class="hero-body">
+				<p class="eyebrow">Série</p>
+				<div class="title-row">
+					<h1 class="title">{{ show.title }}</h1>
+					<div class="actions">
+						<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
+							<span class="pi pi-heart" [class.liked]="show.liked"></span>
+							{{ show.liked ? "Retirer des J'aime" : "J'aime" }}
+						</button>
+						<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
+							<span class="pi pi-eye" [class.seen]="show.seen"></span>
+							{{ show.seen ? "Marquer non vue" : "Marquer vue" }}
+						</button>
+						<button class="watchlist-btn" type="button" (click)="toggleWatchlist()"
+							[disabled]="watchlistLoading()">
+							<span class="pi pi-bookmark" [class.in]="inWatchlist()"></span>
+							{{ inWatchlist() ? 'Retirer de la watchlist' : 'Ajouter à la watchlist' }}
+						</button>
+						<button class="list-btn" type="button" (click)="openListModal()">
+							<span class="pi pi-plus"></span>
+							Ajouter à une liste
+						</button>
+					</div>
+				</div>
+				@if (show.tagline) { <p class="tagline">{{ show.tagline }}</p> }
+
+				<div class="meta-row">
+					<span class="pill">
+						<span class="brand-icon imdb" aria-label="IMDb">
+							<img [src]="imdbLogo" alt="Logo IMDb" />
+						</span>
+						{{ imdbRating(show) !== null ? (imdbRating(show)! | number: '1.1-1') : '—' }} / 10
+						<ng-container *ngIf="imdbVotes(show) !== null"> · {{ imdbVotes(show)! | number: '1.0-0' }}
+							votes</ng-container>
+					</span>
+					<button class="pill rating-pill" type="button" (click)="openRatingModal()">
+						<span class="brand-icon tmdb" aria-label="TMDb">
+							<img [src]="tmdbLogo" alt="Logo TMDb" />
+						</span>
+						{{ tmdbRating(show) !== null ? (tmdbRating(show)! | number: '1.1-1') : '—' }} / 10
+						<ng-container *ngIf="tmdbVotes(show) !== null"> · {{ tmdbVotes(show)! | number: '1.0-0' }}
+							votes</ng-container>
+					</button>
+					<span class="pill">
+						<span class="brand-icon rt" aria-label="Rotten Tomatoes">
+							<img [src]="rottenLogo(show)" alt="Logo Rotten Tomatoes" />
+						</span>
+						Rotten Tomatoes {{ rottenRating(show) !== null ? (rottenRating(show)! | number: '1.0-0') + '%' :
+						'—' }}
+					</span>
+					<span class="pill">Première diffusion {{ show.releaseDate ? (show.releaseDate | date: 'longDate') :
+						'inconnue' }}</span>
+					<span class="pill">Dernier épisode {{ show.lastAirDate ? (show.lastAirDate | date: 'longDate') :
+						'inconnu' }}</span>
+					<span class="pill">{{ show.status || 'Statut inconnu' }}</span>
 				</div>
 
-				<div class="hero-body">
-					<p class="eyebrow">Série</p>
-					<div class="title-row">
-						<h1 class="title">{{ show.title }}</h1>
-						<div class="actions">
-							<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
-								<span class="pi pi-heart" [class.liked]="show.liked"></span>
-								{{ show.liked ? "Retirer des J'aime" : "J'aime" }}
-							</button>
-							<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
-								<span class="pi pi-eye" [class.seen]="show.seen"></span>
-								{{ show.seen ? "Marquer non vue" : "Marquer vue" }}
-							</button>
-							<button class="watchlist-btn" type="button" (click)="toggleWatchlist()" [disabled]="watchlistLoading()">
-								<span class="pi pi-bookmark" [class.in]="inWatchlist()"></span>
-								{{ inWatchlist() ? 'Retirer de la watchlist' : 'Ajouter à la watchlist' }}
-							</button>
-							<button class="list-btn" type="button" (click)="openListModal()">
-								<span class="pi pi-plus"></span>
-								Ajouter à une liste
-							</button>
-						</div>
+				<p class="overview">{{ show.overview || 'Aucun résumé disponible.' }}</p>
+
+				<div class="info-grid">
+					<div class="info-card">
+						<p class="label">Genres</p>
+						<p class="value">{{ show.genres || 'Non renseigné' }}</p>
 					</div>
-					@if (show.tagline) { <p class="tagline">{{ show.tagline }}</p> }
-
-					<div class="meta-row">
-						<span class="pill">
-							<span class="brand-icon imdb" aria-label="IMDb">
-								<img [src]="imdbLogo" alt="Logo IMDb" />
-							</span>
-							{{ imdbRating(show) !== null ? (imdbRating(show)! | number: '1.1-1') : '—' }} / 10
-							<ng-container *ngIf="imdbVotes(show) !== null"> · {{ imdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
-						</span>
-						<button class="pill rating-pill" type="button" (click)="openRatingModal()">
-							<span class="brand-icon tmdb" aria-label="TMDb">
-								<img [src]="tmdbLogo" alt="Logo TMDb" />
-							</span>
-							{{ tmdbRating(show) !== null ? (tmdbRating(show)! | number: '1.1-1') : '—' }} / 10
-							<ng-container *ngIf="tmdbVotes(show) !== null"> · {{ tmdbVotes(show)! | number: '1.0-0' }} votes</ng-container>
-						</button>
-						<span class="pill">
-							<span class="brand-icon rt" aria-label="Rotten Tomatoes">
-								<img [src]="rottenLogo(show)" alt="Logo Rotten Tomatoes" />
-							</span>
-							Rotten Tomatoes {{ rottenRating(show) !== null ? (rottenRating(show)! | number: '1.0-0') + '%' : '—' }}
-						</span>
-						<span class="pill">Première diffusion {{ show.releaseDate ? (show.releaseDate | date: 'longDate') : 'inconnue' }}</span>
-						<span class="pill">Dernier épisode {{ show.lastAirDate ? (show.lastAirDate | date: 'longDate') : 'inconnu' }}</span>
-						<span class="pill">{{ show.status || 'Statut inconnu' }}</span>
+					<div class="info-card">
+						<p class="label">Popularité</p>
+						<p class="value">{{ show.popularity !== null ? (show.popularity | number: '1.0-0') : '—' }}</p>
 					</div>
-
-					<p class="overview">{{ show.overview || 'Aucun résumé disponible.' }}</p>
-
-					<div class="info-grid">
-						<div class="info-card">
-							<p class="label">Genres</p>
-							<p class="value">{{ show.genres || 'Non renseigné' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Popularité</p>
-							<p class="value">{{ show.popularity !== null ? (show.popularity | number: '1.0-0') : '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Saisons</p>
-							<p class="value">{{ show.numberOfSeasons ?? '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Épisodes</p>
-							<p class="value">{{ show.numberOfEpisodes ?? '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Titre original</p>
-							<p class="value">{{ show.originalTitle || 'Non renseigné' }}</p>
-						</div>
+					<div class="info-card">
+						<p class="label">Saisons</p>
+						<p class="value">{{ show.numberOfSeasons ?? '—' }}</p>
+					</div>
+					<div class="info-card">
+						<p class="label">Épisodes</p>
+						<p class="value">{{ show.numberOfEpisodes ?? '—' }}</p>
+					</div>
+					<div class="info-card">
+						<p class="label">Titre original</p>
+						<p class="value">{{ show.originalTitle || 'Non renseigné' }}</p>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		@if (show.seasons.length) {
-			<section class="seasons-section">
-				<div class="seasons-header">
-					<p class="eyebrow">Saisons</p>
-					<h2>Liste des saisons</h2>
-				</div>
-				<div class="seasons-grid">
-					@for (season of show.seasons; track season.id) {
-						<div class="season-card-wrapper">
-							<button class="season-card" type="button" (click)="toggleSeason(season.id)" [class.expanded]="expandedSeasonId() === season.id">
-								@if (season.posterPath) {
-									<img [src]="'https://image.tmdb.org/t/p/w300' + season.posterPath" [alt]="season.name" />
-								} @else {
-									<div class="no-poster small">Aucune affiche</div>
-								}
-								<div class="season-body">
-									<p class="season-name">{{ season.name }}</p>
-									<p class="season-meta">
-										Saison {{ season.seasonNumber ?? '—' }} · {{ season.episodeCount }} épisode(s)
-									</p>
-									@if (season.overview) {
-										<p class="season-overview">{{ season.overview }}</p>
-									}
-								</div>
-							</button>
-							<button class="season-seen-btn" type="button" (click)="toggleSeasonSeen(season.id); $event.stopPropagation()" [disabled]="seasonSeenLoading().get(season.id)">
-								<span class="pi pi-eye" [class.seen]="season.seen"></span>
-							</button>
-						</div>
+	@if (show.seasons.length) {
+	<section class="seasons-section">
+		<div class="seasons-header">
+			<p class="eyebrow">Saisons</p>
+			<h2>Liste des saisons</h2>
+		</div>
+		<div class="seasons-grid">
+			@for (season of show.seasons; track season.id) {
+			<div class="season-card-wrapper">
+				<button class="season-card" type="button" (click)="toggleSeason(season.id)"
+					[class.expanded]="expandedSeasonId() === season.id">
+					@if (season.posterPath) {
+					<img [src]="'https://image.tmdb.org/t/p/w300' + season.posterPath" [alt]="season.name" />
+					} @else {
+					<div class="no-poster small">Aucune affiche</div>
 					}
-				</div>
-			</section>
-		}
-
-		@if (expandedSeason(); as openedSeason) {
-			<section class="episodes-section">
-				<div class="episodes-header">
-					<p class="eyebrow">Épisodes</p>
-					<h2>{{ openedSeason.name }}</h2>
-					<p class="season-meta-inline">Saison {{ openedSeason.seasonNumber ?? '—' }} · {{ openedSeason.episodeCount }} épisode(s)</p>
-				</div>
-				@if (openedSeason.episodes && openedSeason.episodes.length) {
-					<div class="episode-list">
-						@for (ep of openedSeason.episodes; track ep.id) {
-							<div class="episode-row">
-								<div class="episode-badge">E{{ ep.episodeNumber }}</div>
-								<div class="episode-content">
-									<div class="episode-top">
-										<p class="episode-title">{{ ep.name }}</p>
-										<div class="episode-meta">
-											<span>{{ ep.airDate ? (ep.airDate | date: 'mediumDate') : 'Date inconnue' }}</span>
-											<span>·</span>
-											<span>{{ ep.runtime ? ep.runtime + ' min' : 'Durée inconnue' }}</span>
-											<span>·</span>
-											<span><span class="pi pi-star"></span> {{ ep.voteAverage ? (ep.voteAverage | number: '1.1-1') : '—' }}</span>
-										</div>
-									</div>
-									@if (ep.overview) {
-										<p class="episode-overview" [class.expanded]="isEpisodeExpanded(ep.id)">{{ ep.overview }}</p>
-										<button type="button" class="episode-toggle" (click)="toggleEpisode(ep.id)">
-											{{ isEpisodeExpanded(ep.id) ? 'Voir moins' : 'Voir plus' }}
-										</button>
-									}
-								</div>
-								<button class="episode-seen-btn" type="button" (click)="toggleEpisodeSeen(ep.id)" [disabled]="episodeSeenLoading().get(ep.id)">
-									<span class="pi pi-eye" [class.seen]="ep.seen"></span>
-								</button>
-							</div>
+					<div class="season-body">
+						<p class="season-name">{{ season.name }}</p>
+						<p class="season-meta">
+							Saison {{ season.seasonNumber ?? '—' }} · {{ season.episodeCount }} épisode(s)
+						</p>
+						@if (season.overview) {
+						<p class="season-overview">{{ season.overview }}</p>
 						}
 					</div>
-				} @else {
-					<p class="episode-empty">Pas d'épisodes disponibles.</p>
-				}
-			</section>
-		}
+				</button>
+				<button class="season-seen-btn" type="button"
+					(click)="toggleSeasonSeen(season.id); $event.stopPropagation()"
+					[disabled]="seasonSeenLoading().get(season.id)">
+					<span class="pi pi-eye" [class.seen]="season.seen"></span>
+				</button>
+			</div>
+			}
+		</div>
+	</section>
+	}
 
-		@if (similarLoading()) {
-			<section class="similar-section">
-				<div class="similar-header">
-					<p class="skeleton-text skeleton-eyebrow"></p>
-					<h2 class="skeleton-text skeleton-section-title"></h2>
-				</div>
-				<div class="similar-row">
-					@for (i of [1,2,3,4,5,6]; track i) {
-						<div class="skeleton-card"></div>
+	@if (expandedSeason(); as openedSeason) {
+	<section class="episodes-section">
+		<div class="episodes-header">
+			<p class="eyebrow">Épisodes</p>
+			<h2>{{ openedSeason.name }}</h2>
+			<p class="season-meta-inline">Saison {{ openedSeason.seasonNumber ?? '—' }} · {{ openedSeason.episodeCount
+				}} épisode(s)</p>
+		</div>
+		@if (openedSeason.episodes && openedSeason.episodes.length) {
+		<div class="episode-list">
+			@for (ep of openedSeason.episodes; track ep.id) {
+			<div class="episode-row">
+				<div class="episode-badge">E{{ ep.episodeNumber }}</div>
+				<div class="episode-content">
+					<div class="episode-top">
+						<p class="episode-title">{{ ep.name }}</p>
+						<div class="episode-meta">
+							<span>{{ ep.airDate ? (ep.airDate | date: 'mediumDate') : 'Date inconnue' }}</span>
+							<span>·</span>
+							<span>{{ ep.runtime ? ep.runtime + ' min' : 'Durée inconnue' }}</span>
+							<span>·</span>
+							<span><span class="pi pi-star"></span> {{ ep.voteAverage ? (ep.voteAverage | number:
+								'1.1-1') : '—' }}</span>
+						</div>
+					</div>
+					@if (ep.overview) {
+					<p class="episode-overview" [class.expanded]="isEpisodeExpanded(ep.id)">{{ ep.overview }}</p>
+					<button type="button" class="episode-toggle" (click)="toggleEpisode(ep.id)">
+						{{ isEpisodeExpanded(ep.id) ? 'Voir moins' : 'Voir plus' }}
+					</button>
 					}
 				</div>
-			</section>
+				<button class="episode-seen-btn" type="button" (click)="toggleEpisodeSeen(ep.id)"
+					[disabled]="episodeSeenLoading().get(ep.id)">
+					<span class="pi pi-eye" [class.seen]="ep.seen"></span>
+				</button>
+			</div>
+			}
+		</div>
+		} @else {
+		<p class="episode-empty">Pas d'épisodes disponibles.</p>
 		}
+	</section>
+	}
 
-		@if (!similarLoading() && similar().length) {
-			<section class="similar-section">
-				<div class="similar-header">
-					<p class="eyebrow">Recommandations</p>
-					<h2>Séries similaires</h2>
+	@if (similarLoading()) {
+	<section class="similar-section">
+		<div class="similar-header">
+			<p class="skeleton-text skeleton-eyebrow"></p>
+			<h2 class="skeleton-text skeleton-section-title"></h2>
+		</div>
+		<div class="similar-row">
+			@for (i of [1,2,3,4,5,6]; track i) {
+			<div class="skeleton-card"></div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!trailersLoading() && trailers().length) {
+	<section class="trailers-section">
+		<div class="trailers-header">
+			<p class="eyebrow">Vidéos</p>
+			<h2>Bandes-annonces</h2>
+		</div>
+		<div class="trailers-row">
+			@for (trailer of trailers(); track trailer.id) {
+			<button class="trailer-card" type="button" (click)="openTrailer(trailer)">
+				<div class="trailer-thumbnail">
+					<img [src]="getTrailerThumbnail(trailer)" [alt]="trailer.name" />
+					<div class="play-overlay">
+						<span class="pi pi-play"></span>
+					</div>
 				</div>
-				<div class="similar-row">
-					@for (item of similar(); track item.id) {
-						<app-poster-card [item]="item" (select)="onSimilarSelect($event)"></app-poster-card>
+				<div class="trailer-info">
+					<p class="trailer-name">{{ trailer.name }}</p>
+					<p class="trailer-meta">
+						<span class="trailer-type">{{ trailer.type }}</span>
+						@if (trailer.official) {
+						<span class="trailer-official">Officiel</span>
+						}
+						@if (trailer.language) {
+						<span class="trailer-lang">{{ trailer.language | uppercase }}</span>
+						}
+					</p>
+				</div>
+			</button>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!creditsLoading() && cast().length) {
+	<section class="credits-section">
+		<div class="credits-header">
+			<p class="eyebrow">Distribution</p>
+			<h2>Acteurs principaux</h2>
+		</div>
+		<div class="credits-row">
+			@for (member of cast(); track member.id) {
+			<div class="credit-card">
+				<div class="credit-photo">
+					@if (getProfileImage(member.profilePath)) {
+					<img [src]="getProfileImage(member.profilePath)" [alt]="member.name" />
+					} @else {
+					<div class="no-photo">
+						<span class="pi pi-user"></span>
+					</div>
 					}
 				</div>
-			</section>
-		}
+				<div class="credit-info">
+					<p class="credit-name">{{ member.name }}</p>
+					@if (member.character) {
+					<p class="credit-role">{{ member.character }}</p>
+					}
+				</div>
+			</div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!creditsLoading() && crew().length) {
+	<section class="credits-section">
+		<div class="credits-header">
+			<p class="eyebrow">Équipe technique</p>
+			<h2>Créateurs & Équipe</h2>
+		</div>
+		<div class="credits-row">
+			@for (member of crew(); track member.id) {
+			<div class="credit-card">
+				<div class="credit-photo">
+					@if (getProfileImage(member.profilePath)) {
+					<img [src]="getProfileImage(member.profilePath)" [alt]="member.name" />
+					} @else {
+					<div class="no-photo">
+						<span class="pi pi-user"></span>
+					</div>
+					}
+				</div>
+				<div class="credit-info">
+					<p class="credit-name">{{ member.name }}</p>
+					@if (member.job) {
+					<p class="credit-role">{{ member.job }}</p>
+					}
+				</div>
+			</div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!similarLoading() && similar().length) {
+	<section class="similar-section">
+		<div class="similar-header">
+			<p class="eyebrow">Recommandations</p>
+			<h2>Séries similaires</h2>
+		</div>
+		<div class="similar-row">
+			@for (item of similar(); track item.id) {
+			<app-poster-card [item]="item" (select)="onSimilarSelect($event)"></app-poster-card>
+			}
+		</div>
+	</section>
+	}
 	}
 </section>
 
 @if (ratingModalOpen()) {
-	<div class="modal-overlay" (click)="closeRatingModal()">
-		<div class="modal-content ratings-modal" (click)="$event.stopPropagation()">
-			<div class="modal-header">
-				<h2>Notes par épisode</h2>
-				<button class="modal-close" type="button" (click)="closeRatingModal()">
-					<span class="pi pi-times"></span>
-				</button>
-			</div>
-			<div class="modal-body rating-body">
-				@if (!ratingSeasons().length) {
-					<div class="empty">Aucune note disponible</div>
-				} @else if (!ratingTableRows().length) {
-					<div class="empty">Pas de notes d'épisodes.</div>
-				} @else {
-					<div class="rating-table" [style.gridTemplateColumns]="'80px repeat(' + ratingSeasons().length + ', 1fr)'">
-						<div class="rating-header">
-							<div class="corner-cell">Ep</div>
-							@for (season of ratingSeasons(); track season.id) {
-								<div class="header-cell">S{{ season.seasonNumber ?? '—' }}</div>
-							}
+<div class="modal-overlay" (click)="closeRatingModal()">
+	<div class="modal-content ratings-modal" (click)="$event.stopPropagation()">
+		<div class="modal-header">
+			<h2>Notes par épisode</h2>
+			<button class="modal-close" type="button" (click)="closeRatingModal()">
+				<span class="pi pi-times"></span>
+			</button>
+		</div>
+		<div class="modal-body rating-body">
+			@if (!ratingSeasons().length) {
+			<div class="empty">Aucune note disponible</div>
+			} @else if (!ratingTableRows().length) {
+			<div class="empty">Pas de notes d'épisodes.</div>
+			} @else {
+			<div class="rating-table" [style.gridTemplateColumns]="'80px repeat(' + ratingSeasons().length + ', 1fr)'">
+				<div class="rating-header">
+					<div class="corner-cell">Ep</div>
+					@for (season of ratingSeasons(); track season.id) {
+					<div class="header-cell">S{{ season.seasonNumber ?? '—' }}</div>
+					}
+				</div>
+				<div class="rating-rows">
+					@for (row of ratingTableRows(); track row.episodeNumber) {
+					<div class="rating-row">
+						<div class="row-label">E{{ row.episodeNumber }}</div>
+						@for (score of row.scores; track $index) {
+						<div class="score-cell" [ngClass]="ratingClass(score)">
+							{{ score !== null ? (score | number: '1.1-1') : '—' }}
 						</div>
-						<div class="rating-rows">
-							@for (row of ratingTableRows(); track row.episodeNumber) {
-								<div class="rating-row">
-									<div class="row-label">E{{ row.episodeNumber }}</div>
-									@for (score of row.scores; track $index) {
-										<div class="score-cell" [ngClass]="ratingClass(score)">
-											{{ score !== null ? (score | number: '1.1-1') : '—' }}
-										</div>
-									}
-								</div>
-							}
-						</div>
+						}
 					</div>
-				}
+					}
+				</div>
 			</div>
+			}
 		</div>
 	</div>
+</div>
 }
 
 @if (showListModal()) {
-	<div class="modal-overlay" (click)="closeListModal()">
-		<div class="modal-content" (click)="$event.stopPropagation()">
-			<div class="modal-header">
-				<h2>Ajouter à une liste</h2>
-				<button class="modal-close" type="button" (click)="closeListModal()">
-					<span class="pi pi-times"></span>
-				</button>
-			</div>
-			<div class="modal-body">
-				@if (listLoading()) {
-					<div class="list-grid">
-						@for (i of [1,2,3,4]; track i) {
-							<div class="list-item skeleton-list-item">
-								<div class="skeleton-icon"></div>
-								<div class="list-info">
-									<div class="skeleton-text skeleton-list-name"></div>
-									<div class="skeleton-text skeleton-list-desc"></div>
-								</div>
-							</div>
-						}
+<div class="modal-overlay" (click)="closeListModal()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<div class="modal-header">
+			<h2>Ajouter à une liste</h2>
+			<button class="modal-close" type="button" (click)="closeListModal()">
+				<span class="pi pi-times"></span>
+			</button>
+		</div>
+		<div class="modal-body">
+			@if (listLoading()) {
+			<div class="list-grid">
+				@for (i of [1,2,3,4]; track i) {
+				<div class="list-item skeleton-list-item">
+					<div class="skeleton-icon"></div>
+					<div class="list-info">
+						<div class="skeleton-text skeleton-list-name"></div>
+						<div class="skeleton-text skeleton-list-desc"></div>
 					</div>
-				} @else if (lists().length === 0) {
-					<div class="empty">Aucune liste disponible</div>
-				} @else {
-					<div class="list-grid">
-						@for (list of lists(); track list.id) {
-							<button class="list-item" type="button"
-								[disabled]="listActionLoading()[list.id]"
-								(click)="isInList(list.id) ? removeFromList(list.id) : addToList(list.id)">
-								<span class="list-icon">{{ list.icon || '📁' }}</span>
-								<div class="list-info">
-									<p class="list-name">{{ list.name }}</p>
-									@if (list.description) {
-										<p class="list-desc">{{ list.description }}</p>
-									}
-								</div>
-								<span class="list-action">
-									<ng-container *ngIf="listActionLoading()[list.id]; else actionText">
-										<span class="spinner" aria-label="Chargement..."></span>
-									</ng-container>
-									<ng-template #actionText>
-										{{ isInList(list.id) ? 'Retirer' : 'Ajouter' }}
-									</ng-template>
-								</span>
-							</button>
-						}
-					</div>
+				</div>
 				}
 			</div>
+			} @else if (lists().length === 0) {
+			<div class="empty">Aucune liste disponible</div>
+			} @else {
+			<div class="list-grid">
+				@for (list of lists(); track list.id) {
+				<button class="list-item" type="button" [disabled]="listActionLoading()[list.id]"
+					(click)="isInList(list.id) ? removeFromList(list.id) : addToList(list.id)">
+					<span class="list-icon">{{ list.icon || '📁' }}</span>
+					<div class="list-info">
+						<p class="list-name">{{ list.name }}</p>
+						@if (list.description) {
+						<p class="list-desc">{{ list.description }}</p>
+						}
+					</div>
+					<span class="list-action">
+						<ng-container *ngIf="listActionLoading()[list.id]; else actionText">
+							<span class="spinner" aria-label="Chargement..."></span>
+						</ng-container>
+						<ng-template #actionText>
+							{{ isInList(list.id) ? 'Retirer' : 'Ajouter' }}
+						</ng-template>
+					</span>
+				</button>
+				}
+			</div>
+			}
 		</div>
 	</div>
+</div>
+}
+
+@if (showTrailerModal()) {
+<div class="modal-overlay trailer-modal-overlay" (click)="closeTrailerModal()">
+	<div class="trailer-modal-content" (click)="$event.stopPropagation()">
+		<button class="trailer-modal-close" type="button" (click)="closeTrailerModal()">
+			<span class="pi pi-times"></span>
+		</button>
+		@if (selectedTrailerUrl(); as url) {
+		<iframe [src]="url" frameborder="0"
+			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+			allowfullscreen></iframe>
+		}
+	</div>
+</div>
 }

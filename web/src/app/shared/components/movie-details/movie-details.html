@@ -1,231 +1,345 @@
 <section class="movie-page">
 	@if (loading()) {
-		<div class="hero skeleton-hero">
-			<div class="hero-overlay"></div>
-			<div class="hero-shell">
-				<div class="poster skeleton-poster"></div>
-				<div class="hero-body">
-					<p class="skeleton-text skeleton-eyebrow"></p>
-					<div class="title-row">
-						<h1 class="skeleton-text skeleton-title"></h1>
-						<div class="actions">
-							<div class="skeleton-button"></div>
-							<div class="skeleton-button"></div>
-						</div>
+	<div class="hero skeleton-hero">
+		<div class="hero-overlay"></div>
+		<div class="hero-shell">
+			<div class="poster skeleton-poster"></div>
+			<div class="hero-body">
+				<p class="skeleton-text skeleton-eyebrow"></p>
+				<div class="title-row">
+					<h1 class="skeleton-text skeleton-title"></h1>
+					<div class="actions">
+						<div class="skeleton-button"></div>
+						<div class="skeleton-button"></div>
 					</div>
-					<p class="skeleton-text skeleton-tagline"></p>
-					<div class="meta-row">
-						@for (i of [1,2,3,4,5]; track i) {
-							<span class="skeleton-pill"></span>
-						}
+				</div>
+				<p class="skeleton-text skeleton-tagline"></p>
+				<div class="meta-row">
+					@for (i of [1,2,3,4,5]; track i) {
+					<span class="skeleton-pill"></span>
+					}
+				</div>
+				<div class="skeleton-text skeleton-overview"></div>
+				<div class="skeleton-text skeleton-overview short"></div>
+				<div class="info-grid">
+					@for (i of [1,2,3,4,5,6]; track i) {
+					<div class="info-card skeleton-info-card">
+						<p class="skeleton-text skeleton-label"></p>
+						<p class="skeleton-text skeleton-value"></p>
 					</div>
-					<div class="skeleton-text skeleton-overview"></div>
-					<div class="skeleton-text skeleton-overview short"></div>
-					<div class="info-grid">
-						@for (i of [1,2,3,4,5,6]; track i) {
-							<div class="info-card skeleton-info-card">
-								<p class="skeleton-text skeleton-label"></p>
-								<p class="skeleton-text skeleton-value"></p>
-							</div>
-						}
-					</div>
+					}
 				</div>
 			</div>
 		</div>
+	</div>
 	}
 
 	@if (error()) {
-		<div class="alert alert-danger">{{ error() }}</div>
+	<div class="alert alert-danger">{{ error() }}</div>
 	}
 
 	@if (!loading() && movieDetails(); as movie) {
-		<div
-			class="hero"
-			[style.background-image]="movie.backdropPath ? 'url(https://image.tmdb.org/t/p/w1280' + movie.backdropPath + ')' : ''"
-		>
-			<div class="hero-overlay"></div>
-			<div class="hero-shell">
-				<div class="poster">
-					@if (movie.posterPath) {
-						<img [src]="'https://image.tmdb.org/t/p/w500' + movie.posterPath" [alt]="movie.title" />
-					} @else {
-						<div class="no-poster">Aucune affiche</div>
-					}
+	<div class="hero"
+		[style.background-image]="movie.backdropPath ? 'url(https://image.tmdb.org/t/p/w1280' + movie.backdropPath + ')' : ''">
+		<div class="hero-overlay"></div>
+		<div class="hero-shell">
+			<div class="poster">
+				@if (movie.posterPath) {
+				<img [src]="'https://image.tmdb.org/t/p/w500' + movie.posterPath" [alt]="movie.title" />
+				} @else {
+				<div class="no-poster">Aucune affiche</div>
+				}
+			</div>
+
+			<div class="hero-body">
+				<p class="eyebrow">Film</p>
+				<div class="title-row">
+					<h1 class="title">{{ movie.title }}</h1>
+					<div class="actions">
+						<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
+							<span class="pi pi-heart" [class.liked]="movie.liked"></span>
+							{{ movie.liked ? "Retirer des J'aime" : "J'aime" }}
+						</button>
+						<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
+							<span class="pi pi-eye" [class.seen]="movie.seen"></span>
+							{{ movie.seen ? "Marquer non vu" : "Marquer vu" }}
+						</button>
+						<button class="watchlist-btn" type="button" (click)="toggleWatchlist()"
+							[disabled]="watchlistLoading()">
+							<span class="pi pi-bookmark" [class.in]="inWatchlist()"></span>
+							{{ inWatchlist() ? 'Retirer de la watchlist' : 'Ajouter à la watchlist' }}
+						</button>
+						<button class="list-btn" type="button" (click)="openListModal()">
+							<span class="pi pi-plus"></span>
+							Ajouter à une liste
+						</button>
+					</div>
+				</div>
+				@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
+
+				<div class="meta-row">
+					<span class="pill">
+						<span class="brand-icon imdb" aria-label="IMDb">
+							<img [src]="imdbLogo" alt="Logo IMDb" />
+						</span>
+						{{ imdbRating(movie) !== null ? (imdbRating(movie)! | number: '1.1-1') : '—' }} / 10
+						<ng-container *ngIf="imdbVotes(movie) !== null"> · {{ imdbVotes(movie)! | number: '1.0-0' }}
+							votes</ng-container>
+					</span>
+					<span class="pill">
+						<span class="brand-icon tmdb" aria-label="TMDb">
+							<img [src]="tmdbLogo" alt="Logo TMDb" />
+						</span>
+						{{ tmdbRating(movie) !== null ? (tmdbRating(movie)! | number: '1.1-1') : '—' }} / 10
+						<ng-container *ngIf="tmdbVotes(movie) !== null"> · {{ tmdbVotes(movie)! | number: '1.0-0' }}
+							votes</ng-container>
+					</span>
+					<span class="pill">
+						<span class="brand-icon rt" aria-label="Rotten Tomatoes">
+							<img [src]="rottenLogo(movie)" alt="Logo Rotten Tomatoes" />
+						</span>
+						Rotten Tomatoes {{ rottenRating(movie) !== null ? (rottenRating(movie)! | number: '1.0-0') + '%'
+						: '—' }}
+					</span>
+					<span class="pill">{{ movie.releaseDate ? (movie.releaseDate | date: 'longDate') : 'Date inconnue'
+						}}</span>
+					<span class="pill">{{ movie.runtime ? movie.runtime + ' min' : 'Durée inconnue' }}</span>
+					<span class="pill">{{ movie.status || 'Statut inconnu' }}</span>
 				</div>
 
-				<div class="hero-body">
-					<p class="eyebrow">Film</p>
-					<div class="title-row">
-						<h1 class="title">{{ movie.title }}</h1>
-						<div class="actions">
-							<button class="like-btn" type="button" (click)="toggleLike()" [disabled]="likeLoading()">
-								<span class="pi pi-heart" [class.liked]="movie.liked"></span>
-								{{ movie.liked ? "Retirer des J'aime" : "J'aime" }}
-							</button>
-							<button class="seen-btn" type="button" (click)="toggleSeen()" [disabled]="seenLoading()">
-								<span class="pi pi-eye" [class.seen]="movie.seen"></span>
-								{{ movie.seen ? "Marquer non vu" : "Marquer vu" }}
-							</button>
-							<button class="watchlist-btn" type="button" (click)="toggleWatchlist()" [disabled]="watchlistLoading()">
-								<span class="pi pi-bookmark" [class.in]="inWatchlist()"></span>
-								{{ inWatchlist() ? 'Retirer de la watchlist' : 'Ajouter à la watchlist' }}
-							</button>
-							<button class="list-btn" type="button" (click)="openListModal()">
-								<span class="pi pi-plus"></span>
-								Ajouter à une liste
-							</button>
-						</div>
-					</div>
-					@if (movie.tagline) { <p class="tagline">{{ movie.tagline }}</p> }
+				<p class="overview">{{ movie.overview || 'Aucun résumé disponible.' }}</p>
 
-					<div class="meta-row">
-						<span class="pill">
-							<span class="brand-icon imdb" aria-label="IMDb">
-								<img [src]="imdbLogo" alt="Logo IMDb" />
-							</span>
-							{{ imdbRating(movie) !== null ? (imdbRating(movie)! | number: '1.1-1') : '—' }} / 10
-							<ng-container *ngIf="imdbVotes(movie) !== null"> · {{ imdbVotes(movie)! | number: '1.0-0' }} votes</ng-container>
-						</span>
-						<span class="pill">
-							<span class="brand-icon tmdb" aria-label="TMDb">
-								<img [src]="tmdbLogo" alt="Logo TMDb" />
-							</span>
-							{{ tmdbRating(movie) !== null ? (tmdbRating(movie)! | number: '1.1-1') : '—' }} / 10
-							<ng-container *ngIf="tmdbVotes(movie) !== null"> · {{ tmdbVotes(movie)! | number: '1.0-0' }} votes</ng-container>
-						</span>
-						<span class="pill">
-							<span class="brand-icon rt" aria-label="Rotten Tomatoes">
-								<img [src]="rottenLogo(movie)" alt="Logo Rotten Tomatoes" />
-							</span>
-							Rotten Tomatoes {{ rottenRating(movie) !== null ? (rottenRating(movie)! | number: '1.0-0') + '%' : '—' }}
-						</span>
-						<span class="pill">{{ movie.releaseDate ? (movie.releaseDate | date: 'longDate') : 'Date inconnue' }}</span>
-						<span class="pill">{{ movie.runtime ? movie.runtime + ' min' : 'Durée inconnue' }}</span>
-						<span class="pill">{{ movie.status || 'Statut inconnu' }}</span>
+				<div class="info-grid">
+					<div class="info-card">
+						<p class="label">Genres</p>
+						<p class="value">{{ movie.genres || 'Non renseigné' }}</p>
 					</div>
-
-					<p class="overview">{{ movie.overview || 'Aucun résumé disponible.' }}</p>
-
-					<div class="info-grid">
-						<div class="info-card">
-							<p class="label">Genres</p>
-							<p class="value">{{ movie.genres || 'Non renseigné' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Popularité</p>
-							<p class="value">{{ movie.popularity !== null ? (movie.popularity | number: '1.0-0') : '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Budget</p>
-							<p class="value">{{ movie.budget ? (movie.budget | currency: 'USD':'symbol':'1.0-0') : '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Revenus</p>
-							<p class="value">{{ movie.revenue ? (movie.revenue | currency: 'USD':'symbol':'1.0-0') : '—' }}</p>
-						</div>
-						<div class="info-card">
-							<p class="label">Titre original</p>
-							<p class="value">{{ movie.originalTitle || 'Non renseigné' }}</p>
-						</div>
-						@if (movie.imdbId) {
-							<a class="info-card imdb-card" [href]="'https://www.imdb.com/title/' + movie.imdbId" target="_blank" rel="noopener noreferrer">
-								<p class="label">Identifiant IMDB</p>
-								<p class="imdb-value">
-									<span class="pi pi-external-link"></span>
-									{{ movie.imdbId }}
-								</p>
-							</a>
-						} @else {
-							<div class="info-card">
-								<p class="label">Identifiant IMDB</p>
-								<p class="value">—</p>
-							</div>
-						}
+					<div class="info-card">
+						<p class="label">Popularité</p>
+						<p class="value">{{ movie.popularity !== null ? (movie.popularity | number: '1.0-0') : '—' }}
+						</p>
 					</div>
+					<div class="info-card">
+						<p class="label">Budget</p>
+						<p class="value">{{ movie.budget ? (movie.budget | currency: 'USD':'symbol':'1.0-0') : '—' }}
+						</p>
+					</div>
+					<div class="info-card">
+						<p class="label">Revenus</p>
+						<p class="value">{{ movie.revenue ? (movie.revenue | currency: 'USD':'symbol':'1.0-0') : '—' }}
+						</p>
+					</div>
+					<div class="info-card">
+						<p class="label">Titre original</p>
+						<p class="value">{{ movie.originalTitle || 'Non renseigné' }}</p>
+					</div>
+					@if (movie.imdbId) {
+					<a class="info-card imdb-card" [href]="'https://www.imdb.com/title/' + movie.imdbId" target="_blank"
+						rel="noopener noreferrer">
+						<p class="label">Identifiant IMDB</p>
+						<p class="imdb-value">
+							<span class="pi pi-external-link"></span>
+							{{ movie.imdbId }}
+						</p>
+					</a>
+					} @else {
+					<div class="info-card">
+						<p class="label">Identifiant IMDB</p>
+						<p class="value">—</p>
+					</div>
+					}
 				</div>
 			</div>
 		</div>
+	</div>
 
-		@if (similarLoading()) {
-			<section class="similar-section">
-				<div class="similar-header">
-					<p class="skeleton-text skeleton-eyebrow"></p>
-					<h2 class="skeleton-text skeleton-section-title"></h2>
+	@if (similarLoading()) {
+	<section class="similar-section">
+		<div class="similar-header">
+			<p class="skeleton-text skeleton-eyebrow"></p>
+			<h2 class="skeleton-text skeleton-section-title"></h2>
+		</div>
+		<div class="similar-row">
+			@for (i of [1,2,3,4,5,6]; track i) {
+			<div class="skeleton-card"></div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!trailersLoading() && trailers().length) {
+	<section class="trailers-section">
+		<div class="trailers-header">
+			<p class="eyebrow">Vidéos</p>
+			<h2>Bandes-annonces</h2>
+		</div>
+		<div class="trailers-row">
+			@for (trailer of trailers(); track trailer.id) {
+			<button class="trailer-card" type="button" (click)="openTrailer(trailer)">
+				<div class="trailer-thumbnail">
+					<img [src]="getTrailerThumbnail(trailer)" [alt]="trailer.name" />
+					<div class="play-overlay">
+						<span class="pi pi-play"></span>
+					</div>
 				</div>
-				<div class="similar-row">
-					@for (i of [1,2,3,4,5,6]; track i) {
-						<div class="skeleton-card"></div>
+				<div class="trailer-info">
+					<p class="trailer-name">{{ trailer.name }}</p>
+					<p class="trailer-meta">
+						<span class="trailer-type">{{ trailer.type }}</span>
+						@if (trailer.official) {
+						<span class="trailer-official">Officiel</span>
+						}
+						@if (trailer.language) {
+						<span class="trailer-lang">{{ trailer.language | uppercase }}</span>
+						}
+					</p>
+				</div>
+			</button>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!creditsLoading() && cast().length) {
+	<section class="credits-section">
+		<div class="credits-header">
+			<p class="eyebrow">Distribution</p>
+			<h2>Acteurs principaux</h2>
+		</div>
+		<div class="credits-row">
+			@for (member of cast(); track member.id) {
+			<div class="credit-card">
+				<div class="credit-photo">
+					@if (getProfileImage(member.profilePath)) {
+					<img [src]="getProfileImage(member.profilePath)" [alt]="member.name" />
+					} @else {
+					<div class="no-photo">
+						<span class="pi pi-user"></span>
+					</div>
 					}
 				</div>
-			</section>
-		}
-
-		@if (!similarLoading() && similar().length) {
-			<section class="similar-section">
-				<div class="similar-header">
-					<p class="eyebrow">Recommandations</p>
-					<h2>Films similaires</h2>
-				</div>
-				<div class="similar-row">
-					@for (item of similar(); track item.id) {
-						<app-poster-card [item]="item" (select)="onSimilarSelect($event)"></app-poster-card>
+				<div class="credit-info">
+					<p class="credit-name">{{ member.name }}</p>
+					@if (member.character) {
+					<p class="credit-role">{{ member.character }}</p>
 					}
 				</div>
-			</section>
-		}
+			</div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!creditsLoading() && crew().length) {
+	<section class="credits-section">
+		<div class="credits-header">
+			<p class="eyebrow">Équipe technique</p>
+			<h2>Réalisateur & Équipe</h2>
+		</div>
+		<div class="credits-row">
+			@for (member of crew(); track member.id) {
+			<div class="credit-card">
+				<div class="credit-photo">
+					@if (getProfileImage(member.profilePath)) {
+					<img [src]="getProfileImage(member.profilePath)" [alt]="member.name" />
+					} @else {
+					<div class="no-photo">
+						<span class="pi pi-user"></span>
+					</div>
+					}
+				</div>
+				<div class="credit-info">
+					<p class="credit-name">{{ member.name }}</p>
+					@if (member.job) {
+					<p class="credit-role">{{ member.job }}</p>
+					}
+				</div>
+			</div>
+			}
+		</div>
+	</section>
+	}
+
+	@if (!similarLoading() && similar().length) {
+	<section class="similar-section">
+		<div class="similar-header">
+			<p class="eyebrow">Recommandations</p>
+			<h2>Films similaires</h2>
+		</div>
+		<div class="similar-row">
+			@for (item of similar(); track item.id) {
+			<app-poster-card [item]="item" (select)="onSimilarSelect($event)"></app-poster-card>
+			}
+		</div>
+	</section>
+	}
 	}
 </section>
 
 @if (showListModal()) {
-	<div class="modal-overlay" (click)="closeListModal()">
-		<div class="modal-content" (click)="$event.stopPropagation()">
-			<div class="modal-header">
-				<h2>Ajouter à une liste</h2>
-				<button class="modal-close" type="button" (click)="closeListModal()">
-					<span class="pi pi-times"></span>
-				</button>
-			</div>
-			<div class="modal-body">
-				@if (listLoading()) {
-					<div class="list-grid">
-						@for (i of [1,2,3,4]; track i) {
-							<div class="list-item skeleton-list-item">
-								<div class="skeleton-icon"></div>
-								<div class="list-info">
-									<div class="skeleton-text skeleton-list-name"></div>
-									<div class="skeleton-text skeleton-list-desc"></div>
-								</div>
-							</div>
-						}
+<div class="modal-overlay" (click)="closeListModal()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<div class="modal-header">
+			<h2>Ajouter à une liste</h2>
+			<button class="modal-close" type="button" (click)="closeListModal()">
+				<span class="pi pi-times"></span>
+			</button>
+		</div>
+		<div class="modal-body">
+			@if (listLoading()) {
+			<div class="list-grid">
+				@for (i of [1,2,3,4]; track i) {
+				<div class="list-item skeleton-list-item">
+					<div class="skeleton-icon"></div>
+					<div class="list-info">
+						<div class="skeleton-text skeleton-list-name"></div>
+						<div class="skeleton-text skeleton-list-desc"></div>
 					</div>
-				} @else if (lists().length === 0) {
-					<div class="empty">Aucune liste disponible</div>
-				} @else {
-					<div class="list-grid">
-						@for (list of lists(); track list.id) {
-							<button class="list-item" type="button"
-								[disabled]="listActionLoading()[list.id]"
-								(click)="isInList(list.id) ? removeFromList(list.id) : addToList(list.id)">
-								<span class="list-icon">{{ list.icon || '📁' }}</span>
-								<div class="list-info">
-									<p class="list-name">{{ list.name }}</p>
-									@if (list.description) {
-										<p class="list-desc">{{ list.description }}</p>
-									}
-								</div>
-								<span class="list-action">
-									<ng-container *ngIf="listActionLoading()[list.id]; else actionText">
-										<span class="spinner" aria-label="Chargement..."></span>
-									</ng-container>
-									<ng-template #actionText>
-										{{ isInList(list.id) ? 'Retirer' : 'Ajouter' }}
-									</ng-template>
-								</span>
-							</button>
-						}
-					</div>
+				</div>
 				}
 			</div>
+			} @else if (lists().length === 0) {
+			<div class="empty">Aucune liste disponible</div>
+			} @else {
+			<div class="list-grid">
+				@for (list of lists(); track list.id) {
+				<button class="list-item" type="button" [disabled]="listActionLoading()[list.id]"
+					(click)="isInList(list.id) ? removeFromList(list.id) : addToList(list.id)">
+					<span class="list-icon">{{ list.icon || '📁' }}</span>
+					<div class="list-info">
+						<p class="list-name">{{ list.name }}</p>
+						@if (list.description) {
+						<p class="list-desc">{{ list.description }}</p>
+						}
+					</div>
+					<span class="list-action">
+						<ng-container *ngIf="listActionLoading()[list.id]; else actionText">
+							<span class="spinner" aria-label="Chargement..."></span>
+						</ng-container>
+						<ng-template #actionText>
+							{{ isInList(list.id) ? 'Retirer' : 'Ajouter' }}
+						</ng-template>
+					</span>
+				</button>
+				}
+			</div>
+			}
 		</div>
 	</div>
+</div>
+}
+
+@if (showTrailerModal()) {
+<div class="modal-overlay trailer-modal-overlay" (click)="closeTrailerModal()">
+	<div class="trailer-modal-content" (click)="$event.stopPropagation()">
+		<button class="trailer-modal-close" type="button" (click)="closeTrailerModal()">
+			<span class="pi pi-times"></span>
+		</button>
+		@if (selectedTrailerUrl(); as url) {
+		<iframe [src]="url" frameborder="0"
+			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+			allowfullscreen></iframe>
+		}
+	</div>
+</div>
 }

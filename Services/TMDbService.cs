@@ -154,4 +154,62 @@ public class TMDbService
         string json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TMDbSearchResponse>(json);
     }
+
+    public async Task<TMDbVideosResponse?> GetMovieVideosAsync(int tmdbId, string? language = null)
+    {
+        string lang = language ?? "fr-FR";
+        string url = $"{BaseUrl}/movie/{tmdbId}/videos?api_key={_apiKey}&language={lang}";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbVideosResponse>(json);
+    }
+
+    public async Task<TMDbVideosResponse?> GetShowVideosAsync(int tmdbId, string? language = null)
+    {
+        string lang = language ?? "fr-FR";
+        string url = $"{BaseUrl}/tv/{tmdbId}/videos?api_key={_apiKey}&language={lang}";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbVideosResponse>(json);
+    }
+
+    public async Task<TMDbCreditsResponse?> GetMovieCreditsAsync(int tmdbId)
+    {
+        string url = $"{BaseUrl}/movie/{tmdbId}/credits?api_key={_apiKey}&language=fr-FR";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbCreditsResponse>(json);
+    }
+
+    public async Task<TMDbCreditsResponse?> GetShowCreditsAsync(int tmdbId)
+    {
+        string url = $"{BaseUrl}/tv/{tmdbId}/credits?api_key={_apiKey}&language=fr-FR";
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TMDbCreditsResponse>(json);
+    }
 }

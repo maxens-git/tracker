@@ -3,9 +3,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MediaDetailsService } from '../../services/media-details.service';
 import { SimilarService } from '../../services/similar.service';
 import { MediaListsService } from '../../services/media-lists.service';
+import { TrailerService } from '../../services/trailer.service';
+import { CreditsService } from '../../services/credits.service';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ShowDetails } from '../../interfaces/media-details.interface';
 import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
+import { Trailer } from '../../interfaces/trailer.interface';
+import { CastMember, CrewMember } from '../../interfaces/credits.interface';
 import { PosterCardComponent } from '../poster-card/poster-card';
 import { MediaListSummary } from '../../interfaces/media-list.interface';
 
@@ -36,6 +41,13 @@ export class ShowDetailsComponent implements OnInit {
   protected expandedSeasonId = signal<number | null>(null);
   protected expandedEpisodes = signal<Set<number>>(new Set());
   protected ratingModalOpen = signal<boolean>(false);
+  protected trailers = signal<Trailer[]>([]);
+  protected trailersLoading = signal<boolean>(true);
+  protected showTrailerModal = signal<boolean>(false);
+  protected selectedTrailerUrl = signal<SafeResourceUrl | null>(null);
+  protected cast = signal<CastMember[]>([]);
+  protected crew = signal<CrewMember[]>([]);
+  protected creditsLoading = signal<boolean>(true);
 
   protected readonly imdbLogo = 'assets/images/imdb.png';
   protected readonly tmdbLogo = 'assets/images/themoviedatabase.png';
@@ -45,8 +57,11 @@ export class ShowDetailsComponent implements OnInit {
     private router: Router,
     private mediaDetailsService: MediaDetailsService,
     private similarService: SimilarService,
-    private mediaListsService: MediaListsService
-  ) {}
+    private mediaListsService: MediaListsService,
+    private trailerService: TrailerService,
+    private creditsService: CreditsService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -68,6 +83,8 @@ export class ShowDetailsComponent implements OnInit {
         this.setWatchlistState(data);
         this.loadRatingsIfNeeded(tmdbId, data);
         this.loadSimilarShows(tmdbId);
+        this.loadTrailers(tmdbId);
+        this.loadCredits(tmdbId);
       },
       error: () => {
         this.error.set('Erreur lors du chargement de la série');
@@ -108,6 +125,55 @@ export class ShowDetailsComponent implements OnInit {
         this.similarLoading.set(false);
       }
     });
+  }
+
+  private loadTrailers(tmdbId: number): void {
+    this.trailersLoading.set(true);
+    this.trailerService.getShowTrailers(tmdbId).subscribe({
+      next: (response) => {
+        this.trailers.set(response.trailers);
+        this.trailersLoading.set(false);
+      },
+      error: () => {
+        this.trailers.set([]);
+        this.trailersLoading.set(false);
+      }
+    });
+  }
+
+  private loadCredits(tmdbId: number): void {
+    this.creditsLoading.set(true);
+    this.creditsService.getShowCredits(tmdbId).subscribe({
+      next: (response) => {
+        this.cast.set(response.cast);
+        this.crew.set(response.crew);
+        this.creditsLoading.set(false);
+      },
+      error: () => {
+        this.cast.set([]);
+        this.crew.set([]);
+        this.creditsLoading.set(false);
+      }
+    });
+  }
+
+  protected getProfileImage(profilePath: string | undefined | null): string {
+    return this.creditsService.getProfileImageUrl(profilePath);
+  }
+
+  protected openTrailer(trailer: Trailer): void {
+    const url = this.trailerService.getYoutubeEmbedUrl(trailer.key);
+    this.selectedTrailerUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+    this.showTrailerModal.set(true);
+  }
+
+  protected closeTrailerModal(): void {
+    this.showTrailerModal.set(false);
+    this.selectedTrailerUrl.set(null);
+  }
+
+  protected getTrailerThumbnail(trailer: Trailer): string {
+    return this.trailerService.getYoutubeThumbnailUrl(trailer.key);
   }
 
   protected openListModal(): void {
@@ -265,8 +331,8 @@ export class ShowDetailsComponent implements OnInit {
         this.showDetails.update((current) => {
           if (!current) return current;
           const updated = { ...current };
-          updated.seasons = updated.seasons.map(s => 
-            s.id === seasonId 
+          updated.seasons = updated.seasons.map(s =>
+            s.id === seasonId
               ? { ...s, seen: res.seen, episodes: s.episodes?.map(e => ({ ...e, seen: res.seen })) }
               : s
           );
@@ -309,7 +375,7 @@ export class ShowDetailsComponent implements OnInit {
           const updated = { ...current };
           updated.seasons = updated.seasons.map(s => ({
             ...s,
-            episodes: s.episodes?.map(e => 
+            episodes: s.episodes?.map(e =>
               e.id === episodeId ? { ...e, seen: res.seen } : e
             )
           }));

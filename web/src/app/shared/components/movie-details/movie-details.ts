@@ -4,9 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MediaDetailsService } from '../../services/media-details.service';
 import { SimilarService } from '../../services/similar.service';
 import { MediaListsService } from '../../services/media-lists.service';
+import { TrailerService } from '../../services/trailer.service';
+import { CreditsService } from '../../services/credits.service';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MovieDetails } from '../../interfaces/media-details.interface';
 import { TMDbSearchResult } from '../../interfaces/tmdb-trending.interface';
+import { Trailer } from '../../interfaces/trailer.interface';
+import { CastMember, CrewMember } from '../../interfaces/credits.interface';
 import { PosterCardComponent } from '../poster-card/poster-card';
 import { MediaListSummary } from '../../interfaces/media-list.interface';
 
@@ -18,7 +23,7 @@ import { MediaListSummary } from '../../interfaces/media-list.interface';
   styleUrl: './movie-details.scss'
 })
 export class MovieDetailsComponent implements OnInit {
-    protected listActionLoading = signal<{ [listId: number]: boolean }>({});
+  protected listActionLoading = signal<{ [listId: number]: boolean }>({});
   protected movieDetails = signal<MovieDetails | undefined>(undefined);
   protected loading = signal<boolean>(true);
   protected likeLoading = signal<boolean>(false);
@@ -32,6 +37,13 @@ export class MovieDetailsComponent implements OnInit {
   protected showListModal = signal<boolean>(false);
   protected lists = signal<MediaListSummary[]>([]);
   protected listLoading = signal<boolean>(false);
+  protected trailers = signal<Trailer[]>([]);
+  protected trailersLoading = signal<boolean>(true);
+  protected showTrailerModal = signal<boolean>(false);
+  protected selectedTrailerUrl = signal<SafeResourceUrl | null>(null);
+  protected cast = signal<CastMember[]>([]);
+  protected crew = signal<CrewMember[]>([]);
+  protected creditsLoading = signal<boolean>(true);
 
   protected readonly imdbLogo = 'assets/images/imdb.png';
   protected readonly tmdbLogo = 'assets/images/themoviedatabase.png';
@@ -41,8 +53,11 @@ export class MovieDetailsComponent implements OnInit {
     private router: Router,
     private mediaDetailsService: MediaDetailsService,
     private similarService: SimilarService,
-    private mediaListsService: MediaListsService
-  ) {}
+    private mediaListsService: MediaListsService,
+    private trailerService: TrailerService,
+    private creditsService: CreditsService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -64,6 +79,55 @@ export class MovieDetailsComponent implements OnInit {
         this.similarLoading.set(false);
       }
     });
+  }
+
+  private loadTrailers(tmdbId: number): void {
+    this.trailersLoading.set(true);
+    this.trailerService.getMovieTrailers(tmdbId).subscribe({
+      next: (response) => {
+        this.trailers.set(response.trailers);
+        this.trailersLoading.set(false);
+      },
+      error: () => {
+        this.trailers.set([]);
+        this.trailersLoading.set(false);
+      }
+    });
+  }
+
+  private loadCredits(tmdbId: number): void {
+    this.creditsLoading.set(true);
+    this.creditsService.getMovieCredits(tmdbId).subscribe({
+      next: (response) => {
+        this.cast.set(response.cast);
+        this.crew.set(response.crew);
+        this.creditsLoading.set(false);
+      },
+      error: () => {
+        this.cast.set([]);
+        this.crew.set([]);
+        this.creditsLoading.set(false);
+      }
+    });
+  }
+
+  protected getProfileImage(profilePath: string | undefined | null): string {
+    return this.creditsService.getProfileImageUrl(profilePath);
+  }
+
+  protected openTrailer(trailer: Trailer): void {
+    const url = this.trailerService.getYoutubeEmbedUrl(trailer.key);
+    this.selectedTrailerUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+    this.showTrailerModal.set(true);
+  }
+
+  protected closeTrailerModal(): void {
+    this.showTrailerModal.set(false);
+    this.selectedTrailerUrl.set(null);
+  }
+
+  protected getTrailerThumbnail(trailer: Trailer): string {
+    return this.trailerService.getYoutubeThumbnailUrl(trailer.key);
   }
 
   protected onSimilarSelect(tmdbId: number): void {
@@ -153,6 +217,8 @@ export class MovieDetailsComponent implements OnInit {
         this.setWatchlistState(data);
         this.loadRatingsIfNeeded(tmdbId, data);
         this.loadSimilarMovies(tmdbId);
+        this.loadTrailers(tmdbId);
+        this.loadCredits(tmdbId);
         console.log(data)
       },
       error: () => {
@@ -201,7 +267,7 @@ export class MovieDetailsComponent implements OnInit {
         console.error('Error removing movie from list:', err);
       }
     });
-    
+
   }
 
   protected toggleWatchlist(): void {
