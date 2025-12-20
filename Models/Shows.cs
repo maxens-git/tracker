@@ -15,6 +15,9 @@ public class Show : BaseMedia
     public List<Season> Seasons { get; set; } = new();
     public List<MediaList> MediaLists { get; set; } = new();
     public List<MediaListShow> MediaListShows { get; set; } = new();
+    public List<ShowCast> ShowCasts { get; set; } = new();
+    public List<ShowCrew> ShowCrews { get; set; } = new();
+    public List<Trailer> Trailers { get; set; } = new();
 
     public Show() {}
 

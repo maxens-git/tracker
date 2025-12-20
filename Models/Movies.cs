@@ -16,6 +16,9 @@ public class Movie : BaseMedia
 
     public List<MediaList> MediaLists { get; set; } = new();
     public List<MediaListMovie> MediaListMovies { get; set; } = new();
+    public List<MovieCast> MovieCasts { get; set; } = new();
+    public List<MovieCrew> MovieCrews { get; set; } = new();
+    public List<Trailer> Trailers { get; set; } = new();
 
     public Movie() {}
 
