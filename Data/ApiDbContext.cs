@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Tracker.Models;
-using Tracker.Models.Auth;
 
 namespace Tracker.Data;
 
@@ -17,7 +16,6 @@ public class ApiDbContext : DbContext
     public DbSet<MediaList> MediaLists { get; set; } = null!;
     public DbSet<MediaListMovie> MediaListMovies { get; set; } = null!;
     public DbSet<MediaListShow> MediaListShows { get; set; } = null!;
-    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Person> Persons { get; set; } = null!;
     public DbSet<MovieCast> MovieCasts { get; set; } = null!;
     public DbSet<MovieCrew> MovieCrews { get; set; } = null!;
@@ -79,13 +77,6 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<MediaList>()
             .HasIndex(ml => ml.Name)
             .IsUnique();
-
-        modelBuilder.Entity<RefreshToken>()
-            .HasIndex(rt => rt.Token)
-            .IsUnique();
-
-        modelBuilder.Entity<RefreshToken>()
-            .HasIndex(rt => rt.Username);
 
         // Person
         modelBuilder.Entity<Person>()

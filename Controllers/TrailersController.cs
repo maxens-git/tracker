@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tracker.Models.TMDbResponses;
 using Tracker.ModelsDTO;
@@ -6,7 +5,6 @@ using Tracker.Services;
 
 namespace Tracker.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TrailersController : ControllerBase

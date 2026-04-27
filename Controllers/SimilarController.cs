@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -7,7 +6,6 @@ using Tracker.Services;
 
 namespace Tracker.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SimilarController : ControllerBase

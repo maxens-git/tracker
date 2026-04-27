@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -6,7 +5,6 @@ using Tracker.ModelsDTO;
 
 namespace Tracker.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class StatsController : ControllerBase
