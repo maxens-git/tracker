@@ -1,9 +1,13 @@
 nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   gap: 2.5rem;
   padding: 1rem 2rem;
   background: #0a0f13;
   border-bottom: 1px solid #1f2933;
-  z-index: 10;
+  z-index: 100;
 
   .brand {
     font-size: 1rem;

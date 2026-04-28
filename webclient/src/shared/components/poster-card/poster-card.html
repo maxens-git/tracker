@@ -1,4 +1,4 @@
-<article class="poster" [class.seen]="item.seen">
+<article class="poster" [class.seen]="item.seen" [routerLink]="detailLink">
   @if (poster) {
     <img [src]="poster" [alt]="title" loading="lazy" />
   } @else {

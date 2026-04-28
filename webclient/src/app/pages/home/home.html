@@ -1,5 +1,5 @@
 @if (loading()) {
-  <div class="status text-center py-5 px-4">Chargement…</div>
+  <app-spinner />
 } @else if (error()) {
   <div class="status text-center py-5 px-4 error">{{ error() }}</div>
 } @else if (data(); as d) {
@@ -9,6 +9,7 @@
         <h1>{{ h.title }}</h1>
         @if (h.year) { <span class="year d-inline-block mb-3">{{ h.year }}</span> }
         @if (h.overview) { <p>{{ h.overview }}</p> }
+        <a class="btn-detail" [routerLink]="h.link">Voir la fiche</a>
       </div>
     </header>
   }

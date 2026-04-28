@@ -5,11 +5,12 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterCard],
+  imports: [CommonModule, FormsModule, PosterCard, Spinner],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })

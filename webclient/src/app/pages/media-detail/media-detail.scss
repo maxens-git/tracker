@@ -1,0 +1,539 @@
+.error-msg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  color: #ff5a5f;
+  font-size: 1rem;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center 20%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.detail-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.header-section {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  padding-top: 6rem;
+  padding-bottom: 2rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    padding-top: 3rem;
+  }
+}
+
+.poster-wrap {
+  .poster-img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+    display: block;
+  }
+
+  .poster-placeholder {
+    width: 100%;
+    aspect-ratio: 2/3;
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+}
+
+.info {
+  padding-top: 1rem;
+
+  .title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #fff;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .original-title {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 0.75rem;
+    font-style: italic;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .meta-chip {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #c8d5de;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    white-space: nowrap;
+
+    &.genre {
+      background: rgba(0, 192, 48, 0.12);
+      border-color: rgba(0, 192, 48, 0.3);
+      color: #6ee89a;
+    }
+
+    &.status {
+      background: rgba(255, 193, 7, 0.12);
+      border-color: rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+    }
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.95rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .overview {
+    color: #c8d5de;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    max-width: 65ch;
+    margin: 0 0 1.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-seen {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+    .check { color: var(--accent); font-size: 1rem; }
+
+    &.active {
+      border-color: var(--accent);
+      background: rgba(0, 192, 48, 0.12);
+      color: var(--accent);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: rgba(0, 192, 48, 0.08);
+    }
+
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
+  .finance-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+
+    .finance-item {
+      font-size: 0.85rem;
+      color: var(--muted);
+
+      .label {
+        color: var(--text);
+        font-weight: 500;
+        margin-right: 0.3rem;
+      }
+    }
+  }
+}
+
+// ── Ratings ───────────────────────────────────────────────────────────────────
+
+.ratings-section {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 0;
+  margin-bottom: 2.5rem;
+}
+
+.ratings-wrap {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.rating-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .rating-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+
+    &.imdb-icon {
+      background: #f5c518;
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.25rem 0.4rem;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
+  }
+
+  .rating-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    .rating-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .rating-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+  }
+
+  &.tmdb .rating-icon { color: #01b4e4; }
+  &.rt .rating-icon { font-size: 1.3rem; }
+}
+
+// ── Sections communes ─────────────────────────────────────────────────────────
+
+.content-section {
+  margin-bottom: 3rem;
+
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+// ── Cast ──────────────────────────────────────────────────────────────────────
+
+.cast-list {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.cast-card {
+  flex: 0 0 100px;
+  text-align: center;
+
+  .cast-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 0.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .cast-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: var(--muted);
+  }
+
+  .cast-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 0.2rem;
+    line-height: 1.2;
+  }
+
+  .cast-character {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.2;
+  }
+}
+
+// ── Seasons ───────────────────────────────────────────────────────────────────
+
+.seasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.season-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &.expanded {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &.seen > .season-header .season-name {
+    color: var(--accent);
+  }
+}
+
+.season-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  text-align: left;
+  gap: 1rem;
+
+  &:hover { background: rgba(255, 255, 255, 0.04); }
+
+  .season-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .season-poster {
+    width: 40px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .season-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .season-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .season-info {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .season-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .seen-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(0, 192, 48, 0.2);
+    color: var(--accent);
+    border: 1px solid rgba(0, 192, 48, 0.35);
+    letter-spacing: 0.05em;
+  }
+
+  .chevron {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+}
+
+.episodes-list {
+  border-top: 1px solid var(--border);
+  padding: 0.25rem 0;
+}
+
+.episode-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid rgba(31, 41, 51, 0.6);
+  transition: background 0.1s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(255, 255, 255, 0.03); }
+
+  &.seen .ep-title { color: var(--muted); }
+
+  .ep-num {
+    flex-shrink: 0;
+    width: 2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ep-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .ep-title {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .ep-date {
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .ep-runtime {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .ep-seen-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+}
+
+// ── Trailers ──────────────────────────────────────────────────────────────────
+
+.trailers-list {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.trailer-card {
+  flex: 0 0 260px;
+  text-decoration: none;
+  color: var(--text);
+
+  &:hover .trailer-thumb { opacity: 0.85; }
+  &:hover .play-btn { transform: translate(-50%, -50%) scale(1.1); }
+
+  .trailer-thumb {
+    position: relative;
+    width: 260px;
+    height: 146px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+
+    img {
+      width: 260px;
+      height: 146px;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  .play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #fff;
+    transition: transform 0.15s;
+    padding-left: 3px;
+  }
+
+  .trailer-name {
+    font-size: 0.8rem;
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

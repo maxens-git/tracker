@@ -1,0 +1,233 @@
+@if (loading()) {
+  <app-spinner />
+} @else if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+} @else {
+
+  @let media = isMovie ? movie() : show();
+
+  @if (media) {
+    <div class="backdrop" [style.background-image]="backdropStyle(media.backdropPath)"></div>
+
+    <div class="detail-page">
+
+      <!-- Header: poster + info -->
+      <section class="header-section">
+        <div class="poster-wrap">
+          @if (poster(media.posterPath); as p) {
+            <img class="poster-img" [src]="p" [alt]="media.title" />
+          } @else {
+            <div class="poster-placeholder">{{ media.title }}</div>
+          }
+        </div>
+
+        <div class="info">
+          <h1 class="title">{{ media.title }}</h1>
+
+          @if (media.originalTitle && media.originalTitle !== media.title) {
+            <p class="original-title">{{ media.originalTitle }}</p>
+          }
+
+          <div class="meta-row">
+            @if (year(media.releaseDate); as y) {
+              <span class="meta-chip">{{ y }}</span>
+            }
+            @if (isMovie && movie(); as m) {
+              @if (m.runtime) {
+                <span class="meta-chip">{{ formatRuntime(m.runtime) }}</span>
+              }
+            } @else if (!isMovie && show(); as s) {
+              <span class="meta-chip">{{ s.numberOfSeasons }} saison{{ s.numberOfSeasons > 1 ? 's' : '' }}</span>
+              <span class="meta-chip">{{ s.numberOfEpisodes }} épisodes</span>
+              @if (s.status) { <span class="meta-chip status">{{ s.status }}</span> }
+            }
+            @if (media.genres) {
+              @for (genre of media.genres.split(', '); track genre) {
+                <span class="meta-chip genre">{{ genre }}</span>
+              }
+            }
+          </div>
+
+          @if (media.tagline) {
+            <p class="tagline">"{{ media.tagline }}"</p>
+          }
+
+          @if (media.overview) {
+            <p class="overview">{{ media.overview }}</p>
+          }
+
+          <!-- Actions -->
+          <div class="actions">
+            <button
+              class="btn-seen"
+              [class.active]="currentSeen"
+              [disabled]="seenPending()"
+              (click)="toggleSeen()"
+            >
+              @if (currentSeen) {
+                <span class="check">✓</span> Vu
+              } @else {
+                Marquer comme vu
+              }
+            </button>
+          </div>
+
+          <!-- Movie extra info -->
+          @if (isMovie && movie(); as m) {
+            @if (m.budget || m.revenue) {
+              <div class="finance-row">
+                @if (formatMoney(m.budget); as b) {
+                  <span class="finance-item"><span class="label">Budget</span> {{ b }}</span>
+                }
+                @if (formatMoney(m.revenue); as r) {
+                  <span class="finance-item"><span class="label">Recettes</span> {{ r }}</span>
+                }
+              </div>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- Ratings -->
+      @if (media.voteAverage || media.ratings.imdbRating || media.ratings.rottenTomatoesRating) {
+        <section class="ratings-section">
+          <div class="ratings-wrap">
+            @if (media.voteAverage) {
+              <div class="rating-item tmdb">
+                <span class="rating-icon">★</span>
+                <div class="rating-body">
+                  <span class="rating-value">{{ media.voteAverage.toFixed(1) }}</span>
+                  <span class="rating-label">TMDb</span>
+                </div>
+              </div>
+            }
+            @if (media.ratings.imdbRating) {
+              <div class="rating-item imdb">
+                <span class="rating-icon imdb-icon">IMDb</span>
+                <div class="rating-body">
+                  <span class="rating-value">{{ media.ratings.imdbRating }}/10</span>
+                  @if (media.ratings.imdbVotes) {
+                    <span class="rating-label">{{ (media.ratings.imdbVotes / 1000).toFixed(0) }}k votes</span>
+                  }
+                </div>
+              </div>
+            }
+            @if (media.ratings.rottenTomatoesRating) {
+              <div class="rating-item rt">
+                <span class="rating-icon">🍅</span>
+                <div class="rating-body">
+                  <span class="rating-value">{{ media.ratings.rottenTomatoesRating }}%</span>
+                  <span class="rating-label">Rotten Tomatoes</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Cast -->
+      @if (credits()?.cast?.length) {
+        <section class="content-section">
+          <h2 class="section-title">Distribution</h2>
+          <div class="cast-list">
+            @for (person of credits()!.cast.slice(0, 12); track person.id) {
+              <div class="cast-card">
+                <div class="cast-photo">
+                  @if (profileUrl(person.profilePath); as p) {
+                    <img [src]="p" [alt]="person.name" loading="lazy" />
+                  } @else {
+                    <div class="cast-placeholder">{{ person.name[0] }}</div>
+                  }
+                </div>
+                <p class="cast-name">{{ person.name }}</p>
+                @if (person.character) {
+                  <p class="cast-character">{{ person.character }}</p>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Seasons (shows only) -->
+      @if (!isMovie && show(); as s) {
+        @if (s.seasons.length) {
+          <section class="content-section">
+            <h2 class="section-title">Saisons</h2>
+            <div class="seasons-list">
+              @for (season of s.seasons; track season.id) {
+                <div class="season-block" [class.expanded]="expandedSeason() === season.id" [class.seen]="season.seen">
+                  <button class="season-header" (click)="toggleSeason(season.id)">
+                    <div class="season-left">
+                      @if (poster(season.posterPath); as p) {
+                        <img class="season-poster" [src]="p" [alt]="season.name" loading="lazy" />
+                      }
+                      <div class="season-meta">
+                        <span class="season-name">{{ season.name }}</span>
+                        <span class="season-info">
+                          {{ season.episodeCount }} épisode{{ season.episodeCount > 1 ? 's' : '' }}
+                          @if (year(season.airDate); as y) { · {{ y }} }
+                        </span>
+                      </div>
+                    </div>
+                    <div class="season-right">
+                      @if (season.seen) { <span class="seen-badge">VU</span> }
+                      <span class="chevron">{{ expandedSeason() === season.id ? '▲' : '▼' }}</span>
+                    </div>
+                  </button>
+
+                  @if (expandedSeason() === season.id && season.episodes.length) {
+                    <div class="episodes-list">
+                      @for (ep of season.episodes; track ep.id) {
+                        <div class="episode-row" [class.seen]="ep.seen">
+                          <span class="ep-num">{{ ep.episodeNumber }}</span>
+                          <div class="ep-body">
+                            <span class="ep-title">{{ ep.name }}</span>
+                            @if (ep.airDate) {
+                              <span class="ep-date">{{ ep.airDate | date:'dd/MM/yyyy' }}</span>
+                            }
+                          </div>
+                          @if (ep.runtime) {
+                            <span class="ep-runtime">{{ ep.runtime }}min</span>
+                          }
+                          @if (ep.seen) { <span class="ep-seen-dot"></span> }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+        }
+      }
+
+      <!-- Trailers -->
+      @if (trailers()?.trailers?.length) {
+        <section class="content-section">
+          <h2 class="section-title">Bandes-annonces</h2>
+          <div class="trailers-list">
+            @for (trailer of trailers()!.trailers.slice(0, 6); track trailer.id) {
+              <a class="trailer-card" [href]="trailerLink(trailer.key)" target="_blank" rel="noopener">
+                <div class="trailer-thumb">
+                  <img [src]="trailerThumb(trailer.key)" [alt]="trailer.name" loading="lazy" />
+                  <div class="play-btn">▶</div>
+                </div>
+                <p class="trailer-name">{{ trailer.name }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Similar -->
+      @if (similar().length) {
+        <app-media-row
+          [title]="isMovie ? 'Films similaires' : 'Séries similaires'"
+          [items]="similar()"
+        />
+      }
+
+    </div>
+  }
+}

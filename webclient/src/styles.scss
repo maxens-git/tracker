@@ -24,6 +24,8 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+router-outlet + * { padding-top: 57px; }
+
 a { color: inherit; }
 
 img { display: block; }

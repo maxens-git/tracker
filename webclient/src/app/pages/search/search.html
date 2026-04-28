@@ -11,7 +11,7 @@
   </div>
 
   @if (loading()) {
-    <div class="status text-center py-5">Recherche…</div>
+    <app-spinner />
   } @else if (searched() && results().length === 0) {
     <div class="status text-center py-5">Aucun résultat</div>
   } @else if (results().length > 0) {
