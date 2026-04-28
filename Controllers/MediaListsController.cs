@@ -295,9 +295,6 @@ public class MediaListsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] string type = "all")
     {
-        if (string.IsNullOrWhiteSpace(query))
-            return BadRequest("Query cannot be empty");
-
         MediaList? mediaList = await _context.MediaLists.FirstOrDefaultAsync(ml => ml.Id == id);
         if (mediaList == null)
             return NotFound("List not found");
@@ -305,7 +302,7 @@ public class MediaListsController : ControllerBase
         string normalized = query.Trim().ToLower();
 
         IQueryable<MediaListSearchItemDto> movieQuery = _context.MediaListMovies
-            .Where(x => x.MediaListId == id && x.Movie.Title.ToLower().Contains(normalized))
+            .Where(x => x.MediaListId == id && (string.IsNullOrWhiteSpace(normalized) || x.Movie.Title.ToLower().Contains(normalized)))
             .Select(m => new MediaListSearchItemDto
             {
                 Id = m.MovieId,
@@ -322,7 +319,7 @@ public class MediaListsController : ControllerBase
             });
 
         IQueryable<MediaListSearchItemDto> showQuery = _context.MediaListShows
-            .Where(x => x.MediaListId == id && x.Show.Title.ToLower().Contains(normalized))
+            .Where(x => x.MediaListId == id && (string.IsNullOrWhiteSpace(normalized) || x.Show.Title.ToLower().Contains(normalized)))
             .Select(s => new MediaListSearchItemDto
             {
                 Id = s.ShowId,

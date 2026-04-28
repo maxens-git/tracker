@@ -9,9 +9,9 @@
     <h3>{{ title }}</h3>
     <div class="meta d-flex">
       @if (year) { <span>{{ year }}</span> }
-      @if (rating) { <span class="rating">★ {{ rating }}</span> }
     </div>
   </div>
 
   @if (item.seen) { <span class="seen-badge">VU</span> }
+  @if (rating) { <span class="rating-badge">★ {{ rating }}</span> }
 </article>

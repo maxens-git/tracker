@@ -49,6 +49,18 @@
     }
   }
 
+  .rating-badge {
+    position: absolute;
+    bottom: 0.4rem;
+    left: 0.4rem;
+    background: rgba(0, 0, 0, 0.72);
+    color: #00c030;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+  }
+
   .seen-badge {
     position: absolute;
     top: 0.4rem;
@@ -69,5 +81,4 @@
     .overlay { opacity: 1; }
   }
 
-  &.seen img { opacity: 0.55; }
 }
