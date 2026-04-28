@@ -273,7 +273,7 @@ public class ShowsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
-        return season.ToDto();
+        return new SeasonDto(season);
     }
 
     [HttpPost("episodes/{id}/seen")]
@@ -303,7 +303,7 @@ public class ShowsController : ControllerBase
         }
         
         await _context.SaveChangesAsync();
-        return episode.ToDto();
+        return new EpisodeDto(episode);
     }
 
     [HttpPost("{tmdbId}/refresh")]
@@ -440,38 +440,12 @@ public class ShowsController : ControllerBase
 
     private static ShowDto MapToDto(Show show, DateTime? listAddedAt = null)
     {
-        return new ShowDto
-        {
-            Id = show.Id,
-            TmdbId = show.TmdbId,
-            Title = show.Title,
-            OriginalTitle = show.OriginalTitle,
-            Overview = show.Overview,
-            Status = show.Status,
-            Tagline = show.Tagline,
-            PosterPath = show.PosterPath,
-            BackdropPath = show.BackdropPath,
-            VoteAverage = show.VoteAverage,
-            VoteCount = show.VoteCount,
-            Popularity = show.Popularity,
-            Liked = show.Liked,
-            Seen = show.Seen,
-            ReleaseDate = show.ReleaseDate,
-            Genres = show.Genres,
-            AddedAt = show.AddedAt,
-            UpdatedAt = show.UpdatedAt,
-            Ratings = show.ToRatings().ToDto(),
-            NumberOfSeasons = show.Seasons.Count(s => s.SeasonNumber > 0),
-            NumberOfEpisodes = show.Seasons
-                .Where(s => s.SeasonNumber > 0)
-                .Sum(s => s.Episodes?.Count ?? 0),
-            LastAirDate = show.LastAirDate,
-            Seasons = show.Seasons
-                .Where(s => s.SeasonNumber > 0)
-                .ToList(),
-            ListIds = show.MediaLists.Select(ml => ml.Id).ToList(),
-            ListAddedAt = listAddedAt
-        };
+        ShowDto dto = new ShowDto(show, listAddedAt);
+        List<Season> visibleSeasons = show.Seasons.Where(s => s.SeasonNumber > 0).ToList();
+        dto.Seasons = visibleSeasons;
+        dto.NumberOfSeasons = visibleSeasons.Count;
+        dto.NumberOfEpisodes = visibleSeasons.Sum(s => s.Episodes?.Count ?? 0);
+        return dto;
     }
 
     [HttpGet("{tmdbId}/ratings")]
@@ -485,7 +459,7 @@ public class ShowsController : ControllerBase
 
         if (HasStoredExternalRatings(show))
         {
-            return show.ToRatings().ToDto();
+            return new MediaRatingsDto(show.ToRatings());
         }
 
         string queryTitle = string.IsNullOrWhiteSpace(show.OriginalTitle) ? show.Title : show.OriginalTitle!;
@@ -501,7 +475,7 @@ public class ShowsController : ControllerBase
         show.RottenTomatoesRating = result.Ratings.RottenTomatoesRating;
         await _context.SaveChangesAsync();
 
-        return show.ToRatings().ToDto();
+        return new MediaRatingsDto(show.ToRatings());
     }
 
     private static bool HasStoredExternalRatings(Show show)

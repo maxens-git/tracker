@@ -159,7 +159,7 @@ public class MoviesController : ControllerBase
 
         if (HasStoredExternalRatings(movie))
         {
-            return movie.ToRatings().ToDto();
+            return new MediaRatingsDto(movie.ToRatings());
         }
 
         int? releaseYear = movie.ReleaseDate?.Year;
@@ -175,7 +175,7 @@ public class MoviesController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return movie.ToRatings().ToDto();
+        return new MediaRatingsDto(movie.ToRatings());
     }
 
     [HttpPost("{tmdbId}/refresh")]
@@ -225,34 +225,7 @@ public class MoviesController : ControllerBase
 
     private static MovieDto MapToDto(Movie movie, DateTime? listAddedAt = null)
     {
-        return new MovieDto
-        {
-            Id = movie.Id,
-            TmdbId = movie.TmdbId,
-            Title = movie.Title,
-            OriginalTitle = movie.OriginalTitle,
-            Overview = movie.Overview,
-            Status = movie.Status,
-            Tagline = movie.Tagline,
-            PosterPath = movie.PosterPath,
-            BackdropPath = movie.BackdropPath,
-            VoteAverage = movie.VoteAverage,
-            VoteCount = movie.VoteCount,
-            Popularity = movie.Popularity,
-            Ratings = movie.ToRatings().ToDto(),
-            Liked = movie.Liked,
-            Seen = movie.Seen,
-            ReleaseDate = movie.ReleaseDate,
-            Genres = movie.Genres,
-            AddedAt = movie.AddedAt,
-            UpdatedAt = movie.UpdatedAt,
-            Runtime = movie.Runtime,
-            Budget = movie.Budget,
-            Revenue = movie.Revenue,
-            ImdbId = movie.ImdbId,
-            ListIds = movie.MediaLists.Select(ml => ml.Id).ToList(),
-            ListAddedAt = listAddedAt
-        };
+        return new MovieDto(movie, listAddedAt);
     }
 
     private static Movie BuildMovieFromTmdb(TMDbMovieResponse tmdbMovie)

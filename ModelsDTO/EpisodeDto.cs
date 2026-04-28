@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using Tracker.Models;
 
 namespace Tracker.ModelsDTO;
 
@@ -17,4 +16,21 @@ public class EpisodeDto
     public bool Seen { get; set; }
     public int SeasonId { get; set; }
     public List<int> ListIds { get; set; } = new();
+
+    public EpisodeDto() {}
+
+    public EpisodeDto(Episode episode)
+    {
+        Id = episode.Id;
+        TmdbId = episode.TmdbId;
+        Name = episode.Name;
+        Overview = episode.Overview;
+        EpisodeNumber = episode.EpisodeNumber;
+        Runtime = episode.Runtime;
+        VoteAverage = episode.VoteAverage;
+        AirDate = episode.AirDate;
+        StillPath = episode.StillPath;
+        Seen = episode.Seen;
+        SeasonId = episode.SeasonId;
+    }
 }

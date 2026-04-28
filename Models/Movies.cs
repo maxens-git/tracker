@@ -51,41 +51,4 @@ public class Movie : BaseMedia
         ImdbId = dto.ImdbId;
     }
 
-    public ModelsDTO.MovieDto ToDto()
-    {
-        return new ModelsDTO.MovieDto
-        {
-            Id = Id,
-            TmdbId = TmdbId,
-            Title = Title,
-            OriginalTitle = OriginalTitle,
-            Overview = Overview,
-            Status = Status,
-            Tagline = Tagline,
-            PosterPath = PosterPath,
-            BackdropPath = BackdropPath,
-            VoteAverage = VoteAverage,
-            VoteCount = VoteCount,
-            Popularity = Popularity,
-            Liked = Liked,
-            Seen = Seen,
-            ReleaseDate = ReleaseDate,
-            Genres = Genres,
-            AddedAt = AddedAt,
-            UpdatedAt = UpdatedAt,
-            Ratings = ToRatings().ToDto(),
-            Runtime = Runtime,
-            Budget = Budget,
-            Revenue = Revenue,
-            ImdbId = ImdbId,
-            ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
-        };
-    }
-
-    public ModelsDTO.MovieDto ToDto(DateTime? listAddedAt)
-    {
-        ModelsDTO.MovieDto dto = ToDto();
-        dto.ListAddedAt = listAddedAt;
-        return dto;
-    }
 }

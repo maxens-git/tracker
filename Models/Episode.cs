@@ -29,22 +29,4 @@ public class Episode
     public int SeasonId { get; set; }
     [ForeignKey("SeasonId")]
     public Season Season { get; set; } = null!;
-    public ModelsDTO.EpisodeDto ToDto()
-    {
-        return new ModelsDTO.EpisodeDto
-        {
-            Id = Id,
-            TmdbId = TmdbId,
-            Name = Name,
-            Overview = Overview,
-            EpisodeNumber = EpisodeNumber,
-            Runtime = Runtime,
-            VoteAverage = VoteAverage,
-            AirDate = AirDate,
-            StillPath = StillPath,
-            Seen = Seen,
-            SeasonId = SeasonId,
-            ListIds = new List<int>() // Optionally populate if you add list support for episodes
-        };
-    }
 }

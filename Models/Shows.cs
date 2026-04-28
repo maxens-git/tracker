@@ -49,41 +49,4 @@ public class Show : BaseMedia
         LastAirDate = dto.LastAirDate;
     }
 
-    public ModelsDTO.ShowDto ToDto()
-    {
-        return new ModelsDTO.ShowDto
-        {
-            Id = Id,
-            TmdbId = TmdbId,
-            Title = Title,
-            OriginalTitle = OriginalTitle,
-            Overview = Overview,
-            Status = Status,
-            Tagline = Tagline,
-            PosterPath = PosterPath,
-            BackdropPath = BackdropPath,
-            VoteAverage = VoteAverage,
-            VoteCount = VoteCount,
-            Popularity = Popularity,
-            Liked = Liked,
-            Seen = Seen,
-            ReleaseDate = ReleaseDate,
-            Genres = Genres,
-            AddedAt = AddedAt,
-            UpdatedAt = UpdatedAt,
-            Ratings = ToRatings().ToDto(),
-            NumberOfSeasons = NumberOfSeasons,
-            NumberOfEpisodes = NumberOfEpisodes,
-            LastAirDate = LastAirDate,
-            Seasons = Seasons,
-            ListIds = MediaLists?.ConvertAll(l => l.Id) ?? new List<int>()
-        };
-    }
-
-    public ModelsDTO.ShowDto ToDto(DateTime? listAddedAt)
-    {
-        ModelsDTO.ShowDto dto = ToDto();
-        dto.ListAddedAt = listAddedAt;
-        return dto;
-    }
 }

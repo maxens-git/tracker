@@ -63,7 +63,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.Movie.ToDto(m.AddedAt)).ToList(),
+            Items = movies.Select(m => new MovieDto(m.Movie, m.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -91,7 +91,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.Show.ToDto(s.AddedAt)).ToList(),
+            Items = shows.Select(s => new ShowDto(s.Show, s.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -116,7 +116,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.ToDto()).ToList(),
+            Items = movies.Select(m => new MovieDto(m)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -141,7 +141,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.ToDto()).ToList(),
+            Items = shows.Select(s => new ShowDto(s)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -166,7 +166,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.ToDto()).ToList(),
+            Items = movies.Select(m => new MovieDto(m)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -191,7 +191,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.ToDto()).ToList(),
+            Items = shows.Select(s => new ShowDto(s)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -248,7 +248,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.MovieDto>
         {
-            Items = movies.Select(m => m.Movie.ToDto(m.AddedAt)).ToList(),
+            Items = movies.Select(m => new MovieDto(m.Movie, m.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
@@ -280,7 +280,7 @@ public class MediaListsController : ControllerBase
 
         return new PaginatedResult<ModelsDTO.ShowDto>
         {
-            Items = shows.Select(s => s.Show.ToDto(s.AddedAt)).ToList(),
+            Items = shows.Select(s => new ShowDto(s.Show, s.AddedAt)).ToList(),
             Page = page,
             PageSize = PageSize,
             TotalCount = totalCount,
