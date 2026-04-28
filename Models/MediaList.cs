@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Tracker.Models;
 
 [Table("MediaLists")]
-public class MediaList
+public class MediaList : BaseEntity
 {
     [Key]
     public int Id { get; set; }
@@ -20,9 +20,6 @@ public class MediaList
     public string? Icon { get; set; }
 
     public bool IsSystem { get; set; } = false;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public List<Movie> Movies { get; set; } = new();
     public List<Show> Shows { get; set; } = new();

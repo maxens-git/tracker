@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Tracker.Models;
 
 [Table("Persons")]
-public class Person
+public class Person : BaseEntity
 {
     [Key]
     public int Id { get; set; }
@@ -25,8 +25,6 @@ public class Person
     public int Gender { get; set; }
 
     public double Popularity { get; set; }
-
-    public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
     public List<MovieCast> MovieCasts { get; set; } = new();
     public List<MovieCrew> MovieCrews { get; set; } = new();

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Tracker.Models;
 
 [Table("Trailers")]
-public class Trailer
+public class Trailer : BaseEntity
 {
     [Key]
     public int Id { get; set; }
@@ -32,8 +32,6 @@ public class Trailer
     public string? Language { get; set; }
 
     public DateTime? PublishedAt { get; set; }
-
-    public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
     public int? MovieId { get; set; }
     public Movie? Movie { get; set; }

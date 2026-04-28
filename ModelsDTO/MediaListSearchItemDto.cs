@@ -9,7 +9,7 @@ public class MediaListSearchItemDto
     public DateTime? ReleaseDate { get; set; }
     public double? VoteAverage { get; set; }
     public double? Popularity { get; set; }
-    public DateTime? LastUpdated { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public DateTime? AddedAt { get; set; }
     public string MediaType { get; set; } = string.Empty;
     public bool Seen { get; set; }

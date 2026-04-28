@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tracker.Models;
 
-public abstract class BaseMedia
+public abstract class BaseMedia : BaseEntity
 {
     [Key]
     public int Id { get; set; }
@@ -44,9 +44,6 @@ public abstract class BaseMedia
     public DateTime? ReleaseDate { get; set; }
 
     public string? Genres { get; set; } 
-
-    public DateTime AddedAt { get; set; } = DateTime.UtcNow;
-    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
     public MediaRatings ToRatings()
     {

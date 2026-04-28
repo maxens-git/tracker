@@ -67,9 +67,7 @@ public class MoviesController : ControllerBase
             watchlist = new MediaList
             {
                 Name = "Watchlist",
-                IsSystem = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                IsSystem = true
             };
             _context.MediaLists.Add(watchlist);
             await _context.SaveChangesAsync();
@@ -210,7 +208,7 @@ public class MoviesController : ControllerBase
         movie.Revenue = tmdbMovie.Revenue;
         movie.ImdbId = tmdbMovie.ImdbId;
         movie.Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name));
-        movie.LastUpdated = DateTime.UtcNow;
+        movie.UpdatedAt = DateTime.UtcNow;
 
         string queryTitle = string.IsNullOrWhiteSpace(movie.OriginalTitle) ? movie.Title : movie.OriginalTitle!;
         OmdbRatingsResult result = await _omdbService.GetExternalRatingsAsync(movie.ImdbId, queryTitle, movie.ReleaseDate?.Year);
@@ -247,7 +245,7 @@ public class MoviesController : ControllerBase
             ReleaseDate = movie.ReleaseDate,
             Genres = movie.Genres,
             AddedAt = movie.AddedAt,
-            LastUpdated = movie.LastUpdated,
+            UpdatedAt = movie.UpdatedAt,
             Runtime = movie.Runtime,
             Budget = movie.Budget,
             Revenue = movie.Revenue,

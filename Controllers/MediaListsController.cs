@@ -35,7 +35,7 @@ public class MediaListsController : ControllerBase
                 IsSystem = ml.IsSystem,
                 MoviesCount = ml.Movies.Count,
                 ShowsCount = ml.Shows.Count,
-                CreatedAt = ml.CreatedAt,
+                CreatedAt = ml.AddedAt,
                 UpdatedAt = ml.UpdatedAt
             })
             .ToListAsync();
@@ -108,7 +108,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Liked)
             .Include(m => m.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(m => m.LastUpdated)
+            .OrderByDescending(m => m.UpdatedAt)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -133,7 +133,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Liked)
             .Include(s => s.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(s => s.LastUpdated)
+            .OrderByDescending(s => s.UpdatedAt)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -158,7 +158,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Seen)
             .Include(m => m.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(m => m.LastUpdated)
+            .OrderByDescending(m => m.UpdatedAt)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -183,7 +183,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Seen)
             .Include(s => s.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(s => s.LastUpdated)
+            .OrderByDescending(s => s.UpdatedAt)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -213,7 +213,7 @@ public class MediaListsController : ControllerBase
                 IsSystem = ml.IsSystem,
                 MoviesCount = ml.Movies.Count,
                 ShowsCount = ml.Shows.Count,
-                CreatedAt = ml.CreatedAt,
+                CreatedAt = ml.AddedAt,
                 UpdatedAt = ml.UpdatedAt
             })
             .FirstOrDefaultAsync();
@@ -315,7 +315,7 @@ public class MediaListsController : ControllerBase
                 ReleaseDate = m.Movie.ReleaseDate,
                 VoteAverage = m.Movie.VoteAverage,
                 Popularity = m.Movie.Popularity,
-                LastUpdated = m.Movie.LastUpdated,
+                UpdatedAt = m.Movie.UpdatedAt,
                 AddedAt = m.AddedAt,
                 MediaType = "movie",
                 Seen = m.Movie.Seen
@@ -332,7 +332,7 @@ public class MediaListsController : ControllerBase
                 ReleaseDate = s.Show.ReleaseDate,
                 VoteAverage = s.Show.VoteAverage,
                 Popularity = s.Show.Popularity,
-                LastUpdated = s.Show.LastUpdated,
+                UpdatedAt = s.Show.UpdatedAt,
                 AddedAt = s.AddedAt,
                 MediaType = "show",
                 Seen = s.Show.Seen
@@ -573,7 +573,7 @@ public class MediaListsController : ControllerBase
             return NotFound("Movie not found on TMDb");
 
         movie.Liked = liked;
-        movie.LastUpdated = DateTime.UtcNow;
+        movie.UpdatedAt = DateTime.UtcNow;
 
         MediaList? likesList = await _context.MediaLists
             .Include(ml => ml.Movies)
@@ -609,7 +609,7 @@ public class MediaListsController : ControllerBase
             return NotFound("Show not found on TMDb");
 
         show.Liked = liked;
-        show.LastUpdated = DateTime.UtcNow;
+        show.UpdatedAt = DateTime.UtcNow;
 
         MediaList? likesList = await _context.MediaLists
             .Include(ml => ml.Shows)

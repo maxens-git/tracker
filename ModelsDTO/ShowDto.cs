@@ -22,7 +22,7 @@ public class ShowDto
     public DateTime? ReleaseDate { get; set; }
     public string? Genres { get; set; }
     public DateTime AddedAt { get; set; }
-    public DateTime LastUpdated { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public DateTime? ListAddedAt { get; set; }
     
     public int NumberOfSeasons { get; set; }

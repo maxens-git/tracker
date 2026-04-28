@@ -163,9 +163,7 @@ public class ShowsController : ControllerBase
             watchlist = new MediaList
             {
                 Name = "Watchlist",
-                IsSystem = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                IsSystem = true
             };
             _context.MediaLists.Add(watchlist);
             await _context.SaveChangesAsync();
@@ -341,7 +339,7 @@ public class ShowsController : ControllerBase
         show.ReleaseDate = ParseDate(tmdbShow.FirstAirDate);
         show.LastAirDate = ParseDate(tmdbShow.LastAirDate);
         show.Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name));
-        show.LastUpdated = DateTime.UtcNow;
+        show.UpdatedAt = DateTime.UtcNow;
 
         int totalEpisodeCount = 0;
         foreach (TMDbSeasonSummary seasonSummary in regularSeasons)
@@ -461,7 +459,7 @@ public class ShowsController : ControllerBase
             ReleaseDate = show.ReleaseDate,
             Genres = show.Genres,
             AddedAt = show.AddedAt,
-            LastUpdated = show.LastUpdated,
+            UpdatedAt = show.UpdatedAt,
             Ratings = show.ToRatings().ToDto(),
             NumberOfSeasons = show.Seasons.Count(s => s.SeasonNumber > 0),
             NumberOfEpisodes = show.Seasons

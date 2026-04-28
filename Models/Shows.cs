@@ -40,7 +40,7 @@ public class Show : BaseMedia
         ReleaseDate = dto.ReleaseDate;
         Genres = dto.Genres;
         AddedAt = dto.AddedAt;
-        LastUpdated = dto.LastUpdated;
+        UpdatedAt = dto.UpdatedAt;
         ImdbRating = dto.Ratings?.ImdbRating;
         ImdbVotes = dto.Ratings?.ImdbVotes;
         RottenTomatoesRating = dto.Ratings?.RottenTomatoesRating;
@@ -70,7 +70,7 @@ public class Show : BaseMedia
             ReleaseDate = ReleaseDate,
             Genres = Genres,
             AddedAt = AddedAt,
-            LastUpdated = LastUpdated,
+            UpdatedAt = UpdatedAt,
             Ratings = ToRatings().ToDto(),
             NumberOfSeasons = NumberOfSeasons,
             NumberOfEpisodes = NumberOfEpisodes,
