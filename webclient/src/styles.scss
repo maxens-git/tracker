@@ -24,7 +24,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-router-outlet + * { padding-top: 57px; }
+.page-content { padding-top: 57px; }
 
 a { color: inherit; }
 
