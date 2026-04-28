@@ -1,0 +1,8 @@
+<section class="media-row">
+  <h2>{{ title }}</h2>
+  <div class="track">
+    @for (item of items; track item.id) {
+      <app-poster-card [item]="item" />
+    }
+  </div>
+</section>

@@ -1,0 +1,30 @@
+:host { display: block; }
+
+.media-row {
+  margin-bottom: 2.5rem;
+
+  h2 {
+    margin: 0 0 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #8b9aa8;
+    border-bottom: 1px solid #1f2933;
+    padding-bottom: 0.5rem;
+  }
+
+  .track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 150px;
+    gap: 0.9rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #2a3540 transparent;
+
+    &::-webkit-scrollbar { height: 6px; }
+    &::-webkit-scrollbar-thumb { background: #2a3540; border-radius: 3px; }
+  }
+}

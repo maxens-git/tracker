@@ -1,1 +1,22 @@
-<p>home works!</p>
+@if (loading()) {
+  <div class="status text-center py-5 px-4">Chargement…</div>
+} @else if (error()) {
+  <div class="status text-center py-5 px-4 error">{{ error() }}</div>
+} @else if (data(); as d) {
+  @if (hero(d); as h) {
+    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'linear-gradient(to bottom, rgba(14,20,24,0.4), rgba(14,20,24,1)), url(' + h.backdrop + ')' : null">
+      <div class="hero-content">
+        <h1>{{ h.title }}</h1>
+        @if (h.year) { <span class="year d-inline-block mb-3">{{ h.year }}</span> }
+        @if (h.overview) { <p>{{ h.overview }}</p> }
+      </div>
+    </header>
+  }
+
+  <main class="rows mx-auto pb-5 pt-4 px-4">
+    <app-media-row title="Tendances de la semaine" [items]="d.trendingWeek" />
+    <app-media-row title="Films populaires" [items]="d.popularMovies" />
+    <app-media-row title="Séries populaires" [items]="d.popularShows" />
+    <app-media-row title="Mieux notés" [items]="d.topRated" />
+  </main>
+}

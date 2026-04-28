@@ -1,0 +1,30 @@
+.search-page {
+  max-width: 1400px;
+}
+
+.search-bar input {
+  padding: 1rem 1.2rem;
+  background: #1c2228;
+  border: 1px solid #2a3540;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+
+  &::placeholder { color: #6b7884; }
+  &:focus { outline: none; border-color: #00c030; }
+}
+
+.status {
+  color: #8b9aa8;
+  font-size: 0.9rem;
+
+  &.hint { color: #6b7884; }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}

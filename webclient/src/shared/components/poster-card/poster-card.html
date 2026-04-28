@@ -1,0 +1,17 @@
+<article class="poster" [class.seen]="item.seen">
+  @if (poster) {
+    <img [src]="poster" [alt]="title" loading="lazy" />
+  } @else {
+    <div class="placeholder d-flex align-items-center justify-content-center text-center">{{ title }}</div>
+  }
+
+  <div class="overlay">
+    <h3>{{ title }}</h3>
+    <div class="meta d-flex">
+      @if (year) { <span>{{ year }}</span> }
+      @if (rating) { <span class="rating">★ {{ rating }}</span> }
+    </div>
+  </div>
+
+  @if (item.seen) { <span class="seen-badge">VU</span> }
+</article>

@@ -1,1 +1,26 @@
-<p>search works!</p>
+<div class="search-page mx-auto px-4 pb-5 pt-4">
+  <div class="search-bar mb-5">
+    <input
+      type="search"
+      placeholder="Rechercher un film ou une série…"
+      [(ngModel)]="query"
+      (ngModelChange)="onInput()"
+      autofocus
+      class="w-100"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="status text-center py-5">Recherche…</div>
+  } @else if (searched() && results().length === 0) {
+    <div class="status text-center py-5">Aucun résultat</div>
+  } @else if (results().length > 0) {
+    <div class="grid">
+      @for (item of results(); track item.id) {
+        <app-poster-card [item]="item" />
+      }
+    </div>
+  } @else {
+    <div class="status text-center py-5 hint">Tapez pour rechercher</div>
+  }
+</div>
