@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { TrendingHome, SearchResponse } from '../interfaces/media';
 import { MovieDto, CreditsDto, TrailersDto } from '../interfaces/movie';
 import { ShowDto } from '../interfaces/show';
+import { MediaListSummary, PaginatedResult, MediaListSearchItem } from '../interfaces/list';
 
 const API = 'http://localhost:5050/api';
 
@@ -82,5 +83,25 @@ export class Api {
 
   removeShowFromWatchlist(tmdbId: number): Observable<unknown> {
     return this.http.delete(`${API}/Shows/${tmdbId}/watchlist`);
+  }
+
+  lists(): Observable<MediaListSummary[]> {
+    return this.http.get<MediaListSummary[]>(`${API}/MediaLists`);
+  }
+
+  list(id: number): Observable<MediaListSummary> {
+    return this.http.get<MediaListSummary>(`${API}/MediaLists/${id}`);
+  }
+
+  listMovies(id: number, page = 1): Observable<PaginatedResult<MovieDto>> {
+    return this.http.get<PaginatedResult<MovieDto>>(`${API}/MediaLists/${id}/movies`, { params: { page } });
+  }
+
+  listShows(id: number, page = 1): Observable<PaginatedResult<ShowDto>> {
+    return this.http.get<PaginatedResult<ShowDto>>(`${API}/MediaLists/${id}/shows`, { params: { page } });
+  }
+
+  searchList(id: number, query: string, page = 1, type = 'all'): Observable<PaginatedResult<MediaListSearchItem>> {
+    return this.http.get<PaginatedResult<MediaListSearchItem>>(`${API}/MediaLists/${id}/search`, { params: { query, page, type } });
   }
 }

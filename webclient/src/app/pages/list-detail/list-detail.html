@@ -1,0 +1,120 @@
+<div class="list-detail-page mx-auto px-4 pb-5 pt-4">
+
+  @if (loadingList()) {
+    <app-spinner />
+  } @else if (list(); as l) {
+
+    <div class="detail-header mb-4">
+      <a routerLink="/lists" class="back-link">← Listes</a>
+      <div class="header-main">
+        <div class="list-icon">{{ listIcon() }}</div>
+        <div class="header-info">
+          <h1 class="list-name">
+            {{ l.name }}
+            @if (l.isSystem) {
+              <span class="badge-system">système</span>
+            }
+          </h1>
+          @if (l.description) {
+            <p class="list-description">{{ l.description }}</p>
+          }
+          <div class="list-meta">
+            {{ l.moviesCount }} film{{ l.moviesCount !== 1 ? 's' : '' }} ·
+            {{ l.showsCount }} série{{ l.showsCount !== 1 ? 's' : '' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-bar mb-5">
+      <input
+        type="search"
+        placeholder="Rechercher dans cette liste…"
+        [(ngModel)]="query"
+        (ngModelChange)="onSearchInput()"
+        class="w-100"
+      />
+    </div>
+
+    @if (isSearching()) {
+      @if (loadingSearch()) {
+        <app-spinner />
+      } @else if (searchResults().length === 0) {
+        <div class="status text-center py-5">Aucun résultat pour « {{ query }} »</div>
+      } @else {
+        <div class="section-label">
+          {{ searchTotalCount() }} résultat{{ searchTotalCount() !== 1 ? 's' : '' }}
+        </div>
+        <div class="grid mb-4">
+          @for (item of searchResults(); track item.id) {
+            <app-poster-card [item]="item" />
+          }
+        </div>
+        @if (searchTotalPages() > 1) {
+          <div class="pagination mb-5">
+            @for (p of pages(searchTotalPages()); track p) {
+              <button
+                class="page-btn"
+                [class.active]="p === searchPage()"
+                (click)="loadSearchPage(p)"
+              >{{ p }}</button>
+            }
+          </div>
+        }
+      }
+    } @else {
+
+      @if (l.moviesCount > 0) {
+        <div class="section-label">Films ({{ moviesTotalCount() }})</div>
+        @if (loadingMovies()) {
+          <app-spinner />
+        } @else {
+          <div class="grid mb-3">
+            @for (item of movies(); track item.id) {
+              <app-poster-card [item]="item" />
+            }
+          </div>
+          @if (moviesTotalPages() > 1) {
+            <div class="pagination mb-5">
+              @for (p of pages(moviesTotalPages()); track p) {
+                <button
+                  class="page-btn"
+                  [class.active]="p === moviesPage()"
+                  (click)="loadMovies(p)"
+                >{{ p }}</button>
+              }
+            </div>
+          }
+        }
+      }
+
+      @if (l.showsCount > 0) {
+        <div class="section-label mt-4">Séries ({{ showsTotalCount() }})</div>
+        @if (loadingShows()) {
+          <app-spinner />
+        } @else {
+          <div class="grid mb-3">
+            @for (item of shows(); track item.id) {
+              <app-poster-card [item]="item" />
+            }
+          </div>
+          @if (showsTotalPages() > 1) {
+            <div class="pagination mb-5">
+              @for (p of pages(showsTotalPages()); track p) {
+                <button
+                  class="page-btn"
+                  [class.active]="p === showsPage()"
+                  (click)="loadShows(p)"
+                >{{ p }}</button>
+              }
+            </div>
+          }
+        }
+      }
+
+      @if (l.moviesCount === 0 && l.showsCount === 0) {
+        <div class="status text-center py-5">Cette liste est vide.</div>
+      }
+    }
+  }
+</div>
