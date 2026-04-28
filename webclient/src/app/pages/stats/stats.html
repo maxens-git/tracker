@@ -1,0 +1,90 @@
+<div class="stats-page mx-auto px-4 pb-5 pt-4">
+  <h1 class="page-title mb-5">Statistiques</h1>
+
+  @if (loading()) {
+    <app-spinner />
+  } @else if (error()) {
+    <div class="status text-center py-5">Erreur lors du chargement.</div>
+  } @else if (stats(); as s) {
+
+    <!-- Chiffres clés -->
+    <div class="kpi-grid mb-5">
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.moviesSeenCount }}</div>
+        <div class="kpi-label">Films vus</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.showsSeenCount }}</div>
+        <div class="kpi-label">Séries vues</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.episodesSeenCount }}</div>
+        <div class="kpi-label">Épisodes vus</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-value">{{ formatRuntime(s.totalRuntimeMinutes) }}</div>
+        <div class="kpi-label">Temps total</div>
+      </div>
+    </div>
+
+    <!-- Activité par année -->
+    @if (byYear().length > 0) {
+      <div class="chart-block mb-5">
+        <div class="section-label mb-3">Activité par année</div>
+        <div class="bar-chart year-chart">
+          @for (b of byYear(); track b.year) {
+            <div class="bar-group">
+              <div class="tooltip">
+                <div class="tooltip-title">{{ b.year }}</div>
+                @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
+                @if (b.shows > 0) { <div class="tooltip-row"><span class="dot shows"></span>{{ b.shows }} série{{ b.shows > 1 ? 's' : '' }}</div> }
+                <div class="tooltip-total">{{ b.total }} total</div>
+              </div>
+              <div class="bar-stack" [style.height]="pct(b.total, maxYear())">
+                @if (b.movies > 0) {
+                  <div class="bar-segment movies" [style.flex]="b.movies"></div>
+                }
+                @if (b.shows > 0) {
+                  <div class="bar-segment shows" [style.flex]="b.shows"></div>
+                }
+              </div>
+              <div class="bar-label">{{ b.year }}</div>
+            </div>
+          }
+        </div>
+        <div class="legend mt-3">
+          <span class="legend-dot movies"></span><span class="legend-text">Films</span>
+          <span class="legend-dot shows"></span><span class="legend-text">Séries</span>
+        </div>
+      </div>
+    }
+
+    <!-- Activité des 12 derniers mois -->
+    <div class="chart-block mb-5">
+      <div class="section-label mb-3">12 derniers mois</div>
+      <div class="bar-chart month-chart">
+        @for (b of byMonth(); track b.label) {
+          <div class="bar-group">
+            <div class="tooltip">
+              <div class="tooltip-title">{{ b.label }}</div>
+              @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
+              @if (b.shows > 0) { <div class="tooltip-row"><span class="dot shows"></span>{{ b.shows }} série{{ b.shows > 1 ? 's' : '' }}</div> }
+              @if (b.total === 0) { <div class="tooltip-row" style="color: var(--muted)">Aucun</div> }
+              @if (b.total > 0) { <div class="tooltip-total">{{ b.total }} total</div> }
+            </div>
+            <div class="bar-stack" [style.height]="pct(b.total, maxMonth())">
+              @if (b.movies > 0) {
+                <div class="bar-segment movies" [style.flex]="b.movies"></div>
+              }
+              @if (b.shows > 0) {
+                <div class="bar-segment shows" [style.flex]="b.shows"></div>
+              }
+            </div>
+            <div class="bar-label">{{ b.label }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+</div>

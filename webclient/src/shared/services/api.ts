@@ -5,6 +5,7 @@ import { TrendingHome, SearchResponse } from '../interfaces/media';
 import { MovieDto, CreditsDto, TrailersDto } from '../interfaces/movie';
 import { ShowDto } from '../interfaces/show';
 import { MediaListSummary, PaginatedResult, MediaListSearchItem } from '../interfaces/list';
+import { Stats } from '../interfaces/stats';
 
 const API = 'http://localhost:5050/api';
 
@@ -83,6 +84,10 @@ export class Api {
 
   removeShowFromWatchlist(tmdbId: number): Observable<unknown> {
     return this.http.delete(`${API}/Shows/${tmdbId}/watchlist`);
+  }
+
+  stats(): Observable<Stats> {
+    return this.http.get<Stats>(`${API}/Stats`);
   }
 
   lists(): Observable<MediaListSummary[]> {
