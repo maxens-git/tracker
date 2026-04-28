@@ -1,9 +1,9 @@
 # Build Angular frontend
 FROM node:22-bookworm AS frontend-builder
-WORKDIR /app/web
-COPY web/package*.json ./
+WORKDIR /app/webclient
+COPY webclient/package*.json ./
 RUN if [ -f package-lock.json ]; then npm ci --no-audit --omit=optional; else npm install --no-audit --omit=optional; fi
-COPY web/ ./
+COPY webclient/ ./
 RUN npm run build
 
 # Build .NET backend and bundle frontend assets
@@ -12,7 +12,7 @@ WORKDIR /src
 COPY TrackerApi.csproj ./
 RUN dotnet restore
 COPY . ./
-COPY --from=frontend-builder /app/web/dist/tracker/browser ./wwwroot
+COPY --from=frontend-builder /app/webclient/dist/tracker/browser ./wwwroot
 RUN dotnet publish TrackerApi.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # Final image
