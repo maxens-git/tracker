@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -23,6 +23,7 @@ type MediaType = 'movie' | 'tv';
 export class MediaDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(Api);
+  private location = inject(Location);
 
   loading = signal(true);
   error = signal<string | null>(null);
@@ -85,6 +86,8 @@ export class MediaDetail implements OnInit {
       },
     });
   }
+
+  goBack() { this.location.back(); }
 
   get isMovie() { return this.mediaType() === 'movie'; }
 
