@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -8,4 +8,12 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './nav.html',
   styleUrl: './nav.scss',
 })
-export class Nav {}
+export class Nav {
+  open = signal(false);
+
+  toggle() { this.open.update(v => !v); }
+  close() { this.open.set(false); }
+
+  @HostListener('document:keydown.escape')
+  onEscape() { this.close(); }
+}

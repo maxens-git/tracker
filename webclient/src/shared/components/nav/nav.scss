@@ -7,7 +7,7 @@ nav {
   padding: 1rem 2rem;
   background: #0a0f13;
   border-bottom: 1px solid #1f2933;
-  z-index: 100;
+  z-index: 200;
 
   .brand {
     font-size: 1rem;
@@ -32,4 +32,81 @@ nav {
       &.active { color: #fff; border-bottom-color: #00c030; }
     }
   }
+
+  .burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    margin-left: auto;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+
+    span {
+      display: block;
+      height: 2px;
+      background: #8b9aa8;
+      border-radius: 2px;
+      transform-origin: center;
+      transition: transform 0.2s ease, opacity 0.2s ease, background 0.15s ease;
+    }
+
+    &:hover span { background: #e0e0e0; }
+
+    &.is-open {
+      span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+      span:nth-child(2) { opacity: 0; }
+      span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    }
+  }
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 57px;
+  left: 0;
+  right: 0;
+  background: #0a0f13;
+  border-bottom: 1px solid #1f2933;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+
+  a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: #8b9aa8;
+    padding: 0.9rem 2rem;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+
+    &:hover { color: #e0e0e0; background: rgba(255,255,255,0.03); }
+    &.active { color: #fff; border-left-color: #00c030; }
+  }
+}
+
+@media (max-width: 600px) {
+  nav {
+    padding: 1rem 1.25rem;
+
+    .links { display: none !important; }
+    .burger { display: flex; }
+  }
+
+  .mobile-overlay { display: block; }
 }
