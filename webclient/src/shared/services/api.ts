@@ -7,7 +7,7 @@ import { ShowDto } from '../interfaces/show';
 import { MediaListSummary, PaginatedResult, MediaListSearchItem } from '../interfaces/list';
 import { Stats } from '../interfaces/stats';
 
-const API = 'http://localhost:5050/api';
+const API = '/api';
 
 @Injectable({ providedIn: 'root' })
 export class Api {
