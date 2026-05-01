@@ -31,3 +31,5 @@ TestResults/
 
 # Temp
 *~
+
+.DS_Store

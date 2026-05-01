@@ -61,17 +61,65 @@
           <!-- Actions -->
           <div class="actions">
             <button
-              class="btn-seen"
+              class="btn-action btn-seen"
               [class.active]="currentSeen"
               [disabled]="seenPending()"
               (click)="toggleSeen()"
             >
               @if (currentSeen) {
-                <span class="check">✓</span> Vu
+                <span class="icon">✓</span> Vu
               } @else {
-                Marquer comme vu
+                <span class="icon">○</span> Marquer comme vu
               }
             </button>
+
+            <button
+              class="btn-action btn-liked"
+              [class.active]="currentLiked"
+              [disabled]="likedPending()"
+              (click)="toggleLiked()"
+            >
+              <span class="icon">{{ currentLiked ? '♥' : '♡' }}</span>
+              {{ currentLiked ? 'Aimé' : "J'aime" }}
+            </button>
+
+            <button
+              class="btn-action btn-watchlist"
+              [class.active]="currentInWatchlist"
+              [disabled]="watchlistPending()"
+              (click)="toggleWatchlist()"
+            >
+              <span class="icon">{{ currentInWatchlist ? '★' : '☆' }}</span>
+              {{ currentInWatchlist ? 'Watchlist' : '+ Watchlist' }}
+            </button>
+
+            @if (customLists.length > 0) {
+              <div class="list-picker-wrap">
+                <button
+                  class="btn-action btn-lists"
+                  [class.open]="showListPicker()"
+                  (click)="$event.stopPropagation(); showListPicker.set(!showListPicker())"
+                >
+                  <span class="icon">≡</span> Listes
+                </button>
+                @if (showListPicker()) {
+                  <div class="list-picker-dropdown">
+                    @for (list of customLists; track list.id) {
+                      <button
+                        class="list-picker-item"
+                        [class.in-list]="isInList(list.id)"
+                        [disabled]="listPending() === list.id"
+                        (click)="toggleList(list.id)"
+                      >
+                        <span class="list-check">{{ isInList(list.id) ? '✓' : '' }}</span>
+                        <span class="list-icon">{{ list.icon || '📋' }}</span>
+                        {{ list.name }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
           </div>
 
           <!-- Movie extra info -->
@@ -158,45 +206,77 @@
             <h2 class="section-title">Saisons</h2>
             <div class="seasons-list">
               @for (season of s.seasons; track season.id) {
-                <div class="season-block" [class.expanded]="expandedSeason() === season.id" [class.seen]="season.seen">
-                  <button class="season-header" (click)="toggleSeason(season.id)">
-                    <div class="season-left">
-                      @if (poster(season.posterPath); as p) {
-                        <img class="season-poster" [src]="p" [alt]="season.name" loading="lazy" />
-                      }
-                      <div class="season-meta">
-                        <span class="season-name">{{ season.name }}</span>
-                        <span class="season-info">
-                          {{ season.episodeCount }} épisode{{ season.episodeCount > 1 ? 's' : '' }}
-                          @if (year(season.airDate); as y) { · {{ y }} }
-                        </span>
-                      </div>
-                    </div>
-                    <div class="season-right">
-                      @if (season.seen) { <span class="seen-badge">VU</span> }
-                      <span class="chevron">{{ expandedSeason() === season.id ? '▲' : '▼' }}</span>
-                    </div>
-                  </button>
+                @let seenCount = seasonSeenCount(season);
+                @let total = season.episodes.length;
+                @let isExpanded = expandedSeason() === season.id;
 
-                  @if (expandedSeason() === season.id && season.episodes.length) {
+                <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="season.seen">
+
+                  <!-- Season header -->
+                  <div class="season-header" (click)="toggleSeason(season.id)">
+                    @if (poster(season.posterPath); as p) {
+                      <img class="season-poster" [src]="p" [alt]="season.name" loading="lazy" />
+                    } @else {
+                      <div class="season-poster-placeholder">{{ season.seasonNumber }}</div>
+                    }
+
+                    <div class="season-info">
+                      <span class="season-name">{{ season.name }}</span>
+                      <span class="season-sub">
+                        @if (year(season.airDate); as y) { {{ y }} · }
+                        {{ season.episodeCount }} épisode{{ season.episodeCount > 1 ? 's' : '' }}
+                      </span>
+                      @if (total > 0) {
+                        <div class="season-progress">
+                          <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="(seenCount / total) * 100"></div>
+                          </div>
+                          <span class="progress-label">{{ seenCount }}/{{ total }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="season-actions">
+                      <button
+                        class="btn-season-seen"
+                        [class.active]="season.seen"
+                        [disabled]="isSeasonPending(season.id)"
+                        (click)="toggleSeasonSeen(season, $event)"
+                        [title]="season.seen ? 'Marquer non vu' : 'Tout marquer vu'"
+                      >
+                        {{ season.seen ? '✓ Vu' : 'Tout vu' }}
+                      </button>
+                      <span class="chevron" [class.open]="isExpanded">›</span>
+                    </div>
+                  </div>
+
+                  <!-- Episodes -->
+                  @if (isExpanded && season.episodes.length) {
                     <div class="episodes-list">
                       @for (ep of season.episodes; track ep.id) {
                         <div class="episode-row" [class.seen]="ep.seen">
                           <span class="ep-num">{{ ep.episodeNumber }}</span>
                           <div class="ep-body">
                             <span class="ep-title">{{ ep.name }}</span>
-                            @if (ep.airDate) {
-                              <span class="ep-date">{{ ep.airDate | date:'dd/MM/yyyy' }}</span>
-                            }
+                            <span class="ep-meta">
+                              @if (ep.airDate) { {{ ep.airDate | date:'dd MMM yyyy' }} }
+                              @if (ep.runtime) { · {{ ep.runtime }}min }
+                            </span>
                           </div>
-                          @if (ep.runtime) {
-                            <span class="ep-runtime">{{ ep.runtime }}min</span>
-                          }
-                          @if (ep.seen) { <span class="ep-seen-dot"></span> }
+                          <button
+                            class="btn-ep-seen"
+                            [class.seen]="ep.seen"
+                            [disabled]="isEpisodePending(ep.id)"
+                            (click)="toggleEpisodeSeen(ep, $event)"
+                            [title]="ep.seen ? 'Marquer non vu' : 'Marquer comme vu'"
+                          >
+                            {{ ep.seen ? '✓' : '○' }}
+                          </button>
                         </div>
                       }
                     </div>
                   }
+
                 </div>
               }
             </div>

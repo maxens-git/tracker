@@ -62,6 +62,18 @@ export class Api {
     });
   }
 
+  markSeasonSeen(id: number, seen: boolean): Observable<unknown> {
+    return this.http.post(`${API}/Shows/seasons/${id}/seen`, seen, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  markEpisodeSeen(id: number, seen: boolean): Observable<unknown> {
+    return this.http.post(`${API}/Shows/episodes/${id}/seen`, seen, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   similarMovies(tmdbId: number): Observable<SearchResponse> {
     return this.http.get<SearchResponse>(`${API}/Similar/movies/${tmdbId}`);
   }
@@ -84,6 +96,30 @@ export class Api {
 
   removeShowFromWatchlist(tmdbId: number): Observable<unknown> {
     return this.http.delete(`${API}/Shows/${tmdbId}/watchlist`);
+  }
+
+  likeMovie(tmdbId: number, liked: boolean): Observable<unknown> {
+    return this.http.post(`${API}/MediaLists/movies/${tmdbId}/like`, null, { params: { liked } });
+  }
+
+  likeShow(tmdbId: number, liked: boolean): Observable<unknown> {
+    return this.http.post(`${API}/MediaLists/shows/${tmdbId}/like`, null, { params: { liked } });
+  }
+
+  addMovieToList(listId: number, tmdbId: number): Observable<unknown> {
+    return this.http.post(`${API}/MediaLists/${listId}/movies/${tmdbId}`, null);
+  }
+
+  removeMovieFromList(listId: number, tmdbId: number): Observable<unknown> {
+    return this.http.delete(`${API}/MediaLists/${listId}/movies/${tmdbId}`);
+  }
+
+  addShowToList(listId: number, tmdbId: number): Observable<unknown> {
+    return this.http.post(`${API}/MediaLists/${listId}/shows/${tmdbId}`, null);
+  }
+
+  removeShowFromList(listId: number, tmdbId: number): Observable<unknown> {
+    return this.http.delete(`${API}/MediaLists/${listId}/shows/${tmdbId}`);
   }
 
   stats(): Observable<Stats> {

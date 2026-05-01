@@ -147,35 +147,117 @@
     gap: 0.75rem;
     flex-wrap: wrap;
     margin-bottom: 1.25rem;
+    align-items: center;
   }
 
-  .btn-seen {
+  .btn-action {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.55rem 1.25rem;
+    padding: 0.55rem 1.1rem;
     border-radius: 8px;
     border: 1.5px solid var(--border);
     background: var(--surface);
     color: var(--text);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
+    white-space: nowrap;
 
-    .check { color: var(--accent); font-size: 1rem; }
+    .icon { font-size: 1rem; line-height: 1; }
 
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
+  .btn-seen {
     &.active {
       border-color: var(--accent);
       background: rgba(0, 192, 48, 0.12);
       color: var(--accent);
     }
-
     &:hover:not(:disabled) {
       border-color: var(--accent);
       background: rgba(0, 192, 48, 0.08);
     }
+  }
 
+  .btn-liked {
+    &.active {
+      border-color: #ff4d6d;
+      background: rgba(255, 77, 109, 0.12);
+      color: #ff4d6d;
+    }
+    &:hover:not(:disabled) {
+      border-color: #ff4d6d;
+      background: rgba(255, 77, 109, 0.08);
+    }
+  }
+
+  .btn-watchlist {
+    &.active {
+      border-color: #f5c518;
+      background: rgba(245, 197, 24, 0.12);
+      color: #f5c518;
+    }
+    &:hover:not(:disabled) {
+      border-color: #f5c518;
+      background: rgba(245, 197, 24, 0.08);
+    }
+  }
+
+  .btn-lists {
+    &.open, &:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .list-picker-wrap {
+    position: relative;
+  }
+
+  .list-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 100;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+
+  .list-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.88rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.1s;
+
+    &:not(:last-child) { border-bottom: 1px solid var(--border); }
+
+    &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
     &:disabled { opacity: 0.5; cursor: default; }
+
+    &.in-list { color: var(--accent); }
+
+    .list-check {
+      width: 14px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .list-icon { font-size: 1rem; }
   }
 
   .finance-row {
@@ -330,115 +412,168 @@
 .seasons-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .season-block {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   transition: border-color 0.15s;
 
-  &.expanded {
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  &.seen > .season-header .season-name {
-    color: var(--accent);
-  }
+  &.expanded { border-color: rgba(255, 255, 255, 0.18); }
+  &.all-seen { border-color: rgba(0, 192, 48, 0.25); }
 }
 
 .season-header {
-  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.9rem;
   padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
   cursor: pointer;
-  color: var(--text);
-  text-align: left;
-  gap: 1rem;
+  user-select: none;
+  transition: background 0.12s;
 
   &:hover { background: rgba(255, 255, 255, 0.04); }
 
-  .season-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    min-width: 0;
-  }
-
   .season-poster {
-    width: 40px;
-    border-radius: 4px;
+    width: 42px;
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    object-fit: cover;
     flex-shrink: 0;
   }
 
-  .season-meta {
+  .season-poster-placeholder {
+    width: 42px;
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .season-info {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    min-width: 0;
   }
 
   .season-name {
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .season-info {
+  .season-sub {
     font-size: 0.75rem;
     color: var(--muted);
   }
 
-  .season-right {
+  .season-progress {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+  }
+
+  .progress-bar {
+    flex: 1;
+    max-width: 120px;
+    height: 3px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .season-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     flex-shrink: 0;
   }
 
-  .seen-badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    background: rgba(0, 192, 48, 0.2);
-    color: var(--accent);
-    border: 1px solid rgba(0, 192, 48, 0.35);
-    letter-spacing: 0.05em;
+  .btn-season-seen {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 192, 48, 0.08);
+    }
+
+    &.active {
+      border-color: var(--accent);
+      background: rgba(0, 192, 48, 0.12);
+      color: var(--accent);
+    }
+
+    &:disabled { opacity: 0.4; cursor: default; }
   }
 
   .chevron {
-    font-size: 0.65rem;
+    font-size: 1.2rem;
     color: var(--muted);
+    line-height: 1;
+    transition: transform 0.2s ease;
+
+    &.open { transform: rotate(90deg); }
   }
 }
 
 .episodes-list {
   border-top: 1px solid var(--border);
-  padding: 0.25rem 0;
 }
 
 .episode-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.55rem 1rem;
-  border-bottom: 1px solid rgba(31, 41, 51, 0.6);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.1s;
 
   &:last-child { border-bottom: none; }
-  &:hover { background: rgba(255, 255, 255, 0.03); }
+  &:hover { background: rgba(255, 255, 255, 0.025); }
 
-  &.seen .ep-title { color: var(--muted); }
+  &.seen {
+    .ep-title { color: var(--muted); }
+    .ep-num { color: var(--accent); }
+  }
 
   .ep-num {
     flex-shrink: 0;
@@ -446,7 +581,7 @@
     text-align: center;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.25);
     font-variant-numeric: tabular-nums;
   }
 
@@ -454,36 +589,53 @@
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.15rem;
   }
 
   .ep-title {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: var(--text);
     line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .ep-date {
+  .ep-meta {
     font-size: 0.72rem;
     color: var(--muted);
-    white-space: nowrap;
   }
 
-  .ep-runtime {
+  .btn-ep-seen {
     flex-shrink: 0;
-    font-size: 0.72rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .ep-seen-dot {
-    flex-shrink: 0;
-    width: 7px;
-    height: 7px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: var(--accent);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 192, 48, 0.1);
+    }
+
+    &.seen {
+      border-color: var(--accent);
+      background: rgba(0, 192, 48, 0.15);
+      color: var(--accent);
+    }
+
+    &:disabled { opacity: 0.35; cursor: default; }
   }
 }
 

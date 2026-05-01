@@ -1,5 +1,605 @@
 [
   {
+    "id": "tm174707",
+    "type": "MOVIE",
+    "title": "The Artist",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/movie/the-artist",
+    "imdbId": "tt1655442",
+    "tmdbId": "74643",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.44,
+    "createdAt": "2026-05-01T10:40:47.899Z"
+  },
+  {
+    "id": "tm138053",
+    "type": "MOVIE",
+    "title": "21 Grams",
+    "year": 2003,
+    "url": "https://www.justwatch.com/uk/movie/21-grams",
+    "imdbId": "tt0315733",
+    "tmdbId": "470",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.322,
+    "createdAt": "2026-05-01T09:40:53.73Z"
+  },
+  {
+    "id": "ts454392",
+    "type": "SHOW",
+    "title": "Unchosen",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/tv-series/out-of-the-dust",
+    "imdbId": "tt31631142",
+    "tmdbId": "262848",
+    "imdbScore": null,
+    "tmdbScore": null,
+    "createdAt": "2026-05-01T09:30:13.123Z"
+  },
+  {
+    "id": "tm72333",
+    "type": "MOVIE",
+    "title": "John Carter",
+    "year": 2012,
+    "url": "https://www.justwatch.com/uk/movie/john-carter",
+    "imdbId": "tt0401729",
+    "tmdbId": "49529",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.358,
+    "createdAt": "2026-04-28T06:39:38.252Z"
+  },
+  {
+    "id": "tm168111",
+    "type": "MOVIE",
+    "title": "Dallas Buyers Club",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/dallas-buyers-club",
+    "imdbId": "tt0790636",
+    "tmdbId": "152532",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.915,
+    "createdAt": "2026-04-27T11:42:55.118Z"
+  },
+  {
+    "id": "tm118472",
+    "type": "MOVIE",
+    "title": "One Hour Photo",
+    "year": 2002,
+    "url": "https://www.justwatch.com/uk/movie/one-hour-photo",
+    "imdbId": "tt0265459",
+    "tmdbId": "9357",
+    "imdbScore": 6.8,
+    "tmdbScore": 6.646,
+    "createdAt": "2026-04-21T07:05:45.175Z"
+  },
+  {
+    "id": "tm176630",
+    "type": "MOVIE",
+    "title": "The Butler",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/the-butler",
+    "imdbId": "tt1327773",
+    "tmdbId": "132363",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.328,
+    "createdAt": "2026-04-20T20:19:08.541Z"
+  },
+  {
+    "id": "tm105127",
+    "type": "MOVIE",
+    "title": "The Birdcage",
+    "year": 1996,
+    "url": "https://www.justwatch.com/uk/movie/the-birdcage",
+    "imdbId": "tt0115685",
+    "tmdbId": "11000",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.1,
+    "createdAt": "2026-04-20T20:18:43.894Z"
+  },
+  {
+    "id": "tm189828",
+    "type": "MOVIE",
+    "title": "Mrs. Doubtfire",
+    "year": 1993,
+    "url": "https://www.justwatch.com/uk/movie/mrs-doubtfire",
+    "imdbId": "tt0107614",
+    "tmdbId": "788",
+    "imdbScore": 7.1,
+    "tmdbScore": 7.195,
+    "createdAt": "2026-04-20T20:18:09.348Z"
+  },
+  {
+    "id": "ts283080",
+    "type": "SHOW",
+    "title": "Who Killed Sara?",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/tv-series/who-killed-sara",
+    "imdbId": "tt11937816",
+    "tmdbId": "120168",
+    "imdbScore": 6.4,
+    "tmdbScore": 7.6,
+    "createdAt": "2026-04-19T10:54:43.869Z"
+  },
+  {
+    "id": "tm278306",
+    "type": "MOVIE",
+    "title": "American Assassin",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/american-assassin",
+    "imdbId": "tt1961175",
+    "tmdbId": "415842",
+    "imdbScore": 6.2,
+    "tmdbScore": 6.417,
+    "createdAt": "2026-04-18T06:28:41.607Z"
+  },
+  {
+    "id": "tm50232",
+    "type": "MOVIE",
+    "title": "Red Cliff",
+    "year": 2008,
+    "url": "https://www.justwatch.com/uk/movie/red-cliff",
+    "imdbId": "tt0425637",
+    "tmdbId": "12289",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.1,
+    "createdAt": "2026-04-16T06:45:06.756Z"
+  },
+  {
+    "id": "tm155267",
+    "type": "MOVIE",
+    "title": "Solaris",
+    "year": 1972,
+    "url": "https://www.justwatch.com/uk/movie/solaris-1972",
+    "imdbId": "tt0069293",
+    "tmdbId": "593",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.8,
+    "createdAt": "2026-04-12T19:48:10.586Z"
+  },
+  {
+    "id": "tm916405",
+    "type": "MOVIE",
+    "title": "The Outpost",
+    "year": 2020,
+    "url": "https://www.justwatch.com/uk/movie/the-outpost-2020",
+    "imdbId": "tt3833480",
+    "tmdbId": "531876",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.9,
+    "createdAt": "2026-04-12T18:26:03.753Z"
+  },
+  {
+    "id": "ts381061",
+    "type": "SHOW",
+    "title": "The Terminal List: Dark Wolf",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/tv-series/the-terminal-list-dark-wolf",
+    "imdbId": "tt26576161",
+    "tmdbId": "219760",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.479,
+    "createdAt": "2026-04-09T20:35:08.426Z"
+  },
+  {
+    "id": "tm33414",
+    "type": "MOVIE",
+    "title": "Che: Part One",
+    "year": 2008,
+    "url": "https://www.justwatch.com/uk/movie/che-part-one",
+    "imdbId": "tt0892255",
+    "tmdbId": "8881",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.798,
+    "createdAt": "2026-04-06T19:38:36.27Z"
+  },
+  {
+    "id": "tm1859266",
+    "type": "MOVIE",
+    "title": "Mulholland Drive",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/movie/tbc",
+    "imdbId": "tt0166924",
+    "tmdbId": "1018",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.802,
+    "createdAt": "2026-04-03T19:22:47.815Z"
+  },
+  {
+    "id": "tm1902990",
+    "type": "MOVIE",
+    "title": "Murder in the Building",
+    "year": 2026,
+    "url": null,
+    "imdbId": "tt38814447",
+    "tmdbId": "1471224",
+    "imdbScore": 6.4,
+    "tmdbScore": 6.6,
+    "createdAt": "2026-03-22T17:07:09.356Z"
+  },
+  {
+    "id": "tm1908190",
+    "type": "MOVIE",
+    "title": "War Machine",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/movie/war-machine-2026",
+    "imdbId": "tt15940132",
+    "tmdbId": "1265609",
+    "imdbScore": 6.4,
+    "tmdbScore": 7.234,
+    "createdAt": "2026-03-19T10:02:34.677Z"
+  },
+  {
+    "id": "ts22013",
+    "type": "SHOW",
+    "title": "Mad Men",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/tv-series/mad-men",
+    "imdbId": "tt0804503",
+    "tmdbId": "1104",
+    "imdbScore": 8.7,
+    "tmdbScore": 8.119,
+    "createdAt": "2026-03-19T07:07:19.488Z"
+  },
+  {
+    "id": "ts353429",
+    "type": "SHOW",
+    "title": "Monarch: Legacy of Monsters",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/tv-series/monarch-legacy-of-monsters",
+    "imdbId": "tt17220216",
+    "tmdbId": "202411",
+    "imdbScore": 7,
+    "tmdbScore": 7.687,
+    "createdAt": "2026-03-19T07:06:33.881Z"
+  },
+  {
+    "id": "ts233295",
+    "type": "SHOW",
+    "title": "Only Murders in the Building",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/tv-series/only-murders-in-the-building",
+    "imdbId": "tt11691774",
+    "tmdbId": "107113",
+    "imdbScore": 8,
+    "tmdbScore": 8.468,
+    "createdAt": "2026-03-19T07:04:57.215Z"
+  },
+  {
+    "id": "tm108451",
+    "type": "MOVIE",
+    "title": "A Time to Kill",
+    "year": 1996,
+    "url": "https://www.justwatch.com/uk/movie/a-time-to-kill",
+    "imdbId": "tt0117913",
+    "tmdbId": "1645",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.4,
+    "createdAt": "2026-03-14T22:31:23.193Z"
+  },
+  {
+    "id": "tm72527",
+    "type": "MOVIE",
+    "title": "The Great Dictator",
+    "year": 1940,
+    "url": "https://www.justwatch.com/uk/movie/the-great-dictator",
+    "imdbId": "tt0032553",
+    "tmdbId": "914",
+    "imdbScore": 8.4,
+    "tmdbScore": 8.28,
+    "createdAt": "2026-03-14T22:31:02.719Z"
+  },
+  {
+    "id": "tm85393",
+    "type": "MOVIE",
+    "title": "Nosferatu",
+    "year": 1922,
+    "url": "https://www.justwatch.com/uk/movie/nosferatu",
+    "imdbId": "tt0013442",
+    "tmdbId": "653",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.656,
+    "createdAt": "2026-03-14T22:30:44.48Z"
+  },
+  {
+    "id": "tm68232",
+    "type": "MOVIE",
+    "title": "Bridge to Terabithia",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/bridge-to-terabithia",
+    "imdbId": "tt0398808",
+    "tmdbId": "1265",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.309,
+    "createdAt": "2026-03-14T22:30:32.232Z"
+  },
+  {
+    "id": "tm120386",
+    "type": "MOVIE",
+    "title": "Labyrinth",
+    "year": 1986,
+    "url": "https://www.justwatch.com/uk/movie/labyrinth-1986",
+    "imdbId": "tt0091369",
+    "tmdbId": "13597",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.275,
+    "createdAt": "2026-03-14T22:29:56.204Z"
+  },
+  {
+    "id": "tm244171",
+    "type": "MOVIE",
+    "title": "Three Billboards Outside Ebbing, Missouri",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/three-billboards-outside-ebbing-missouri",
+    "imdbId": "tt5027774",
+    "tmdbId": "359940",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.059,
+    "createdAt": "2026-03-14T22:29:26.375Z"
+  },
+  {
+    "id": "tm120970",
+    "type": "MOVIE",
+    "title": "The Goonies",
+    "year": 1985,
+    "url": "https://www.justwatch.com/uk/movie/the-goonies",
+    "imdbId": "tt0089218",
+    "tmdbId": "9340",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.514,
+    "createdAt": "2026-03-14T22:29:12.595Z"
+  },
+  {
+    "id": "ts21230",
+    "type": "SHOW",
+    "title": "The Good Wife",
+    "year": 2009,
+    "url": "https://www.justwatch.com/uk/tv-series/the-good-wife",
+    "imdbId": "tt1442462",
+    "tmdbId": "1435",
+    "imdbScore": 8.3,
+    "tmdbScore": 7.6,
+    "createdAt": "2026-03-13T09:22:36.618Z"
+  },
+  {
+    "id": "tm15071",
+    "type": "MOVIE",
+    "title": "The Picture of Dorian Gray",
+    "year": 1945,
+    "url": "https://www.justwatch.com/uk/movie/the-picture-of-dorian-gray-1945",
+    "imdbId": "tt0037988",
+    "tmdbId": "16559",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.1,
+    "createdAt": "2026-03-12T14:24:32.504Z"
+  },
+  {
+    "id": "tm152842",
+    "type": "MOVIE",
+    "title": "Dorian Gray",
+    "year": 2009,
+    "url": "https://www.justwatch.com/uk/movie/dorian-gray",
+    "imdbId": "tt1235124",
+    "tmdbId": "23488",
+    "imdbScore": 6.2,
+    "tmdbScore": 6,
+    "createdAt": "2026-03-12T14:24:28.599Z"
+  },
+  {
+    "id": "tm47170",
+    "type": "MOVIE",
+    "title": "First Blood",
+    "year": 1982,
+    "url": "https://www.justwatch.com/uk/movie/first-blood",
+    "imdbId": "tt0083944",
+    "tmdbId": "1368",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.505,
+    "createdAt": "2026-03-11T10:31:02.6Z"
+  },
+  {
+    "id": "ts20974",
+    "type": "SHOW",
+    "title": "The X-Files",
+    "year": 1993,
+    "url": "https://www.justwatch.com/uk/tv-series/the-x-files",
+    "imdbId": "tt4370492",
+    "tmdbId": "4087",
+    "imdbScore": 8.6,
+    "tmdbScore": 8.368,
+    "createdAt": "2026-03-01T19:39:38.012Z"
+  },
+  {
+    "id": "tm143360",
+    "type": "MOVIE",
+    "title": "The Raid 2",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/the-raid-2",
+    "imdbId": "tt2265171",
+    "tmdbId": "180299",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.609,
+    "createdAt": "2026-03-01T19:38:51.379Z"
+  },
+  {
+    "id": "tm128153",
+    "type": "MOVIE",
+    "title": "Clash of the Titans",
+    "year": 1981,
+    "url": "https://www.justwatch.com/uk/movie/clash-of-the-titans-1981",
+    "imdbId": "tt0082186",
+    "tmdbId": "10323",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.9,
+    "createdAt": "2026-02-28T21:03:30.06Z"
+  },
+  {
+    "id": "tm62326",
+    "type": "MOVIE",
+    "title": "Eyes Wide Shut",
+    "year": 1999,
+    "url": "https://www.justwatch.com/uk/movie/eyes-wide-shut",
+    "imdbId": "tt0120663",
+    "tmdbId": "345",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.486,
+    "createdAt": "2026-02-28T20:57:18.618Z"
+  },
+  {
+    "id": "tm1544080",
+    "type": "MOVIE",
+    "title": "The Housemaid",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/the-housemaid-0",
+    "imdbId": "tt27543632",
+    "tmdbId": "1368166",
+    "imdbScore": 6.8,
+    "tmdbScore": 7.228,
+    "createdAt": "2026-02-28T20:56:22.719Z"
+  },
+  {
+    "id": "tm1238278",
+    "type": "MOVIE",
+    "title": "Avengers: Doomsday",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/movie/avengers-the-kang-dynasty",
+    "imdbId": "tt21357150",
+    "tmdbId": "1003596",
+    "imdbScore": null,
+    "tmdbScore": null,
+    "createdAt": "2026-02-28T20:56:09.4Z"
+  },
+  {
+    "id": "tm1238301",
+    "type": "MOVIE",
+    "title": "Avengers: Secret Wars",
+    "year": 2027,
+    "url": "https://www.justwatch.com/uk/movie/avengers-secret-wars",
+    "imdbId": "tt21361444",
+    "tmdbId": "1003598",
+    "imdbScore": null,
+    "tmdbScore": null,
+    "createdAt": "2026-02-28T20:56:05.796Z"
+  },
+  {
+    "id": "tm1433295",
+    "type": "MOVIE",
+    "title": "Star Wars: The Mandalorian and Grogu",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/movie/the-mandalorian-and-grogu",
+    "imdbId": "tt30825738",
+    "tmdbId": "1228710",
+    "imdbScore": null,
+    "tmdbScore": null,
+    "createdAt": "2026-02-28T20:56:01.396Z"
+  },
+  {
+    "id": "tm148235",
+    "type": "MOVIE",
+    "title": "Hercules",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/hercules",
+    "imdbId": "tt1267297",
+    "tmdbId": "184315",
+    "imdbScore": 6,
+    "tmdbScore": 5.799,
+    "createdAt": "2026-02-28T20:54:52.377Z"
+  },
+  {
+    "id": "tm25826",
+    "type": "MOVIE",
+    "title": "Cleopatra",
+    "year": 1963,
+    "url": "https://www.justwatch.com/uk/movie/cleopatra",
+    "imdbId": "tt0056937",
+    "tmdbId": "8095",
+    "imdbScore": 7,
+    "tmdbScore": 7.047,
+    "createdAt": "2026-02-28T20:54:37.513Z"
+  },
+  {
+    "id": "tm10622",
+    "type": "MOVIE",
+    "title": "Hook",
+    "year": 1991,
+    "url": "https://www.justwatch.com/uk/movie/hook",
+    "imdbId": "tt0102057",
+    "tmdbId": "879",
+    "imdbScore": 6.8,
+    "tmdbScore": 6.839,
+    "createdAt": "2026-02-28T20:42:49.778Z"
+  },
+  {
+    "id": "tm1591246",
+    "type": "MOVIE",
+    "title": "Caught Stealing",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/caught-stealing",
+    "imdbId": "tt1493274",
+    "tmdbId": "1245993",
+    "imdbScore": 6.8,
+    "tmdbScore": 6.89,
+    "createdAt": "2026-02-28T20:42:41.395Z"
+  },
+  {
+    "id": "tm1583505",
+    "type": "MOVIE",
+    "title": "The Roses",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/the-roses",
+    "imdbId": "tt31973693",
+    "tmdbId": "1267905",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.7,
+    "createdAt": "2026-02-28T20:42:32.675Z"
+  },
+  {
+    "id": "tm86637",
+    "type": "MOVIE",
+    "title": "The Aviator",
+    "year": 2004,
+    "url": "https://www.justwatch.com/uk/movie/the-aviator",
+    "imdbId": "tt0338751",
+    "tmdbId": "2567",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.216,
+    "createdAt": "2026-02-28T20:42:20.334Z"
+  },
+  {
+    "id": "tm129880",
+    "type": "MOVIE",
+    "title": "After Hours",
+    "year": 1985,
+    "url": "https://www.justwatch.com/uk/movie/after-hours-1985",
+    "imdbId": "tt0088680",
+    "tmdbId": "10843",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.498,
+    "createdAt": "2026-02-28T20:42:03.719Z"
+  },
+  {
+    "id": "tm1589869",
+    "type": "MOVIE",
+    "title": "How to Make a Killing",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/movie/huntington",
+    "imdbId": "tt4357198",
+    "tmdbId": "467905",
+    "imdbScore": 6.6,
+    "tmdbScore": 7,
+    "createdAt": "2026-02-28T20:41:34.875Z"
+  },
+  {
+    "id": "ts463480",
+    "type": "SHOW",
+    "title": "Man vs Baby",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/tv-series/man-vs-baby",
+    "imdbId": "tt35047134",
+    "tmdbId": "279601",
+    "imdbScore": 6.5,
+    "tmdbScore": 6.768,
+    "createdAt": "2025-12-12T10:14:49.222Z"
+  },
+  {
     "id": "ts247434",
     "type": "SHOW",
     "title": "The Chosen",
@@ -8,7 +608,7 @@
     "imdbId": "tt5622316",
     "tmdbId": "85077",
     "imdbScore": 9.2,
-    "tmdbScore": 8.697,
+    "tmdbScore": 8.686,
     "createdAt": "2025-12-05T09:40:34.249Z"
   },
   {
@@ -19,8 +619,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/spartacus-house-of-ashur",
     "imdbId": "tt29921437",
     "tmdbId": "240459",
-    "imdbScore": 6.1,
-    "tmdbScore": null,
+    "imdbScore": 6.5,
+    "tmdbScore": 6.9,
     "createdAt": "2025-12-05T00:17:14.984Z"
   },
   {
@@ -31,8 +631,8 @@
     "url": "https://www.justwatch.com/uk/movie/the-astronaut",
     "imdbId": "tt13964560",
     "tmdbId": "1086260",
-    "imdbScore": 4.7,
-    "tmdbScore": 5.8,
+    "imdbScore": 4.8,
+    "tmdbScore": 6.131,
     "createdAt": "2025-12-03T10:19:02.185Z"
   },
   {
@@ -60,18 +660,6 @@
     "createdAt": "2025-12-02T11:20:21.218Z"
   },
   {
-    "id": "tm138875",
-    "type": "MOVIE",
-    "title": "When Harry Met Sally...",
-    "year": 1989,
-    "url": "https://www.justwatch.com/uk/movie/when-harry-met-sally",
-    "imdbId": "tt0098635",
-    "tmdbId": "639",
-    "imdbScore": 7.7,
-    "tmdbScore": 7.4,
-    "createdAt": "2025-12-02T11:20:15.713Z"
-  },
-  {
     "id": "ts386468",
     "type": "SHOW",
     "title": "The Last Frontier",
@@ -79,8 +667,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/the-last-frontier-0",
     "imdbId": "tt26862142",
     "tmdbId": "221079",
-    "imdbScore": 6.8,
-    "tmdbScore": 7.233,
+    "imdbScore": 6.7,
+    "tmdbScore": 7.179,
     "createdAt": "2025-12-01T21:14:39.448Z"
   },
   {
@@ -96,42 +684,6 @@
     "createdAt": "2025-11-30T11:07:23.494Z"
   },
   {
-    "id": "tm33915",
-    "type": "MOVIE",
-    "title": "The Cabin in the Woods",
-    "year": 2012,
-    "url": "https://www.justwatch.com/uk/movie/the-cabin-in-the-woods",
-    "imdbId": "tt1259521",
-    "tmdbId": "22970",
-    "imdbScore": 7,
-    "tmdbScore": 6.641,
-    "createdAt": "2025-11-30T11:01:11.816Z"
-  },
-  {
-    "id": "tm30858",
-    "type": "MOVIE",
-    "title": "Mulholland Drive",
-    "year": 2001,
-    "url": "https://www.justwatch.com/uk/movie/mulholland-drive",
-    "imdbId": "tt0166924",
-    "tmdbId": "1018",
-    "imdbScore": 7.9,
-    "tmdbScore": 7.804,
-    "createdAt": "2025-11-29T23:28:40.265Z"
-  },
-  {
-    "id": "tm193015",
-    "type": "MOVIE",
-    "title": "The Game",
-    "year": 1997,
-    "url": "https://www.justwatch.com/uk/movie/the-game",
-    "imdbId": "tt0119174",
-    "tmdbId": "2649",
-    "imdbScore": 7.7,
-    "tmdbScore": 7.567,
-    "createdAt": "2025-11-29T23:28:24.691Z"
-  },
-  {
     "id": "tm22971",
     "type": "MOVIE",
     "title": "Perfume: The Story of a Murderer",
@@ -140,7 +692,7 @@
     "imdbId": "tt0396171",
     "tmdbId": "1427",
     "imdbScore": 7.5,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.366,
     "createdAt": "2025-11-22T20:59:58.94Z"
   },
   {
@@ -160,11 +712,11 @@
     "type": "MOVIE",
     "title": "Case 137",
     "year": 2025,
-    "url": "https://www.justwatch.com",
+    "url": "https://www.justwatch.com/uk/movie/case-137-2025",
     "imdbId": "tt34794183",
     "tmdbId": "1294698",
-    "imdbScore": 7.2,
-    "tmdbScore": 6.8,
+    "imdbScore": 7.3,
+    "tmdbScore": 6.977,
     "createdAt": "2025-11-20T16:22:29.204Z"
   },
   {
@@ -185,10 +737,10 @@
     "title": "If Beale Street Could Talk",
     "year": 2018,
     "url": "https://www.justwatch.com/uk/movie/if-beale-street-could-talk",
-    "imdbId": "tt7125860",
+    "imdbId": "tt7127576",
     "tmdbId": "465914",
     "imdbScore": 7.1,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.892,
     "createdAt": "2025-11-19T21:21:01.021Z"
   },
   {
@@ -212,7 +764,7 @@
     "imdbId": "tt0443680",
     "tmdbId": "4512",
     "imdbScore": 7.5,
-    "tmdbScore": 7.05,
+    "tmdbScore": 7.059,
     "createdAt": "2025-11-19T21:20:27.99Z"
   },
   {
@@ -224,7 +776,7 @@
     "imdbId": "tt2798920",
     "tmdbId": "300668",
     "imdbScore": 6.8,
-    "tmdbScore": 6.435,
+    "tmdbScore": 6.44,
     "createdAt": "2025-11-19T21:17:39.767Z"
   },
   {
@@ -236,7 +788,7 @@
     "imdbId": "tt0427944",
     "tmdbId": "9388",
     "imdbScore": 7.5,
-    "tmdbScore": 7.188,
+    "tmdbScore": 7.194,
     "createdAt": "2025-11-19T00:49:16.374Z"
   },
   {
@@ -248,7 +800,7 @@
     "imdbId": "tt1637727",
     "tmdbId": "34415",
     "imdbScore": 8.3,
-    "tmdbScore": 7.841,
+    "tmdbScore": 7.842,
     "createdAt": "2025-11-18T09:52:28.68Z"
   },
   {
@@ -260,7 +812,7 @@
     "imdbId": "tt0344510",
     "tmdbId": "2841",
     "imdbScore": 7.6,
-    "tmdbScore": 7.313,
+    "tmdbScore": 7.32,
     "createdAt": "2025-11-16T21:52:34.63Z"
   },
   {
@@ -271,8 +823,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/baron-noir",
     "imdbId": "tt4835480",
     "tmdbId": "65430",
-    "imdbScore": 7.9,
-    "tmdbScore": 7.539,
+    "imdbScore": 7.8,
+    "tmdbScore": 7.6,
     "createdAt": "2025-11-16T21:50:41.998Z"
   },
   {
@@ -284,7 +836,7 @@
     "imdbId": "tt1616195",
     "tmdbId": "88794",
     "imdbScore": 6.5,
-    "tmdbScore": 6.226,
+    "tmdbScore": 6.229,
     "createdAt": "2025-11-16T10:29:19.29Z"
   },
   {
@@ -296,7 +848,7 @@
     "imdbId": "tt0203019",
     "tmdbId": "11978",
     "imdbScore": 7.2,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.482,
     "createdAt": "2025-11-15T01:10:16.608Z"
   },
   {
@@ -308,7 +860,7 @@
     "imdbId": "tt0120188",
     "tmdbId": "6415",
     "imdbScore": 7.1,
-    "tmdbScore": 6.65,
+    "tmdbScore": 6.647,
     "createdAt": "2025-11-15T01:10:08.233Z"
   },
   {
@@ -319,8 +871,8 @@
     "url": "https://www.justwatch.com/uk/movie/the-iron-claw",
     "imdbId": "tt21064584",
     "tmdbId": "850165",
-    "imdbScore": 7.6,
-    "tmdbScore": 7.529,
+    "imdbScore": 7.5,
+    "tmdbScore": 7.503,
     "createdAt": "2025-11-15T01:09:48.331Z"
   },
   {
@@ -332,7 +884,7 @@
     "imdbId": "tt8550800",
     "tmdbId": "84661",
     "imdbScore": 7.6,
-    "tmdbScore": 7.367,
+    "tmdbScore": 7.369,
     "createdAt": "2025-11-14T22:46:43.014Z"
   },
   {
@@ -344,7 +896,7 @@
     "imdbId": "tt32827662",
     "tmdbId": "284656",
     "imdbScore": 8.8,
-    "tmdbScore": 7.632,
+    "tmdbScore": 7.904,
     "createdAt": "2025-11-14T10:56:05.14Z"
   },
   {
@@ -356,7 +908,7 @@
     "imdbId": "tt17491088",
     "tmdbId": "203857",
     "imdbScore": 8,
-    "tmdbScore": 7.545,
+    "tmdbScore": 7.561,
     "createdAt": "2025-11-13T19:55:24.993Z"
   },
   {
@@ -372,18 +924,6 @@
     "createdAt": "2025-11-13T19:55:07.691Z"
   },
   {
-    "id": "tm1615816",
-    "type": "MOVIE",
-    "title": "Nuremberg",
-    "year": 2025,
-    "url": "https://www.justwatch.com/uk/movie/nuremberg",
-    "imdbId": "tt29567915",
-    "tmdbId": "1214931",
-    "imdbScore": 7.6,
-    "tmdbScore": 7.3,
-    "createdAt": "2025-11-13T19:54:51.315Z"
-  },
-  {
     "id": "ts393161",
     "type": "SHOW",
     "title": "Pluribus",
@@ -391,8 +931,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/pluribus",
     "imdbId": "tt22202452",
     "tmdbId": "225171",
-    "imdbScore": 8.4,
-    "tmdbScore": 7.932,
+    "imdbScore": 8,
+    "tmdbScore": 7.917,
     "createdAt": "2025-11-11T11:20:25.165Z"
   },
   {
@@ -404,7 +944,7 @@
     "imdbId": "tt0942385",
     "tmdbId": "7446",
     "imdbScore": 7.1,
-    "tmdbScore": 6.698,
+    "tmdbScore": 6.7,
     "createdAt": "2025-11-11T10:15:11.861Z"
   },
   {
@@ -416,7 +956,7 @@
     "imdbId": "tt3042408",
     "tmdbId": "284427",
     "imdbScore": 7.4,
-    "tmdbScore": 7.6,
+    "tmdbScore": 7.568,
     "createdAt": "2025-11-09T15:47:45.849Z"
   },
   {
@@ -427,8 +967,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/death-by-lightning",
     "imdbId": "tt31121364",
     "tmdbId": "245219",
-    "imdbScore": 7.7,
-    "tmdbScore": 7.581,
+    "imdbScore": 7.6,
+    "tmdbScore": 7.303,
     "createdAt": "2025-11-09T10:14:31.801Z"
   },
   {
@@ -439,8 +979,8 @@
     "url": "https://www.justwatch.com/uk/movie/bugonia",
     "imdbId": "tt12300742",
     "tmdbId": "701387",
-    "imdbScore": 7.5,
-    "tmdbScore": 7.5,
+    "imdbScore": 7.4,
+    "tmdbScore": 7.359,
     "createdAt": "2025-11-09T09:59:02.933Z"
   },
   {
@@ -452,7 +992,7 @@
     "imdbId": "tt0181984",
     "tmdbId": "14181",
     "imdbScore": 7,
-    "tmdbScore": 6.706,
+    "tmdbScore": 6.715,
     "createdAt": "2025-11-08T13:21:41.678Z"
   },
   {
@@ -476,7 +1016,7 @@
     "imdbId": "tt5109784",
     "tmdbId": "381283",
     "imdbScore": 6.6,
-    "tmdbScore": 6.968,
+    "tmdbScore": 6.961,
     "createdAt": "2025-11-03T17:34:37.545Z"
   },
   {
@@ -488,7 +1028,7 @@
     "imdbId": "tt2167266",
     "tmdbId": "203819",
     "imdbScore": 7.1,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.927,
     "createdAt": "2025-10-27T23:27:34.152Z"
   },
   {
@@ -500,7 +1040,7 @@
     "imdbId": "tt0758758",
     "tmdbId": "5915",
     "imdbScore": 8,
-    "tmdbScore": 7.8,
+    "tmdbScore": 7.798,
     "createdAt": "2025-10-27T23:27:08.57Z"
   },
   {
@@ -512,7 +1052,7 @@
     "imdbId": "tt4364194",
     "tmdbId": "463257",
     "imdbScore": 7.6,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.397,
     "createdAt": "2025-10-27T23:26:52.305Z"
   },
   {
@@ -524,20 +1064,8 @@
     "imdbId": "tt2883512",
     "tmdbId": "212778",
     "imdbScore": 7.3,
-    "tmdbScore": 7.114,
+    "tmdbScore": 7.116,
     "createdAt": "2025-10-27T23:26:16.926Z"
-  },
-  {
-    "id": "tm139658",
-    "type": "MOVIE",
-    "title": "Big Fish",
-    "year": 2003,
-    "url": "https://www.justwatch.com/uk/movie/big-fish",
-    "imdbId": "tt0319061",
-    "tmdbId": "587",
-    "imdbScore": 7.9,
-    "tmdbScore": 7.752,
-    "createdAt": "2025-10-27T23:25:45.64Z"
   },
   {
     "id": "tm1573778",
@@ -548,20 +1076,8 @@
     "imdbId": "tt34962891",
     "tmdbId": "1400782",
     "imdbScore": 7.1,
-    "tmdbScore": 6.6,
+    "tmdbScore": 6.801,
     "createdAt": "2025-10-27T23:21:32.075Z"
-  },
-  {
-    "id": "tm26292",
-    "type": "MOVIE",
-    "title": "Little Miss Sunshine",
-    "year": 2006,
-    "url": "https://www.justwatch.com/uk/movie/little-miss-sunshine",
-    "imdbId": "tt0449059",
-    "tmdbId": "773",
-    "imdbScore": 7.8,
-    "tmdbScore": 7.691,
-    "createdAt": "2025-10-27T21:07:54.191Z"
   },
   {
     "id": "tm101778",
@@ -572,7 +1088,7 @@
     "imdbId": "tt1334260",
     "tmdbId": "42188",
     "imdbScore": 7.1,
-    "tmdbScore": 6.848,
+    "tmdbScore": 6.847,
     "createdAt": "2025-10-27T21:05:25.995Z"
   },
   {
@@ -584,7 +1100,7 @@
     "imdbId": "tt1454029",
     "tmdbId": "50014",
     "imdbScore": 8.1,
-    "tmdbScore": 8.2,
+    "tmdbScore": 8.198,
     "createdAt": "2025-10-27T21:05:21.963Z"
   },
   {
@@ -596,7 +1112,7 @@
     "imdbId": "tt4073790",
     "tmdbId": "445651",
     "imdbScore": 5.7,
-    "tmdbScore": 7.03,
+    "tmdbScore": 7.022,
     "createdAt": "2025-10-25T21:22:23.265Z"
   },
   {
@@ -620,7 +1136,7 @@
     "imdbId": "tt5875444",
     "tmdbId": "95480",
     "imdbScore": 8.3,
-    "tmdbScore": 8,
+    "tmdbScore": 7.996,
     "createdAt": "2025-10-22T21:25:08.372Z"
   },
   {
@@ -656,7 +1172,7 @@
     "imdbId": "tt0062765",
     "tmdbId": "916",
     "imdbScore": 7.4,
-    "tmdbScore": 7.2,
+    "tmdbScore": 7.142,
     "createdAt": "2025-10-15T17:53:58.438Z"
   },
   {
@@ -703,8 +1219,8 @@
     "url": "https://www.justwatch.com/uk/movie/the-long-walk-2025",
     "imdbId": "tt10374610",
     "tmdbId": "604079",
-    "imdbScore": 6.8,
-    "tmdbScore": 6.936,
+    "imdbScore": 6.7,
+    "tmdbScore": 6.914,
     "createdAt": "2025-10-08T08:54:45.809Z"
   },
   {
@@ -716,7 +1232,7 @@
     "imdbId": "tt0280707",
     "tmdbId": "5279",
     "imdbScore": 7.2,
-    "tmdbScore": 6.823,
+    "tmdbScore": 6.8,
     "createdAt": "2025-10-01T20:56:22.263Z"
   },
   {
@@ -728,7 +1244,7 @@
     "imdbId": "tt0765010",
     "tmdbId": "7445",
     "imdbScore": 7.1,
-    "tmdbScore": 7.318,
+    "tmdbScore": 7.314,
     "createdAt": "2025-10-01T12:57:03.674Z"
   },
   {
@@ -751,8 +1267,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/the-sentinels",
     "imdbId": "tt10094546",
     "tmdbId": "223876",
-    "imdbScore": 6.2,
-    "tmdbScore": 7.4,
+    "imdbScore": 6.3,
+    "tmdbScore": 7,
     "createdAt": "2025-09-27T22:57:45.847Z"
   },
   {
@@ -776,7 +1292,7 @@
     "imdbId": "tt0057012",
     "tmdbId": "935",
     "imdbScore": 8.3,
-    "tmdbScore": 8.125,
+    "tmdbScore": 8.122,
     "createdAt": "2025-09-26T08:56:41.829Z"
   },
   {
@@ -788,7 +1304,7 @@
     "imdbId": "tt0022100",
     "tmdbId": "832",
     "imdbScore": 8.3,
-    "tmdbScore": 8.067,
+    "tmdbScore": 8.059,
     "createdAt": "2025-09-22T20:22:02.61Z"
   },
   {
@@ -800,7 +1316,7 @@
     "imdbId": "tt0107207",
     "tmdbId": "7984",
     "imdbScore": 8.1,
-    "tmdbScore": 7.894,
+    "tmdbScore": 7.9,
     "createdAt": "2025-09-21T10:54:38.224Z"
   },
   {
@@ -812,7 +1328,7 @@
     "imdbId": "tt0083866",
     "tmdbId": "601",
     "imdbScore": 7.9,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.513,
     "createdAt": "2025-09-15T21:47:35.93Z"
   },
   {
@@ -824,7 +1340,7 @@
     "imdbId": "tt0145531",
     "tmdbId": "10307",
     "imdbScore": 6.2,
-    "tmdbScore": 6.288,
+    "tmdbScore": 6.289,
     "createdAt": "2025-09-14T20:31:57.572Z"
   },
   {
@@ -836,7 +1352,7 @@
     "imdbId": "tt1390411",
     "tmdbId": "205775",
     "imdbScore": 6.9,
-    "tmdbScore": 6.8,
+    "tmdbScore": 6.759,
     "createdAt": "2025-09-14T20:22:24.216Z"
   },
   {
@@ -872,7 +1388,7 @@
     "imdbId": "tt0773262",
     "tmdbId": "1405",
     "imdbScore": 8.6,
-    "tmdbScore": 8.2,
+    "tmdbScore": 8.229,
     "createdAt": "2025-09-13T06:43:32.807Z"
   },
   {
@@ -896,7 +1412,7 @@
     "imdbId": "tt0064115",
     "tmdbId": "642",
     "imdbScore": 8,
-    "tmdbScore": 7.6,
+    "tmdbScore": 7.611,
     "createdAt": "2025-09-12T07:27:58.236Z"
   },
   {
@@ -908,7 +1424,7 @@
     "imdbId": "tt0061512",
     "tmdbId": "903",
     "imdbScore": 8,
-    "tmdbScore": 7.7,
+    "tmdbScore": 7.742,
     "createdAt": "2025-09-12T07:27:44.736Z"
   },
   {
@@ -920,7 +1436,7 @@
     "imdbId": "tt0266987",
     "tmdbId": "1535",
     "imdbScore": 7.1,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.916,
     "createdAt": "2025-09-12T07:25:42.257Z"
   },
   {
@@ -931,8 +1447,8 @@
     "url": "https://www.justwatch.com/uk/movie/rip-0",
     "imdbId": "tt32642706",
     "tmdbId": "1306368",
-    "imdbScore": null,
-    "tmdbScore": null,
+    "imdbScore": 6.8,
+    "tmdbScore": 7.059,
     "createdAt": "2025-09-10T13:08:53.218Z"
   },
   {
@@ -944,20 +1460,8 @@
     "imdbId": "tt0844286",
     "tmdbId": "21755",
     "imdbScore": 6.7,
-    "tmdbScore": 6.557,
+    "tmdbScore": 6.5,
     "createdAt": "2025-09-10T07:52:42.719Z"
-  },
-  {
-    "id": "tm1562764",
-    "type": "MOVIE",
-    "title": "Wake Up Dead Man: A Knives Out Mystery",
-    "year": 2025,
-    "url": "https://www.justwatch.com/uk/movie/wake-up-dead-man-a-knives-out-mystery",
-    "imdbId": "tt14364480",
-    "tmdbId": "812583",
-    "imdbScore": 7.9,
-    "tmdbScore": 7.8,
-    "createdAt": "2025-09-10T07:51:53.692Z"
   },
   {
     "id": "tm58806",
@@ -968,7 +1472,7 @@
     "imdbId": "tt0042876",
     "tmdbId": "548",
     "imdbScore": 8.1,
-    "tmdbScore": 8,
+    "tmdbScore": 8.041,
     "createdAt": "2025-09-07T13:50:44.224Z"
   },
   {
@@ -980,7 +1484,7 @@
     "imdbId": "tt7057496",
     "tmdbId": "488623",
     "imdbScore": 7.4,
-    "tmdbScore": 7.896,
+    "tmdbScore": 7.9,
     "createdAt": "2025-09-05T20:07:22.949Z"
   },
   {
@@ -992,7 +1496,7 @@
     "imdbId": "tt2400463",
     "tmdbId": "306947",
     "imdbScore": 6.6,
-    "tmdbScore": 6.4,
+    "tmdbScore": 6.431,
     "createdAt": "2025-09-05T20:07:16.342Z"
   },
   {
@@ -1003,8 +1507,8 @@
     "url": "https://www.justwatch.com/uk/movie/in-the-hand-of-dante",
     "imdbId": "tt1333644",
     "tmdbId": "1020047",
-    "imdbScore": 4.6,
-    "tmdbScore": 5.1,
+    "imdbScore": 4.7,
+    "tmdbScore": null,
     "createdAt": "2025-09-05T06:52:29.003Z"
   },
   {
@@ -1028,7 +1532,7 @@
     "imdbId": "tt0032976",
     "tmdbId": "223",
     "imdbScore": 8.1,
-    "tmdbScore": 7.897,
+    "tmdbScore": 7.891,
     "createdAt": "2025-09-02T20:37:17.99Z"
   },
   {
@@ -1040,7 +1544,7 @@
     "imdbId": "tt0056869",
     "tmdbId": "571",
     "imdbScore": 7.6,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.514,
     "createdAt": "2025-09-02T20:37:13.246Z"
   },
   {
@@ -1052,7 +1556,7 @@
     "imdbId": "tt5083738",
     "tmdbId": "375262",
     "imdbScore": 7.5,
-    "tmdbScore": 7.498,
+    "tmdbScore": 7.5,
     "createdAt": "2025-09-02T20:36:41.961Z"
   },
   {
@@ -1063,20 +1567,20 @@
     "url": "https://www.justwatch.com/uk/movie/poor-things",
     "imdbId": "tt14230458",
     "tmdbId": "792307",
-    "imdbScore": 7.8,
-    "tmdbScore": 7.656,
+    "imdbScore": 7.7,
+    "tmdbScore": 7.648,
     "createdAt": "2025-09-02T20:36:10.81Z"
   },
   {
     "id": "tm1483084",
     "type": "MOVIE",
-    "title": "Tous toqués !",
+    "title": "Tous toqués!",
     "year": 2024,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt26412832",
     "tmdbId": "988373",
     "imdbScore": 6.4,
-    "tmdbScore": 6.344,
+    "tmdbScore": 6.4,
     "createdAt": "2025-08-30T14:09:57.456Z"
   },
   {
@@ -1088,7 +1592,7 @@
     "imdbId": "tt0120907",
     "tmdbId": "1946",
     "imdbScore": 6.8,
-    "tmdbScore": 6.794,
+    "tmdbScore": 6.787,
     "createdAt": "2025-08-30T07:33:28.614Z"
   },
   {
@@ -1100,7 +1604,7 @@
     "imdbId": "tt1606378",
     "tmdbId": "47964",
     "imdbScore": 5.2,
-    "tmdbScore": 5.335,
+    "tmdbScore": 5.334,
     "createdAt": "2025-08-29T15:52:23.161Z"
   },
   {
@@ -1112,7 +1616,7 @@
     "imdbId": "tt0093773",
     "tmdbId": "106",
     "imdbScore": 7.8,
-    "tmdbScore": 7.541,
+    "tmdbScore": 7.547,
     "createdAt": "2025-08-24T21:10:16.412Z"
   },
   {
@@ -1148,7 +1652,7 @@
     "imdbId": "tt0040746",
     "tmdbId": "1580",
     "imdbScore": 7.9,
-    "tmdbScore": 7.9,
+    "tmdbScore": 7.932,
     "createdAt": "2025-08-24T17:09:28.42Z"
   },
   {
@@ -1172,7 +1676,7 @@
     "imdbId": "tt2582802",
     "tmdbId": "244786",
     "imdbScore": 8.5,
-    "tmdbScore": 8.4,
+    "tmdbScore": 8.374,
     "createdAt": "2025-08-22T06:31:31.589Z"
   },
   {
@@ -1184,7 +1688,7 @@
     "imdbId": "tt0397101",
     "tmdbId": "9913",
     "imdbScore": 6.5,
-    "tmdbScore": 6.6,
+    "tmdbScore": 6.622,
     "createdAt": "2025-08-21T06:22:52.24Z"
   },
   {
@@ -1196,7 +1700,7 @@
     "imdbId": "tt1223934",
     "tmdbId": "51365",
     "imdbScore": 6.6,
-    "tmdbScore": 6.2,
+    "tmdbScore": 6.206,
     "createdAt": "2025-08-21T06:22:37.902Z"
   },
   {
@@ -1207,8 +1711,8 @@
     "url": "https://www.justwatch.com/uk/movie/repulsion",
     "imdbId": "tt0059646",
     "tmdbId": "11481",
-    "imdbScore": 7.6,
-    "tmdbScore": 7.4,
+    "imdbScore": 7.5,
+    "tmdbScore": 7.378,
     "createdAt": "2025-08-21T06:21:21.206Z"
   },
   {
@@ -1220,7 +1724,7 @@
     "imdbId": "tt0063522",
     "tmdbId": "805",
     "imdbScore": 8,
-    "tmdbScore": 7.826,
+    "tmdbScore": 7.818,
     "createdAt": "2025-08-21T06:21:05.205Z"
   },
   {
@@ -1244,7 +1748,7 @@
     "imdbId": "tt0074811",
     "tmdbId": "11482",
     "imdbScore": 7.5,
-    "tmdbScore": 7.6,
+    "tmdbScore": 7.602,
     "createdAt": "2025-08-21T06:20:47.313Z"
   },
   {
@@ -1268,7 +1772,7 @@
     "imdbId": "tt31184028",
     "tmdbId": "1242011",
     "imdbScore": 6.7,
-    "tmdbScore": 7.114,
+    "tmdbScore": 6.957,
     "createdAt": "2025-08-13T05:28:20.109Z"
   },
   {
@@ -1280,7 +1784,7 @@
     "imdbId": "tt0063688",
     "tmdbId": "912",
     "imdbScore": 6.9,
-    "tmdbScore": 6.8,
+    "tmdbScore": 6.77,
     "createdAt": "2025-08-10T16:41:18.967Z"
   },
   {
@@ -1289,7 +1793,7 @@
     "title": "Unknown Soldier",
     "year": 2017,
     "url": "https://www.justwatch.com/uk/movie/the-unknown-soldier",
-    "imdbId": "tt4065552",
+    "imdbId": "tt7884288",
     "tmdbId": "400728",
     "imdbScore": 7.7,
     "tmdbScore": 7.4,
@@ -1304,7 +1808,7 @@
     "imdbId": "tt31176520",
     "tmdbId": "648878",
     "imdbScore": 6.6,
-    "tmdbScore": 6.5,
+    "tmdbScore": 6.461,
     "createdAt": "2025-07-31T14:42:14.524Z"
   },
   {
@@ -1316,7 +1820,7 @@
     "imdbId": "tt0141842",
     "tmdbId": "1398",
     "imdbScore": 9.2,
-    "tmdbScore": 8.6,
+    "tmdbScore": 8.7,
     "createdAt": "2025-07-29T05:45:13.472Z"
   },
   {
@@ -1340,7 +1844,7 @@
     "imdbId": "tt31806049",
     "tmdbId": "1425045",
     "imdbScore": 5.5,
-    "tmdbScore": 5.8,
+    "tmdbScore": 5.781,
     "createdAt": "2025-07-28T05:36:45.254Z"
   },
   {
@@ -1364,7 +1868,7 @@
     "imdbId": "tt0083907",
     "tmdbId": "764",
     "imdbScore": 7.3,
-    "tmdbScore": 7.3,
+    "tmdbScore": 7.274,
     "createdAt": "2025-07-21T21:18:19.863Z"
   },
   {
@@ -1376,7 +1880,7 @@
     "imdbId": "tt0106308",
     "tmdbId": "766",
     "imdbScore": 7.4,
-    "tmdbScore": 7.3,
+    "tmdbScore": 7.263,
     "createdAt": "2025-07-21T21:18:07.386Z"
   },
   {
@@ -1400,20 +1904,8 @@
     "imdbId": "tt0091474",
     "tmdbId": "11454",
     "imdbScore": 7.2,
-    "tmdbScore": 7,
+    "tmdbScore": 7.009,
     "createdAt": "2025-07-18T21:22:40.413Z"
-  },
-  {
-    "id": "tm48297",
-    "type": "MOVIE",
-    "title": "Spirited Away",
-    "year": 2001,
-    "url": "https://www.justwatch.com/uk/movie/spirited-away",
-    "imdbId": "tt0245429",
-    "tmdbId": "129",
-    "imdbScore": 8.6,
-    "tmdbScore": 8.534,
-    "createdAt": "2025-07-16T20:47:37.258Z"
   },
   {
     "id": "tm34019",
@@ -1424,7 +1916,7 @@
     "imdbId": "tt0245574",
     "tmdbId": "1391",
     "imdbScore": 7.7,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.415,
     "createdAt": "2025-07-15T18:54:57.294Z"
   },
   {
@@ -1436,7 +1928,7 @@
     "imdbId": "tt14039582",
     "tmdbId": "758866",
     "imdbScore": 7.5,
-    "tmdbScore": 7.431,
+    "tmdbScore": 7.442,
     "createdAt": "2025-07-15T11:26:35.294Z"
   },
   {
@@ -1448,7 +1940,7 @@
     "imdbId": "tt0347149",
     "tmdbId": "4935",
     "imdbScore": 8.2,
-    "tmdbScore": 8.392,
+    "tmdbScore": 8.388,
     "createdAt": "2025-07-15T11:22:17.901Z"
   },
   {
@@ -1460,7 +1952,7 @@
     "imdbId": "tt5362988",
     "tmdbId": "395834",
     "imdbScore": 7.7,
-    "tmdbScore": 7.434,
+    "tmdbScore": 7.4,
     "createdAt": "2025-07-14T07:01:27.046Z"
   },
   {
@@ -1472,7 +1964,7 @@
     "imdbId": "tt0112471",
     "tmdbId": "76",
     "imdbScore": 8.1,
-    "tmdbScore": 7.97,
+    "tmdbScore": 7.974,
     "createdAt": "2025-07-14T06:57:30.42Z"
   },
   {
@@ -1484,7 +1976,7 @@
     "imdbId": "tt0381681",
     "tmdbId": "80",
     "imdbScore": 8.1,
-    "tmdbScore": 7.809,
+    "tmdbScore": 7.81,
     "createdAt": "2025-07-14T06:57:20.992Z"
   },
   {
@@ -1496,7 +1988,7 @@
     "imdbId": "tt0099371",
     "tmdbId": "2119",
     "imdbScore": 6.1,
-    "tmdbScore": 6.4,
+    "tmdbScore": 6.3,
     "createdAt": "2025-07-09T05:31:58.012Z"
   },
   {
@@ -1508,26 +2000,14 @@
     "imdbId": "tt0306414",
     "tmdbId": "1438",
     "imdbScore": 9.3,
-    "tmdbScore": 8.604,
+    "tmdbScore": 8.6,
     "createdAt": "2025-07-08T06:37:34.315Z"
-  },
-  {
-    "id": "tm1486587",
-    "type": "MOVIE",
-    "title": "Project Hail Mary",
-    "year": 2026,
-    "url": "https://www.justwatch.com/uk/movie/project-hail-mary",
-    "imdbId": "tt12042730",
-    "tmdbId": "687163",
-    "imdbScore": null,
-    "tmdbScore": null,
-    "createdAt": "2025-07-03T16:36:01.499Z"
   },
   {
     "id": "tm1453013",
     "type": "MOVIE",
     "title": "In the Grey",
-    "year": 2025,
+    "year": 2026,
     "url": "https://www.justwatch.com/uk/movie/in-the-grey",
     "imdbId": "tt27681354",
     "tmdbId": "1122573",
@@ -1544,7 +2024,7 @@
     "imdbId": "tt0112818",
     "tmdbId": "687",
     "imdbScore": 7.5,
-    "tmdbScore": 7.32,
+    "tmdbScore": 7.321,
     "createdAt": "2025-06-23T21:29:32.802Z"
   },
   {
@@ -1580,7 +2060,7 @@
     "imdbId": "tt0379725",
     "tmdbId": "398",
     "imdbScore": 7.3,
-    "tmdbScore": 6.98,
+    "tmdbScore": 7,
     "createdAt": "2025-06-23T21:28:41.755Z"
   },
   {
@@ -1592,7 +2072,7 @@
     "imdbId": "tt0099348",
     "tmdbId": "581",
     "imdbScore": 8,
-    "tmdbScore": 7.8,
+    "tmdbScore": 7.837,
     "createdAt": "2025-06-22T08:22:29.099Z"
   },
   {
@@ -1604,7 +2084,7 @@
     "imdbId": "tt0051201",
     "tmdbId": "37257",
     "imdbScore": 8.4,
-    "tmdbScore": 8.212,
+    "tmdbScore": 8.2,
     "createdAt": "2025-06-18T21:20:59.606Z"
   },
   {
@@ -1616,7 +2096,7 @@
     "imdbId": "tt0053604",
     "tmdbId": "284",
     "imdbScore": 8.3,
-    "tmdbScore": 8.2,
+    "tmdbScore": 8.186,
     "createdAt": "2025-06-18T21:20:41.528Z"
   },
   {
@@ -1628,7 +2108,7 @@
     "imdbId": "tt5651844",
     "tmdbId": "67683",
     "imdbScore": 8,
-    "tmdbScore": 7.566,
+    "tmdbScore": 7.58,
     "createdAt": "2025-06-14T08:00:13.472Z"
   },
   {
@@ -1640,7 +2120,7 @@
     "imdbId": "tt2802850",
     "tmdbId": "60622",
     "imdbScore": 8.8,
-    "tmdbScore": 8.295,
+    "tmdbScore": 8.289,
     "createdAt": "2025-06-14T07:59:57.062Z"
   },
   {
@@ -1652,7 +2132,7 @@
     "imdbId": "tt27740241",
     "tmdbId": "226362",
     "imdbScore": 7.3,
-    "tmdbScore": 7.515,
+    "tmdbScore": 7.455,
     "createdAt": "2025-06-01T14:06:05.045Z"
   },
   {
@@ -1664,7 +2144,7 @@
     "imdbId": "tt1559549",
     "tmdbId": "39312",
     "imdbScore": 7.4,
-    "tmdbScore": 7.261,
+    "tmdbScore": 7.2,
     "createdAt": "2025-05-30T20:50:31.97Z"
   },
   {
@@ -1676,7 +2156,7 @@
     "imdbId": "tt6914122",
     "tmdbId": "491926",
     "imdbScore": 6.6,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.941,
     "createdAt": "2025-05-30T20:40:51.146Z"
   },
   {
@@ -1688,7 +2168,7 @@
     "imdbId": "tt0455275",
     "tmdbId": "2288",
     "imdbScore": 8.3,
-    "tmdbScore": 8.078,
+    "tmdbScore": 8.068,
     "createdAt": "2025-05-02T07:13:28.632Z"
   },
   {
@@ -1700,7 +2180,7 @@
     "imdbId": "tt15459206",
     "tmdbId": "959596",
     "imdbScore": 6.6,
-    "tmdbScore": 6.4,
+    "tmdbScore": 6.397,
     "createdAt": "2025-04-24T09:59:28.177Z"
   },
   {
@@ -1712,19 +2192,19 @@
     "imdbId": "tt0120586",
     "tmdbId": "73",
     "imdbScore": 8.5,
-    "tmdbScore": 8.33,
+    "tmdbScore": 8.327,
     "createdAt": "2025-04-22T21:29:54.352Z"
   },
   {
     "id": "tm39338",
     "type": "MOVIE",
-    "title": "Cinema Paradiso",
+    "title": "Nuovo Cinema Paradiso",
     "year": 1988,
     "url": "https://www.justwatch.com/uk/movie/cinema-paradiso",
     "imdbId": "tt0095765",
     "tmdbId": "11216",
     "imdbScore": 8.5,
-    "tmdbScore": 8.4,
+    "tmdbScore": 8.426,
     "createdAt": "2025-04-22T21:29:31.987Z"
   },
   {
@@ -1736,7 +2216,7 @@
     "imdbId": "tt0043014",
     "tmdbId": "599",
     "imdbScore": 8.4,
-    "tmdbScore": 8.287,
+    "tmdbScore": 8.3,
     "createdAt": "2025-04-22T21:28:59.547Z"
   },
   {
@@ -1748,7 +2228,7 @@
     "imdbId": "tt0050825",
     "tmdbId": "975",
     "imdbScore": 8.4,
-    "tmdbScore": 8.26,
+    "tmdbScore": 8.255,
     "createdAt": "2025-04-22T21:28:40.969Z"
   },
   {
@@ -1760,20 +2240,8 @@
     "imdbId": "tt23849204",
     "tmdbId": "1163258",
     "imdbScore": 8.7,
-    "tmdbScore": 8,
+    "tmdbScore": 7.9,
     "createdAt": "2025-04-22T21:28:00.853Z"
-  },
-  {
-    "id": "tm84618",
-    "type": "MOVIE",
-    "title": "Taxi Driver",
-    "year": 1976,
-    "url": "https://www.justwatch.com/uk/movie/taxi-driver",
-    "imdbId": "tt0075314",
-    "tmdbId": "103",
-    "imdbScore": 8.2,
-    "tmdbScore": 8.132,
-    "createdAt": "2025-04-22T21:27:09.731Z"
   },
   {
     "id": "tm1480927",
@@ -1783,7 +2251,7 @@
     "url": "https://www.justwatch.com/uk/movie/gazer",
     "imdbId": "tt28633405",
     "tmdbId": "1215077",
-    "imdbScore": 5.6,
+    "imdbScore": 5.5,
     "tmdbScore": 6.9,
     "createdAt": "2025-04-22T10:49:09.69Z"
   },
@@ -1808,19 +2276,19 @@
     "imdbId": "tt29927144",
     "tmdbId": "1107215",
     "imdbScore": 7,
-    "tmdbScore": 6.9,
+    "tmdbScore": 7,
     "createdAt": "2025-04-19T19:00:38.351Z"
   },
   {
     "id": "ts287292",
     "type": "SHOW",
-    "title": "From",
+    "title": "FROM",
     "year": 2022,
     "url": "https://www.justwatch.com/uk/tv-series/from",
     "imdbId": "tt9813792",
     "tmdbId": "124364",
     "imdbScore": 7.8,
-    "tmdbScore": 8.16,
+    "tmdbScore": 8.2,
     "createdAt": "2025-04-17T11:38:14.387Z"
   },
   {
@@ -1832,7 +2300,7 @@
     "imdbId": "tt1817273",
     "tmdbId": "97367",
     "imdbScore": 7.3,
-    "tmdbScore": 6.982,
+    "tmdbScore": 6.984,
     "createdAt": "2025-04-17T09:49:18.147Z"
   },
   {
@@ -1840,7 +2308,7 @@
     "type": "SHOW",
     "title": "Kabul",
     "year": 2025,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt32056314",
     "tmdbId": "250996",
     "imdbScore": 7.4,
@@ -1856,7 +2324,7 @@
     "imdbId": "tt21823606",
     "tmdbId": "1013850",
     "imdbScore": 7,
-    "tmdbScore": 6.765,
+    "tmdbScore": 6.773,
     "createdAt": "2025-03-28T09:08:33.94Z"
   },
   {
@@ -1864,11 +2332,11 @@
     "type": "MOVIE",
     "title": "The Rookie Guide",
     "year": 2025,
-    "url": "https://www.justwatch.com/uk/movie/le-routard",
+    "url": null,
     "imdbId": "tt33610694",
     "tmdbId": "1191666",
-    "imdbScore": 4.5,
-    "tmdbScore": 4.6,
+    "imdbScore": 4.4,
+    "tmdbScore": 4.4,
     "createdAt": "2025-03-27T22:22:25.989Z"
   },
   {
@@ -1880,7 +2348,7 @@
     "imdbId": "tt7395114",
     "tmdbId": "499932",
     "imdbScore": 7.1,
-    "tmdbScore": 7.2,
+    "tmdbScore": 7.18,
     "createdAt": "2025-03-26T06:43:56.973Z"
   },
   {
@@ -1892,7 +2360,7 @@
     "imdbId": "tt7984734",
     "tmdbId": "503919",
     "imdbScore": 7.4,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.476,
     "createdAt": "2025-03-26T06:43:36.259Z"
   },
   {
@@ -1904,7 +2372,7 @@
     "imdbId": "tt0082085",
     "tmdbId": "11644",
     "imdbScore": 7.4,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.363,
     "createdAt": "2025-03-26T06:42:24.447Z"
   },
   {
@@ -1928,7 +2396,7 @@
     "imdbId": "tt0106519",
     "tmdbId": "6075",
     "imdbScore": 7.9,
-    "tmdbScore": 7.827,
+    "tmdbScore": 7.828,
     "createdAt": "2025-03-26T06:41:49.062Z"
   },
   {
@@ -1940,7 +2408,7 @@
     "imdbId": "tt0086250",
     "tmdbId": "111",
     "imdbScore": 8.3,
-    "tmdbScore": 8.158,
+    "tmdbScore": 8.155,
     "createdAt": "2025-03-26T06:41:36.909Z"
   },
   {
@@ -1952,7 +2420,7 @@
     "imdbId": "tt13406094",
     "tmdbId": "111803",
     "imdbScore": 8,
-    "tmdbScore": 7.62,
+    "tmdbScore": 7.61,
     "createdAt": "2025-03-20T18:14:44.296Z"
   },
   {
@@ -1964,7 +2432,7 @@
     "imdbId": "tt1856010",
     "tmdbId": "1425",
     "imdbScore": 8.6,
-    "tmdbScore": 8.014,
+    "tmdbScore": 8.008,
     "createdAt": "2025-03-17T19:36:33.05Z"
   },
   {
@@ -1976,7 +2444,7 @@
     "imdbId": "tt1029234",
     "tmdbId": "9539",
     "imdbScore": 7,
-    "tmdbScore": 7.3,
+    "tmdbScore": 7.308,
     "createdAt": "2025-03-17T18:57:24.809Z"
   },
   {
@@ -1988,7 +2456,7 @@
     "imdbId": "tt0049833",
     "tmdbId": "6844",
     "imdbScore": 7.9,
-    "tmdbScore": 7.766,
+    "tmdbScore": 7.774,
     "createdAt": "2025-03-09T15:20:45.653Z"
   },
   {
@@ -2000,7 +2468,7 @@
     "imdbId": "tt2969776",
     "tmdbId": "248390",
     "imdbScore": 5.3,
-    "tmdbScore": 5.2,
+    "tmdbScore": 5.232,
     "createdAt": "2025-03-08T12:36:31.013Z"
   },
   {
@@ -2016,18 +2484,6 @@
     "createdAt": "2025-03-08T12:36:11.93Z"
   },
   {
-    "id": "tm134674",
-    "type": "MOVIE",
-    "title": "Dead Poets Society",
-    "year": 1989,
-    "url": "https://www.justwatch.com/uk/movie/dead-poets-society",
-    "imdbId": "tt0097165",
-    "tmdbId": "207",
-    "imdbScore": 8.1,
-    "tmdbScore": 8.301,
-    "createdAt": "2025-03-02T21:04:43.919Z"
-  },
-  {
     "id": "ts6683",
     "type": "SHOW",
     "title": "Battlestar Galactica",
@@ -2036,7 +2492,7 @@
     "imdbId": "tt0407362",
     "tmdbId": "1972",
     "imdbScore": 8.7,
-    "tmdbScore": 8.21,
+    "tmdbScore": 8.211,
     "createdAt": "2025-02-22T23:24:03.062Z"
   },
   {
@@ -2048,7 +2504,7 @@
     "imdbId": "tt2741602",
     "tmdbId": "46952",
     "imdbScore": 7.9,
-    "tmdbScore": 7.638,
+    "tmdbScore": 7.634,
     "createdAt": "2025-02-19T22:14:42.451Z"
   },
   {
@@ -2056,7 +2512,7 @@
     "type": "MOVIE",
     "title": "The Tattoo",
     "year": 1968,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0063674",
     "tmdbId": "11912",
     "imdbScore": 6.5,
@@ -2068,11 +2524,11 @@
     "type": "MOVIE",
     "title": "Drone",
     "year": 2024,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt28590661",
     "tmdbId": "1001044",
     "imdbScore": 5.4,
-    "tmdbScore": 5.6,
+    "tmdbScore": 5.3,
     "createdAt": "2025-02-16T14:49:13.349Z"
   },
   {
@@ -2084,7 +2540,7 @@
     "imdbId": "tt0428803",
     "tmdbId": "1667",
     "imdbScore": 7.5,
-    "tmdbScore": 7.076,
+    "tmdbScore": 7.079,
     "createdAt": "2025-02-16T10:04:22.922Z"
   },
   {
@@ -2096,7 +2552,7 @@
     "imdbId": "tt22478818",
     "tmdbId": "1195631",
     "imdbScore": 5.7,
-    "tmdbScore": 6.245,
+    "tmdbScore": 6.2,
     "createdAt": "2025-02-15T14:38:44.796Z"
   },
   {
@@ -2108,7 +2564,7 @@
     "imdbId": "tt1100089",
     "tmdbId": "87492",
     "imdbScore": 7,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.656,
     "createdAt": "2025-02-15T10:37:06.524Z"
   },
   {
@@ -2120,7 +2576,7 @@
     "imdbId": "tt2039393",
     "tmdbId": "284536",
     "imdbScore": 6,
-    "tmdbScore": 6.015,
+    "tmdbScore": 6.014,
     "createdAt": "2025-02-15T10:36:54.862Z"
   },
   {
@@ -2132,7 +2588,7 @@
     "imdbId": "tt23476986",
     "tmdbId": "1045938",
     "imdbScore": 5.1,
-    "tmdbScore": 6.453,
+    "tmdbScore": 6.4,
     "createdAt": "2025-02-13T06:49:29.234Z"
   },
   {
@@ -2156,7 +2612,7 @@
     "imdbId": "tt26736843",
     "tmdbId": "1086747",
     "imdbScore": 5.7,
-    "tmdbScore": 6.382,
+    "tmdbScore": 6.352,
     "createdAt": "2025-02-09T14:29:09.222Z"
   },
   {
@@ -2168,7 +2624,7 @@
     "imdbId": "tt29439114",
     "tmdbId": "1088514",
     "imdbScore": 6.8,
-    "tmdbScore": 6.76,
+    "tmdbScore": 6.8,
     "createdAt": "2025-02-09T13:34:11.367Z"
   },
   {
@@ -2180,7 +2636,7 @@
     "imdbId": "tt7440432",
     "tmdbId": "504561",
     "imdbScore": 7.6,
-    "tmdbScore": 7.3,
+    "tmdbScore": 7.4,
     "createdAt": "2025-02-08T19:47:59.438Z"
   },
   {
@@ -2191,8 +2647,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/severance",
     "imdbId": "tt11280740",
     "tmdbId": "95396",
-    "imdbScore": 8.7,
-    "tmdbScore": 8.397,
+    "imdbScore": 8.6,
+    "tmdbScore": 8.4,
     "createdAt": "2025-02-06T11:23:11.23Z"
   },
   {
@@ -2204,19 +2660,19 @@
     "imdbId": "tt3581920",
     "tmdbId": "100088",
     "imdbScore": 8.5,
-    "tmdbScore": 8.467,
+    "tmdbScore": 8.436,
     "createdAt": "2025-02-06T11:23:07.124Z"
   },
   {
     "id": "tm1038290",
     "type": "MOVIE",
-    "title": "Straume",
+    "title": "Flow",
     "year": 2024,
     "url": "https://www.justwatch.com/uk/movie/flow-2024",
     "imdbId": "tt4772188",
     "tmdbId": "823219",
     "imdbScore": 7.9,
-    "tmdbScore": 8.128,
+    "tmdbScore": 8.086,
     "createdAt": "2025-02-06T11:22:44.47Z"
   },
   {
@@ -2228,7 +2684,7 @@
     "imdbId": "tt24053860",
     "tmdbId": "222766",
     "imdbScore": 8.1,
-    "tmdbScore": 8.168,
+    "tmdbScore": 8.163,
     "createdAt": "2025-02-06T11:18:06.545Z"
   },
   {
@@ -2240,7 +2696,7 @@
     "imdbId": "tt16912512",
     "tmdbId": "155533",
     "imdbScore": 7.2,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.741,
     "createdAt": "2025-02-05T20:35:25.111Z"
   },
   {
@@ -2252,7 +2708,7 @@
     "imdbId": "tt27444205",
     "tmdbId": "245927",
     "imdbScore": 7.9,
-    "tmdbScore": 7.582,
+    "tmdbScore": 7.4,
     "createdAt": "2025-02-05T16:43:24.46Z"
   },
   {
@@ -2264,7 +2720,7 @@
     "imdbId": "tt5726616",
     "tmdbId": "398818",
     "imdbScore": 7.8,
-    "tmdbScore": 8.1,
+    "tmdbScore": 8.092,
     "createdAt": "2025-02-04T19:39:04.089Z"
   },
   {
@@ -2276,7 +2732,7 @@
     "imdbId": "tt2562232",
     "tmdbId": "194662",
     "imdbScore": 7.7,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.443,
     "createdAt": "2025-01-26T16:54:05.38Z"
   },
   {
@@ -2288,7 +2744,7 @@
     "imdbId": "tt0870984",
     "tmdbId": "17609",
     "imdbScore": 6.5,
-    "tmdbScore": 6.6,
+    "tmdbScore": 6.624,
     "createdAt": "2025-01-26T16:45:11.182Z"
   },
   {
@@ -2300,7 +2756,7 @@
     "imdbId": "tt4975722",
     "tmdbId": "376867",
     "imdbScore": 7.4,
-    "tmdbScore": 7.365,
+    "tmdbScore": 7.356,
     "createdAt": "2025-01-26T16:38:21.097Z"
   },
   {
@@ -2312,7 +2768,7 @@
     "imdbId": "tt24069848",
     "tmdbId": "215866",
     "imdbScore": 8,
-    "tmdbScore": 7.662,
+    "tmdbScore": 7.672,
     "createdAt": "2025-01-26T12:20:05.569Z"
   },
   {
@@ -2324,7 +2780,7 @@
     "imdbId": "tt0169547",
     "tmdbId": "14",
     "imdbScore": 8.3,
-    "tmdbScore": 8.003,
+    "tmdbScore": 8,
     "createdAt": "2025-01-25T08:31:23.317Z"
   },
   {
@@ -2336,7 +2792,7 @@
     "imdbId": "tt0110357",
     "tmdbId": "8587",
     "imdbScore": 8.5,
-    "tmdbScore": 8.256,
+    "tmdbScore": 8.253,
     "createdAt": "2025-01-24T20:40:36.75Z"
   },
   {
@@ -2360,7 +2816,7 @@
     "imdbId": "tt1182924",
     "tmdbId": "18916",
     "imdbScore": 5.3,
-    "tmdbScore": 5.189,
+    "tmdbScore": 5.1,
     "createdAt": "2025-01-21T17:43:25.701Z"
   },
   {
@@ -2372,7 +2828,7 @@
     "imdbId": "tt13966962",
     "tmdbId": "122226",
     "imdbScore": 5.9,
-    "tmdbScore": 6.092,
+    "tmdbScore": 6.071,
     "createdAt": "2025-01-20T21:32:19.699Z"
   },
   {
@@ -2384,7 +2840,7 @@
     "imdbId": "tt12262202",
     "tmdbId": "114479",
     "imdbScore": 4.3,
-    "tmdbScore": 5.485,
+    "tmdbScore": 5.428,
     "createdAt": "2025-01-19T11:48:48.401Z"
   },
   {
@@ -2396,7 +2852,7 @@
     "imdbId": "tt0354899",
     "tmdbId": "300",
     "imdbScore": 7.2,
-    "tmdbScore": 6.987,
+    "tmdbScore": 7,
     "createdAt": "2025-01-18T10:03:27.601Z"
   },
   {
@@ -2408,7 +2864,7 @@
     "imdbId": "tt27490099",
     "tmdbId": "959604",
     "imdbScore": 7,
-    "tmdbScore": 7.193,
+    "tmdbScore": 7.189,
     "createdAt": "2025-01-16T16:00:33.264Z"
   },
   {
@@ -2420,7 +2876,7 @@
     "imdbId": "tt0119488",
     "tmdbId": "2118",
     "imdbScore": 8.2,
-    "tmdbScore": 7.804,
+    "tmdbScore": 7.801,
     "createdAt": "2025-01-15T08:25:38.887Z"
   },
   {
@@ -2432,7 +2888,7 @@
     "imdbId": "tt0093748",
     "tmdbId": "2609",
     "imdbScore": 7.6,
-    "tmdbScore": 7.2,
+    "tmdbScore": 7.252,
     "createdAt": "2025-01-15T08:25:13.206Z"
   },
   {
@@ -2444,7 +2900,7 @@
     "imdbId": "tt4536768",
     "tmdbId": "354282",
     "imdbScore": 5.5,
-    "tmdbScore": 5.6,
+    "tmdbScore": 5.629,
     "createdAt": "2025-01-15T08:24:41.206Z"
   },
   {
@@ -2456,7 +2912,7 @@
     "imdbId": "tt30057084",
     "tmdbId": "1097549",
     "imdbScore": 5.8,
-    "tmdbScore": 5.728,
+    "tmdbScore": 5.7,
     "createdAt": "2025-01-12T20:24:24.429Z"
   },
   {
@@ -2467,21 +2923,9 @@
     "url": "https://www.justwatch.com/uk/movie/the-brutalist",
     "imdbId": "tt8999762",
     "tmdbId": "549509",
-    "imdbScore": 7.3,
+    "imdbScore": 7.2,
     "tmdbScore": 7,
     "createdAt": "2025-01-12T20:23:59.128Z"
-  },
-  {
-    "id": "tm1528919",
-    "type": "MOVIE",
-    "title": "Dog 51",
-    "year": 2025,
-    "url": "https://www.justwatch.com/uk/movie/chien-51-2025",
-    "imdbId": null,
-    "tmdbId": "1266798",
-    "imdbScore": null,
-    "tmdbScore": 6.526,
-    "createdAt": "2025-01-12T19:44:11.204Z"
   },
   {
     "id": "tm122838",
@@ -2492,31 +2936,19 @@
     "imdbId": "tt2398241",
     "tmdbId": "137116",
     "imdbScore": 6,
-    "tmdbScore": 6.356,
+    "tmdbScore": 6.35,
     "createdAt": "2025-01-12T19:35:50.627Z"
-  },
-  {
-    "id": "tm358",
-    "type": "MOVIE",
-    "title": "Avatar: Fire and Ash",
-    "year": 2025,
-    "url": "https://www.justwatch.com/uk/movie/avatar-3",
-    "imdbId": "tt1757678",
-    "tmdbId": "83533",
-    "imdbScore": 7.3,
-    "tmdbScore": null,
-    "createdAt": "2025-01-12T19:32:49.6Z"
   },
   {
     "id": "tm31451",
     "type": "MOVIE",
     "title": "A Ticket to Space",
     "year": 2006,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0444519",
     "tmdbId": "13748",
     "imdbScore": 5.3,
-    "tmdbScore": 5.159,
+    "tmdbScore": 5.2,
     "createdAt": "2025-01-12T19:32:09.054Z"
   },
   {
@@ -2524,11 +2956,11 @@
     "type": "MOVIE",
     "title": "Hiroshima",
     "year": 2005,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0475296",
     "tmdbId": "68297",
     "imdbScore": 7.8,
-    "tmdbScore": 7.2,
+    "tmdbScore": 7.1,
     "createdAt": "2025-01-12T19:26:56.974Z"
   },
   {
@@ -2540,7 +2972,7 @@
     "imdbId": "tt20212786",
     "tmdbId": "970947",
     "imdbScore": 5.7,
-    "tmdbScore": 5.899,
+    "tmdbScore": 5.8,
     "createdAt": "2025-01-12T19:13:53.868Z"
   },
   {
@@ -2560,11 +2992,11 @@
     "type": "MOVIE",
     "title": "The 4th Wall",
     "year": 2025,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt21615536",
     "tmdbId": "1001141",
-    "imdbScore": 6.4,
-    "tmdbScore": 7.275,
+    "imdbScore": 6.2,
+    "tmdbScore": 7.2,
     "createdAt": "2025-01-12T18:39:41.682Z"
   },
   {
@@ -2588,7 +3020,7 @@
     "imdbId": "tt15677150",
     "tmdbId": "136311",
     "imdbScore": 8.1,
-    "tmdbScore": 7.783,
+    "tmdbScore": 7.825,
     "createdAt": "2025-01-08T23:16:52.207Z"
   },
   {
@@ -2612,7 +3044,7 @@
     "imdbId": "tt13207736",
     "tmdbId": "225634",
     "imdbScore": 7.8,
-    "tmdbScore": 7.618,
+    "tmdbScore": 7.611,
     "createdAt": "2025-01-08T18:03:03.927Z"
   },
   {
@@ -2648,7 +3080,7 @@
     "imdbId": "tt0112579",
     "tmdbId": "688",
     "imdbScore": 7.6,
-    "tmdbScore": 7.708,
+    "tmdbScore": 7.705,
     "createdAt": "2025-01-04T21:22:51.461Z"
   },
   {
@@ -2660,7 +3092,7 @@
     "imdbId": "tt0070047",
     "tmdbId": "9552",
     "imdbScore": 8.1,
-    "tmdbScore": 7.74,
+    "tmdbScore": 7.742,
     "createdAt": "2025-01-04T20:07:00.885Z"
   },
   {
@@ -2672,7 +3104,7 @@
     "imdbId": "tt16826430",
     "tmdbId": "1001274",
     "imdbScore": 6.7,
-    "tmdbScore": 6.858,
+    "tmdbScore": 6.9,
     "createdAt": "2025-01-04T11:50:05.868Z"
   },
   {
@@ -2684,7 +3116,7 @@
     "imdbId": "tt10426916",
     "tmdbId": "679989",
     "imdbScore": 6.4,
-    "tmdbScore": 5.884,
+    "tmdbScore": 5.887,
     "createdAt": "2025-01-03T22:24:06.844Z"
   },
   {
@@ -2708,7 +3140,7 @@
     "imdbId": "tt0360486",
     "tmdbId": "561",
     "imdbScore": 7,
-    "tmdbScore": 7.116,
+    "tmdbScore": 7.122,
     "createdAt": "2024-12-27T22:58:59.726Z"
   },
   {
@@ -2720,7 +3152,7 @@
     "imdbId": "tt10466872",
     "tmdbId": "90228",
     "imdbScore": 7.3,
-    "tmdbScore": 7.285,
+    "tmdbScore": 7.272,
     "createdAt": "2024-12-25T23:06:43.387Z"
   },
   {
@@ -2732,7 +3164,7 @@
     "imdbId": "tt19652910",
     "tmdbId": "785398",
     "imdbScore": 6.7,
-    "tmdbScore": 6.528,
+    "tmdbScore": 6.5,
     "createdAt": "2024-12-25T09:26:43.424Z"
   },
   {
@@ -2741,10 +3173,10 @@
     "title": "A Trip to the Moon",
     "year": 1902,
     "url": "https://www.justwatch.com/uk/movie/a-trip-to-the-moon",
-    "imdbId": null,
+    "imdbId": "tt0000417",
     "tmdbId": "775",
-    "imdbScore": null,
-    "tmdbScore": 7.901,
+    "imdbScore": 8.1,
+    "tmdbScore": 7.908,
     "createdAt": "2024-12-16T14:12:16.444Z"
   },
   {
@@ -2752,24 +3184,12 @@
     "type": "MOVIE",
     "title": "Black Thursday",
     "year": 1974,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0192099",
     "tmdbId": "264564",
     "imdbScore": 6.3,
     "tmdbScore": 5.6,
     "createdAt": "2024-12-16T14:11:32.123Z"
-  },
-  {
-    "id": "tm31389",
-    "type": "MOVIE",
-    "title": "Speed Racer",
-    "year": 2008,
-    "url": "https://www.justwatch.com/uk/movie/speed-racer",
-    "imdbId": "tt0811080",
-    "tmdbId": "7459",
-    "imdbScore": 6.1,
-    "tmdbScore": 6.3,
-    "createdAt": "2024-12-08T17:12:05.042Z"
   },
   {
     "id": "ts297178",
@@ -2780,7 +3200,7 @@
     "imdbId": "tt14688458",
     "tmdbId": "125988",
     "imdbScore": 8.1,
-    "tmdbScore": 8.128,
+    "tmdbScore": 8.1,
     "createdAt": "2024-11-28T21:48:40.33Z"
   },
   {
@@ -2788,7 +3208,7 @@
     "type": "MOVIE",
     "title": "Being James Bond",
     "year": 2021,
-    "url": "https://www.justwatch.com",
+    "url": "https://www.justwatch.com/uk/movie/being-james-bond-2021",
     "imdbId": "tt15346636",
     "tmdbId": "869250",
     "imdbScore": 7.4,
@@ -2804,7 +3224,7 @@
     "imdbId": "tt5294550",
     "tmdbId": "446791",
     "imdbScore": 6.8,
-    "tmdbScore": 6.481,
+    "tmdbScore": 6.5,
     "createdAt": "2024-11-03T22:46:39.562Z"
   },
   {
@@ -2828,7 +3248,7 @@
     "imdbId": "tt0301357",
     "tmdbId": "338",
     "imdbScore": 7.7,
-    "tmdbScore": 7.537,
+    "tmdbScore": 7.542,
     "createdAt": "2024-10-29T21:37:25.213Z"
   },
   {
@@ -2840,7 +3260,7 @@
     "imdbId": "tt7818580",
     "tmdbId": "542921",
     "imdbScore": 6.9,
-    "tmdbScore": 7.101,
+    "tmdbScore": 7.056,
     "createdAt": "2024-10-29T21:37:00.698Z"
   },
   {
@@ -2852,7 +3272,7 @@
     "imdbId": "tt0091530",
     "tmdbId": "11416",
     "imdbScore": 7.4,
-    "tmdbScore": 7.394,
+    "tmdbScore": 7.4,
     "createdAt": "2024-10-29T21:35:19.134Z"
   },
   {
@@ -2864,7 +3284,7 @@
     "imdbId": "tt11301886",
     "tmdbId": "646097",
     "imdbScore": 6.8,
-    "tmdbScore": 7.004,
+    "tmdbScore": 6.968,
     "createdAt": "2024-10-03T17:06:38.811Z"
   },
   {
@@ -2888,7 +3308,7 @@
     "imdbId": "tt0048545",
     "tmdbId": "221",
     "imdbScore": 7.6,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.498,
     "createdAt": "2024-09-17T14:24:35.386Z"
   },
   {
@@ -2897,10 +3317,10 @@
     "title": "The Penguin",
     "year": 2024,
     "url": "https://www.justwatch.com/uk/tv-series/the-penguin",
-    "imdbId": "tt15494650",
+    "imdbId": "tt15435876",
     "tmdbId": "194764",
     "imdbScore": 8.6,
-    "tmdbScore": 8.391,
+    "tmdbScore": 8.369,
     "createdAt": "2024-08-06T21:28:28.504Z"
   },
   {
@@ -2912,7 +3332,7 @@
     "imdbId": "tt10569934",
     "tmdbId": "218589",
     "imdbScore": 6.7,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.411,
     "createdAt": "2024-08-05T18:58:12.034Z"
   },
   {
@@ -2924,7 +3344,7 @@
     "imdbId": "tt11198330",
     "tmdbId": "94997",
     "imdbScore": 8.3,
-    "tmdbScore": 8.308,
+    "tmdbScore": 8.289,
     "createdAt": "2024-07-24T22:01:37.657Z"
   },
   {
@@ -2948,7 +3368,7 @@
     "imdbId": "tt1205489",
     "tmdbId": "13223",
     "imdbScore": 8.1,
-    "tmdbScore": 7.989,
+    "tmdbScore": 8,
     "createdAt": "2024-05-21T21:38:58.728Z"
   },
   {
@@ -2960,7 +3380,7 @@
     "imdbId": "tt1935156",
     "tmdbId": "191720",
     "imdbScore": 8,
-    "tmdbScore": 7.824,
+    "tmdbScore": 7.832,
     "createdAt": "2024-05-20T21:23:15.288Z"
   },
   {
@@ -2972,7 +3392,7 @@
     "imdbId": "tt19231492",
     "tmdbId": "196322",
     "imdbScore": 7.6,
-    "tmdbScore": 7.8,
+    "tmdbScore": 7.758,
     "createdAt": "2024-05-19T09:59:37.127Z"
   },
   {
@@ -2984,7 +3404,7 @@
     "imdbId": "tt9253284",
     "tmdbId": "83867",
     "imdbScore": 8.6,
-    "tmdbScore": 8.3,
+    "tmdbScore": 8.282,
     "createdAt": "2024-05-17T16:39:41.115Z"
   },
   {
@@ -2996,7 +3416,7 @@
     "imdbId": "tt2788316",
     "tmdbId": "126308",
     "imdbScore": 8.6,
-    "tmdbScore": 8.453,
+    "tmdbScore": 8.426,
     "createdAt": "2024-05-09T07:57:46.313Z"
   },
   {
@@ -3008,7 +3428,7 @@
     "imdbId": "tt12637874",
     "tmdbId": "106379",
     "imdbScore": 8.3,
-    "tmdbScore": 8.214,
+    "tmdbScore": 8.123,
     "createdAt": "2024-05-09T07:55:59.844Z"
   },
   {
@@ -3020,7 +3440,7 @@
     "imdbId": "tt0104797",
     "tmdbId": "1883",
     "imdbScore": 7.7,
-    "tmdbScore": 7.544,
+    "tmdbScore": 7.549,
     "createdAt": "2024-04-11T14:33:54.266Z"
   },
   {
@@ -3044,7 +3464,7 @@
     "imdbId": "tt0772168",
     "tmdbId": "11161",
     "imdbScore": 6.7,
-    "tmdbScore": 6.56,
+    "tmdbScore": 6.578,
     "createdAt": "2024-04-05T21:09:17.476Z"
   },
   {
@@ -3056,7 +3476,7 @@
     "imdbId": "tt0418763",
     "tmdbId": "25",
     "imdbScore": 7,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.682,
     "createdAt": "2024-04-04T20:46:34.843Z"
   },
   {
@@ -3068,7 +3488,7 @@
     "imdbId": null,
     "tmdbId": "913862",
     "imdbScore": null,
-    "tmdbScore": 7,
+    "tmdbScore": 7.035,
     "createdAt": "2024-03-28T22:24:00.736Z"
   },
   {
@@ -3080,20 +3500,8 @@
     "imdbId": "tt5397194",
     "tmdbId": "396806",
     "imdbScore": 6.1,
-    "tmdbScore": 6,
+    "tmdbScore": 5.995,
     "createdAt": "2024-03-27T20:53:30.267Z"
-  },
-  {
-    "id": "tm145608",
-    "type": "MOVIE",
-    "title": "Awakenings",
-    "year": 1990,
-    "url": "https://www.justwatch.com/uk/movie/awakenings",
-    "imdbId": "tt0099077",
-    "tmdbId": "11005",
-    "imdbScore": 7.8,
-    "tmdbScore": 7.773,
-    "createdAt": "2024-03-09T19:16:24.702Z"
   },
   {
     "id": "ts20054",
@@ -3103,8 +3511,8 @@
     "url": "https://www.justwatch.com/uk/tv-series/true-detective",
     "imdbId": "tt2356777",
     "tmdbId": "46648",
-    "imdbScore": 8.9,
-    "tmdbScore": 8.3,
+    "imdbScore": 8.8,
+    "tmdbScore": 8.286,
     "createdAt": "2024-03-09T10:43:10.25Z"
   },
   {
@@ -3116,7 +3524,7 @@
     "imdbId": "tt23561236",
     "tmdbId": "1056360",
     "imdbScore": 7.5,
-    "tmdbScore": 7.283,
+    "tmdbScore": 7.264,
     "createdAt": "2024-03-09T10:42:19.466Z"
   },
   {
@@ -3137,10 +3545,10 @@
     "title": "Apocalypse Now",
     "year": 1979,
     "url": "https://www.justwatch.com/uk/movie/apocalypse-now",
-    "imdbId": "tt2617714",
+    "imdbId": "tt0078788",
     "tmdbId": "28",
     "imdbScore": 8.4,
-    "tmdbScore": 8.271,
+    "tmdbScore": 8.268,
     "createdAt": "2024-03-04T22:57:28.357Z"
   },
   {
@@ -3152,7 +3560,7 @@
     "imdbId": "tt15679400",
     "tmdbId": "631842",
     "imdbScore": 6.1,
-    "tmdbScore": 6.254,
+    "tmdbScore": 6.246,
     "createdAt": "2024-03-04T22:55:06.763Z"
   },
   {
@@ -3164,7 +3572,7 @@
     "imdbId": "tt0068699",
     "tmdbId": "11901",
     "imdbScore": 7.4,
-    "tmdbScore": 7.325,
+    "tmdbScore": 7.312,
     "createdAt": "2024-03-04T22:53:30.001Z"
   },
   {
@@ -3176,7 +3584,7 @@
     "imdbId": "tt0443272",
     "tmdbId": "72976",
     "imdbScore": 7.3,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.849,
     "createdAt": "2024-03-04T22:51:56.774Z"
   },
   {
@@ -3187,8 +3595,8 @@
     "url": "https://www.justwatch.com/uk/movie/godzilla-minus-one",
     "imdbId": "tt23289160",
     "tmdbId": "940721",
-    "imdbScore": 7.7,
-    "tmdbScore": 7.594,
+    "imdbScore": 7.6,
+    "tmdbScore": 7.569,
     "createdAt": "2024-03-04T22:49:01.324Z"
   },
   {
@@ -3200,7 +3608,7 @@
     "imdbId": "tt0368447",
     "tmdbId": "6947",
     "imdbScore": 6.6,
-    "tmdbScore": 6.5,
+    "tmdbScore": 6.48,
     "createdAt": "2024-03-02T22:36:37.161Z"
   },
   {
@@ -3212,7 +3620,7 @@
     "imdbId": "tt1210166",
     "tmdbId": "60308",
     "imdbScore": 7.6,
-    "tmdbScore": 7.283,
+    "tmdbScore": 7.289,
     "createdAt": "2024-03-02T13:03:52.471Z"
   },
   {
@@ -3224,7 +3632,7 @@
     "imdbId": "tt1028528",
     "tmdbId": "1991",
     "imdbScore": 7,
-    "tmdbScore": 6.837,
+    "tmdbScore": 6.84,
     "createdAt": "2024-03-02T12:17:35.471Z"
   },
   {
@@ -3236,7 +3644,7 @@
     "imdbId": "tt1488589",
     "tmdbId": "555604",
     "imdbScore": 7.6,
-    "tmdbScore": 8.041,
+    "tmdbScore": 8,
     "createdAt": "2024-03-01T22:20:30.809Z"
   },
   {
@@ -3247,7 +3655,7 @@
     "url": "https://www.justwatch.com/uk/movie/le-proces-goldman",
     "imdbId": "tt16160622",
     "tmdbId": "972118",
-    "imdbScore": 7,
+    "imdbScore": 6.9,
     "tmdbScore": 6.9,
     "createdAt": "2024-02-29T22:17:42.144Z"
   },
@@ -3262,18 +3670,6 @@
     "imdbScore": 7.2,
     "tmdbScore": 8.039,
     "createdAt": "2024-02-29T14:11:34.881Z"
-  },
-  {
-    "id": "ts344487",
-    "type": "SHOW",
-    "title": "Constellation",
-    "year": 2024,
-    "url": "https://www.justwatch.com/uk/tv-series/constellation",
-    "imdbId": "tt19395018",
-    "tmdbId": "197125",
-    "imdbScore": 6.7,
-    "tmdbScore": 7,
-    "createdAt": "2024-02-28T19:48:52.179Z"
   },
   {
     "id": "ts330947",
@@ -3332,7 +3728,7 @@
     "imdbId": "tt15789472",
     "tmdbId": "1151534",
     "imdbScore": 6.3,
-    "tmdbScore": 7.337,
+    "tmdbScore": 7.31,
     "createdAt": "2024-01-27T19:15:02.21Z"
   },
   {
@@ -3344,7 +3740,7 @@
     "imdbId": "tt2640044",
     "tmdbId": "46518",
     "imdbScore": 7.8,
-    "tmdbScore": 7.763,
+    "tmdbScore": 7.754,
     "createdAt": "2024-01-27T19:12:35.578Z"
   },
   {
@@ -3356,7 +3752,7 @@
     "imdbId": "tt15799866",
     "tmdbId": "891699",
     "imdbScore": 5.3,
-    "tmdbScore": 6.169,
+    "tmdbScore": 6.2,
     "createdAt": "2024-01-27T19:11:31.368Z"
   },
   {
@@ -3368,7 +3764,7 @@
     "imdbId": "tt13238346",
     "tmdbId": "666277",
     "imdbScore": 7.8,
-    "tmdbScore": 7.7,
+    "tmdbScore": 7.711,
     "createdAt": "2024-01-01T00:05:23.9Z"
   },
   {
@@ -3380,7 +3776,7 @@
     "imdbId": "tt19770238",
     "tmdbId": "965150",
     "imdbScore": 7.6,
-    "tmdbScore": 7.675,
+    "tmdbScore": 7.681,
     "createdAt": "2024-01-01T00:04:31.468Z"
   },
   {
@@ -3392,7 +3788,7 @@
     "imdbId": "tt0765429",
     "tmdbId": "4982",
     "imdbScore": 7.8,
-    "tmdbScore": 7.591,
+    "tmdbScore": 7.589,
     "createdAt": "2023-12-29T11:22:22.633Z"
   },
   {
@@ -3404,7 +3800,7 @@
     "imdbId": "tt9288030",
     "tmdbId": "108978",
     "imdbScore": 8,
-    "tmdbScore": 8.086,
+    "tmdbScore": 8.071,
     "createdAt": "2023-12-22T17:20:09.329Z"
   },
   {
@@ -3415,8 +3811,8 @@
     "url": "https://www.justwatch.com/uk/movie/zero-effect",
     "imdbId": "tt0120906",
     "tmdbId": "16148",
-    "imdbScore": 6.9,
-    "tmdbScore": 6.226,
+    "imdbScore": 6.8,
+    "tmdbScore": 6.2,
     "createdAt": "2023-11-26T20:49:03.994Z"
   },
   {
@@ -3425,10 +3821,10 @@
     "title": "Beau Is Afraid",
     "year": 2023,
     "url": "https://www.justwatch.com/uk/movie/beau-is-afraid",
-    "imdbId": "tt13521006",
+    "imdbId": "tt14137138",
     "tmdbId": "798286",
     "imdbScore": 6.6,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.711,
     "createdAt": "2023-11-26T10:53:36.01Z"
   },
   {
@@ -3440,7 +3836,7 @@
     "imdbId": "tt0138704",
     "tmdbId": "473",
     "imdbScore": 7.3,
-    "tmdbScore": 7.111,
+    "tmdbScore": 7.119,
     "createdAt": "2023-11-14T11:32:52.115Z"
   },
   {
@@ -3452,7 +3848,7 @@
     "imdbId": "tt14114802",
     "tmdbId": "799876",
     "imdbScore": 7.2,
-    "tmdbScore": 7.076,
+    "tmdbScore": 7.084,
     "createdAt": "2023-11-14T11:31:39.109Z"
   },
   {
@@ -3464,7 +3860,7 @@
     "imdbId": "tt1821641",
     "tmdbId": "152795",
     "imdbScore": 6.4,
-    "tmdbScore": 6.402,
+    "tmdbScore": 6.409,
     "createdAt": "2023-11-12T21:57:34.91Z"
   },
   {
@@ -3476,7 +3872,7 @@
     "imdbId": "tt0067756",
     "tmdbId": "811",
     "imdbScore": 6.6,
-    "tmdbScore": 6.4,
+    "tmdbScore": 6.397,
     "createdAt": "2023-11-03T13:16:15.309Z"
   },
   {
@@ -3488,7 +3884,7 @@
     "imdbId": "tt0913968",
     "tmdbId": "14392",
     "imdbScore": 7,
-    "tmdbScore": 6.8,
+    "tmdbScore": 6.782,
     "createdAt": "2023-11-02T15:54:56.485Z"
   },
   {
@@ -3500,7 +3896,7 @@
     "imdbId": "tt0114558",
     "tmdbId": "281",
     "imdbScore": 7.2,
-    "tmdbScore": 6.997,
+    "tmdbScore": 7,
     "createdAt": "2023-11-02T15:33:12.961Z"
   },
   {
@@ -3512,7 +3908,7 @@
     "imdbId": "tt15257160",
     "tmdbId": "862968",
     "imdbScore": 6.6,
-    "tmdbScore": 6.648,
+    "tmdbScore": 6.65,
     "createdAt": "2023-11-02T08:20:47.361Z"
   },
   {
@@ -3524,7 +3920,7 @@
     "imdbId": "tt4005402",
     "tmdbId": "318781",
     "imdbScore": 7,
-    "tmdbScore": 7.251,
+    "tmdbScore": 7.257,
     "createdAt": "2023-11-01T17:04:29.532Z"
   },
   {
@@ -3536,7 +3932,7 @@
     "imdbId": "tt13097336",
     "tmdbId": "748618",
     "imdbScore": 5.7,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.4,
     "createdAt": "2023-10-29T17:08:11.082Z"
   },
   {
@@ -3548,7 +3944,7 @@
     "imdbId": "tt1959490",
     "tmdbId": "86834",
     "imdbScore": 5.8,
-    "tmdbScore": 5.67,
+    "tmdbScore": 5.676,
     "createdAt": "2023-10-27T21:21:23.334Z"
   },
   {
@@ -3558,9 +3954,9 @@
     "year": 2023,
     "url": "https://www.justwatch.com/uk/movie/untitled-wes-anderson-roald-dahl-film",
     "imdbId": "tt16968450",
-    "tmdbId": "923939",
+    "tmdbId": "1259365",
     "imdbScore": 7.4,
-    "tmdbScore": 7.24,
+    "tmdbScore": 7.247,
     "createdAt": "2023-10-22T16:25:40.456Z"
   },
   {
@@ -3584,7 +3980,7 @@
     "imdbId": "tt0385887",
     "tmdbId": "504562",
     "imdbScore": 6.8,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.695,
     "createdAt": "2023-10-19T21:48:17.925Z"
   },
   {
@@ -3596,7 +3992,7 @@
     "imdbId": "tt13223398",
     "tmdbId": "760741",
     "imdbScore": 5.6,
-    "tmdbScore": 6.545,
+    "tmdbScore": 6.5,
     "createdAt": "2023-10-17T13:54:54.606Z"
   },
   {
@@ -3616,11 +4012,11 @@
     "type": "MOVIE",
     "title": "Paris Under Watch",
     "year": 2012,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt2106321",
     "tmdbId": "98277",
     "imdbScore": 6,
-    "tmdbScore": 5.9,
+    "tmdbScore": 6,
     "createdAt": "2023-10-12T10:44:47.507Z"
   },
   {
@@ -3632,7 +4028,7 @@
     "imdbId": "tt7144666",
     "tmdbId": "756999",
     "imdbScore": 6.9,
-    "tmdbScore": 7.548,
+    "tmdbScore": 7.528,
     "createdAt": "2023-10-12T10:44:44.036Z"
   },
   {
@@ -3644,7 +4040,7 @@
     "imdbId": "tt14176542",
     "tmdbId": "685691",
     "imdbScore": 6.7,
-    "tmdbScore": 6.865,
+    "tmdbScore": 6.8,
     "createdAt": "2023-10-12T10:39:36.758Z"
   },
   {
@@ -3656,7 +4052,7 @@
     "imdbId": "tt1060277",
     "tmdbId": "7191",
     "imdbScore": 7,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.708,
     "createdAt": "2023-10-11T21:21:00.71Z"
   },
   {
@@ -3680,7 +4076,7 @@
     "imdbId": "tt0887883",
     "tmdbId": "4944",
     "imdbScore": 7,
-    "tmdbScore": 6.667,
+    "tmdbScore": 6.673,
     "createdAt": "2023-10-11T21:18:10.233Z"
   },
   {
@@ -3691,8 +4087,8 @@
     "url": "https://www.justwatch.com/uk/movie/santa-claus-is-a-stinker",
     "imdbId": "tt0084555",
     "tmdbId": "14645",
-    "imdbScore": 7.5,
-    "tmdbScore": 7.3,
+    "imdbScore": 7.4,
+    "tmdbScore": 7.322,
     "createdAt": "2023-10-11T17:06:54.117Z"
   },
   {
@@ -3704,7 +4100,7 @@
     "imdbId": "tt0118694",
     "tmdbId": "843",
     "imdbScore": 8.1,
-    "tmdbScore": 8.095,
+    "tmdbScore": 8.088,
     "createdAt": "2023-10-08T14:08:06.339Z"
   },
   {
@@ -3714,9 +4110,9 @@
     "year": 1993,
     "url": "https://www.justwatch.com/uk/movie/in-the-line-of-fire",
     "imdbId": "tt0107206",
-    "tmdbId": "9386",
+    "tmdbId": "1278702",
     "imdbScore": 7.2,
-    "tmdbScore": 7,
+    "tmdbScore": 6.969,
     "createdAt": "2023-10-08T07:43:55.533Z"
   },
   {
@@ -3728,7 +4124,7 @@
     "imdbId": "tt0112384",
     "tmdbId": "568",
     "imdbScore": 7.7,
-    "tmdbScore": 7.5,
+    "tmdbScore": 7.454,
     "createdAt": "2023-10-07T11:02:19.577Z"
   },
   {
@@ -3740,7 +4136,7 @@
     "imdbId": "tt0268695",
     "tmdbId": "2135",
     "imdbScore": 6,
-    "tmdbScore": 6.306,
+    "tmdbScore": 6.304,
     "createdAt": "2023-10-03T19:13:06.475Z"
   },
   {
@@ -3748,8 +4144,8 @@
     "type": "MOVIE",
     "title": "The Best Job in the World",
     "year": 1996,
-    "url": "https://www.justwatch.com",
-    "imdbId": "tt0117351",
+    "url": null,
+    "imdbId": "tt0116395",
     "tmdbId": "40089",
     "imdbScore": 8,
     "tmdbScore": 5.586,
@@ -3760,11 +4156,11 @@
     "type": "MOVIE",
     "title": "Those Happy Days",
     "year": 2006,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0478566",
     "tmdbId": "19100",
     "imdbScore": 6.8,
-    "tmdbScore": 7.344,
+    "tmdbScore": 7.346,
     "createdAt": "2023-10-02T15:28:09.083Z"
   },
   {
@@ -3772,11 +4168,11 @@
     "type": "MOVIE",
     "title": "So Happy Together",
     "year": 2009,
-    "url": "https://www.justwatch.com",
+    "url": "https://www.justwatch.com/uk/movie/tellement-proches",
     "imdbId": "tt1404082",
     "tmdbId": "19268",
     "imdbScore": 6.4,
-    "tmdbScore": 6.532,
+    "tmdbScore": 6.528,
     "createdAt": "2023-10-02T15:27:57.065Z"
   },
   {
@@ -3787,8 +4183,8 @@
     "url": "https://www.justwatch.com/uk/movie/das-boot",
     "imdbId": "tt0082096",
     "tmdbId": "387",
-    "imdbScore": 8.4,
-    "tmdbScore": 8.1,
+    "imdbScore": 8.3,
+    "tmdbScore": 8.086,
     "createdAt": "2023-10-02T15:25:57.004Z"
   },
   {
@@ -3800,7 +4196,7 @@
     "imdbId": "tt0286106",
     "tmdbId": "2675",
     "imdbScore": 6.8,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.695,
     "createdAt": "2023-09-29T20:34:53.512Z"
   },
   {
@@ -3812,7 +4208,7 @@
     "imdbId": "tt0095953",
     "tmdbId": "380",
     "imdbScore": 8,
-    "tmdbScore": 7.8,
+    "tmdbScore": 7.751,
     "createdAt": "2023-09-25T16:16:59.674Z"
   },
   {
@@ -3824,7 +4220,7 @@
     "imdbId": "tt17277414",
     "tmdbId": "921452",
     "imdbScore": 6.7,
-    "tmdbScore": 6.9,
+    "tmdbScore": 6.882,
     "createdAt": "2023-09-23T10:23:55.415Z"
   },
   {
@@ -3836,7 +4232,7 @@
     "imdbId": "tt2076220",
     "tmdbId": "103328",
     "imdbScore": 7,
-    "tmdbScore": 7,
+    "tmdbScore": 6.984,
     "createdAt": "2023-09-12T10:41:24.503Z"
   },
   {
@@ -3848,7 +4244,7 @@
     "imdbId": "tt1649419",
     "tmdbId": "80278",
     "imdbScore": 7.5,
-    "tmdbScore": 7.4,
+    "tmdbScore": 7.368,
     "createdAt": "2023-08-27T10:27:45.507Z"
   },
   {
@@ -3860,7 +4256,7 @@
     "imdbId": "tt13399946",
     "tmdbId": "884971",
     "imdbScore": 6.8,
-    "tmdbScore": 6.825,
+    "tmdbScore": 6.824,
     "createdAt": "2023-08-08T20:52:16.478Z"
   },
   {
@@ -3884,7 +4280,7 @@
     "imdbId": "tt0033467",
     "tmdbId": "15",
     "imdbScore": 8.2,
-    "tmdbScore": 8,
+    "tmdbScore": 7.978,
     "createdAt": "2023-06-19T21:09:55.323Z"
   },
   {
@@ -3896,7 +4292,7 @@
     "imdbId": "tt14860210",
     "tmdbId": "967874",
     "imdbScore": 6,
-    "tmdbScore": 5.998,
+    "tmdbScore": 6,
     "createdAt": "2023-05-29T21:05:16.855Z"
   },
   {
@@ -3908,7 +4304,7 @@
     "imdbId": "tt0103594",
     "tmdbId": "1492",
     "imdbScore": 6.4,
-    "tmdbScore": 6.276,
+    "tmdbScore": 6.3,
     "createdAt": "2023-05-29T21:04:54.202Z"
   },
   {
@@ -3920,7 +4316,7 @@
     "imdbId": "tt2057392",
     "tmdbId": "333352",
     "imdbScore": 7.3,
-    "tmdbScore": 7.005,
+    "tmdbScore": 7.004,
     "createdAt": "2023-05-23T21:04:14.216Z"
   },
   {
@@ -3928,7 +4324,7 @@
     "type": "MOVIE",
     "title": "In and Out",
     "year": 2017,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt6096500",
     "tmdbId": "432627",
     "imdbScore": 5.4,
@@ -3944,7 +4340,7 @@
     "imdbId": "tt5537002",
     "tmdbId": "466420",
     "imdbScore": 7.5,
-    "tmdbScore": 7.409,
+    "tmdbScore": 7.399,
     "createdAt": "2023-05-02T20:52:41.47Z"
   },
   {
@@ -3956,7 +4352,7 @@
     "imdbId": "tt5533370",
     "tmdbId": "457232",
     "imdbScore": 5.5,
-    "tmdbScore": 6.4,
+    "tmdbScore": 6.38,
     "createdAt": "2023-04-25T08:18:40.273Z"
   },
   {
@@ -3968,7 +4364,7 @@
     "imdbId": "tt0047478",
     "tmdbId": "346",
     "imdbScore": 8.6,
-    "tmdbScore": 8.5,
+    "tmdbScore": 8.449,
     "createdAt": "2023-04-25T08:17:18.226Z"
   },
   {
@@ -3980,7 +4376,7 @@
     "imdbId": "tt8093700",
     "tmdbId": "724495",
     "imdbScore": 6.9,
-    "tmdbScore": 7.636,
+    "tmdbScore": 7.614,
     "createdAt": "2023-04-25T08:17:08.204Z"
   },
   {
@@ -3988,11 +4384,11 @@
     "type": "MOVIE",
     "title": "The Nun",
     "year": 2005,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0371853",
     "tmdbId": "42968",
     "imdbScore": 4.1,
-    "tmdbScore": 5.6,
+    "tmdbScore": 5.633,
     "createdAt": "2023-04-25T08:15:02.555Z"
   },
   {
@@ -4004,7 +4400,7 @@
     "imdbId": "tt0084827",
     "tmdbId": "97",
     "imdbScore": 6.7,
-    "tmdbScore": 6.7,
+    "tmdbScore": 6.6,
     "createdAt": "2023-04-25T08:00:46.554Z"
   },
   {
@@ -4024,11 +4420,11 @@
     "type": "MOVIE",
     "title": "Would I Lie to You?",
     "year": 1997,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0120471",
     "tmdbId": "39385",
     "imdbScore": 6.4,
-    "tmdbScore": 6.278,
+    "tmdbScore": 6.284,
     "createdAt": "2023-04-24T20:45:09.939Z"
   },
   {
@@ -4052,7 +4448,7 @@
     "imdbId": "tt0090605",
     "tmdbId": "679",
     "imdbScore": 8.4,
-    "tmdbScore": 8,
+    "tmdbScore": 7.962,
     "createdAt": "2023-04-20T22:04:35.153Z"
   },
   {
@@ -4060,11 +4456,11 @@
     "type": "MOVIE",
     "title": "Would I Lie to You? 3",
     "year": 2012,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt1794850",
     "tmdbId": "86868",
     "imdbScore": 5.3,
-    "tmdbScore": 5.477,
+    "tmdbScore": 5.471,
     "createdAt": "2023-04-20T08:25:42.722Z"
   },
   {
@@ -4100,7 +4496,7 @@
     "imdbId": "tt9817070",
     "tmdbId": "583794",
     "imdbScore": 7.7,
-    "tmdbScore": 7.17,
+    "tmdbScore": 7.2,
     "createdAt": "2023-03-11T22:52:53.1Z"
   },
   {
@@ -4120,10 +4516,10 @@
     "type": "MOVIE",
     "title": "Isaac Asimov: A Message to the Future",
     "year": 2022,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt22411634",
     "tmdbId": "1030152",
-    "imdbScore": 7.3,
+    "imdbScore": 7.4,
     "tmdbScore": 6.6,
     "createdAt": "2023-03-10T21:53:30.394Z"
   },
@@ -4148,7 +4544,7 @@
     "imdbId": "tt1655389",
     "tmdbId": "301502",
     "imdbScore": 5.4,
-    "tmdbScore": 5.925,
+    "tmdbScore": 5.919,
     "createdAt": "2023-03-10T21:48:38.878Z"
   },
   {
@@ -4160,7 +4556,7 @@
     "imdbId": "tt0071562",
     "tmdbId": "240",
     "imdbScore": 9,
-    "tmdbScore": 8.6,
+    "tmdbScore": 8.571,
     "createdAt": "2023-03-09T22:07:31.767Z"
   },
   {
@@ -4172,7 +4568,7 @@
     "imdbId": "tt0087843",
     "tmdbId": "311",
     "imdbScore": 8.3,
-    "tmdbScore": 8.397,
+    "tmdbScore": 8.384,
     "createdAt": "2023-03-09T22:05:18.825Z"
   },
   {
@@ -4184,7 +4580,7 @@
     "imdbId": "tt3547740",
     "tmdbId": "304410",
     "imdbScore": 7.3,
-    "tmdbScore": 6.932,
+    "tmdbScore": 6.941,
     "createdAt": "2023-03-09T21:11:52.153Z"
   },
   {
@@ -4196,31 +4592,19 @@
     "imdbId": "tt16953666",
     "tmdbId": "925102",
     "imdbScore": 7,
-    "tmdbScore": 6.95,
+    "tmdbScore": 6.943,
     "createdAt": "2023-03-09T20:20:35.947Z"
-  },
-  {
-    "id": "tm10076",
-    "type": "MOVIE",
-    "title": "The Three Brothers",
-    "year": 1995,
-    "url": "https://www.justwatch.com",
-    "imdbId": "tt0114732",
-    "tmdbId": "1136056",
-    "imdbScore": 7.2,
-    "tmdbScore": 6.9,
-    "createdAt": "2023-03-09T20:18:24.599Z"
   },
   {
     "id": "tm23523",
     "type": "MOVIE",
     "title": "French Fried Vacations 3: Friends Forever",
     "year": 2006,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0445800",
     "tmdbId": "21435",
     "imdbScore": 4.1,
-    "tmdbScore": 4.071,
+    "tmdbScore": 4.1,
     "createdAt": "2023-03-09T20:18:09.775Z"
   },
   {
@@ -4228,11 +4612,11 @@
     "type": "MOVIE",
     "title": "French Fried Vacation",
     "year": 1978,
-    "url": "https://www.justwatch.com",
+    "url": null,
     "imdbId": "tt0077276",
     "tmdbId": "11183",
     "imdbScore": 6.7,
-    "tmdbScore": 6.581,
+    "tmdbScore": 6.58,
     "createdAt": "2023-03-09T20:18:07.027Z"
   },
   {
@@ -4244,7 +4628,7 @@
     "imdbId": "tt3581652",
     "tmdbId": "511809",
     "imdbScore": 7.1,
-    "tmdbScore": 6.958,
+    "tmdbScore": 6.926,
     "createdAt": "2023-03-08T21:51:39.641Z"
   },
   {
@@ -4256,7 +4640,7 @@
     "imdbId": "tt10640346",
     "tmdbId": "615777",
     "imdbScore": 7.1,
-    "tmdbScore": 7.372,
+    "tmdbScore": 7.358,
     "createdAt": "2023-03-08T21:49:42.483Z"
   },
   {
@@ -4268,7 +4652,7 @@
     "imdbId": "tt13389730",
     "tmdbId": "740937",
     "imdbScore": 6.8,
-    "tmdbScore": 7.895,
+    "tmdbScore": 7.9,
     "createdAt": "2023-03-08T21:48:16.792Z"
   },
   {
@@ -4304,7 +4688,7 @@
     "imdbId": "tt13473548",
     "tmdbId": "788931",
     "imdbScore": 7.1,
-    "tmdbScore": 6.866,
+    "tmdbScore": 6.8,
     "createdAt": "2023-03-08T21:38:36.902Z"
   },
   {
@@ -4316,7 +4700,7 @@
     "imdbId": "tt2024544",
     "tmdbId": "76203",
     "imdbScore": 8.1,
-    "tmdbScore": 7.936,
+    "tmdbScore": 7.932,
     "createdAt": "2023-03-08T21:38:20.116Z"
   },
   {
@@ -4328,7 +4712,7 @@
     "imdbId": "tt11897478",
     "tmdbId": "848791",
     "imdbScore": 6.6,
-    "tmdbScore": 6.2,
+    "tmdbScore": 6.187,
     "createdAt": "2023-03-08T21:37:25.34Z"
   },
   {
@@ -4340,7 +4724,7 @@
     "imdbId": "tt1734493",
     "tmdbId": "291276",
     "imdbScore": 6.3,
-    "tmdbScore": 6.2,
+    "tmdbScore": 6.262,
     "createdAt": "2023-03-08T21:37:13.215Z"
   },
   {
@@ -4352,7 +4736,7 @@
     "imdbId": "tt12477480",
     "tmdbId": "705996",
     "imdbScore": 7.3,
-    "tmdbScore": 7.331,
+    "tmdbScore": 7.3,
     "createdAt": "2023-03-08T21:36:51.393Z"
   },
   {
@@ -4364,7 +4748,7 @@
     "imdbId": "tt15422240",
     "tmdbId": "923597",
     "imdbScore": 4.6,
-    "tmdbScore": 6.223,
+    "tmdbScore": 6.173,
     "createdAt": "2023-03-08T21:36:28.647Z"
   },
   {
@@ -4376,32 +4760,20 @@
     "imdbId": "tt16116174",
     "tmdbId": "899082",
     "imdbScore": 8,
-    "tmdbScore": 7.306,
+    "tmdbScore": 7.3,
     "createdAt": "2023-03-08T21:36:08.574Z"
   },
   {
     "id": "tm938860",
     "type": "MOVIE",
-    "title": "Chess Story",
+    "title": "The Royal Game",
     "year": 2021,
     "url": "https://www.justwatch.com/uk/movie/the-royal-game",
     "imdbId": "tt12058584",
     "tmdbId": "748787",
     "imdbScore": 6.8,
-    "tmdbScore": 6.886,
+    "tmdbScore": 6.9,
     "createdAt": "2023-03-08T21:35:48.679Z"
-  },
-  {
-    "id": "tm139729",
-    "type": "MOVIE",
-    "title": "The Revenant",
-    "year": 2015,
-    "url": "https://www.justwatch.com/uk/movie/the-revenant-2015",
-    "imdbId": "tt1663202",
-    "tmdbId": "281957",
-    "imdbScore": 8,
-    "tmdbScore": 7.538,
-    "createdAt": "2023-03-08T21:28:38.285Z"
   },
   {
     "id": "tm1131320",
@@ -4412,7 +4784,7 @@
     "imdbId": "tt14444726",
     "tmdbId": "817758",
     "imdbScore": 7.4,
-    "tmdbScore": 7.1,
+    "tmdbScore": 7.103,
     "createdAt": "2023-03-08T21:27:40.726Z"
   }
 ]
