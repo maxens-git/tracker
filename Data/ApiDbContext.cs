@@ -56,7 +56,8 @@ public class ApiDbContext : DbContext
                 j => j.HasOne(x => x.MediaList).WithMany(ml => ml.MediaListMovies).HasForeignKey(x => x.MediaListId))
             .Property(x => x.AddedAt)
             .HasColumnType("datetime(6)")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)")
+            .ValueGeneratedNever();
 
         modelBuilder.Entity<MediaList>()
             .HasMany(ml => ml.Shows)
@@ -66,7 +67,8 @@ public class ApiDbContext : DbContext
                 j => j.HasOne(x => x.MediaList).WithMany(ml => ml.MediaListShows).HasForeignKey(x => x.MediaListId))
             .Property(x => x.AddedAt)
             .HasColumnType("datetime(6)")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP(6)")
+            .ValueGeneratedNever();
 
         modelBuilder.Entity<MediaListMovie>()
             .HasKey(x => new { x.MediaListId, x.MovieId });

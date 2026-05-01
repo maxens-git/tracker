@@ -108,7 +108,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Liked)
             .Include(m => m.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(m => m.UpdatedAt)
+            .OrderByDescending(m => m.AddedAt)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -133,7 +133,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Liked)
             .Include(s => s.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(s => s.UpdatedAt)
+            .OrderByDescending(s => s.AddedAt)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -158,7 +158,7 @@ public class MediaListsController : ControllerBase
             .Where(m => m.Seen)
             .Include(m => m.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(m => m.UpdatedAt)
+            .OrderByDescending(m => m.AddedAt)
             .ThenByDescending(m => m.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -183,7 +183,7 @@ public class MediaListsController : ControllerBase
             .Where(s => s.Seen)
             .Include(s => s.MediaLists)
             .AsSplitQuery()
-            .OrderByDescending(s => s.UpdatedAt)
+            .OrderByDescending(s => s.AddedAt)
             .ThenByDescending(s => s.Id)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
@@ -335,22 +335,23 @@ public class MediaListsController : ControllerBase
                 Seen = s.Show.Seen
             });
 
-        IQueryable<MediaListSearchItemDto> combinedQuery = type.ToLower() switch
-        {
-            "movie" => movieQuery,
-            "show" => showQuery,
-            _ => movieQuery.Concat(showQuery)
-        };
+        string typeLower = type.ToLower();
 
-        int totalCount = await combinedQuery.CountAsync();
+        List<MediaListSearchItemDto> movies = typeLower != "show" ? await movieQuery.ToListAsync() : new();
+        List<MediaListSearchItemDto> shows = typeLower != "movie" ? await showQuery.ToListAsync() : new();
 
-        List<MediaListSearchItemDto> items = await combinedQuery
+        List<MediaListSearchItemDto> combined = movies.Concat(shows)
             .OrderByDescending(i => i.AddedAt ?? DateTime.MinValue)
             .ThenByDescending(i => i.Popularity ?? 0)
             .ThenByDescending(i => i.VoteAverage ?? 0)
+            .ToList();
+
+        int totalCount = combined.Count;
+
+        List<MediaListSearchItemDto> items = combined
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
-            .ToListAsync();
+            .ToList();
 
         return new PaginatedResult<MediaListSearchItemDto>
         {

@@ -173,87 +173,43 @@ public static class DbInitializer
         List<Show> seenShows = await context.Shows.Where(s => s.Seen).ToListAsync();
 
         MediaList? seenList = await context.MediaLists
-            .Include(ml => ml.Movies)
-            .Include(ml => ml.Shows)
+            .Include(ml => ml.MediaListMovies)
+            .Include(ml => ml.MediaListShows)
             .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "Seen");
 
         if (seenList == null)
         {
-            seenList = new MediaList
-            {
-                Name = "Seen",
-                Description = "Titre vus",
-                Icon = "",
-                IsSystem = true,
-                Movies = seenMovies,
-                Shows = seenShows
-            };
-
+            seenList = new MediaList { Name = "Seen", Description = "Titre vus", Icon = "", IsSystem = true };
             context.MediaLists.Add(seenList);
+            await context.SaveChangesAsync();
         }
-        else
-        {
-            foreach (Movie movie in seenMovies)
-            {
-                if (!seenList.Movies.Any(m => m.Id == movie.Id))
-                {
-                    seenList.Movies.Add(movie);
-                }
-            }
 
-            foreach (Show show in seenShows)
-            {
-                if (!seenList.Shows.Any(s => s.Id == show.Id))
-                {
-                    seenList.Shows.Add(show);
-                }
-            }
-
-            context.MediaLists.Update(seenList);
-        }
+        foreach (Movie movie in seenMovies)
+            AddMovieToList(seenList, movie, movie.AddedAt);
+        foreach (Show show in seenShows)
+            AddShowToList(seenList, show, show.AddedAt);
+        context.MediaLists.Update(seenList);
 
         List<Movie> likedMovies = await context.Movies.Where(m => m.Liked).ToListAsync();
         List<Show> likedShows = await context.Shows.Where(s => s.Liked).ToListAsync();
 
         MediaList? likesList = await context.MediaLists
-            .Include(ml => ml.Movies)
-            .Include(ml => ml.Shows)
+            .Include(ml => ml.MediaListMovies)
+            .Include(ml => ml.MediaListShows)
             .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
 
         if (likesList == null)
         {
-            likesList = new MediaList
-            {
-                Name = "J'aime",
-                Description = "Titres que vous aimez",
-                Icon = "❤",
-                IsSystem = true,
-                Movies = likedMovies,
-                Shows = likedShows
-            };
-
+            likesList = new MediaList { Name = "J'aime", Description = "Titres que vous aimez", Icon = "❤", IsSystem = true };
             context.MediaLists.Add(likesList);
+            await context.SaveChangesAsync();
         }
-        else
-        {
-            foreach (Movie movie in likedMovies)
-            {
-                if (!likesList.Movies.Any(m => m.Id == movie.Id))
-                {
-                    likesList.Movies.Add(movie);
-                }
-            }
 
-            foreach (Show show in likedShows)
-            {
-                if (!likesList.Shows.Any(s => s.Id == show.Id))
-                {
-                    likesList.Shows.Add(show);
-                }
-            }
-
-            context.MediaLists.Update(likesList);
-        }
+        foreach (Movie movie in likedMovies)
+            AddMovieToList(likesList, movie, movie.AddedAt);
+        foreach (Show show in likedShows)
+            AddShowToList(likesList, show, show.AddedAt);
+        context.MediaLists.Update(likesList);
 
         if (!await context.MediaLists.AnyAsync(ml => ml.IsSystem && ml.Name == "Watchlist"))
         {
