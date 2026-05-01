@@ -69,11 +69,11 @@ public static class DbInitializer
                 {
                     if (item.IsMovie)
                     {
-                        await ImportMovieAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, item.ImdbId, errorLogPath);
+                        await ImportMovieAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, item.ImdbId, errorLogPath, addedAt: item.CreatedAt);
                     }
                     else if (item.IsShow)
                     {
-                        await ImportShowAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, errorLogPath);
+                        await ImportShowAsync(context, tmdbService, omdbService, omdbState, tmdbId, logger, errorLogPath, addedAt: item.CreatedAt);
                     }
                 }
                 catch (Exception ex)
@@ -273,7 +273,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
     }
 
-    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Movie?> ImportMovieAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string? imdbId, string errorLogPath, bool markSeen = true, bool markLiked = false, DateTime? addedAt = null)
     {
         Movie? m = await context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
         if (m != null)
@@ -333,7 +333,8 @@ public static class DbInitializer
             ImdbId = tmdbMovie.ImdbId,
             Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name)),
             Seen = markSeen,
-            Liked = markLiked
+            Liked = markLiked,
+            AddedAt = addedAt ?? DateTime.UtcNow
         };
 
         if (!omdbState.RateLimitHit)
@@ -365,7 +366,7 @@ public static class DbInitializer
         return movie;
     }
 
-    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false)
+    private static async Task<Show?> ImportShowAsync(ApiDbContext context, TMDbService tmdbService, OmdbService omdbService, OmdbFetchState omdbState, int tmdbId, ILogger logger, string errorLogPath, bool markSeen = true, bool markLiked = false, DateTime? addedAt = null)
     {
         Show? db = await context.Shows
             .Include(s => s.Seasons)
@@ -455,7 +456,8 @@ public static class DbInitializer
             NumberOfEpisodes = 0,
             Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name)),
             Seen = markSeen,
-            Liked = markLiked
+            Liked = markLiked,
+            AddedAt = addedAt ?? DateTime.UtcNow
         };
 
         if (!omdbState.RateLimitHit)
