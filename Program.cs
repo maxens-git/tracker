@@ -1,25 +1,13 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Tracker;
 using Tracker.Data;
 using Tracker.Options;
 using Tracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var justWatchForLogging = builder.Configuration.GetSection(JustWatchOptions.SectionName).Get<JustWatchOptions>();
-if (justWatchForLogging?.EnableImport == true)
-{
-    builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-    builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Error);
-    builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
-}
-
 builder.Services.Configure<ConnectionStringsOptions>(builder.Configuration.GetSection(ConnectionStringsOptions.SectionName));
-builder.Services.Configure<TMDbOptions>(builder.Configuration.GetSection(TMDbOptions.SectionName));
-builder.Services.Configure<JustWatchOptions>(builder.Configuration.GetSection(JustWatchOptions.SectionName));
-builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection(LoggingOptions.SectionName));
-builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection(OmdbOptions.SectionName));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -49,23 +37,9 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
     )
 );
 
-builder.Services.AddHttpClient<TMDbService>();
-builder.Services.AddScoped<TMDbService>(sp =>
-{
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-    var tmdbOptions = sp.GetRequiredService<IOptions<TMDbOptions>>().Value;
-    if (string.IsNullOrEmpty(tmdbOptions.ApiKey))
-        throw new InvalidOperationException("TMDb:ApiKey non configuré dans appsettings.json");
-    return new TMDbService(httpClient, tmdbOptions.ApiKey);
-});
-
-builder.Services.AddHttpClient<OmdbService>();
-builder.Services.AddScoped<OmdbService>(sp =>
-{
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-    var omdbOptions = sp.GetRequiredService<IOptions<OmdbOptions>>().Value;
-    return new OmdbService(httpClient, omdbOptions.ApiKey);
-});
+builder.Services.AddScoped<UserMediaService>();
+builder.Services.AddScoped<MediaListService>();
+builder.Services.AddScoped<StatsService>();
 
 var app = builder.Build();
 
@@ -82,30 +56,10 @@ if (app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<ApiDbContext>();
-        var tmdbService = services.GetRequiredService<TMDbService>();
-        var omdbService = services.GetRequiredService<OmdbService>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        var justWatchOptions = services.GetRequiredService<IOptions<JustWatchOptions>>().Value;
+    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    await context.Database.MigrateAsync();
 
-        if (justWatchOptions.EnableImport)
-        {
-            await DbInitializer.InitializeAsync(context, tmdbService, omdbService, logger, justWatchOptions.ExportFilePath);
-            logger.LogInformation("Base de données initialisée avec succès.");
-        }
-        else
-        {
-            logger.LogInformation("Import JustWatch désactivé.");
-        }
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Une erreur est survenue lors de l'initialisation de la BDD.");
-    }
+    await DbSeeder.SeedSystemListsAsync(context);
 }
 
 app.MapControllers();

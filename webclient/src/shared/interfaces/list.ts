@@ -4,10 +4,9 @@ export interface MediaListSummary {
   description?: string;
   icon?: string;
   isSystem: boolean;
-  moviesCount: number;
-  showsCount: number;
+  itemsCount: number;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface PaginatedResult<T> {
@@ -18,16 +17,11 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
-export interface MediaListSearchItem {
-  id: number;
+export interface MediaListItem {
   tmdbId: number;
-  title: string;
-  posterPath?: string;
-  releaseDate?: string;
-  voteAverage?: number;
-  popularity?: number;
-  updatedAt?: string;
-  addedAt?: string;
   mediaType: string;
+  posterPath?: string | null;
   seen: boolean;
+  liked: boolean;
+  addedAt: string;
 }

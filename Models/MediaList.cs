@@ -4,8 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Tracker.Models;
 
 [Table("MediaLists")]
-public class MediaList : BaseEntity
+public class MediaList
 {
+    public MediaList(string name, string? description = null, string? icon = null, bool isSystem = false)
+    {
+        Name = name;
+        Description = description;
+        Icon = icon;
+        IsSystem = isSystem;
+    }
+
     [Key]
     public int Id { get; set; }
 
@@ -21,9 +29,9 @@ public class MediaList : BaseEntity
 
     public bool IsSystem { get; set; } = false;
 
-    public List<Movie> Movies { get; set; } = new();
-    public List<Show> Shows { get; set; } = new();
+    public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
-    public List<MediaListMovie> MediaListMovies { get; set; } = new();
-    public List<MediaListShow> MediaListShows { get; set; } = new();
+    public DateTime? UpdatedAt { get; set; }
+
+    public List<MediaListItem> Items { get; set; } = new();
 }

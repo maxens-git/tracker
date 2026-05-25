@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
-using Tracker.Models.TMDbResponses;
 using Tracker.ModelsDTO;
 using Tracker.Services;
 
@@ -13,705 +12,199 @@ namespace Tracker.Controllers;
 public class MediaListsController : ControllerBase
 {
     private readonly ApiDbContext _context;
-    private readonly TMDbService _tmdbService;
-    private const int PageSize = 20;
+    private readonly MediaListService _mediaListService;
+    private readonly UserMediaService _userMediaService;
 
-    public MediaListsController(ApiDbContext context, TMDbService tmdbService)
+    public MediaListsController(ApiDbContext context, MediaListService mediaListService, UserMediaService userMediaService)
     {
         _context = context;
-        _tmdbService = tmdbService;
+        _mediaListService = mediaListService;
+        _userMediaService = userMediaService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MediaListSummaryDto>>> GetAll()
     {
-        List<MediaListSummaryDto> lists = await _context.MediaLists
-            .Select(ml => new MediaListSummaryDto
+        List<MediaList> lists = await _context.MediaLists
+            .Include(ml => ml.Items)
+            .ToListAsync();
+
+        int seenMovies = await _context.UserMedia.CountAsync(m => m.Seen && m.MediaType == MediaType.Movie);
+        int seenShows = await _context.UserMedia.CountAsync(m => m.Seen && m.MediaType == MediaType.Show);
+        int likedMovies = await _context.UserMedia.CountAsync(m => m.Liked && m.MediaType == MediaType.Movie);
+        int likedShows = await _context.UserMedia.CountAsync(m => m.Liked && m.MediaType == MediaType.Show);
+
+        return lists.Select(ml =>
+        {
+            int count = ml.Name switch
             {
-                Id = ml.Id,
-                Name = ml.Name,
-                Description = ml.Description,
-                Icon = ml.Icon,
-                IsSystem = ml.IsSystem,
-                MoviesCount = ml.Movies.Count,
-                ShowsCount = ml.Shows.Count,
-                CreatedAt = ml.AddedAt,
-                UpdatedAt = ml.UpdatedAt
-            })
-            .ToListAsync();
+                "Seen" when ml.IsSystem => seenMovies + seenShows,
+                "J'aime" when ml.IsSystem => likedMovies + likedShows,
+                _ => ml.Items.Count
+            };
 
-        return lists;
+            return new MediaListSummaryDto(ml, count);
+        }).ToList();
     }
 
-    [HttpGet("watchlist/movies")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetWatchlistMovies([FromQuery] int page = 1)
-    {
-        IQueryable<MediaListMovie> query = _context.MediaListMovies
-            .Include(x => x.Movie)
-            .ThenInclude(m => m.MediaLists)
-            .AsSplitQuery()
-            .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
-            .OrderByDescending(x => x.AddedAt)
-            .ThenByDescending(x => x.MovieId);
-
-        int totalCount = await query.CountAsync();
-
-        List<MediaListMovie> movies = await query
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.MovieDto>
-        {
-            Items = movies.Select(m => new MovieDto(m.Movie, m.AddedAt)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("watchlist/shows")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetWatchlistShows([FromQuery] int page = 1)
-    {
-        IQueryable<MediaListShow> query = _context.MediaListShows
-            .Include(x => x.Show)
-            .ThenInclude(s => s.MediaLists)
-            .AsSplitQuery()
-            .Where(x => x.MediaList.IsSystem && x.MediaList.Name == "Watchlist")
-            .OrderByDescending(x => x.AddedAt)
-            .ThenByDescending(x => x.ShowId);
-
-        int totalCount = await query.CountAsync();
-
-        List<MediaListShow> shows = await query
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.ShowDto>
-        {
-            Items = shows.Select(s => new ShowDto(s.Show, s.AddedAt)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("liked/movies")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetLikedMovies([FromQuery] int page = 1)
-    {
-        int totalCount = await _context.Movies.CountAsync(m => m.Liked);
-
-        List<Movie> movies = await _context.Movies
-            .Where(m => m.Liked)
-            .Include(m => m.MediaLists)
-            .AsSplitQuery()
-            .OrderByDescending(m => m.AddedAt)
-            .ThenByDescending(m => m.Id)
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.MovieDto>
-        {
-            Items = movies.Select(m => new MovieDto(m)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("liked/shows")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetLikedShows([FromQuery] int page = 1)
-    {
-        int totalCount = await _context.Shows.CountAsync(s => s.Liked);
-
-        List<Show> shows = await _context.Shows
-            .Where(s => s.Liked)
-            .Include(s => s.MediaLists)
-            .AsSplitQuery()
-            .OrderByDescending(s => s.AddedAt)
-            .ThenByDescending(s => s.Id)
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.ShowDto>
-        {
-            Items = shows.Select(s => new ShowDto(s)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("seen/movies")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetSeenMovies([FromQuery] int page = 1)
-    {
-        int totalCount = await _context.Movies.CountAsync(m => m.Seen);
-
-        List<Movie> movies = await _context.Movies
-            .Where(m => m.Seen)
-            .Include(m => m.MediaLists)
-            .AsSplitQuery()
-            .OrderByDescending(m => m.AddedAt)
-            .ThenByDescending(m => m.Id)
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.MovieDto>
-        {
-            Items = movies.Select(m => new MovieDto(m)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("seen/shows")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetSeenShows([FromQuery] int page = 1)
-    {
-        int totalCount = await _context.Shows.CountAsync(s => s.Seen);
-
-        List<Show> shows = await _context.Shows
-            .Where(s => s.Seen)
-            .Include(s => s.MediaLists)
-            .AsSplitQuery()
-            .OrderByDescending(s => s.AddedAt)
-            .ThenByDescending(s => s.Id)
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.ShowDto>
-        {
-            Items = shows.Select(s => new ShowDto(s)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
-    }
-
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<MediaListSummaryDto>> GetById(int id)
     {
-        MediaListSummaryDto? mediaList = await _context.MediaLists
-            .Where(ml => ml.Id == id)
-            .Select(ml => new MediaListSummaryDto
-            {
-                Id = ml.Id,
-                Name = ml.Name,
-                Description = ml.Description,
-                Icon = ml.Icon,
-                IsSystem = ml.IsSystem,
-                MoviesCount = ml.Movies.Count,
-                ShowsCount = ml.Shows.Count,
-                CreatedAt = ml.AddedAt,
-                UpdatedAt = ml.UpdatedAt
-            })
-            .FirstOrDefaultAsync();
+        MediaList? ml = await _context.MediaLists
+            .Include(m => m.Items)
+            .FirstOrDefaultAsync(m => m.Id == id);
 
-        if (mediaList == null)
+        if (ml == null)
             return NotFound();
 
-        return mediaList;
+        int count = await _mediaListService.GetItemsCount(ml);
+
+        return new MediaListSummaryDto(ml, count);
     }
 
-    [HttpGet("{id}/movies")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.MovieDto>>> GetMovies(int id, [FromQuery] int page = 1)
+    // ── Virtual system list endpoints ──────────────────────────────────────
+
+    [HttpGet("seen/items")]
+    public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetSeenItems(
+        [FromQuery] int page = 1, [FromQuery] string type = "all")
+    {
+        IQueryable<UserMedia> query = MediaListService.ApplyTypeFilter(_context.UserMedia.Where(m => m.Seen), type);
+        int total = await query.CountAsync();
+        List<UserMedia> items = await query.OrderByDescending(m => m.AddedAt)
+            .Skip((page - 1) * MediaListService.PageSize).Take(MediaListService.PageSize)
+            .ToListAsync();
+
+        return MediaListService.Paginate(items.Select(MediaListService.ToDto).ToList(), page, total);
+    }
+
+    [HttpGet("liked/items")]
+    public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetLikedItems(
+        [FromQuery] int page = 1, [FromQuery] string type = "all")
+    {
+        IQueryable<UserMedia> query = MediaListService.ApplyTypeFilter(_context.UserMedia.Where(m => m.Liked), type);
+        int total = await query.CountAsync();
+        List<UserMedia> items = await query.OrderByDescending(m => m.AddedAt)
+            .Skip((page - 1) * MediaListService.PageSize).Take(MediaListService.PageSize)
+            .ToListAsync();
+
+        return MediaListService.Paginate(items.Select(MediaListService.ToDto).ToList(), page, total);
+    }
+
+    [HttpGet("watchlist/items")]
+    public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetWatchlistItems(
+        [FromQuery] int page = 1, [FromQuery] string type = "all")
+    {
+        MediaList? watchlist = await _context.MediaLists
+            .FirstOrDefaultAsync(l => l.IsSystem && l.Name == "Watchlist");
+
+        if (watchlist == null)
+            return MediaListService.Paginate(new List<MediaListItemDto>(), page, 0);
+
+        return await _mediaListService.GetListItemsPaginated(watchlist.Id, page, type);
+    }
+
+    // ── Custom list item endpoints ─────────────────────────────────────────
+
+    [HttpGet("{id:int}/items")]
+    public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetItems(
+        int id, [FromQuery] int page = 1, [FromQuery] string type = "all")
     {
         bool exists = await _context.MediaLists.AnyAsync(ml => ml.Id == id);
         if (!exists)
             return NotFound("List not found");
 
-        IQueryable<MediaListMovie> query = _context.MediaListMovies
-            .Include(x => x.Movie)
-            .ThenInclude(m => m.MediaLists)
-            .AsSplitQuery()
-            .Where(x => x.MediaListId == id)
-            .OrderByDescending(x => x.AddedAt)
-            .ThenByDescending(x => x.MovieId);
-
-        int totalCount = await query.CountAsync();
-
-        List<MediaListMovie> movies = await query
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ModelsDTO.MovieDto>
-        {
-            Items = movies.Select(m => new MovieDto(m.Movie, m.AddedAt)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
+        return await _mediaListService.GetListItemsPaginated(id, page, type);
     }
 
-    [HttpGet("{id}/shows")]
-    public async Task<ActionResult<PaginatedResult<ModelsDTO.ShowDto>>> GetShows(int id, [FromQuery] int page = 1)
+    [HttpPost("{id:int}/items")]
+    public async Task<IActionResult> AddItem(int id, [FromBody] AddListItemDto dto)
     {
-        bool exists = await _context.MediaLists.AnyAsync(ml => ml.Id == id);
-        if (!exists)
+        MediaList? list = await _context.MediaLists.FindAsync(id);
+        if (list == null)
             return NotFound("List not found");
 
-        IQueryable<MediaListShow> query = _context.MediaListShows
-            .Include(x => x.Show)
-            .ThenInclude(s => s.MediaLists)
-            .AsSplitQuery()
-            .Where(x => x.MediaListId == id)
-            .OrderByDescending(x => x.AddedAt)
-            .ThenByDescending(x => x.ShowId);
+        MediaType mediaType = UserMediaService.ParseMediaType(dto.MediaType);
 
-        int totalCount = await query.CountAsync();
+        bool alreadyIn = await _context.MediaListItems
+            .AnyAsync(i => i.MediaListId == id && i.TmdbId == dto.TmdbId && i.MediaType == mediaType);
 
-        List<MediaListShow> shows = await query
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
+        if (alreadyIn)
+            return BadRequest("Already in list");
 
-        return new PaginatedResult<ModelsDTO.ShowDto>
-        {
-            Items = shows.Select(s => new ShowDto(s.Show, s.AddedAt)).ToList(),
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
+        UserMedia um = await _userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath);
+
+        _context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath));
+
+        list.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
 
-    [HttpGet("{id}/search")]
-    public async Task<ActionResult<PaginatedResult<MediaListSearchItemDto>>> SearchListItems(
-        int id,
-        [FromQuery] string query = "",
-        [FromQuery] int page = 1,
-        [FromQuery] string type = "all")
+    [HttpDelete("{id:int}/items/{tmdbId}")]
+    public async Task<IActionResult> RemoveItem(int id, int tmdbId, [FromQuery] string type = "movie")
     {
-        MediaList? mediaList = await _context.MediaLists.FirstOrDefaultAsync(ml => ml.Id == id);
-        if (mediaList == null)
-            return NotFound("List not found");
+        MediaType mediaType = UserMediaService.ParseMediaType(type);
 
-        string normalized = query.Trim().ToLower();
+        MediaListItem? item = await _context.MediaListItems
+            .FirstOrDefaultAsync(i => i.MediaListId == id && i.TmdbId == tmdbId && i.MediaType == mediaType);
 
-        IQueryable<MediaListSearchItemDto> movieQuery = _context.MediaListMovies
-            .Where(x => x.MediaListId == id && (string.IsNullOrWhiteSpace(normalized) || x.Movie.Title.ToLower().Contains(normalized)))
-            .Select(m => new MediaListSearchItemDto
-            {
-                Id = m.MovieId,
-                TmdbId = m.Movie.TmdbId,
-                Title = m.Movie.Title,
-                PosterPath = m.Movie.PosterPath,
-                ReleaseDate = m.Movie.ReleaseDate,
-                VoteAverage = m.Movie.VoteAverage,
-                Popularity = m.Movie.Popularity,
-                UpdatedAt = m.Movie.UpdatedAt,
-                AddedAt = m.AddedAt,
-                MediaType = "movie",
-                Seen = m.Movie.Seen
-            });
+        if (item == null)
+            return NotFound("Item not in list");
 
-        IQueryable<MediaListSearchItemDto> showQuery = _context.MediaListShows
-            .Where(x => x.MediaListId == id && (string.IsNullOrWhiteSpace(normalized) || x.Show.Title.ToLower().Contains(normalized)))
-            .Select(s => new MediaListSearchItemDto
-            {
-                Id = s.ShowId,
-                TmdbId = s.Show.TmdbId,
-                Title = s.Show.Title,
-                PosterPath = s.Show.PosterPath,
-                ReleaseDate = s.Show.ReleaseDate,
-                VoteAverage = s.Show.VoteAverage,
-                Popularity = s.Show.Popularity,
-                UpdatedAt = s.Show.UpdatedAt,
-                AddedAt = s.AddedAt,
-                MediaType = "show",
-                Seen = s.Show.Seen
-            });
+        MediaList? list = await _context.MediaLists.FindAsync(id);
+        if (list != null) list.UpdatedAt = DateTime.UtcNow;
 
-        string typeLower = type.ToLower();
-
-        List<MediaListSearchItemDto> movies = typeLower != "show" ? await movieQuery.ToListAsync() : new();
-        List<MediaListSearchItemDto> shows = typeLower != "movie" ? await showQuery.ToListAsync() : new();
-
-        List<MediaListSearchItemDto> combined = movies.Concat(shows)
-            .OrderByDescending(i => i.AddedAt ?? DateTime.MinValue)
-            .ThenByDescending(i => i.Popularity ?? 0)
-            .ThenByDescending(i => i.VoteAverage ?? 0)
-            .ToList();
-
-        int totalCount = combined.Count;
-
-        List<MediaListSearchItemDto> items = combined
-            .Skip((page - 1) * PageSize)
-            .Take(PageSize)
-            .ToList();
-
-        return new PaginatedResult<MediaListSearchItemDto>
-        {
-            Items = items,
-            Page = page,
-            PageSize = PageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize)
-        };
+        _context.MediaListItems.Remove(item);
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
+
+    // ── List CRUD ──────────────────────────────────────────────────────────
 
     [HttpPost]
-    public async Task<ActionResult<MediaList>> Create(MediaListCreateDto dto)
+    public async Task<ActionResult<MediaListSummaryDto>> Create([FromBody] MediaListCreateDto dto)
     {
-        MediaList mediaList = new MediaList
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            Icon = dto.Icon
-        };
+        MediaList list = new MediaList(dto.Name, dto.Description, dto.Icon);
 
-        _context.MediaLists.Add(mediaList);
+        _context.MediaLists.Add(list);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = mediaList.Id }, mediaList);
+        return CreatedAtAction(nameof(GetById), new { id = list.Id }, new MediaListSummaryDto(list, 0));
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, MediaListUpdateDto dto)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] MediaListUpdateDto dto)
     {
-        MediaList? mediaList = await _context.MediaLists.FindAsync(id);
+        MediaList? list = await _context.MediaLists.FindAsync(id);
 
-        if (mediaList == null)
+        if (list == null)
             return NotFound();
 
-        if (mediaList.IsSystem)
+        if (list.IsSystem)
             return BadRequest("Cannot modify system list");
 
-        mediaList.Name = dto.Name ?? mediaList.Name;
-        mediaList.Description = dto.Description ?? mediaList.Description;
-        mediaList.Icon = dto.Icon ?? mediaList.Icon;
-        mediaList.UpdatedAt = DateTime.UtcNow;
+        list.Name = dto.Name ?? list.Name;
+        list.Description = dto.Description ?? list.Description;
+        list.Icon = dto.Icon ?? list.Icon;
+        list.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        MediaList? mediaList = await _context.MediaLists.FindAsync(id);
+        MediaList? list = await _context.MediaLists.FindAsync(id);
 
-        if (mediaList == null)
+        if (list == null)
             return NotFound();
 
-        if (mediaList.IsSystem)
+        if (list.IsSystem)
             return BadRequest("Cannot delete system list");
 
-        _context.MediaLists.Remove(mediaList);
+        _context.MediaLists.Remove(list);
         await _context.SaveChangesAsync();
-
         return NoContent();
     }
-
-    [HttpPost("{id}/movies/{tmdbId}")]
-    public async Task<IActionResult> AddMovie(int id, int tmdbId)
-    {
-        MediaList? mediaList = await _context.MediaLists
-            .Include(ml => ml.Movies)
-            .FirstOrDefaultAsync(ml => ml.Id == id);
-
-        if (mediaList == null)
-            return NotFound("List not found");
-
-        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-
-        if (movie == null)
-        {
-            TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
-            if (tmdbMovie == null)
-                return NotFound("Movie not found on TMDb");
-
-            movie = new Movie
-            {
-                TmdbId = tmdbMovie.Id,
-                Title = tmdbMovie.Title,
-                OriginalTitle = tmdbMovie.OriginalTitle,
-                Overview = tmdbMovie.Overview,
-                Status = tmdbMovie.Status,
-                Tagline = tmdbMovie.Tagline,
-                PosterPath = tmdbMovie.PosterPath,
-                BackdropPath = tmdbMovie.BackdropPath,
-                VoteAverage = tmdbMovie.VoteAverage,
-                VoteCount = tmdbMovie.VoteCount,
-                Popularity = tmdbMovie.Popularity,
-                ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
-                Runtime = tmdbMovie.Runtime,
-                Budget = tmdbMovie.Budget,
-                Revenue = tmdbMovie.Revenue,
-                ImdbId = tmdbMovie.ImdbId,
-                Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
-            };
-
-            _context.Movies.Add(movie);
-        }
-
-        if (mediaList.Movies.Any(m => m.TmdbId == tmdbId))
-            return BadRequest("Movie already in list");
-
-        mediaList.Movies.Add(movie);
-        mediaList.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}/movies/{tmdbId}")]
-    public async Task<IActionResult> RemoveMovie(int id, int tmdbId)
-    {
-        MediaList? mediaList = await _context.MediaLists
-            .Include(ml => ml.Movies)
-            .FirstOrDefaultAsync(ml => ml.Id == id);
-
-        if (mediaList == null)
-            return NotFound("List not found");
-
-        Movie? movie = mediaList.Movies.FirstOrDefault(m => m.TmdbId == tmdbId);
-        if (movie == null)
-            return NotFound("Movie not in list");
-
-        mediaList.Movies.Remove(movie);
-        mediaList.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpPost("{id}/shows/{tmdbId}")]
-    public async Task<IActionResult> AddShow(int id, int tmdbId)
-    {
-        MediaList? mediaList = await _context.MediaLists
-            .Include(ml => ml.Shows)
-            .FirstOrDefaultAsync(ml => ml.Id == id);
-
-        if (mediaList == null)
-            return NotFound("List not found");
-
-        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
-
-        if (show == null)
-        {
-            TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
-            if (tmdbShow == null)
-                return NotFound("Show not found on TMDb");
-
-            show = new Show
-            {
-                TmdbId = tmdbShow.Id,
-                Title = tmdbShow.Name,
-                OriginalTitle = tmdbShow.OriginalName,
-                Overview = tmdbShow.Overview,
-                Status = tmdbShow.Status,
-                Tagline = tmdbShow.Tagline,
-                PosterPath = tmdbShow.PosterPath,
-                BackdropPath = tmdbShow.BackdropPath,
-                VoteAverage = tmdbShow.VoteAverage,
-                VoteCount = tmdbShow.VoteCount,
-                Popularity = tmdbShow.Popularity,
-                ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
-                LastAirDate = ParseDate(tmdbShow.LastAirDate),
-                NumberOfSeasons = tmdbShow.NumberOfSeasons,
-                NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
-                Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
-            };
-
-            _context.Shows.Add(show);
-        }
-
-        if (mediaList.Shows.Any(s => s.TmdbId == tmdbId))
-            return BadRequest("Show already in list");
-
-        mediaList.Shows.Add(show);
-        mediaList.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}/shows/{tmdbId}")]
-    public async Task<IActionResult> RemoveShow(int id, int tmdbId)
-    {
-        MediaList? mediaList = await _context.MediaLists
-            .Include(ml => ml.Shows)
-            .FirstOrDefaultAsync(ml => ml.Id == id);
-
-        if (mediaList == null)
-            return NotFound("List not found");
-
-        Show? show = mediaList.Shows.FirstOrDefault(s => s.TmdbId == tmdbId);
-        if (show == null)
-            return NotFound("Show not in list");
-
-        mediaList.Shows.Remove(show);
-        mediaList.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpPost("movies/{tmdbId}/like")]
-    public async Task<IActionResult> LikeMovie(int tmdbId, [FromQuery] bool liked = true)
-    {
-        Movie? movie = await EnsureMovieExists(tmdbId);
-
-        if (movie == null)
-            return NotFound("Movie not found on TMDb");
-
-        movie.Liked = liked;
-        movie.UpdatedAt = DateTime.UtcNow;
-
-        MediaList? likesList = await _context.MediaLists
-            .Include(ml => ml.Movies)
-            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
-        if (likesList != null)
-        {
-            if (liked)
-            {
-                if (!likesList.Movies.Any(m => m.TmdbId == tmdbId))
-                    likesList.Movies.Add(movie);
-            }
-            else
-            {
-                Movie? existing = likesList.Movies.FirstOrDefault(m => m.TmdbId == tmdbId);
-                if (existing != null)
-                    likesList.Movies.Remove(existing);
-            }
-
-            likesList.UpdatedAt = DateTime.UtcNow;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new { movie.TmdbId, movie.Liked });
-    }
-
-    [HttpPost("shows/{tmdbId}/like")]
-    public async Task<IActionResult> LikeShow(int tmdbId, [FromQuery] bool liked = true)
-    {
-        Show? show = await EnsureShowExists(tmdbId);
-
-        if (show == null)
-            return NotFound("Show not found on TMDb");
-
-        show.Liked = liked;
-        show.UpdatedAt = DateTime.UtcNow;
-
-        MediaList? likesList = await _context.MediaLists
-            .Include(ml => ml.Shows)
-            .FirstOrDefaultAsync(ml => ml.IsSystem && ml.Name == "J'aime");
-        if (likesList != null)
-        {
-            if (liked)
-            {
-                if (!likesList.Shows.Any(s => s.TmdbId == tmdbId))
-                    likesList.Shows.Add(show);
-            }
-            else
-            {
-                Show? existing = likesList.Shows.FirstOrDefault(s => s.TmdbId == tmdbId);
-                if (existing != null)
-                    likesList.Shows.Remove(existing);
-            }
-
-            likesList.UpdatedAt = DateTime.UtcNow;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new { show.TmdbId, show.Liked });
-    }
-
-    private static DateTime? ParseDate(string? dateString)
-    {
-        if (string.IsNullOrEmpty(dateString))
-            return null;
-        return DateTime.TryParse(dateString, out DateTime date) ? date : null;
-    }
-
-    private async Task<Movie?> EnsureMovieExists(int tmdbId)
-    {
-        Movie? movie = await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
-        if (movie != null)
-            return movie;
-
-        TMDbMovieResponse? tmdbMovie = await _tmdbService.GetMovieAsync(tmdbId);
-        if (tmdbMovie == null)
-            return null;
-
-        movie = new Movie
-        {
-            TmdbId = tmdbMovie.Id,
-            Title = tmdbMovie.Title,
-            OriginalTitle = tmdbMovie.OriginalTitle,
-            Overview = tmdbMovie.Overview,
-            Status = tmdbMovie.Status,
-            Tagline = tmdbMovie.Tagline,
-            PosterPath = tmdbMovie.PosterPath,
-            BackdropPath = tmdbMovie.BackdropPath,
-            VoteAverage = tmdbMovie.VoteAverage,
-            VoteCount = tmdbMovie.VoteCount,
-            Popularity = tmdbMovie.Popularity,
-            ReleaseDate = ParseDate(tmdbMovie.ReleaseDate),
-            Runtime = tmdbMovie.Runtime,
-            Budget = tmdbMovie.Budget,
-            Revenue = tmdbMovie.Revenue,
-            ImdbId = tmdbMovie.ImdbId,
-            Genres = string.Join(", ", tmdbMovie.Genres.Select(g => g.Name))
-        };
-
-        _context.Movies.Add(movie);
-        await _context.SaveChangesAsync();
-
-        return movie;
-    }
-
-    private async Task<Show?> EnsureShowExists(int tmdbId)
-    {
-        Show? show = await _context.Shows.FirstOrDefaultAsync(s => s.TmdbId == tmdbId);
-        if (show != null)
-            return show;
-
-        TMDbShowResponse? tmdbShow = await _tmdbService.GetShowAsync(tmdbId);
-        if (tmdbShow == null)
-            return null;
-
-        show = new Show
-        {
-            TmdbId = tmdbShow.Id,
-            Title = tmdbShow.Name,
-            OriginalTitle = tmdbShow.OriginalName,
-            Overview = tmdbShow.Overview,
-            Status = tmdbShow.Status,
-            Tagline = tmdbShow.Tagline,
-            PosterPath = tmdbShow.PosterPath,
-            BackdropPath = tmdbShow.BackdropPath,
-            VoteAverage = tmdbShow.VoteAverage,
-            VoteCount = tmdbShow.VoteCount,
-            Popularity = tmdbShow.Popularity,
-            ReleaseDate = ParseDate(tmdbShow.FirstAirDate),
-            LastAirDate = ParseDate(tmdbShow.LastAirDate),
-            NumberOfSeasons = tmdbShow.NumberOfSeasons,
-            NumberOfEpisodes = tmdbShow.NumberOfEpisodes,
-            Genres = string.Join(", ", tmdbShow.Genres.Select(g => g.Name))
-        };
-
-        _context.Shows.Add(show);
-        await _context.SaveChangesAsync();
-
-        return show;
-    }
-
 }

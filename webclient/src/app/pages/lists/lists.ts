@@ -31,9 +31,6 @@ export class Lists implements OnInit {
   }
 
   totalCount(list: MediaListSummary): string {
-    const parts: string[] = [];
-    if (list.moviesCount) parts.push(`${list.moviesCount} film${list.moviesCount > 1 ? 's' : ''}`);
-    if (list.showsCount) parts.push(`${list.showsCount} série${list.showsCount > 1 ? 's' : ''}`);
-    return parts.length ? parts.join(' · ') : 'Vide';
+    return list.itemsCount > 0 ? `${list.itemsCount} élément${list.itemsCount > 1 ? 's' : ''}` : 'Vide';
   }
 }

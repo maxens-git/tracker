@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tracker.Data;
 
@@ -11,9 +12,11 @@ using Tracker.Data;
 namespace TrackerApi.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525132354_LightweightSchema")]
+    partial class LightweightSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +87,12 @@ namespace TrackerApi.Migrations
                     b.Property<int>("TmdbId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserMediaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserMediaId");
 
                     b.HasIndex("MediaListId", "TmdbId", "MediaType")
                         .IsUnique();
@@ -169,12 +177,23 @@ namespace TrackerApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Tracker.Models.UserMedia", "UserMedia")
+                        .WithMany("ListItems")
+                        .HasForeignKey("UserMediaId");
+
                     b.Navigation("MediaList");
+
+                    b.Navigation("UserMedia");
                 });
 
             modelBuilder.Entity("Tracker.Models.MediaList", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserMedia", b =>
+                {
+                    b.Navigation("ListItems");
                 });
 #pragma warning restore 612, 618
         }

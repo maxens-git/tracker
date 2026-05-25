@@ -3,16 +3,25 @@ import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Api } from '../../../shared/services/api';
+import { TmdbService } from '../../../shared/services/tmdb.service';
+import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
-import { MovieDto, CreditsDto, TrailersDto } from '../../../shared/interfaces/movie';
-import { ShowDto, SeasonModel, EpisodeModel } from '../../../shared/interfaces/show';
-import { MediaItem } from '../../../shared/interfaces/media';
+import {
+  TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
+  TmdbEpisode, TmdbSeasonSummary, MediaItem, UserState
+} from '../../../shared/interfaces/media';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { posterUrl, backdropUrl } from '../../../shared/services/tmdb-image';
+import { EpisodeSeenDto } from '../../../shared/interfaces/movie';
 
 type MediaType = 'movie' | 'tv';
+
+interface SeasonView extends TmdbSeasonSummary {
+  episodes: TmdbEpisode[];
+  seen: boolean;
+  loaded: boolean;
+}
 
 @Component({
   selector: 'app-media-detail',
@@ -23,25 +32,33 @@ type MediaType = 'movie' | 'tv';
 })
 export class MediaDetail implements OnInit {
   private route = inject(ActivatedRoute);
+  private tmdb = inject(TmdbService);
   private api = inject(Api);
   private location = inject(Location);
 
   loading = signal(true);
   error = signal<string | null>(null);
   mediaType = signal<MediaType>('movie');
-  movie = signal<MovieDto | null>(null);
-  show = signal<ShowDto | null>(null);
-  credits = signal<CreditsDto | null>(null);
-  trailers = signal<TrailersDto | null>(null);
+
+  movie = signal<TmdbMovie | null>(null);
+  show = signal<TmdbShow | null>(null);
+  seasons = signal<SeasonView[]>([]);
+  episodesSeen = signal<Map<string, boolean>>(new Map());
+
+  credits = signal<TmdbCredits | null>(null);
+  videos = signal<TmdbVideos | null>(null);
   similar = signal<MediaItem[]>([]);
   lists = signal<MediaListSummary[]>([]);
+
+  userState = signal<UserState>({ tmdbId: 0, seen: false, liked: false, listIds: [] });
+
   expandedSeason = signal<number | null>(null);
   seenPending = signal(false);
   likedPending = signal(false);
   watchlistPending = signal(false);
   listPending = signal<number | null>(null);
   showListPicker = signal(false);
-  episodePending = signal<Set<number>>(new Set());
+  episodePending = signal<Set<string>>(new Set());
   seasonPending = signal<Set<number>>(new Set());
 
   ngOnInit() {
@@ -54,41 +71,67 @@ export class MediaDetail implements OnInit {
         this.error.set(null);
         this.movie.set(null);
         this.show.set(null);
+        this.seasons.set([]);
+        this.episodesSeen.set(new Map());
         this.credits.set(null);
-        this.trailers.set(null);
+        this.videos.set(null);
         this.similar.set([]);
         this.expandedSeason.set(null);
         this.showListPicker.set(false);
+        this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
+
+        const state$ = this.api.states([tmdbId], type).pipe(catchError(() => of([])));
+        const lists$ = this.api.lists().pipe(catchError(() => of([])));
 
         if (type === 'movie') {
           return forkJoin({
-            data: this.api.movie(tmdbId),
-            credits: this.api.movieCredits(tmdbId).pipe(catchError(() => of(null))),
-            trailers: this.api.movieTrailers(tmdbId).pipe(catchError(() => of(null))),
-            similar: this.api.similarMovies(tmdbId).pipe(catchError(() => of(null))),
-            lists: this.api.lists().pipe(catchError(() => of([]))),
+            data: this.tmdb.movie(tmdbId),
+            credits: this.tmdb.movieCredits(tmdbId).pipe(catchError(() => of(null))),
+            videos: this.tmdb.movieVideos(tmdbId).pipe(catchError(() => of(null))),
+            similar: this.tmdb.similarMovies(tmdbId).pipe(catchError(() => of(null))),
+            state: state$,
+            lists: lists$,
           });
         } else {
           return forkJoin({
-            data: this.api.show(tmdbId),
-            credits: this.api.showCredits(tmdbId).pipe(catchError(() => of(null))),
-            trailers: this.api.showTrailers(tmdbId).pipe(catchError(() => of(null))),
-            similar: this.api.similarShows(tmdbId).pipe(catchError(() => of(null))),
-            lists: this.api.lists().pipe(catchError(() => of([]))),
+            data: this.tmdb.show(tmdbId),
+            credits: this.tmdb.showCredits(tmdbId).pipe(catchError(() => of(null))),
+            videos: this.tmdb.showVideos(tmdbId).pipe(catchError(() => of(null))),
+            similar: this.tmdb.similarShows(tmdbId).pipe(catchError(() => of(null))),
+            state: state$,
+            lists: lists$,
+            episodesSeen: this.api.showEpisodes(tmdbId).pipe(catchError(() => of([]))),
           });
         }
       }),
     ).subscribe({
-      next: ({ data, credits, trailers, similar, lists }) => {
-        if (this.isMovie) {
-          this.movie.set(data as MovieDto);
-        } else {
-          this.show.set(data as ShowDto);
-        }
+      next: (result: any) => {
+        const { data, credits, videos, similar, state, lists } = result;
+        const st: UserState = state[0] ?? { tmdbId: data.id, seen: false, liked: false, listIds: [] };
+        this.userState.set(st);
         this.credits.set(credits);
-        this.trailers.set(trailers);
+        this.videos.set(videos);
         this.similar.set(similar?.results ?? []);
-        this.lists.set(lists as MediaListSummary[]);
+        this.lists.set(lists);
+
+        if (this.isMovie) {
+          this.movie.set(data as TmdbMovie);
+        } else {
+          const show = data as TmdbShow;
+          this.show.set(show);
+          const epSeenMap = new Map<string, boolean>();
+          for (const ep of (result.episodesSeen as EpisodeSeenDto[])) {
+            epSeenMap.set(epKey(ep.seasonNumber, ep.episodeNumber), ep.seen);
+          }
+          this.episodesSeen.set(epSeenMap);
+          this.seasons.set(
+            show.seasons
+              .filter(s => s.season_number > 0)
+              .map(s => ({ ...s, episodes: [], seen: false, loaded: false }))
+          );
+          this.refreshSeasonsSeen();
+        }
+
         this.loading.set(false);
         window.scrollTo({ top: 0 });
       },
@@ -110,22 +153,9 @@ export class MediaDetail implements OnInit {
   goBack() { this.location.back(); }
 
   get isMovie() { return this.mediaType() === 'movie'; }
-
-  get currentMedia(): MovieDto | ShowDto | null {
-    return this.isMovie ? this.movie() : this.show();
-  }
-
-  get currentSeen(): boolean {
-    return this.currentMedia?.seen ?? false;
-  }
-
-  get currentLiked(): boolean {
-    return this.currentMedia?.liked ?? false;
-  }
-
-  get currentListIds(): number[] {
-    return this.currentMedia?.listIds ?? [];
-  }
+  get currentSeen() { return this.userState().seen; }
+  get currentLiked() { return this.userState().liked; }
+  get currentListIds() { return this.userState().listIds; }
 
   get watchlistId(): number | null {
     return this.lists().find(l => l.isSystem && l.name === 'Watchlist')?.id ?? null;
@@ -144,237 +174,273 @@ export class MediaDetail implements OnInit {
     return this.currentListIds.includes(listId);
   }
 
+  // ── Seen ─────────────────────────────────────────────────────────────────
+
   toggleSeen() {
     if (this.seenPending()) return;
     this.seenPending.set(true);
+    const newSeen = !this.currentSeen;
+    const tmdbId = this.userState().tmdbId;
+    const type = this.mediaType();
+
+    this.userState.set({ ...this.userState(), seen: newSeen });
 
     if (this.isMovie) {
-      const m = this.movie();
-      if (!m) return;
-      const newSeen = !m.seen;
-      this.movie.set({ ...m, seen: newSeen });
-      this.api.markMovieSeen(m.id, newSeen).subscribe({
+      const runtime = this.movie()?.runtime ?? null;
+      this.api.markSeen(tmdbId, 'movie', { seen: newSeen, runtime }).subscribe({
         complete: () => this.seenPending.set(false),
-        error: () => {
-          this.movie.set({ ...m, seen: m.seen });
-          this.seenPending.set(false);
-        },
+        error: () => { this.userState.set({ ...this.userState(), seen: !newSeen }); this.seenPending.set(false); },
       });
     } else {
-      const s = this.show();
-      if (!s) return;
-      const newSeen = !s.seen;
-      this.show.set({ ...s, seen: newSeen });
-      this.api.markShowSeen(s.id, newSeen).subscribe({
-        complete: () => this.seenPending.set(false),
-        error: () => {
-          this.show.set({ ...s, seen: s.seen });
+      const seasons = this.show()?.seasons.filter(s => s.season_number > 0) ?? [];
+      const payload: MarkShowSeenPayload = {
+        seen: newSeen,
+        seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: Array.from({ length: s.episode_count }, (_, i) => i + 1) }))
+      };
+      this.api.markShowSeen(tmdbId, payload).subscribe({
+        next: () => {
+          const newMap = new Map<string, boolean>();
+          for (const s of seasons) {
+            for (let i = 1; i <= s.episode_count; i++) {
+              newMap.set(epKey(s.season_number, i), newSeen);
+            }
+          }
+          this.episodesSeen.set(newMap);
+          this.refreshSeasonsSeen();
           this.seenPending.set(false);
         },
+        error: () => { this.userState.set({ ...this.userState(), seen: !newSeen }); this.seenPending.set(false); },
       });
     }
   }
+
+  // ── Liked ─────────────────────────────────────────────────────────────────
 
   toggleLiked() {
     if (this.likedPending()) return;
     this.likedPending.set(true);
+    const newLiked = !this.currentLiked;
+    const tmdbId = this.userState().tmdbId;
+    const type = this.mediaType();
 
-    if (this.isMovie) {
-      const m = this.movie();
-      if (!m) return;
-      const newLiked = !m.liked;
-      this.movie.set({ ...m, liked: newLiked });
-      this.api.likeMovie(m.tmdbId, newLiked).subscribe({
-        complete: () => this.likedPending.set(false),
-        error: () => {
-          this.movie.set({ ...m, liked: m.liked });
-          this.likedPending.set(false);
-        },
-      });
-    } else {
-      const s = this.show();
-      if (!s) return;
-      const newLiked = !s.liked;
-      this.show.set({ ...s, liked: newLiked });
-      this.api.likeShow(s.tmdbId, newLiked).subscribe({
-        complete: () => this.likedPending.set(false),
-        error: () => {
-          this.show.set({ ...s, liked: s.liked });
-          this.likedPending.set(false);
-        },
-      });
-    }
+    this.userState.set({ ...this.userState(), liked: newLiked });
+    this.api.markLiked(tmdbId, type, newLiked).subscribe({
+      complete: () => this.likedPending.set(false),
+      error: () => { this.userState.set({ ...this.userState(), liked: !newLiked }); this.likedPending.set(false); },
+    });
   }
+
+  // ── Watchlist ─────────────────────────────────────────────────────────────
 
   toggleWatchlist() {
     if (this.watchlistPending()) return;
     this.watchlistPending.set(true);
     const inWatchlist = this.currentInWatchlist;
+    const tmdbId = this.userState().tmdbId;
+    const type = this.mediaType();
+    const wlId = this.watchlistId;
 
-    const updateListIds = (media: MovieDto | ShowDto, wlId: number, add: boolean) => {
-      const ids = add
-        ? [...media.listIds, wlId]
-        : media.listIds.filter(id => id !== wlId);
-      return { ...media, listIds: ids };
-    };
-
-    if (this.isMovie) {
-      const m = this.movie();
-      if (!m) return;
-      const wlId = this.watchlistId;
-      if (wlId !== null) this.movie.set(updateListIds(m, wlId, !inWatchlist) as MovieDto);
-      const req = inWatchlist
-        ? this.api.removeMovieFromWatchlist(m.tmdbId)
-        : this.api.addMovieToWatchlist(m.tmdbId);
-      req.subscribe({
-        complete: () => this.watchlistPending.set(false),
-        error: () => {
-          if (wlId !== null) this.movie.set(updateListIds(m, wlId, inWatchlist) as MovieDto);
-          this.watchlistPending.set(false);
-        },
-      });
-    } else {
-      const s = this.show();
-      if (!s) return;
-      const wlId = this.watchlistId;
-      if (wlId !== null) this.show.set(updateListIds(s, wlId, !inWatchlist) as ShowDto);
-      const req = inWatchlist
-        ? this.api.removeShowFromWatchlist(s.tmdbId)
-        : this.api.addShowToWatchlist(s.tmdbId);
-      req.subscribe({
-        complete: () => this.watchlistPending.set(false),
-        error: () => {
-          if (wlId !== null) this.show.set(updateListIds(s, wlId, inWatchlist) as ShowDto);
-          this.watchlistPending.set(false);
-        },
+    if (wlId !== null) {
+      this.userState.set({
+        ...this.userState(),
+        listIds: inWatchlist
+          ? this.currentListIds.filter(id => id !== wlId)
+          : [...this.currentListIds, wlId]
       });
     }
+
+    const req = inWatchlist
+      ? this.api.removeFromWatchlist(tmdbId, type)
+      : this.api.addToWatchlist(tmdbId, type, {
+          posterPath: this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path,
+          runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
+        });
+
+    req.subscribe({
+      complete: () => this.watchlistPending.set(false),
+      error: () => {
+        if (wlId !== null) {
+          this.userState.set({
+            ...this.userState(),
+            listIds: inWatchlist
+              ? [...this.currentListIds, wlId]
+              : this.currentListIds.filter(id => id !== wlId)
+          });
+        }
+        this.watchlistPending.set(false);
+      },
+    });
   }
+
+  // ── Custom lists ──────────────────────────────────────────────────────────
 
   toggleList(listId: number) {
     if (this.listPending() !== null) return;
     this.listPending.set(listId);
     const inList = this.isInList(listId);
+    const tmdbId = this.userState().tmdbId;
+    const type = this.mediaType();
 
-    const updateListIds = (media: MovieDto | ShowDto, id: number, add: boolean) => {
-      const ids = add
-        ? [...media.listIds, id]
-        : media.listIds.filter(x => x !== id);
-      return { ...media, listIds: ids };
-    };
+    this.userState.set({
+      ...this.userState(),
+      listIds: inList
+        ? this.currentListIds.filter(id => id !== listId)
+        : [...this.currentListIds, listId]
+    });
 
-    if (this.isMovie) {
-      const m = this.movie();
-      if (!m) return;
-      this.movie.set(updateListIds(m, listId, !inList) as MovieDto);
-      const req = inList
-        ? this.api.removeMovieFromList(listId, m.tmdbId)
-        : this.api.addMovieToList(listId, m.tmdbId);
-      req.subscribe({
-        complete: () => this.listPending.set(null),
-        error: () => {
-          this.movie.set(updateListIds(m, listId, inList) as MovieDto);
-          this.listPending.set(null);
-        },
-      });
-    } else {
-      const s = this.show();
-      if (!s) return;
-      this.show.set(updateListIds(s, listId, !inList) as ShowDto);
-      const req = inList
-        ? this.api.removeShowFromList(listId, s.tmdbId)
-        : this.api.addShowToList(listId, s.tmdbId);
-      req.subscribe({
-        complete: () => this.listPending.set(null),
-        error: () => {
-          this.show.set(updateListIds(s, listId, inList) as ShowDto);
-          this.listPending.set(null);
-        },
-      });
+    const req = inList
+      ? this.api.removeItemFromList(listId, tmdbId, type)
+      : this.api.addItemToList(listId, {
+          tmdbId,
+          mediaType: type,
+          posterPath: this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path,
+        });
+
+    req.subscribe({
+      complete: () => this.listPending.set(null),
+      error: () => {
+        this.userState.set({
+          ...this.userState(),
+          listIds: inList
+            ? [...this.currentListIds, listId]
+            : this.currentListIds.filter(id => id !== listId)
+        });
+        this.listPending.set(null);
+      },
+    });
+  }
+
+  // ── Seasons & episodes ────────────────────────────────────────────────────
+
+  toggleSeason(seasonNumber: number) {
+    const current = this.expandedSeason();
+    if (current === seasonNumber) {
+      this.expandedSeason.set(null);
+      return;
     }
+    this.expandedSeason.set(seasonNumber);
+    this.loadSeasonIfNeeded(seasonNumber);
   }
 
-  toggleSeason(id: number) {
-    this.expandedSeason.set(this.expandedSeason() === id ? null : id);
+  private loadSeasonIfNeeded(seasonNumber: number) {
+    const seasons = this.seasons();
+    const idx = seasons.findIndex(s => s.season_number === seasonNumber);
+    if (idx === -1 || seasons[idx].loaded) return;
+
+    const showId = this.show()!.id;
+    this.tmdb.season(showId, seasonNumber).subscribe({
+      next: season => {
+        const epMap = this.episodesSeen();
+        const episodes = season.episodes.map(ep => ({
+          ...ep,
+          seen: epMap.get(epKey(ep.season_number, ep.episode_number)) ?? false
+        }));
+        const allSeen = episodes.every(ep => ep.seen);
+        this.seasons.update(prev => prev.map((s, i) =>
+          i === idx ? { ...s, episodes, seen: allSeen, loaded: true } : s
+        ));
+      }
+    });
   }
 
-  seasonSeenCount(season: SeasonModel): number {
+  isSeasonExpanded(seasonNumber: number): boolean {
+    return this.expandedSeason() === seasonNumber;
+  }
+
+  isEpisodePending(key: string): boolean {
+    return this.episodePending().has(key);
+  }
+
+  isSeasonPending(seasonNumber: number): boolean {
+    return this.seasonPending().has(seasonNumber);
+  }
+
+  seasonSeenCount(season: SeasonView): number {
     return season.episodes.filter(ep => ep.seen).length;
   }
 
-  isEpisodePending(id: number): boolean {
-    return this.episodePending().has(id);
-  }
-
-  isSeasonPending(id: number): boolean {
-    return this.seasonPending().has(id);
-  }
-
-  private patchEpisode(episodeId: number, seen: boolean) {
-    const s = this.show();
-    if (!s) return;
-    this.show.set({
-      ...s,
-      seasons: s.seasons.map(season => ({
-        ...season,
-        episodes: season.episodes.map(ep => ep.id === episodeId ? { ...ep, seen } : ep),
-      })),
-    });
-  }
-
-  private patchSeason(seasonId: number, seen: boolean) {
-    const s = this.show();
-    if (!s) return;
-    this.show.set({
-      ...s,
-      seasons: s.seasons.map(season =>
-        season.id === seasonId
-          ? { ...season, seen, episodes: season.episodes.map(ep => ({ ...ep, seen })) }
-          : season
-      ),
-    });
-  }
-
-  toggleEpisodeSeen(ep: EpisodeModel, event: Event) {
+  toggleEpisodeSeen(ep: TmdbEpisode, event: Event) {
     event.stopPropagation();
-    if (this.isEpisodePending(ep.id)) return;
+    const key = epKey(ep.season_number, ep.episode_number);
+    if (this.isEpisodePending(key)) return;
     const newSeen = !ep.seen;
-    this.episodePending.set(new Set([...this.episodePending(), ep.id]));
-    this.patchEpisode(ep.id, newSeen);
-    this.api.markEpisodeSeen(ep.id, newSeen).subscribe({
+    const showId = this.show()!.id;
+
+    this.episodePending.update(s => new Set([...s, key]));
+    this.patchEpisode(ep.season_number, ep.episode_number, newSeen);
+
+    this.api.markEpisodeSeen(showId, ep.season_number, ep.episode_number, newSeen).subscribe({
       complete: () => {
-        const s = new Set(this.episodePending());
-        s.delete(ep.id);
-        this.episodePending.set(s);
+        this.episodePending.update(s => { const n = new Set(s); n.delete(key); return n; });
       },
       error: () => {
-        this.patchEpisode(ep.id, ep.seen);
-        const s = new Set(this.episodePending());
-        s.delete(ep.id);
-        this.episodePending.set(s);
+        this.patchEpisode(ep.season_number, ep.episode_number, ep.seen ?? false);
+        this.episodePending.update(s => { const n = new Set(s); n.delete(key); return n; });
       },
     });
   }
 
-  toggleSeasonSeen(season: SeasonModel, event: Event) {
+  toggleSeasonSeen(season: SeasonView, event: Event) {
     event.stopPropagation();
-    if (this.isSeasonPending(season.id)) return;
+    if (this.isSeasonPending(season.season_number)) return;
     const newSeen = !season.seen;
-    this.seasonPending.set(new Set([...this.seasonPending(), season.id]));
-    this.patchSeason(season.id, newSeen);
-    this.api.markSeasonSeen(season.id, newSeen).subscribe({
-      complete: () => {
-        const s = new Set(this.seasonPending());
-        s.delete(season.id);
-        this.seasonPending.set(s);
-      },
+    const showId = this.show()!.id;
+    const episodeNumbers = season.episodes.map(ep => ep.episode_number);
+
+    this.seasonPending.update(s => new Set([...s, season.season_number]));
+    this.patchSeason(season.season_number, newSeen);
+
+    this.api.markSeasonSeen(showId, season.season_number, { seen: newSeen, episodeNumbers }).subscribe({
+      complete: () => this.seasonPending.update(s => { const n = new Set(s); n.delete(season.season_number); return n; }),
       error: () => {
-        this.patchSeason(season.id, season.seen);
-        const s = new Set(this.seasonPending());
-        s.delete(season.id);
-        this.seasonPending.set(s);
+        this.patchSeason(season.season_number, !newSeen);
+        this.seasonPending.update(s => { const n = new Set(s); n.delete(season.season_number); return n; });
       },
     });
+  }
+
+  private patchEpisode(seasonNumber: number, episodeNumber: number, seen: boolean) {
+    const key = epKey(seasonNumber, episodeNumber);
+    this.episodesSeen.update(m => { const n = new Map(m); n.set(key, seen); return n; });
+    this.seasons.update(prev => prev.map(s =>
+      s.season_number !== seasonNumber ? s : {
+        ...s,
+        episodes: s.episodes.map(ep =>
+          ep.episode_number === episodeNumber ? { ...ep, seen } : ep
+        ),
+      }
+    ));
+  }
+
+  private patchSeason(seasonNumber: number, seen: boolean) {
+    this.seasons.update(prev => prev.map(s =>
+      s.season_number !== seasonNumber ? s : {
+        ...s,
+        seen,
+        episodes: s.episodes.map(ep => ({ ...ep, seen }))
+      }
+    ));
+  }
+
+  private refreshSeasonsSeen() {
+    const epMap = this.episodesSeen();
+    this.seasons.update(prev => prev.map(s => ({
+      ...s,
+      seen: s.loaded && s.episodes.length > 0 && s.episodes.every(ep => ep.seen),
+      episodes: s.episodes.map(ep => ({
+        ...ep,
+        seen: epMap.get(epKey(s.season_number, ep.episode_number)) ?? false
+      }))
+    })));
+  }
+
+  // ── Display helpers ───────────────────────────────────────────────────────
+
+  get filteredVideos() {
+    const all = this.videos()?.results ?? [];
+    const fr = all.filter(v => v.iso_639_1 === 'fr' && v.site === 'YouTube' && ['Trailer', 'Teaser'].includes(v.type));
+    const en = all.filter(v => v.iso_639_1 === 'en' && v.site === 'YouTube' && ['Trailer', 'Teaser'].includes(v.type));
+    return [...fr, ...en].slice(0, 6);
   }
 
   backdropStyle(path?: string | null): string | null {
@@ -384,25 +450,16 @@ export class MediaDetail implements OnInit {
       : null;
   }
 
-  poster(path?: string | null): string | null {
-    return posterUrl(path, 'w500');
-  }
+  poster(path?: string | null): string | null { return posterUrl(path, 'w500'); }
 
   profileUrl(path?: string | null): string | null {
     return path ? `https://image.tmdb.org/t/p/w185${path}` : null;
   }
 
-  trailerThumb(key: string): string {
-    return `https://img.youtube.com/vi/${key}/mqdefault.jpg`;
-  }
+  trailerThumb(key: string): string { return `https://img.youtube.com/vi/${key}/mqdefault.jpg`; }
+  trailerLink(key: string): string { return `https://www.youtube.com/watch?v=${key}`; }
 
-  trailerLink(key: string): string {
-    return `https://www.youtube.com/watch?v=${key}`;
-  }
-
-  year(date?: string | null): string {
-    return date ? date.slice(0, 4) : '';
-  }
+  year(date?: string | null): string { return date ? date.slice(0, 4) : ''; }
 
   formatRuntime(min: number): string {
     if (!min) return '';
@@ -413,8 +470,14 @@ export class MediaDetail implements OnInit {
 
   formatMoney(amount: number): string | null {
     if (!amount) return null;
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency', currency: 'USD', maximumFractionDigits: 0,
-    }).format(amount);
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
   }
+
+  genres(g: { id: number; name: string }[] | undefined): string {
+    return g?.map(x => x.name).join(', ') ?? '';
+  }
+}
+
+function epKey(season: number, episode: number): string {
+  return `${season}-${episode}`;
 }
