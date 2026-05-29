@@ -196,11 +196,35 @@ struct TMDBCrewMember: Decodable, Identifiable, Hashable {
 
     var stableId: String { creditId }
 
+    /// Métier traduit en français (TMDB renvoie toujours les `job` en anglais).
+    var localizedJob: String? {
+        guard let job, !job.isEmpty else { return nil }
+        return CrewJob.french[job] ?? job
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, name, job, department
         case creditId = "credit_id"
         case profilePath = "profile_path"
     }
+}
+
+/// Traduction française des métiers d'équipe TMDB.
+enum CrewJob {
+    static let french: [String: String] = [
+        "Director": "Réalisateur",
+        "Creator": "Créateur",
+        "Writer": "Scénariste",
+        "Screenplay": "Scénario",
+        "Story": "Histoire",
+        "Novel": "Roman",
+        "Producer": "Producteur",
+        "Executive Producer": "Producteur exécutif",
+        "Original Music Composer": "Compositeur",
+        "Composer": "Compositeur",
+        "Director of Photography": "Directeur de la photographie",
+        "Editor": "Monteur",
+    ]
 }
 
 // ── Vidéos (bandes-annonces) ────────────────────────────────────────────────

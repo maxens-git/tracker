@@ -102,7 +102,7 @@ final class MediaDetailViewModel {
     /// Garde les membres clés de l'équipe (réalisation, scénario, production…),
     /// sans doublon de personne.
     private func topCrew(from crew: [TMDBCrewMember]) -> [TMDBCrewMember] {
-        let priorityJobs = ["Director", "Creator", "Writer", "Screenplay", "Producer", "Executive Producer", "Composer", "Original Music Composer"]
+        let priorityJobs = ["Director", "Creator", "Writer", "Screenplay", "Story", "Producer", "Executive Producer", "Original Music Composer", "Composer", "Director of Photography", "Editor"]
         let filtered = crew.filter { priorityJobs.contains($0.job ?? "") }
         var seen = Set<Int>()
         var result: [TMDBCrewMember] = []

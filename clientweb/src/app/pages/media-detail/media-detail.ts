@@ -9,8 +9,9 @@ import { Spinner } from '../../../shared/components/spinner/spinner';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
 import {
   TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
-  TmdbEpisode, TmdbSeasonSummary, MediaItem, UserState
+  TmdbEpisode, TmdbSeasonSummary, MediaItem, UserState, TmdbCrewMember
 } from '../../../shared/interfaces/media';
+import { PRIORITY_CREW_JOBS, localizedJob } from '../../../shared/services/crew';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/services/tmdb-image';
 import { EpisodeSeenDto } from '../../../shared/interfaces/movie';
@@ -180,6 +181,26 @@ export class MediaDetail implements OnInit {
 
   get customLists(): MediaListSummary[] {
     return this.lists().filter(l => !l.isSystem);
+  }
+
+  /** Membres clés de l'équipe technique : métiers prioritaires, sans doublon de personne. */
+  get topCrew(): TmdbCrewMember[] {
+    const crew = this.credits()?.crew ?? [];
+    const filtered = crew.filter(c => PRIORITY_CREW_JOBS.includes(c.job));
+    const seen = new Set<number>();
+    const result: TmdbCrewMember[] = [];
+    for (const member of filtered) {
+      if (!seen.has(member.id)) {
+        seen.add(member.id);
+        result.push(member);
+      }
+    }
+    return result.slice(0, 10);
+  }
+
+  /** Libellé français d'un métier TMDB. */
+  jobLabel(job: string): string {
+    return localizedJob(job);
   }
 
   isInList(listId: number): boolean {

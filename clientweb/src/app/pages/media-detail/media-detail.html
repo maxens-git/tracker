@@ -194,6 +194,30 @@
       </section>
     }
 
+    <!-- Crew -->
+    @if (topCrew.length) {
+      <section class="content-section">
+        <h2 class="section-title">Équipe technique</h2>
+        <div class="cast-list">
+          @for (person of topCrew; track person.id) {
+            <a class="cast-card" [routerLink]="['/person', person.id]">
+              <div class="cast-photo">
+                @if (profileUrl(person.profile_path); as p) {
+                  <img [src]="p" [alt]="person.name" loading="lazy" />
+                } @else {
+                  <div class="cast-placeholder">{{ person.name[0] }}</div>
+                }
+              </div>
+              <p class="cast-name">{{ person.name }}</p>
+              @if (person.job) {
+                <p class="cast-character">{{ jobLabel(person.job) }}</p>
+              }
+            </a>
+          }
+        </div>
+      </section>
+    }
+
     <!-- Seasons (shows only) -->
     @if (!isMovie) {
       @let seasonList = seasons();

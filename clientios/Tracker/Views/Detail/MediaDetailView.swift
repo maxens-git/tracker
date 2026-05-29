@@ -314,7 +314,7 @@ struct MediaDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(viewModel.crew, id: \.stableId) { person in
-                        personCard(name: person.name, role: person.job,
+                        personCard(name: person.name, role: person.localizedJob,
                                    profilePath: person.profilePath)
                     }
                 }
