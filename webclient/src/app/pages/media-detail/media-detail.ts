@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin, of, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload } from '../../../shared/services/api';
@@ -12,8 +12,9 @@ import {
   TmdbEpisode, TmdbSeasonSummary, MediaItem, UserState
 } from '../../../shared/interfaces/media';
 import { MediaListSummary } from '../../../shared/interfaces/list';
-import { posterUrl, backdropUrl } from '../../../shared/services/tmdb-image';
+import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/services/tmdb-image';
 import { EpisodeSeenDto } from '../../../shared/interfaces/movie';
+import { SYSTEM_LIST } from '../../../shared/constants';
 
 type MediaType = 'movie' | 'tv';
 
@@ -21,6 +22,17 @@ interface SeasonView extends TmdbSeasonSummary {
   episodes: TmdbEpisode[];
   seen: boolean;
   loaded: boolean;
+}
+
+/** Résultat agrégé du forkJoin de chargement initial (films ou séries). */
+interface MediaDetailData {
+  data: TmdbMovie | TmdbShow;
+  credits: TmdbCredits | null;
+  videos: TmdbVideos | null;
+  similar: { results: MediaItem[] } | null;
+  state: UserState[];
+  lists: MediaListSummary[];
+  episodesSeen?: EpisodeSeenDto[];
 }
 
 @Component({
@@ -105,7 +117,7 @@ export class MediaDetail implements OnInit {
         }
       }),
     ).subscribe({
-      next: (result: any) => {
+      next: (result: MediaDetailData) => {
         const { data, credits, videos, similar, state, lists } = result;
         const st: UserState = state[0] ?? { tmdbId: data.id, seen: false, liked: false, listIds: [] };
         this.userState.set(st);
@@ -120,7 +132,7 @@ export class MediaDetail implements OnInit {
           const show = data as TmdbShow;
           this.show.set(show);
           const epSeenMap = new Map<string, boolean>();
-          for (const ep of (result.episodesSeen as EpisodeSeenDto[])) {
+          for (const ep of (result.episodesSeen ?? [])) {
             epSeenMap.set(epKey(ep.seasonNumber, ep.episodeNumber), ep.seen);
           }
           this.episodesSeen.set(epSeenMap);
@@ -158,7 +170,7 @@ export class MediaDetail implements OnInit {
   get currentListIds() { return this.userState().listIds; }
 
   get watchlistId(): number | null {
-    return this.lists().find(l => l.isSystem && l.name === 'Watchlist')?.id ?? null;
+    return this.lists().find(l => l.isSystem && l.name === SYSTEM_LIST.watchlist)?.id ?? null;
   }
 
   get currentInWatchlist(): boolean {
@@ -174,6 +186,34 @@ export class MediaDetail implements OnInit {
     return this.currentListIds.includes(listId);
   }
 
+  // ── Optimistic update helpers ─────────────────────────────────────────────
+
+  private patchUserState(patch: Partial<UserState>): void {
+    this.userState.update(s => ({ ...s, ...patch }));
+  }
+
+  /** Ajoute (member=true) ou retire l'appartenance à une liste dans l'état local. */
+  private setListMembership(listId: number, member: boolean): void {
+    this.patchUserState({
+      listIds: member
+        ? [...this.currentListIds, listId]
+        : this.currentListIds.filter(id => id !== listId),
+    });
+  }
+
+  private currentPosterPath(): string | null | undefined {
+    return this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path;
+  }
+
+  /** Applique un changement optimiste, lance la requête et l'annule en cas d'erreur. */
+  private runOptimistic(apply: () => void, revert: () => void, request: Observable<unknown>, done: () => void): void {
+    apply();
+    request.subscribe({
+      complete: done,
+      error: () => { revert(); done(); },
+    });
+  }
+
   // ── Seen ─────────────────────────────────────────────────────────────────
 
   toggleSeen() {
@@ -181,35 +221,35 @@ export class MediaDetail implements OnInit {
     this.seenPending.set(true);
     const newSeen = !this.currentSeen;
     const tmdbId = this.userState().tmdbId;
-    const type = this.mediaType();
 
-    this.userState.set({ ...this.userState(), seen: newSeen });
+    this.patchUserState({ seen: newSeen });
 
     if (this.isMovie) {
-      const runtime = this.movie()?.runtime ?? null;
-      this.api.markSeen(tmdbId, 'movie', { seen: newSeen, runtime }).subscribe({
-        complete: () => this.seenPending.set(false),
-        error: () => { this.userState.set({ ...this.userState(), seen: !newSeen }); this.seenPending.set(false); },
-      });
+      this.runOptimistic(
+        () => {},
+        () => this.patchUserState({ seen: !newSeen }),
+        this.api.markSeen(tmdbId, 'movie', { seen: newSeen, runtime: this.movie()?.runtime ?? null }),
+        () => this.seenPending.set(false),
+      );
     } else {
       const seasons = this.show()?.seasons.filter(s => s.season_number > 0) ?? [];
       const payload: MarkShowSeenPayload = {
         seen: newSeen,
-        seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: Array.from({ length: s.episode_count }, (_, i) => i + 1) }))
+        seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: episodeRange(s.episode_count) }))
       };
       this.api.markShowSeen(tmdbId, payload).subscribe({
         next: () => {
           const newMap = new Map<string, boolean>();
           for (const s of seasons) {
-            for (let i = 1; i <= s.episode_count; i++) {
-              newMap.set(epKey(s.season_number, i), newSeen);
+            for (const ep of episodeRange(s.episode_count)) {
+              newMap.set(epKey(s.season_number, ep), newSeen);
             }
           }
           this.episodesSeen.set(newMap);
           this.refreshSeasonsSeen();
           this.seenPending.set(false);
         },
-        error: () => { this.userState.set({ ...this.userState(), seen: !newSeen }); this.seenPending.set(false); },
+        error: () => { this.patchUserState({ seen: !newSeen }); this.seenPending.set(false); },
       });
     }
   }
@@ -221,13 +261,13 @@ export class MediaDetail implements OnInit {
     this.likedPending.set(true);
     const newLiked = !this.currentLiked;
     const tmdbId = this.userState().tmdbId;
-    const type = this.mediaType();
 
-    this.userState.set({ ...this.userState(), liked: newLiked });
-    this.api.markLiked(tmdbId, type, newLiked).subscribe({
-      complete: () => this.likedPending.set(false),
-      error: () => { this.userState.set({ ...this.userState(), liked: !newLiked }); this.likedPending.set(false); },
-    });
+    this.runOptimistic(
+      () => this.patchUserState({ liked: newLiked }),
+      () => this.patchUserState({ liked: !newLiked }),
+      this.api.markLiked(tmdbId, this.mediaType(), newLiked),
+      () => this.likedPending.set(false),
+    );
   }
 
   // ── Watchlist ─────────────────────────────────────────────────────────────
@@ -240,36 +280,19 @@ export class MediaDetail implements OnInit {
     const type = this.mediaType();
     const wlId = this.watchlistId;
 
-    if (wlId !== null) {
-      this.userState.set({
-        ...this.userState(),
-        listIds: inWatchlist
-          ? this.currentListIds.filter(id => id !== wlId)
-          : [...this.currentListIds, wlId]
-      });
-    }
-
-    const req = inWatchlist
+    const request = inWatchlist
       ? this.api.removeFromWatchlist(tmdbId, type)
       : this.api.addToWatchlist(tmdbId, type, {
-          posterPath: this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path,
+          posterPath: this.currentPosterPath(),
           runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
         });
 
-    req.subscribe({
-      complete: () => this.watchlistPending.set(false),
-      error: () => {
-        if (wlId !== null) {
-          this.userState.set({
-            ...this.userState(),
-            listIds: inWatchlist
-              ? [...this.currentListIds, wlId]
-              : this.currentListIds.filter(id => id !== wlId)
-          });
-        }
-        this.watchlistPending.set(false);
-      },
-    });
+    this.runOptimistic(
+      () => { if (wlId !== null) this.setListMembership(wlId, !inWatchlist); },
+      () => { if (wlId !== null) this.setListMembership(wlId, inWatchlist); },
+      request,
+      () => this.watchlistPending.set(false),
+    );
   }
 
   // ── Custom lists ──────────────────────────────────────────────────────────
@@ -281,33 +304,16 @@ export class MediaDetail implements OnInit {
     const tmdbId = this.userState().tmdbId;
     const type = this.mediaType();
 
-    this.userState.set({
-      ...this.userState(),
-      listIds: inList
-        ? this.currentListIds.filter(id => id !== listId)
-        : [...this.currentListIds, listId]
-    });
-
-    const req = inList
+    const request = inList
       ? this.api.removeItemFromList(listId, tmdbId, type)
-      : this.api.addItemToList(listId, {
-          tmdbId,
-          mediaType: type,
-          posterPath: this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path,
-        });
+      : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath() });
 
-    req.subscribe({
-      complete: () => this.listPending.set(null),
-      error: () => {
-        this.userState.set({
-          ...this.userState(),
-          listIds: inList
-            ? [...this.currentListIds, listId]
-            : this.currentListIds.filter(id => id !== listId)
-        });
-        this.listPending.set(null);
-      },
-    });
+    this.runOptimistic(
+      () => this.setListMembership(listId, !inList),
+      () => this.setListMembership(listId, inList),
+      request,
+      () => this.listPending.set(null),
+    );
   }
 
   // ── Seasons & episodes ────────────────────────────────────────────────────
@@ -452,14 +458,12 @@ export class MediaDetail implements OnInit {
 
   poster(path?: string | null): string | null { return posterUrl(path, 'w500'); }
 
-  profileUrl(path?: string | null): string | null {
-    return path ? `https://image.tmdb.org/t/p/w185${path}` : null;
-  }
+  profileUrl(path?: string | null): string | null { return profileUrl(path); }
 
   trailerThumb(key: string): string { return `https://img.youtube.com/vi/${key}/mqdefault.jpg`; }
   trailerLink(key: string): string { return `https://www.youtube.com/watch?v=${key}`; }
 
-  year(date?: string | null): string { return date ? date.slice(0, 4) : ''; }
+  year(date?: string | null): string { return yearOf(date); }
 
   formatRuntime(min: number): string {
     if (!min) return '';
@@ -480,4 +484,9 @@ export class MediaDetail implements OnInit {
 
 function epKey(season: number, episode: number): string {
   return `${season}-${episode}`;
+}
+
+/** Numéros d'épisodes 1..count. */
+function episodeRange(count: number): number[] {
+  return Array.from({ length: count }, (_, i) => i + 1);
 }

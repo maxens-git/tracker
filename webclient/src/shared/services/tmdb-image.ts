@@ -8,11 +8,19 @@ export function backdropUrl(path: string | undefined | null, size: 'w780' | 'w12
   return path ? `${BASE}/${size}${path}` : null;
 }
 
+export function profileUrl(path: string | undefined | null, size: 'w185' | 'w342' = 'w185'): string | null {
+  return path ? `${BASE}/${size}${path}` : null;
+}
+
+/** Année (AAAA) d'une date ISO, ou chaîne vide. */
+export function yearOf(date?: string | null): string {
+  return date ? date.slice(0, 4) : '';
+}
+
 export function displayTitle(item: { title?: string | null; name?: string | null }): string {
   return item.title || item.name || '';
 }
 
 export function displayYear(item: { release_date?: string | null; first_air_date?: string | null }): string {
-  const date = item.release_date || item.first_air_date;
-  return date ? date.slice(0, 4) : '';
+  return yearOf(item.release_date || item.first_air_date);
 }

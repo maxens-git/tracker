@@ -14,7 +14,7 @@ public class MediaListItemDto
     public MediaListItemDto(MediaListItem item, UserMedia? um)
     {
         TmdbId = item.TmdbId;
-        MediaType = item.MediaType == Models.MediaType.Movie ? "movie" : "tv";
+        MediaType = item.MediaType.ToApiString();
         PosterPath = item.PosterPath ?? um?.PosterPath;
         Seen = um?.Seen ?? false;
         Liked = um?.Liked ?? false;
@@ -24,7 +24,7 @@ public class MediaListItemDto
     public MediaListItemDto(UserMedia m)
     {
         TmdbId = m.TmdbId;
-        MediaType = m.MediaType == Models.MediaType.Movie ? "movie" : "tv";
+        MediaType = m.MediaType.ToApiString();
         PosterPath = m.PosterPath;
         Seen = m.Seen;
         Liked = m.Liked;

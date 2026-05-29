@@ -6,15 +6,8 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class StatsController : ControllerBase
+public class StatsController(StatsService statsService) : ControllerBase
 {
-    private readonly StatsService _statsService;
-
-    public StatsController(StatsService statsService)
-    {
-        _statsService = statsService;
-    }
-
     [HttpGet]
-    public async Task<ActionResult<StatsDto>> Get() => await _statsService.GetStats();
+    public async Task<ActionResult<StatsDto>> Get() => await statsService.GetStats();
 }

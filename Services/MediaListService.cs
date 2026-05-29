@@ -47,8 +47,8 @@ public class MediaListService(ApiDbContext context)
 
         return ml.Name switch
         {
-            "Seen" => await context.UserMedia.CountAsync(m => m.Seen),
-            "J'aime" => await context.UserMedia.CountAsync(m => m.Liked),
+            SystemLists.Seen => await context.UserMedia.CountAsync(m => m.Seen),
+            SystemLists.Liked => await context.UserMedia.CountAsync(m => m.Liked),
             _ => ml.Items.Count
         };
     }

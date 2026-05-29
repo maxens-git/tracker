@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api } from '../../../shared/services/api';
-import { MediaItem, TmdbTrendingResult, TmdbSearchResponse } from '../../../shared/interfaces/media';
+import { MediaItem } from '../../../shared/interfaces/media';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { backdropUrl, displayTitle, displayYear } from '../../../shared/services/tmdb-image';
@@ -53,12 +53,8 @@ export class Home implements OnInit {
         const applyStates = (items: MediaItem[], stateMap: Map<number, { seen: boolean; liked: boolean }>) =>
           items.map(i => ({ ...i, seen: stateMap.get(i.id)?.seen ?? false, liked: stateMap.get(i.id)?.liked ?? false }));
 
-        const movieStates$ = movieIds.length > 0
-          ? this.api.states(movieIds, 'movie')
-          : Promise.resolve([]);
-        const showStates$ = showIds.length > 0
-          ? this.api.states(showIds, 'tv')
-          : Promise.resolve([]);
+        const movieStates$ = movieIds.length > 0 ? this.api.states(movieIds, 'movie') : of([]);
+        const showStates$ = showIds.length > 0 ? this.api.states(showIds, 'tv') : of([]);
 
         forkJoin({ movieStates: movieStates$, showStates: showStates$ }).subscribe({
           next: ({ movieStates, showStates }) => {

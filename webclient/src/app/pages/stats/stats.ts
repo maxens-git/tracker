@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { Api } from '../../../shared/services/api';
-import { Stats, CombinedYearBucket, CombinedMonthBucket, StatsMonthBucket } from '../../../shared/interfaces/stats';
+import { Stats, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const MONTHS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];

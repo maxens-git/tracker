@@ -2,14 +2,15 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { SYSTEM_LIST_BY_SLUG } from '../../../shared/constants';
+
+type SystemListSlug = keyof typeof SYSTEM_LIST_BY_SLUG;
 
 @Component({
   selector: 'app-list-detail',
@@ -23,7 +24,7 @@ export class ListDetail implements OnInit {
   private tmdb = inject(TmdbService);
   private route = inject(ActivatedRoute);
 
-  listId: number | 'seen' | 'liked' | 'watchlist' = 0;
+  listId: number | SystemListSlug = 0;
   list = signal<MediaListSummary | null>(null);
   loadingList = signal(true);
 
@@ -38,7 +39,7 @@ export class ListDetail implements OnInit {
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id')!;
     const numId = Number(idParam);
-    this.listId = isNaN(numId) ? (idParam as 'seen' | 'liked' | 'watchlist') : numId;
+    this.listId = isNaN(numId) ? (idParam as SystemListSlug) : numId;
 
     if (typeof this.listId === 'number') {
       this.api.list(this.listId).subscribe({
@@ -46,10 +47,9 @@ export class ListDetail implements OnInit {
         error: () => this.loadingList.set(false),
       });
     } else {
+      const name = SYSTEM_LIST_BY_SLUG[this.listId];
       this.api.lists().subscribe({
         next: lists => {
-          const name = this.listId === 'watchlist' ? 'Watchlist'
-            : this.listId === 'seen' ? 'Seen' : "J'aime";
           this.list.set(lists.find(l => l.name === name) ?? null);
           this.loadingList.set(false);
         },
@@ -104,8 +104,6 @@ export class ListDetail implements OnInit {
       (i.title ?? i.name ?? '').toLowerCase().includes(q)
     );
   }
-
-  onSearchInput() { /* client-side filter via filteredItems getter */ }
 
   listIcon(): string {
     const l = this.list();
