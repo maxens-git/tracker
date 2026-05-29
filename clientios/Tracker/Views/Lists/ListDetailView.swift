@@ -1,0 +1,61 @@
+//
+//  ListDetailView.swift
+//  Tracker
+//
+
+import SwiftUI
+
+struct ListDetailView: View {
+    @State private var viewModel: ListDetailViewModel
+    private let title: String
+
+    init(listId: String, title: String) {
+        _viewModel = State(initialValue: ListDetailViewModel(listId: listId))
+        self.title = title
+    }
+
+    var body: some View {
+        ScrollView {
+            MediaGrid {
+                ForEach(viewModel.items) { item in
+                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            PosterImage(path: item.posterPath)
+                                .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                                .overlay(alignment: .topTrailing) {
+                                    if item.seen {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(.white, .green)
+                                            .padding(6)
+                                    }
+                                }
+                            if item.liked {
+                                Image(systemName: "heart.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                        .task {
+                            if item == viewModel.items.last { await viewModel.loadMore() }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical)
+
+            if viewModel.isLoading {
+                ProgressView().padding()
+            }
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+        .overlay {
+            if viewModel.items.isEmpty && !viewModel.isLoading {
+                ContentUnavailableView("Liste vide", systemImage: "rectangle.stack",
+                                       description: Text("Aucun média dans cette liste."))
+            }
+        }
+        .task { await viewModel.loadFirstPage() }
+    }
+}
