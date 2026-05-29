@@ -15,7 +15,7 @@ struct ListsView: View {
             if !viewModel.lists.isEmpty {
                 Section {
                     ForEach(viewModel.lists) { list in
-                        NavigationLink(value: ListRoute(listId: String(list.id), title: list.name)) {
+                        NavigationLink(value: ListRoute(listId: list.routeId, title: list.name)) {
                             row(for: list)
                         }
                     }
@@ -60,11 +60,11 @@ struct ListsView: View {
 
     private func row(for list: MediaListSummary) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: list.icon ?? (list.isSystem ? "star" : "list.bullet"))
-                .frame(width: 28)
-                .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
+                Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 if let description = list.description, !description.isEmpty {
                     Text(description)
                         .font(.caption)
@@ -73,9 +73,6 @@ struct ListsView: View {
                 }
             }
             Spacer()
-            Text("\(list.itemsCount)")
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
     }
 

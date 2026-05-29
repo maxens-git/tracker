@@ -38,6 +38,19 @@ struct MediaListSummary: Decodable, Identifiable, Hashable {
         itemsCountRaw ?? ((moviesCount ?? 0) + (showsCount ?? 0))
     }
 
+    /// Identifiant à passer à l'API pour récupérer les éléments.
+    /// Les listes système "Seen"/"J'aime" sont virtuelles côté backend (aucune ligne
+    /// dans MediaListItems) et ne sont accessibles que via leurs alias dédiés.
+    var routeId: String {
+        guard isSystem else { return String(id) }
+        switch name {
+        case "Watchlist": return "watchlist"
+        case "Seen": return "seen"
+        case "J'aime": return "liked"
+        default: return String(id)
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, name, description, icon, isSystem, createdAt, updatedAt
         case moviesCount, showsCount

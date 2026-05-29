@@ -19,25 +19,18 @@ struct ListDetailView: View {
             MediaGrid {
                 ForEach(viewModel.items) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            PosterImage(path: item.posterPath)
-                                .aspectRatio(2.0 / 3.0, contentMode: .fit)
-                                .overlay(alignment: .topTrailing) {
-                                    if item.seen {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(.white, .green)
-                                            .padding(6)
-                                    }
+                        PosterImage(path: item.posterPath)
+                            .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                            .overlay(alignment: .topTrailing) {
+                                if item.seen {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.white, .green)
+                                        .padding(6)
                                 }
-                            if item.liked {
-                                Image(systemName: "heart.fill")
-                                    .font(.caption)
-                                    .foregroundStyle(.red)
                             }
-                        }
-                        .task {
-                            if item == viewModel.items.last { await viewModel.loadMore() }
-                        }
+                            .task {
+                                if item == viewModel.items.last { await viewModel.loadMore() }
+                            }
                     }
                     .buttonStyle(.plain)
                 }
