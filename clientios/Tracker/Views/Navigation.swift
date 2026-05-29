@@ -20,6 +20,11 @@ struct ListRoute: Hashable {
     let title: String
 }
 
+/// Destination "détail d'une personne" (acteur / équipe).
+struct PersonRoute: Hashable {
+    let personId: Int
+}
+
 extension View {
     /// Branche les destinations communes (média + liste) sur un NavigationStack.
     func trackerNavigationDestinations() -> some View {
@@ -29,6 +34,9 @@ extension View {
             }
             .navigationDestination(for: ListRoute.self) { route in
                 ListDetailView(listId: route.listId, title: route.title)
+            }
+            .navigationDestination(for: PersonRoute.self) { route in
+                PersonView(personId: route.personId)
             }
     }
 }

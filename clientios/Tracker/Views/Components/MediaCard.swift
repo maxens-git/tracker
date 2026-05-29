@@ -20,14 +20,19 @@ struct MediaCard: View {
             Text(title)
                 .font(.subheadline.weight(.medium))
                 .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
 
-            if let subtitle {
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Text(subtitle ?? " ")
+                .font(.caption)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(.secondary)
         }
+        // La carte se cale en haut de sa cellule : l'affiche reste alignée d'une
+        // vignette à l'autre, et l'espace libre des titres courts passe en bas
+        // (plutôt qu'entre le titre et l'année).
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 }
 

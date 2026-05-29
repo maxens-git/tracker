@@ -120,6 +120,16 @@ struct TMDBService {
         return try await get(path)
     }
 
+    /// Détail d'une personne (acteur / membre d'équipe).
+    func person(_ id: Int) async throws -> TMDBPerson {
+        try await get("/person/\(id)")
+    }
+
+    /// Filmographie combinée (films + séries) d'une personne.
+    func personCombinedCredits(_ id: Int) async throws -> TMDBCombinedCredits {
+        try await get("/person/\(id)/combined_credits")
+    }
+
     // ── Helpers image ─────────────────────────────────────────────────────
 
     /// URL d'une affiche TMDB pour une taille donnée (ex. "w342", "w500", "original").

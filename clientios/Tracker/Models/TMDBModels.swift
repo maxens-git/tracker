@@ -227,6 +227,56 @@ enum CrewJob {
     ]
 }
 
+// ── Personne (détail + filmographie) ────────────────────────────────────────
+
+/// Détail d'une personne (GET /person/{id}).
+struct TMDBPerson: Decodable, Identifiable {
+    let id: Int
+    let name: String
+    let biography: String?
+    let birthday: String?
+    let deathday: String?
+    let placeOfBirth: String?
+    let profilePath: String?
+    let knownForDepartment: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, biography, birthday, deathday
+        case placeOfBirth = "place_of_birth"
+        case profilePath = "profile_path"
+        case knownForDepartment = "known_for_department"
+    }
+}
+
+/// Crédit (film ou série) d'une filmographie (GET /person/{id}/combined_credits).
+struct TMDBPersonCredit: Decodable, Identifiable, Hashable {
+    let id: Int
+    let mediaTypeRaw: String?
+    let title: String?       // films
+    let name: String?        // séries
+    let posterPath: String?
+    let releaseDate: String?
+    let firstAirDate: String?
+    let voteAverage: Double?
+    let character: String?
+    let job: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, name, character, job
+        case mediaTypeRaw = "media_type"
+        case posterPath = "poster_path"
+        case releaseDate = "release_date"
+        case firstAirDate = "first_air_date"
+        case voteAverage = "vote_average"
+    }
+}
+
+/// Filmographie combinée (films + séries) d'une personne.
+struct TMDBCombinedCredits: Decodable {
+    let cast: [TMDBPersonCredit]
+    let crew: [TMDBPersonCredit]
+}
+
 // ── Vidéos (bandes-annonces) ────────────────────────────────────────────────
 
 struct TMDBVideos: Decodable {

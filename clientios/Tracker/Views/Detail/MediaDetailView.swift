@@ -294,8 +294,11 @@ struct MediaDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(viewModel.cast, id: \.stableId) { person in
-                        personCard(name: person.name, role: person.character,
-                                   profilePath: person.profilePath)
+                        NavigationLink(value: PersonRoute(personId: person.id)) {
+                            personCard(name: person.name, role: person.character,
+                                       profilePath: person.profilePath)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal)
@@ -314,8 +317,11 @@ struct MediaDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(viewModel.crew, id: \.stableId) { person in
-                        personCard(name: person.name, role: person.localizedJob,
-                                   profilePath: person.profilePath)
+                        NavigationLink(value: PersonRoute(personId: person.id)) {
+                            personCard(name: person.name, role: person.localizedJob,
+                                       profilePath: person.profilePath)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal)
