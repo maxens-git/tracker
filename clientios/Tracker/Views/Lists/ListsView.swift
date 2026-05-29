@@ -27,6 +27,9 @@ struct ListsView: View {
         .overlay {
             if viewModel.isLoading && viewModel.lists.isEmpty {
                 ProgressView()
+            } else if let error = viewModel.errorMessage, viewModel.lists.isEmpty {
+                ContentUnavailableView("Erreur de chargement", systemImage: "wifi.slash",
+                                       description: Text(error))
             } else if viewModel.lists.isEmpty {
                 ContentUnavailableView("Aucune liste", systemImage: "list.bullet",
                                        description: Text("Créez une liste pour organiser vos médias."))

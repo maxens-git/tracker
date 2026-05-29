@@ -96,6 +96,11 @@ struct TMDBService {
         try await get("/tv/\(id)")
     }
 
+    /// Détail d'une saison (avec la liste des épisodes).
+    func season(showId: Int, seasonNumber: Int) async throws -> TMDBSeasonDetail {
+        try await get("/tv/\(showId)/season/\(seasonNumber)")
+    }
+
     /// Médias similaires (même type que le média consulté).
     func similar(_ id: Int, type: MediaType) async throws -> [TMDBSearchResult] {
         let path = type == .movie ? "/movie/\(id)/similar" : "/tv/\(id)/similar"

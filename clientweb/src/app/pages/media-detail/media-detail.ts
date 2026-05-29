@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
@@ -38,7 +38,7 @@ interface MediaDetailData {
 @Component({
   selector: 'app-media-detail',
   standalone: true,
-  imports: [CommonModule, Spinner, MediaRow],
+  imports: [CommonModule, RouterLink, Spinner, MediaRow],
   templateUrl: './media-detail.html',
   styleUrl: './media-detail.scss',
 })

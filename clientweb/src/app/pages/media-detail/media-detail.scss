@@ -367,6 +367,14 @@
 .cast-card {
   flex: 0 0 100px;
   text-align: center;
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    .cast-photo { border-color: var(--accent); }
+    .cast-name { color: var(--accent); }
+  }
 
   .cast-photo {
     width: 80px;
@@ -376,6 +384,7 @@
     margin: 0 auto 0.5rem;
     background: var(--surface);
     border: 2px solid var(--border);
+    transition: border-color 0.15s ease;
 
     img {
       width: 100%;

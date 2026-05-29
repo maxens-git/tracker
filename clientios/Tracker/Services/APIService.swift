@@ -19,7 +19,7 @@ struct APIService {
         self.session = session
 
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601withFractionalSeconds
+        decoder.dateDecodingStrategy = .trackerFlexible
         self.decoder = decoder
 
         self.encoder = JSONEncoder()
@@ -123,6 +123,15 @@ struct APIService {
                              method: "POST", body: body)
     }
 
+    func markSeasonSeen(showTmdbId: Int, season: Int, seen: Bool, episodeNumbers: [Int]) async throws {
+        let payload: [String: AnyEncodable] = [
+            "seen": AnyEncodable(seen),
+            "episodeNumbers": AnyEncodable(episodeNumbers),
+        ]
+        let body = try encoder.encode(payload)
+        try await rawRequest("/Shows/\(showTmdbId)/seasons/\(season)/seen", method: "POST", body: body)
+    }
+
     // ── Listes ────────────────────────────────────────────────────────────
 
     func lists() async throws -> [MediaListSummary] {
@@ -180,32 +189,51 @@ struct AnyEncodable: Encodable {
     func encode(to encoder: Encoder) throws { try encodeFunc(encoder) }
 }
 
-// MARK: - Décodage des dates ISO8601 avec fractions de seconde
+// MARK: - Décodage tolérant des dates
 
 extension JSONDecoder.DateDecodingStrategy {
-    /// ASP.NET sérialise les DateTime UTC avec des fractions de seconde
-    /// (ex. "2026-05-29T18:25:00.1234567Z"), que l'ISO8601 standard rejette.
-    static let iso8601withFractionalSeconds = custom { decoder in
+    /// ASP.NET peut sérialiser les DateTime de plusieurs façons :
+    /// avec ou sans fuseau ("...247331" vs "...Z"), avec un nombre variable de
+    /// décimales. On essaie plusieurs formats et, en dernier recours, on ne fait
+    /// jamais échouer tout le décodage pour une date (champ secondaire).
+    static let trackerFlexible = custom { decoder in
         let container = try decoder.singleValueContainer()
         let string = try container.decode(String.self)
-        if let date = ISO8601DateFormatter.fractional.date(from: string)
-            ?? ISO8601DateFormatter.plain.date(from: string) {
-            return date
-        }
-        throw DecodingError.dataCorruptedError(
-            in: container, debugDescription: "Date invalide: \(string)")
+        return TrackerDateParser.parse(string) ?? Date(timeIntervalSince1970: 0)
     }
 }
 
-private extension ISO8601DateFormatter {
-    static let fractional: ISO8601DateFormatter = {
+enum TrackerDateParser {
+    private static let isoFractional: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
-    static let plain: ISO8601DateFormatter = {
+    private static let isoPlain: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
         return f
     }()
+
+    /// Formats ASP.NET sans fuseau (interprétés comme UTC).
+    private static let formatters: [DateFormatter] = {
+        ["yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+         "yyyy-MM-dd'T'HH:mm:ss.SSS",
+         "yyyy-MM-dd'T'HH:mm:ss"].map { pattern in
+            let f = DateFormatter()
+            f.locale = Locale(identifier: "en_US_POSIX")
+            f.timeZone = TimeZone(identifier: "UTC")
+            f.dateFormat = pattern
+            return f
+        }
+    }()
+
+    static func parse(_ string: String) -> Date? {
+        if let d = isoFractional.date(from: string) { return d }
+        if let d = isoPlain.date(from: string) { return d }
+        for f in formatters {
+            if let d = f.date(from: string) { return d }
+        }
+        return nil
+    }
 }

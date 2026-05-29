@@ -7,6 +7,7 @@ import {
   TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
   TmdbSearchResponse, TmdbTrendingResult, MediaItem
 } from '../interfaces/media';
+import { TmdbPerson, TmdbCombinedCredits } from '../interfaces/person';
 
 const BASE = environment.tmdbBaseUrl;
 const KEY = environment.tmdbApiKey;
@@ -88,6 +89,14 @@ export class TmdbService {
     return this.http.get<TmdbSearchResponse>(`${BASE}/${mediaType}/top_rated`, { params: params({ page }) }).pipe(
       map(r => withMediaType(r, mediaType))
     );
+  }
+
+  person(personId: number): Observable<TmdbPerson> {
+    return this.http.get<TmdbPerson>(`${BASE}/person/${personId}`, { params: params() });
+  }
+
+  personCombinedCredits(personId: number): Observable<TmdbCombinedCredits> {
+    return this.http.get<TmdbCombinedCredits>(`${BASE}/person/${personId}/combined_credits`, { params: params() });
   }
 
   fetchMany(items: { tmdbId: number; mediaType: string }[]): Observable<MediaItem[]> {

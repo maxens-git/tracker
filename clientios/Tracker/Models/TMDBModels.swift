@@ -130,6 +130,38 @@ struct TMDBGenre: Decodable, Identifiable, Hashable {
     let name: String
 }
 
+/// Détail d'une saison avec ses épisodes (GET /tv/{id}/season/{n}).
+struct TMDBSeasonDetail: Decodable {
+    let id: Int
+    let seasonNumber: Int
+    let name: String
+    let episodes: [TMDBEpisode]
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, episodes
+        case seasonNumber = "season_number"
+    }
+}
+
+struct TMDBEpisode: Decodable, Identifiable, Hashable {
+    let id: Int
+    let episodeNumber: Int
+    let seasonNumber: Int
+    let name: String
+    let overview: String?
+    let runtime: Int?
+    let airDate: String?
+    let stillPath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, overview, runtime
+        case episodeNumber = "episode_number"
+        case seasonNumber = "season_number"
+        case airDate = "air_date"
+        case stillPath = "still_path"
+    }
+}
+
 // ── Crédits (distribution / équipe) ─────────────────────────────────────────
 
 struct TMDBCredits: Decodable {

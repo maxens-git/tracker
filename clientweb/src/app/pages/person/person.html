@@ -1,0 +1,60 @@
+@if (loading()) {
+  <app-spinner />
+} @else if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+} @else if (person(); as p) {
+
+  <div class="person-page mx-auto px-4 pb-5 pt-4">
+
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+
+    <section class="header-section">
+      <div class="photo-wrap">
+        @if (profile(p.profile_path); as img) {
+          <img class="photo" [src]="img" [alt]="p.name" />
+        } @else {
+          <div class="photo-placeholder">{{ p.name[0] }}</div>
+        }
+      </div>
+
+      <div class="info">
+        <h1 class="name">{{ p.name }}</h1>
+        @if (p.known_for_department) {
+          <p class="department">{{ p.known_for_department }}</p>
+        }
+
+        <ul class="facts">
+          @if (p.birthday) {
+            <li>
+              <span class="label">Naissance</span>
+              <span>{{ p.birthday | date:'longDate' }}@if (age !== null) { ({{ age }} ans) }</span>
+            </li>
+          }
+          @if (p.deathday) {
+            <li><span class="label">Décès</span><span>{{ p.deathday | date:'longDate' }}</span></li>
+          }
+          @if (p.place_of_birth) {
+            <li><span class="label">Lieu</span><span>{{ p.place_of_birth }}</span></li>
+          }
+        </ul>
+
+        @if (p.biography) {
+          <p class="biography">{{ p.biography }}</p>
+        }
+      </div>
+    </section>
+
+    @if (filmography().length) {
+      <section class="content-section">
+        <h2 class="section-title">Filmographie</h2>
+        <div class="grid">
+          @for (item of filmography(); track item.media_type + '-' + item.id) {
+            <app-poster-card [item]="item" />
+          }
+        </div>
+      </section>
+    } @else {
+      <p class="status">Aucune œuvre trouvée.</p>
+    }
+  </div>
+}

@@ -25,9 +25,24 @@ struct MediaListSummary: Decodable, Identifiable, Hashable {
     let description: String?
     let icon: String?
     let isSystem: Bool
-    let itemsCount: Int
-    let createdAt: Date
+    let createdAt: Date?
     let updatedAt: Date?
+
+    // La prod renvoie moviesCount/showsCount ; d'anciennes versions itemsCount.
+    private let moviesCount: Int?
+    private let showsCount: Int?
+    private let itemsCountRaw: Int?
+
+    /// Nombre total d'éléments, quel que soit le format renvoyé par le backend.
+    var itemsCount: Int {
+        itemsCountRaw ?? ((moviesCount ?? 0) + (showsCount ?? 0))
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, icon, isSystem, createdAt, updatedAt
+        case moviesCount, showsCount
+        case itemsCountRaw = "itemsCount"
+    }
 }
 
 /// Élément d'une liste, enrichi de l'état utilisateur.
@@ -37,7 +52,7 @@ struct MediaListItem: Decodable, Identifiable, Hashable {
     let posterPath: String?
     let seen: Bool
     let liked: Bool
-    let addedAt: Date
+    let addedAt: Date?
 
     var id: Int { tmdbId }
 

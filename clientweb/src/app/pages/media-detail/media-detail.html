@@ -176,7 +176,7 @@
         <h2 class="section-title">Distribution</h2>
         <div class="cast-list">
           @for (person of credits()!.cast.slice(0, 12); track person.id) {
-            <div class="cast-card">
+            <a class="cast-card" [routerLink]="['/person', person.id]">
               <div class="cast-photo">
                 @if (profileUrl(person.profile_path); as p) {
                   <img [src]="p" [alt]="person.name" loading="lazy" />
@@ -188,7 +188,7 @@
               @if (person.character) {
                 <p class="cast-character">{{ person.character }}</p>
               }
-            </div>
+            </a>
           }
         </div>
       </section>
