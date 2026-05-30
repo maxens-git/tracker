@@ -39,18 +39,16 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     [HttpPost("{tmdbId}/seen")]
     public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
     {
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type));
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type), dto.PosterPath, dto.Runtime);
         um.Seen = dto.Seen;
-        if (dto.Runtime.HasValue)
-            um.Runtime = dto.Runtime;
         await context.SaveChangesAsync();
         return Ok(new { tmdbId, seen = um.Seen });
     }
 
     [HttpPost("{tmdbId}/liked")]
-    public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromBody] bool liked)
+    public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromQuery] string? posterPath, [FromBody] bool liked)
     {
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type));
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type), posterPath);
         um.Liked = liked;
         await context.SaveChangesAsync();
         return Ok(new { tmdbId, liked = um.Liked });

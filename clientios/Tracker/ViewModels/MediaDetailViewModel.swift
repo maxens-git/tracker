@@ -119,7 +119,7 @@ final class MediaDetailViewModel {
         let newValue = !seen
         applyLocalState(seen: newValue, liked: liked)
         do {
-            try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue, runtime: movie?.runtime)
+            try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue, posterPath: posterPath, runtime: movie?.runtime)
         } catch {
             applyLocalState(seen: !newValue, liked: liked)
             errorMessage = error.localizedDescription
@@ -130,7 +130,7 @@ final class MediaDetailViewModel {
         let newValue = !liked
         applyLocalState(seen: seen, liked: newValue)
         do {
-            try await api.markLiked(tmdbId: tmdbId, type: type, liked: newValue)
+            try await api.markLiked(tmdbId: tmdbId, type: type, liked: newValue, posterPath: posterPath)
         } catch {
             applyLocalState(seen: seen, liked: !newValue)
             errorMessage = error.localizedDescription

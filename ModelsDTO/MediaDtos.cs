@@ -9,6 +9,7 @@ public class AddToWatchlistDto
 public class MarkSeenDto
 {
     public bool Seen { get; set; }
+    public string? PosterPath { get; set; }
     public int? Runtime { get; set; }
 }
 

@@ -83,18 +83,21 @@ struct APIService {
         ])
     }
 
-    func markSeen(tmdbId: Int, type: MediaType, seen: Bool, runtime: Int? = nil) async throws {
+    func markSeen(tmdbId: Int, type: MediaType, seen: Bool, posterPath: String? = nil, runtime: Int? = nil) async throws {
         var payload: [String: AnyEncodable] = ["seen": AnyEncodable(seen)]
+        if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
         if let runtime { payload["runtime"] = AnyEncodable(runtime) }
         let body = try encoder.encode(payload)
         try await rawRequest("/Media/\(tmdbId)/seen", method: "POST",
                              query: [URLQueryItem(name: "type", value: type.rawValue)], body: body)
     }
 
-    func markLiked(tmdbId: Int, type: MediaType, liked: Bool) async throws {
+    func markLiked(tmdbId: Int, type: MediaType, liked: Bool, posterPath: String? = nil) async throws {
         let body = try encoder.encode(liked)
+        var query = [URLQueryItem(name: "type", value: type.rawValue)]
+        if let posterPath { query.append(URLQueryItem(name: "posterPath", value: posterPath)) }
         try await rawRequest("/Media/\(tmdbId)/liked", method: "POST",
-                             query: [URLQueryItem(name: "type", value: type.rawValue)], body: body)
+                             query: query, body: body)
     }
 
     func addToWatchlist(tmdbId: Int, type: MediaType, posterPath: String?, runtime: Int? = nil) async throws {

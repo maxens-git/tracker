@@ -12,15 +12,23 @@ struct PosterImage: View {
     var size: String = "w342"
 
     var body: some View {
-        AsyncImage(url: TMDBService.posterURL(path, size: size)) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            case .failure:
-                placeholder
-            case .empty:
-                placeholder.overlay(ProgressView())
-            @unknown default:
+        Group {
+            if let url = TMDBService.posterURL(path, size: size) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure:
+                        placeholder
+                    case .empty:
+                        placeholder.overlay(ProgressView())
+                    @unknown default:
+                        placeholder
+                    }
+                }
+            } else {
+                // Pas d'affiche disponible : on affiche le placeholder sans spinner
+                // (sinon AsyncImage(url: nil) reste bloqué en .empty → loading infini).
                 placeholder
             }
         }
