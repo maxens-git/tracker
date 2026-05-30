@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../../shared/services/api';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { SLUG_BY_SYSTEM_LIST } from '../../../shared/constants';
 
 @Component({
   selector: 'app-lists',
@@ -28,6 +29,14 @@ export class Lists implements OnInit {
   listIcon(list: MediaListSummary): string {
     if (list.icon) return list.icon;
     return list.name.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Identifiant de route : slug pour les listes système (virtuelles côté backend),
+   * id numérique pour les listes personnalisées.
+   */
+  listRouteId(list: MediaListSummary): string | number {
+    return (list.isSystem && SLUG_BY_SYSTEM_LIST[list.name]) || list.id;
   }
 
   totalCount(list: MediaListSummary): string {

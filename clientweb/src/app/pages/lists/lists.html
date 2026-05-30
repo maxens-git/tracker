@@ -12,7 +12,7 @@
   } @else {
     <div class="lists-grid">
       @for (list of lists(); track list.id) {
-        <a [routerLink]="['/lists', list.id]" class="list-card text-decoration-none">
+        <a [routerLink]="['/lists', listRouteId(list)]" class="list-card text-decoration-none">
           <div class="list-icon">{{ listIcon(list) }}</div>
           <div class="list-info">
             <div class="list-name">
