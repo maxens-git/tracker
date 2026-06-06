@@ -383,8 +383,20 @@ export class MediaDetail implements OnInit {
     return this.seasonPending().has(seasonNumber);
   }
 
+  /** Nombre d'épisodes vus d'une saison, dérivé de la map (sans charger les épisodes). */
   seasonSeenCount(season: SeasonView): number {
-    return season.episodes.filter(ep => ep.seen).length;
+    return this.seenCountInSeason(season.season_number);
+  }
+
+  /** Saison entièrement vue, dérivé de la map + episode_count (sans charger les épisodes). */
+  isSeasonSeen(season: SeasonView): boolean {
+    return season.episode_count > 0 && this.seenCountInSeason(season.season_number) >= season.episode_count;
+  }
+
+  /** Pourcentage de progression d'une saison, borné à 100. */
+  seasonProgress(season: SeasonView): number {
+    if (season.episode_count <= 0) return 0;
+    return Math.min(100, (this.seenCountInSeason(season.season_number) / season.episode_count) * 100);
   }
 
   toggleEpisodeSeen(ep: TmdbEpisode, event: Event) {
@@ -411,9 +423,12 @@ export class MediaDetail implements OnInit {
   toggleSeasonSeen(season: SeasonView, event: Event) {
     event.stopPropagation();
     if (this.isSeasonPending(season.season_number)) return;
-    const newSeen = !season.seen;
+    const newSeen = !this.isSeasonSeen(season);
     const showId = this.show()!.id;
-    const episodeNumbers = season.episodes.map(ep => ep.episode_number);
+    // Si les épisodes ne sont pas chargés, on utilise 1..episode_count (comme le bouton série).
+    const episodeNumbers = season.episodes.length > 0
+      ? season.episodes.map(ep => ep.episode_number)
+      : episodeRange(season.episode_count);
 
     this.seasonPending.update(s => new Set([...s, season.season_number]));
     this.patchSeason(season.season_number, newSeen);
@@ -443,7 +458,9 @@ export class MediaDetail implements OnInit {
 
   private patchSeason(seasonNumber: number, seen: boolean) {
     const season = this.seasons().find(s => s.season_number === seasonNumber);
-    const episodeNumbers = season?.episodes.map(ep => ep.episode_number) ?? [];
+    const episodeNumbers = (season && season.episodes.length > 0)
+      ? season.episodes.map(ep => ep.episode_number)
+      : episodeRange(season?.episode_count ?? 0);
     // Garde la map des épisodes synchro pour que la dérivation série soit correcte.
     this.episodesSeen.update(m => {
       const n = new Map(m);
@@ -482,15 +499,19 @@ export class MediaDetail implements OnInit {
     return seasons.every(s => this.isSeasonFullySeen(s.season_number, s.episode_count));
   }
 
-  /** Compte les épisodes vus d'une saison dans la map et compare au total TMDB. */
-  private isSeasonFullySeen(seasonNumber: number, episodeCount: number): boolean {
-    if (episodeCount <= 0) return false;
+  /** Compte les épisodes vus d'une saison dans la map. */
+  private seenCountInSeason(seasonNumber: number): number {
     const prefix = `${seasonNumber}-`;
     let seen = 0;
     for (const [key, val] of this.episodesSeen()) {
       if (val && key.startsWith(prefix)) seen++;
     }
-    return seen >= episodeCount;
+    return seen;
+  }
+
+  /** Compte les épisodes vus d'une saison dans la map et compare au total TMDB. */
+  private isSeasonFullySeen(seasonNumber: number, episodeCount: number): boolean {
+    return episodeCount > 0 && this.seenCountInSeason(seasonNumber) >= episodeCount;
   }
 
   private refreshSeasonsSeen() {

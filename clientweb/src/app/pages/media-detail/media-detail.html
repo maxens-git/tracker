@@ -227,10 +227,11 @@
           <div class="seasons-list">
             @for (season of seasonList; track season.season_number) {
               @let seenCount = seasonSeenCount(season);
-              @let total = season.episodes.length;
+              @let total = season.episode_count;
+              @let seasonSeen = isSeasonSeen(season);
               @let isExpanded = isSeasonExpanded(season.season_number);
 
-              <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="season.seen">
+              <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="seasonSeen">
 
                 <div class="season-header" (click)="toggleSeason(season.season_number)">
                   @if (poster(season.poster_path); as p) {
@@ -245,10 +246,10 @@
                       @if (year(season.air_date); as y) { {{ y }} · }
                       {{ season.episode_count }} épisode{{ season.episode_count > 1 ? 's' : '' }}
                     </span>
-                    @if (season.loaded && total > 0) {
+                    @if (total > 0) {
                       <div class="season-progress">
                         <div class="progress-bar">
-                          <div class="progress-fill" [style.width.%]="(seenCount / total) * 100"></div>
+                          <div class="progress-fill" [style.width.%]="seasonProgress(season)"></div>
                         </div>
                         <span class="progress-label">{{ seenCount }}/{{ total }}</span>
                       </div>
@@ -256,17 +257,15 @@
                   </div>
 
                   <div class="season-actions">
-                    @if (season.loaded) {
-                      <button
-                        class="btn-season-seen"
-                        [class.active]="season.seen"
-                        [disabled]="isSeasonPending(season.season_number)"
-                        (click)="toggleSeasonSeen(season, $event)"
-                        [title]="season.seen ? 'Marquer non vu' : 'Tout marquer vu'"
-                      >
-                        {{ season.seen ? '✓ Vu' : 'Tout vu' }}
-                      </button>
-                    }
+                    <button
+                      class="btn-season-seen"
+                      [class.active]="seasonSeen"
+                      [disabled]="isSeasonPending(season.season_number)"
+                      (click)="toggleSeasonSeen(season, $event)"
+                      [title]="seasonSeen ? 'Marquer non vu' : 'Tout marquer vu'"
+                    >
+                      {{ seasonSeen ? '✓ Vu' : 'Tout vu' }}
+                    </button>
                     <span class="chevron" [class.open]="isExpanded">›</span>
                   </div>
                 </div>

@@ -155,13 +155,15 @@ final class MediaDetailViewModel {
         episodesSeen.contains(epKey(season, episode))
     }
 
+    /// Nombre d'épisodes vus d'une saison, dérivé du set (sans charger les épisodes).
     func seenCount(inSeason season: Int) -> Int {
-        (seasonEpisodes[season] ?? []).filter { isEpisodeSeen(season: season, episode: $0.episodeNumber) }.count
+        let prefix = "\(season)-"
+        return episodesSeen.filter { $0.hasPrefix(prefix) }.count
     }
 
-    func isSeasonFullySeen(_ season: Int) -> Bool {
-        guard let eps = seasonEpisodes[season], !eps.isEmpty else { return false }
-        return eps.allSatisfy { isEpisodeSeen(season: season, episode: $0.episodeNumber) }
+    /// Saison entièrement vue, dérivé du set + episodeCount (sans charger les épisodes).
+    func isSeasonFullySeen(_ season: Int, episodeCount: Int) -> Bool {
+        episodeCount > 0 && seenCount(inSeason: season) >= episodeCount
     }
 
     /// Déplie / replie une saison, en chargeant ses épisodes au besoin.
@@ -199,10 +201,13 @@ final class MediaDetailViewModel {
         await syncShowSeen()
     }
 
-    func toggleSeasonSeen(_ season: Int) async {
-        guard let showId = show?.id, let eps = seasonEpisodes[season] else { return }
-        let newSeen = !isSeasonFullySeen(season)
-        let numbers = eps.map(\.episodeNumber)
+    func toggleSeasonSeen(_ season: Int, episodeCount: Int) async {
+        guard let showId = show?.id else { return }
+        let newSeen = !isSeasonFullySeen(season, episodeCount: episodeCount)
+        // Si les épisodes ne sont pas chargés, on utilise 1...episodeCount (comme le bouton série).
+        let numbers = seasonEpisodes[season]?.map(\.episodeNumber)
+            ?? (episodeCount > 0 ? Array(1...episodeCount) : [])
+        guard !numbers.isEmpty else { return }
         let previous = episodesSeen
 
         for number in numbers {

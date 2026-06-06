@@ -124,46 +124,59 @@ struct MediaDetailView: View {
     @ViewBuilder
     private func seasonBlock(_ season: TMDBSeasonSummary) -> some View {
         let number = season.seasonNumber
+        let episodeCount = season.episodeCount ?? 0
         let expanded = viewModel.expandedSeason == number
+        let seen = viewModel.seenCount(inSeason: number)
+        let fullySeen = viewModel.isSeasonFullySeen(number, episodeCount: episodeCount)
 
         VStack(spacing: 0) {
-            Button {
-                Task { await viewModel.toggleSeason(number) }
-            } label: {
-                HStack(spacing: 12) {
-                    PosterImage(path: season.posterPath)
-                        .frame(width: 46, height: 69)
+            HStack(spacing: 12) {
+                PosterImage(path: season.posterPath)
+                    .frame(width: 46, height: 69)
 
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(season.name)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                        Text("\(season.episodeCount ?? 0) épisodes")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        if viewModel.seasonEpisodes[number] != nil {
-                            let total = viewModel.seasonEpisodes[number]?.count ?? 0
-                            let seen = viewModel.seenCount(inSeason: number)
-                            ProgressView(value: total > 0 ? Double(seen) / Double(total) : 0)
-                                .tint(.green)
-                            Text("\(seen)/\(total) vus")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.subheadline)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(season.name)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("\(episodeCount) épisodes")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                        .rotationEffect(.degrees(expanded ? 90 : 0))
+                    // Progression dérivée des états (sans charger les épisodes).
+                    if episodeCount > 0 {
+                        ProgressView(value: min(Double(seen) / Double(episodeCount), 1))
+                            .tint(.green)
+                        Text("\(seen)/\(episodeCount) vus")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .padding(10)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                Spacer()
+
+                // Badge / bouton "tout vu" disponible dès l'ouverture.
+                if episodeCount > 0 {
+                    Button {
+                        Task { await viewModel.toggleSeasonSeen(number, episodeCount: episodeCount) }
+                    } label: {
+                        Image(systemName: fullySeen ? "checkmark.circle.fill" : "checkmark.circle")
+                            .font(.title3)
+                            .foregroundStyle(fullySeen ? .green : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .rotationEffect(.degrees(expanded ? 90 : 0))
             }
-            .buttonStyle(.plain)
+            .padding(10)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Task { await viewModel.toggleSeason(number) }
+            }
 
             if expanded {
                 seasonEpisodesList(number)
@@ -179,20 +192,6 @@ struct MediaDetailView: View {
                 .padding()
         } else if let episodes = viewModel.seasonEpisodes[season], !episodes.isEmpty {
             VStack(spacing: 0) {
-                Button {
-                    Task { await viewModel.toggleSeasonSeen(season) }
-                } label: {
-                    let allSeen = viewModel.isSeasonFullySeen(season)
-                    Label(allSeen ? "Tout marquer non vu" : "Tout marquer vu",
-                          systemImage: allSeen ? "checkmark.circle.fill" : "checkmark.circle")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(allSeen ? .green : .accentColor)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 10)
-                }
-                .buttonStyle(.plain)
-
                 ForEach(episodes) { episode in
                     episodeRow(season: season, episode: episode)
                     if episode.id != episodes.last?.id {
