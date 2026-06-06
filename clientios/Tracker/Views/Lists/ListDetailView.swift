@@ -19,7 +19,7 @@ struct ListDetailView: View {
             MediaGrid {
                 ForEach(viewModel.items) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        PosterImage(path: item.posterPath)
+                        PosterImage(path: viewModel.posterPath(for: item))
                             .aspectRatio(2.0 / 3.0, contentMode: .fit)
                             .overlay(alignment: .topTrailing) {
                                 if item.seen {
