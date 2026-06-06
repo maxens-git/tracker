@@ -7,6 +7,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
+    @State private var showingSettings = false
 
     var body: some View {
         ScrollView {
@@ -34,6 +35,24 @@ struct HomeView: View {
             if let error = viewModel.errorMessage, viewModel.trending.isEmpty {
                 ContentUnavailableView("Erreur", systemImage: "wifi.slash", description: Text(error))
             }
+        }
+        // Bouton réglages flottant : la barre de navigation est masquée sur l'accueil,
+        // on superpose donc le bouton en haut à droite.
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showingSettings = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .padding(10)
+                    .background(.black.opacity(0.35), in: Circle())
+            }
+            .padding(.top, 12)
+            .padding(.trailing, 16)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
 
