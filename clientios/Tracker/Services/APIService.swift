@@ -135,6 +135,19 @@ struct APIService {
         try await rawRequest("/Shows/\(showTmdbId)/seasons/\(season)/seen", method: "POST", body: body)
     }
 
+    /// Marque la série entière vue / non vue, en propageant à toutes les saisons/épisodes fournis.
+    func markShowSeen(showTmdbId: Int, seen: Bool, seasons: [(seasonNumber: Int, episodeNumbers: [Int])]) async throws {
+        let payload: [String: AnyEncodable] = [
+            "seen": AnyEncodable(seen),
+            "seasons": AnyEncodable(seasons.map { season in
+                ["seasonNumber": AnyEncodable(season.seasonNumber),
+                 "episodeNumbers": AnyEncodable(season.episodeNumbers)]
+            }),
+        ]
+        let body = try encoder.encode(payload)
+        try await rawRequest("/Shows/\(showTmdbId)/seen", method: "POST", body: body)
+    }
+
     // ── Listes ────────────────────────────────────────────────────────────
 
     func lists() async throws -> [MediaListSummary] {

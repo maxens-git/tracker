@@ -31,6 +31,17 @@ struct MediaDetailView: View {
                 if !viewModel.cast.isEmpty { castSection }
                 if !viewModel.crew.isEmpty { crewSection }
                 if !viewModel.similar.isEmpty { similarSection }
+
+                if viewModel.isLoadingExtras {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                        Text("Chargement…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
+                }
             }
             .padding(.vertical)
         }
@@ -42,6 +53,7 @@ struct MediaDetailView: View {
             }
         }
         .task { await viewModel.load() }
+        .refreshable { await viewModel.load(forceRefresh: true) }
     }
 
     // ── Sous-vues ─────────────────────────────────────────────────────────

@@ -19,6 +19,8 @@ final class MediaDetailViewModel {
     private(set) var crew: [TMDBCrewMember] = []
     private(set) var trailers: [TMDBVideo] = []
     private(set) var isLoading = false
+    /// Chargement du contenu secondaire (distribution, équipe, bandes-annonces, similaires).
+    private(set) var isLoadingExtras = false
     var errorMessage: String?
 
     // ── Saisons / épisodes (séries) ───────────────────────────────────────
@@ -54,7 +56,14 @@ final class MediaDetailViewModel {
     var seen: Bool { state?.seen ?? false }
     var liked: Bool { state?.liked ?? false }
 
-    func load() async {
+    func load(forceRefresh: Bool = false) async {
+        // Pull-to-refresh : on ignore le cache HTTP pour refaire de vrais appels réseau
+        // (sinon TMDB resert les mêmes réponses depuis le cache → "rien ne change").
+        // On NE vide PAS le contenu déjà affiché : les nouvelles données le remplacent
+        // en place, sans faire disparaître la partie sous le synopsis pendant le rechargement.
+        if forceRefresh {
+            URLCache.shared.removeAllCachedResponses()
+        }
         isLoading = true
         errorMessage = nil
         do {
@@ -74,12 +83,19 @@ final class MediaDetailViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+        isLoading = false
+
         // Contenus secondaires : un échec ne doit pas masquer le détail.
+        isLoadingExtras = true
         async let similar = tmdb.similar(tmdbId, type: type)
         async let credits = tmdb.credits(tmdbId, type: type)
         async let videos = tmdb.videos(tmdbId, type: type)
 
-        self.similar = (try? await similar) ?? []
+        // On ne remplace qu'en cas de succès : un échec réseau ne doit pas vider
+        // le contenu déjà affiché (sinon la section disparaît au rafraîchissement).
+        if let similarResults = try? await similar {
+            self.similar = similarResults
+        }
 
         if let credits = try? await credits {
             cast = Array(credits.cast.prefix(12))
@@ -89,7 +105,7 @@ final class MediaDetailViewModel {
             trailers = filterTrailers(videos.results)
         }
 
-        isLoading = false
+        isLoadingExtras = false
     }
 
     /// Sélectionne les bandes-annonces : YouTube, type Trailer/Teaser,
@@ -121,12 +137,54 @@ final class MediaDetailViewModel {
 
     func toggleSeen() async {
         let newValue = !seen
+
+        // Séries : marquer la série « vue » doit propager à toutes ses saisons/épisodes
+        // (et inversement pour « non vue »), via l'endpoint dédié /Shows/{id}/seen.
+        if type == .tv {
+            await toggleShowSeen(newValue)
+            return
+        }
+
         applyLocalState(seen: newValue, liked: liked)
         do {
             try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue, posterPath: posterPath, runtime: movie?.runtime)
             newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
             applyLocalState(seen: !newValue, liked: liked)
+            errorMessage = error.localizedDescription
+            Haptics.error()
+        }
+    }
+
+    /// Marque la série entière vue / non vue et propage à toutes ses saisons/épisodes.
+    private func toggleShowSeen(_ newValue: Bool) async {
+        // Toutes les saisons réelles avec leurs numéros d'épisodes (1...episodeCount).
+        let allSeasons: [(seasonNumber: Int, episodeNumbers: [Int])] = seasons.compactMap { season in
+            let count = season.episodeCount ?? 0
+            guard count > 0 else { return nil }
+            return (season.seasonNumber, Array(1...count))
+        }
+
+        // Sauvegarde pour rollback.
+        let previousState = state
+        let previousEpisodes = episodesSeen
+
+        // Mise à jour optimiste : état global + set d'épisodes.
+        applyLocalState(seen: newValue, liked: liked)
+        if newValue {
+            for season in allSeasons {
+                for ep in season.episodeNumbers { episodesSeen.insert(epKey(season.seasonNumber, ep)) }
+            }
+        } else {
+            episodesSeen.removeAll()
+        }
+
+        do {
+            try await api.markShowSeen(showTmdbId: tmdbId, seen: newValue, seasons: allSeasons)
+            newValue ? Haptics.success() : Haptics.impact(.light)
+        } catch {
+            state = previousState
+            episodesSeen = previousEpisodes
             errorMessage = error.localizedDescription
             Haptics.error()
         }
