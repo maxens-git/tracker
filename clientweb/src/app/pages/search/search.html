@@ -1,5 +1,5 @@
 <div class="search-page mx-auto px-4 pb-5 pt-4">
-  <div class="search-bar mb-5">
+  <div class="search-bar mb-3">
     <input
       type="search"
       placeholder="Rechercher un film ou une série…"
@@ -9,6 +9,20 @@
       class="w-100"
     />
   </div>
+
+  @if (searched()) {
+    <div class="filter-tabs mb-4">
+      <button class="filter-tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">
+        Tout <span class="count">{{ allResults().length }}</span>
+      </button>
+      <button class="filter-tab" [class.active]="filter() === 'movie'" (click)="setFilter('movie')">
+        Films <span class="count">{{ movieCount() }}</span>
+      </button>
+      <button class="filter-tab" [class.active]="filter() === 'tv'" (click)="setFilter('tv')">
+        Séries <span class="count">{{ showCount() }}</span>
+      </button>
+    </div>
+  }
 
   @if (loading()) {
     <app-spinner />

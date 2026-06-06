@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,12 +25,27 @@ export class Search implements OnInit {
   private query$ = new Subject<string>();
 
   query = '';
-  results = signal<MediaItem[]>([]);
+  allResults = signal<MediaItem[]>([]);
   loading = signal(false);
   searched = signal(false);
+  filter = signal<'all' | 'movie' | 'tv'>('all');
+
+  /** Résultats filtrés par type (film / série / tout). */
+  results = computed(() => {
+    const f = this.filter();
+    const all = this.allResults();
+    return f === 'all' ? all : all.filter(r => r.media_type === f);
+  });
+
+  movieCount = computed(() => this.allResults().filter(r => r.media_type === 'movie').length);
+  showCount = computed(() => this.allResults().filter(r => r.media_type === 'tv').length);
 
   ngOnInit() {
     const initial = this.route.snapshot.queryParamMap.get('q') ?? '';
+    const initialType = this.route.snapshot.queryParamMap.get('type');
+    if (initialType === 'movie' || initialType === 'tv') {
+      this.filter.set(initialType);
+    }
     if (initial) {
       this.query = initial;
       this.searched.set(true);
@@ -42,7 +57,7 @@ export class Search implements OnInit {
       distinctUntilChanged(),
       switchMap(q => {
         if (!q.trim()) {
-          this.results.set([]);
+          this.allResults.set([]);
           this.searched.set(false);
           this.loading.set(false);
           this.router.navigate([], { queryParams: {}, replaceUrl: true });
@@ -50,7 +65,7 @@ export class Search implements OnInit {
         }
         this.loading.set(true);
         this.searched.set(true);
-        this.router.navigate([], { queryParams: { q }, replaceUrl: true });
+        this.syncQueryParams(q);
         return this.tmdb.search(q).pipe(catchError(() => of(null)));
       }),
       switchMap(resp => {
@@ -74,7 +89,7 @@ export class Search implements OnInit {
       })
     ).subscribe({
       next: results => {
-        if (results) this.results.set(results);
+        if (results) this.allResults.set(results);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -84,4 +99,17 @@ export class Search implements OnInit {
   }
 
   onInput() { this.query$.next(this.query); }
+
+  setFilter(f: 'all' | 'movie' | 'tv') {
+    this.filter.set(f);
+    if (this.query.trim()) this.syncQueryParams(this.query);
+  }
+
+  private syncQueryParams(q: string) {
+    const type = this.filter();
+    this.router.navigate([], {
+      queryParams: type === 'all' ? { q } : { q, type },
+      replaceUrl: true,
+    });
+  }
 }

@@ -9,9 +9,21 @@ import Foundation
 @MainActor
 final class SearchViewModel {
     var query = ""
-    private(set) var results: [TMDBSearchResult] = []
+    private(set) var allResults: [TMDBSearchResult] = []
     private(set) var isLoading = false
     var errorMessage: String?
+
+    /// Filtre de type : nil = Tout, sinon film ou série.
+    var filter: MediaType?
+
+    /// Résultats filtrés par type (film / série / tout).
+    var results: [TMDBSearchResult] {
+        guard let filter else { return allResults }
+        return allResults.filter { $0.mediaType == filter }
+    }
+
+    var movieCount: Int { allResults.filter { $0.mediaType == .movie }.count }
+    var showCount: Int { allResults.filter { $0.mediaType == .tv }.count }
 
     private let tmdb = TMDBService.shared
     private var searchTask: Task<Void, Never>?
@@ -22,7 +34,7 @@ final class SearchViewModel {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
-            results = []
+            allResults = []
             isLoading = false
             return
         }
@@ -41,7 +53,7 @@ final class SearchViewModel {
             let response = try await tmdb.searchMulti(text)
             guard !Task.isCancelled else { return }
             // On ne garde que films et séries (pas les personnes).
-            results = response.results.filter {
+            allResults = response.results.filter {
                 $0.mediaTypeRaw == nil || $0.mediaTypeRaw == "movie" || $0.mediaTypeRaw == "tv"
             }
         } catch {

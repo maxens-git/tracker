@@ -23,6 +23,40 @@
   &.hint { color: #6b7884; }
 }
 
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  background: #1c2228;
+  border: 1px solid #2a3540;
+  border-radius: 999px;
+  color: #8b9aa8;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover { border-color: #3a4654; color: #cdd6df; }
+
+  &.active {
+    background: #00c030;
+    border-color: #00c030;
+    color: #08130a;
+    font-weight: 600;
+  }
+
+  .count {
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

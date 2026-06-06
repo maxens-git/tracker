@@ -10,6 +10,16 @@ struct SearchView: View {
 
     var body: some View {
         ScrollView {
+            if !viewModel.allResults.isEmpty {
+                Picker("Filtre", selection: $viewModel.filter) {
+                    Text("Tout (\(viewModel.allResults.count))").tag(MediaType?.none)
+                    Text("Films (\(viewModel.movieCount))").tag(MediaType?.some(.movie))
+                    Text("Séries (\(viewModel.showCount))").tag(MediaType?.some(.tv))
+                }
+                .pickerStyle(.segmented)
+                .padding([.horizontal, .top])
+            }
+
             if viewModel.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
