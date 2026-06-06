@@ -110,15 +110,36 @@
 }
 
 .page-btn {
-  padding: 0.35rem 0.75rem;
+  min-width: 2.1rem;
+  padding: 0.35rem 0.6rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--muted);
   font-size: 0.82rem;
+  text-align: center;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
-  &:hover { background: #202830; color: var(--text); }
+  &:hover:not(:disabled) { background: #202830; color: var(--text); }
   &.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  &.nav { font-size: 1rem; line-height: 1; }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.page-ellipsis {
+  min-width: 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  user-select: none;
+}
+
+.pagination-info {
+  margin-top: 0.6rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
