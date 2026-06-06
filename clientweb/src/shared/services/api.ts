@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { UserState } from '../interfaces/media';
 import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/list';
 import { Stats } from '../interfaces/stats';
-import { EpisodeSeenDto } from '../interfaces/movie';
+import { EpisodeSeenDto } from '../interfaces/episode';
 
 const API = '/api';
 

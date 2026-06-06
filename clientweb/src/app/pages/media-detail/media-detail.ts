@@ -14,7 +14,7 @@ import {
 import { PRIORITY_CREW_JOBS, localizedJob } from '../../../shared/services/crew';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/services/tmdb-image';
-import { EpisodeSeenDto } from '../../../shared/interfaces/movie';
+import { EpisodeSeenDto } from '../../../shared/interfaces/episode';
 import { SYSTEM_LIST } from '../../../shared/constants';
 
 type MediaType = 'movie' | 'tv';

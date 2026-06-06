@@ -9,7 +9,5 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: Server=db;Port=3306;Database=tracker;Uid=tracker;Pwd=tracker;
-      TMDb__ApiKey: ${TMDB_API_KEY:-changeme}
       JustWatch__EnableImport: "false"
-      OMDb__ApiKey: ${OMDB_API_KEY:-changeme}
     restart: unless-stopped
