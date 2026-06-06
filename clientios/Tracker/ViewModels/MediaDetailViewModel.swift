@@ -121,9 +121,11 @@ final class MediaDetailViewModel {
         applyLocalState(seen: newValue, liked: liked)
         do {
             try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue, posterPath: posterPath, runtime: movie?.runtime)
+            newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
             applyLocalState(seen: !newValue, liked: liked)
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
     }
 
@@ -132,9 +134,11 @@ final class MediaDetailViewModel {
         applyLocalState(seen: seen, liked: newValue)
         do {
             try await api.markLiked(tmdbId: tmdbId, type: type, liked: newValue, posterPath: posterPath)
+            Haptics.impact(newValue ? .medium : .light)
         } catch {
             applyLocalState(seen: seen, liked: !newValue)
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
     }
 
@@ -142,8 +146,10 @@ final class MediaDetailViewModel {
         do {
             try await api.addToWatchlist(tmdbId: tmdbId, type: type,
                                          posterPath: posterPath, runtime: movie?.runtime)
+            Haptics.success()
         } catch {
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
     }
 
@@ -168,6 +174,7 @@ final class MediaDetailViewModel {
 
     /// Déplie / replie une saison, en chargeant ses épisodes au besoin.
     func toggleSeason(_ number: Int) async {
+        Haptics.selection()
         if expandedSeason == number {
             expandedSeason = nil
             return
@@ -194,9 +201,11 @@ final class MediaDetailViewModel {
 
         do {
             try await api.markEpisodeSeen(showTmdbId: showId, season: season, episode: episode, seen: newSeen)
+            Haptics.impact(.light)
         } catch {
             if newSeen { episodesSeen.remove(key) } else { episodesSeen.insert(key) }
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
         await syncShowSeen()
     }
@@ -217,9 +226,11 @@ final class MediaDetailViewModel {
 
         do {
             try await api.markSeasonSeen(showTmdbId: showId, season: season, seen: newSeen, episodeNumbers: numbers)
+            newSeen ? Haptics.success() : Haptics.impact(.light)
         } catch {
             episodesSeen = previous
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
         await syncShowSeen()
     }

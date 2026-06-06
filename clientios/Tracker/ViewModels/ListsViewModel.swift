@@ -29,8 +29,10 @@ final class ListsViewModel {
         do {
             _ = try await api.createList(name: name)
             await load()
+            Haptics.success()
         } catch {
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
     }
 
@@ -38,8 +40,10 @@ final class ListsViewModel {
         do {
             try await api.deleteList(id: list.id)
             lists.removeAll { $0.id == list.id }
+            Haptics.warning()
         } catch {
             errorMessage = error.localizedDescription
+            Haptics.error()
         }
     }
 }
