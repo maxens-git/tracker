@@ -8,5 +8,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!-- Permission requise pour enregistrer une affiche dans la photothèque. -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Autorise l'enregistrement des affiches de films et séries dans votre photothèque.</string>
 </dict>
 </plist>
