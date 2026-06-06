@@ -118,8 +118,8 @@
     white-space: nowrap;
 
     &.genre {
-      background: rgba(0, 192, 48, 0.12);
-      border-color: rgba(0, 192, 48, 0.3);
+      background: rgba(var(--accent-rgb), 0.12);
+      border-color: rgba(var(--accent-rgb), 0.3);
       color: #6ee89a;
     }
 
@@ -175,12 +175,12 @@
   .btn-seen {
     &.active {
       border-color: var(--accent);
-      background: rgba(0, 192, 48, 0.12);
+      background: rgba(var(--accent-rgb), 0.12);
       color: var(--accent);
     }
     &:hover:not(:disabled) {
       border-color: var(--accent);
-      background: rgba(0, 192, 48, 0.08);
+      background: rgba(var(--accent-rgb), 0.08);
     }
   }
 
@@ -435,7 +435,7 @@
   transition: border-color 0.15s;
 
   &.expanded { border-color: rgba(255, 255, 255, 0.18); }
-  &.all-seen { border-color: rgba(0, 192, 48, 0.25); }
+  &.all-seen { border-color: rgba(var(--accent-rgb), 0.25); }
 }
 
 .season-header {
@@ -545,12 +545,12 @@
     &:hover:not(:disabled) {
       border-color: var(--accent);
       color: var(--accent);
-      background: rgba(0, 192, 48, 0.08);
+      background: rgba(var(--accent-rgb), 0.08);
     }
 
     &.active {
       border-color: var(--accent);
-      background: rgba(0, 192, 48, 0.12);
+      background: rgba(var(--accent-rgb), 0.12);
       color: var(--accent);
     }
 
@@ -638,12 +638,12 @@
     &:hover:not(:disabled) {
       border-color: var(--accent);
       color: var(--accent);
-      background: rgba(0, 192, 48, 0.1);
+      background: rgba(var(--accent-rgb), 0.1);
     }
 
     &.seen {
       border-color: var(--accent);
-      background: rgba(0, 192, 48, 0.15);
+      background: rgba(var(--accent-rgb), 0.15);
       color: var(--accent);
     }
 

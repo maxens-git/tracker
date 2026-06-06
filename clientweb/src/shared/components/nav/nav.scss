@@ -3,33 +3,54 @@ nav {
   top: 0;
   left: 0;
   right: 0;
+  height: var(--nav-h);
   gap: 2.5rem;
-  padding: 1rem 2rem;
-  background: #0a0f13;
-  border-bottom: 1px solid #1f2933;
+  padding: 0 2rem;
+  background: rgba(7, 9, 13, 0.65);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--border);
   z-index: 200;
 
   .brand {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.05rem;
+    font-weight: 800;
     letter-spacing: 0.18em;
-    color: #00c030;
+    background: var(--accent-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .links {
-    gap: 1.6rem;
+    gap: 0.4rem;
 
     a {
-      font-size: 0.78rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      color: #8b9aa8;
-      padding: 0.3rem 0;
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s ease, border-color 0.15s ease;
+      position: relative;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--r-pill);
+      transition: color 0.18s ease, background 0.18s ease;
 
-      &:hover { color: #e0e0e0; }
-      &.active { color: #fff; border-bottom-color: #00c030; }
+      &:hover { color: var(--text); background: var(--surface-hover); }
+
+      &.active { color: #fff; background: var(--accent-soft); }
+
+      &.active::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -3px;
+        width: 16px;
+        height: 2px;
+        border-radius: var(--r-pill);
+        background: var(--accent);
+        transform: translateX(-50%);
+        box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.8);
+      }
     }
   }
 
@@ -49,18 +70,18 @@ nav {
     span {
       display: block;
       height: 2px;
-      background: #8b9aa8;
+      background: var(--muted);
       border-radius: 2px;
       transform-origin: center;
       transition: transform 0.2s ease, opacity 0.2s ease, background 0.15s ease;
     }
 
-    &:hover span { background: #e0e0e0; }
+    &:hover span { background: var(--text); }
 
     &.is-open {
-      span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+      span:nth-child(1) { transform: translateY(7px) rotate(45deg); background: var(--accent); }
       span:nth-child(2) { opacity: 0; }
-      span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+      span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background: var(--accent); }
     }
   }
 }
@@ -69,40 +90,41 @@ nav {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 199;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
 }
 
 .mobile-menu {
   position: absolute;
-  top: 57px;
+  top: var(--nav-h);
   left: 0;
   right: 0;
-  background: #0a0f13;
-  border-bottom: 1px solid #1f2933;
+  background: rgba(7, 9, 13, 0.92);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--border);
   padding: 0.5rem 0;
   display: flex;
   flex-direction: column;
 
   a {
     font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: #8b9aa8;
-    padding: 0.9rem 2rem;
-    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0.95rem 2rem;
     border-left: 3px solid transparent;
     transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 
-    &:hover { color: #e0e0e0; background: rgba(255,255,255,0.03); }
-    &.active { color: #fff; border-left-color: #00c030; }
+    &:hover { color: var(--text); background: var(--surface-hover); }
+    &.active { color: #fff; border-left-color: var(--accent); background: var(--accent-soft); }
   }
 }
 
 @media (max-width: 600px) {
   nav {
-    padding: 1rem 1.25rem;
+    padding: 0 1.25rem;
 
     .links { display: none !important; }
     .burger { display: flex; }

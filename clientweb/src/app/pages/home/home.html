@@ -4,7 +4,7 @@
   <div class="status text-center py-5 px-4 error">{{ error() }}</div>
 } @else if (data(); as d) {
   @if (hero(d); as h) {
-    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'linear-gradient(to bottom, rgba(14,20,24,0.4), rgba(14,20,24,1)), url(' + h.backdrop + ')' : null">
+    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'linear-gradient(to top, var(--bg) 4%, rgba(7,9,13,0.55) 45%, rgba(7,9,13,0.25)), url(' + h.backdrop + ')' : null">
       <div class="hero-content">
         <h1>{{ h.title }}</h1>
         @if (h.year) { <span class="year d-inline-block mb-3">{{ h.year }}</span> }

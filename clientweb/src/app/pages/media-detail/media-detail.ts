@@ -538,7 +538,7 @@ export class MediaDetail implements OnInit {
   backdropStyle(path?: string | null): string | null {
     const url = backdropUrl(path, 'original');
     return url
-      ? `linear-gradient(to bottom, rgba(14,20,24,0.35) 0%, rgba(14,20,24,0.95) 85%, rgba(14,20,24,1) 100%), url(${url})`
+      ? `linear-gradient(to bottom, rgba(7,9,13,0.35) 0%, rgba(7,9,13,0.95) 85%, rgba(7,9,13,1) 100%), url(${url})`
       : null;
   }
 

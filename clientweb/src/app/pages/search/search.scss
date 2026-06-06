@@ -13,7 +13,7 @@
   transition: border-color 0.15s ease;
 
   &::placeholder { color: #6b7884; }
-  &:focus { outline: none; border-color: #00c030; }
+  &:focus { outline: none; border-color: var(--accent); }
 }
 
 .status {
@@ -45,8 +45,8 @@
   &:hover { border-color: #3a4654; color: #cdd6df; }
 
   &.active {
-    background: #00c030;
-    border-color: #00c030;
+    background: var(--accent);
+    border-color: var(--accent);
     color: #08130a;
     font-weight: 600;
   }
