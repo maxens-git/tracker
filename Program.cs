@@ -60,6 +60,9 @@ using (var scope = app.Services.CreateScope())
     await context.Database.MigrateAsync();
 
     await DbSeeder.SeedSystemListsAsync(context);
+
+    if (app.Configuration.GetValue<bool>("JustWatch:EnableImport"))
+        await DbSeeder.SeedFromJustWatchAsync(context, app.Environment.ContentRootPath);
 }
 
 app.MapControllers();
