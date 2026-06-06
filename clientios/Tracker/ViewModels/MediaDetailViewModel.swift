@@ -66,6 +66,7 @@ final class MediaDetailViewModel {
             if type == .tv {
                 let seen = try await api.showEpisodes(showTmdbId: tmdbId)
                 episodesSeen = Set(seen.filter(\.seen).map { epKey($0.seasonNumber, $0.episodeNumber) })
+                await syncShowSeen()
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -195,6 +196,7 @@ final class MediaDetailViewModel {
             if newSeen { episodesSeen.remove(key) } else { episodesSeen.insert(key) }
             errorMessage = error.localizedDescription
         }
+        await syncShowSeen()
     }
 
     func toggleSeasonSeen(_ season: Int) async {
@@ -213,6 +215,33 @@ final class MediaDetailViewModel {
         } catch {
             episodesSeen = previous
             errorMessage = error.localizedDescription
+        }
+        await syncShowSeen()
+    }
+
+    /// Recalcule l'état "vu" global de la série à partir des épisodes (vue quand toutes
+    /// ses saisons réelles le sont) et le persiste si la valeur a changé.
+    private func syncShowSeen() async {
+        let derived = computeShowSeen()
+        guard derived != seen else { return }
+
+        applyLocalState(seen: derived, liked: liked)
+        do {
+            try await api.markSeen(tmdbId: tmdbId, type: type, seen: derived,
+                                   posterPath: posterPath, runtime: movie?.runtime)
+        } catch {
+            // Optimiste : réconcilié au prochain reload.
+        }
+    }
+
+    /// Vrai si toutes les saisons réelles (épisodes connus) sont vues.
+    private func computeShowSeen() -> Bool {
+        let real = seasons.filter { ($0.episodeCount ?? 0) > 0 }
+        guard !real.isEmpty else { return false }
+        return real.allSatisfy { season in
+            let prefix = "\(season.seasonNumber)-"
+            let seenInSeason = episodesSeen.filter { $0.hasPrefix(prefix) }.count
+            return seenInSeason >= (season.episodeCount ?? 0)
         }
     }
 

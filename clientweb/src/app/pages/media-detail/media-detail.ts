@@ -143,6 +143,7 @@ export class MediaDetail implements OnInit {
               .map(s => ({ ...s, episodes: [], seen: false, loaded: false }))
           );
           this.refreshSeasonsSeen();
+          this.syncShowSeen();
         }
 
         this.loading.set(false);
@@ -429,17 +430,26 @@ export class MediaDetail implements OnInit {
   private patchEpisode(seasonNumber: number, episodeNumber: number, seen: boolean) {
     const key = epKey(seasonNumber, episodeNumber);
     this.episodesSeen.update(m => { const n = new Map(m); n.set(key, seen); return n; });
-    this.seasons.update(prev => prev.map(s =>
-      s.season_number !== seasonNumber ? s : {
-        ...s,
-        episodes: s.episodes.map(ep =>
-          ep.episode_number === episodeNumber ? { ...ep, seen } : ep
-        ),
-      }
-    ));
+    this.seasons.update(prev => prev.map(s => {
+      if (s.season_number !== seasonNumber) return s;
+      const episodes = s.episodes.map(ep =>
+        ep.episode_number === episodeNumber ? { ...ep, seen } : ep
+      );
+      // La saison est "vue" dès que tous ses épisodes chargés le sont.
+      return { ...s, episodes, seen: episodes.length > 0 && episodes.every(ep => ep.seen) };
+    }));
+    this.syncShowSeen();
   }
 
   private patchSeason(seasonNumber: number, seen: boolean) {
+    const season = this.seasons().find(s => s.season_number === seasonNumber);
+    const episodeNumbers = season?.episodes.map(ep => ep.episode_number) ?? [];
+    // Garde la map des épisodes synchro pour que la dérivation série soit correcte.
+    this.episodesSeen.update(m => {
+      const n = new Map(m);
+      for (const epNum of episodeNumbers) n.set(epKey(seasonNumber, epNum), seen);
+      return n;
+    });
     this.seasons.update(prev => prev.map(s =>
       s.season_number !== seasonNumber ? s : {
         ...s,
@@ -447,6 +457,40 @@ export class MediaDetail implements OnInit {
         episodes: s.episodes.map(ep => ({ ...ep, seen }))
       }
     ));
+    this.syncShowSeen();
+  }
+
+  /**
+   * Recalcule l'état "vu" global de la série à partir des épisodes (une série est vue
+   * quand toutes ses saisons réelles le sont) et le persiste si la valeur a changé.
+   */
+  private syncShowSeen() {
+    const derived = this.computeShowSeen();
+    if (derived === this.currentSeen) return;
+
+    this.patchUserState({ seen: derived });
+    const showId = this.userState().tmdbId;
+    this.api.markSeen(showId, 'tv', { seen: derived }).subscribe({
+      error: () => { /* optimiste : réconcilié au prochain reload */ },
+    });
+  }
+
+  /** Vrai si toutes les saisons réelles (hors spéciales, épisodes connus) sont vues. */
+  private computeShowSeen(): boolean {
+    const seasons = this.seasons().filter(s => s.episode_count > 0);
+    if (seasons.length === 0) return false;
+    return seasons.every(s => this.isSeasonFullySeen(s.season_number, s.episode_count));
+  }
+
+  /** Compte les épisodes vus d'une saison dans la map et compare au total TMDB. */
+  private isSeasonFullySeen(seasonNumber: number, episodeCount: number): boolean {
+    if (episodeCount <= 0) return false;
+    const prefix = `${seasonNumber}-`;
+    let seen = 0;
+    for (const [key, val] of this.episodesSeen()) {
+      if (val && key.startsWith(prefix)) seen++;
+    }
+    return seen >= episodeCount;
   }
 
   private refreshSeasonsSeen() {
