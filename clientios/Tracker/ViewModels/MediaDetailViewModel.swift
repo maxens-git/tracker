@@ -66,7 +66,10 @@ final class MediaDetailViewModel {
             if type == .tv {
                 let seen = try await api.showEpisodes(showTmdbId: tmdbId)
                 episodesSeen = Set(seen.filter(\.seen).map { epKey($0.seasonNumber, $0.episodeNumber) })
-                await syncShowSeen()
+                // Ne PAS recalculer l'état "vu" global ici : une série peut être marquée
+                // vue directement (bouton « Vu ») sans qu'aucun épisode soit enregistré.
+                // On fait confiance à l'état persisté (state.seen). syncShowSeen() ne doit
+                // tourner qu'après un toggle d'épisode/saison.
             }
         } catch {
             errorMessage = error.localizedDescription
