@@ -19,8 +19,9 @@ struct ListDetailView: View {
             MediaGrid {
                 ForEach(viewModel.items) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        PosterImage(path: viewModel.posterPath(for: item))
-                            .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                        MediaCard(posterPath: viewModel.posterPath(for: item),
+                                  title: viewModel.title(for: item),
+                                  subtitle: viewModel.year(for: item))
                             .overlay(alignment: .topTrailing) {
                                 if item.seen {
                                     Image(systemName: "checkmark.circle.fill")

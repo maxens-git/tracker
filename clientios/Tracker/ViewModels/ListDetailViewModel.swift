@@ -16,8 +16,14 @@ final class ListDetailViewModel {
     private(set) var hasMore = true
     var errorMessage: String?
 
-    /// Posters récupérés depuis TMDB pour les items sans posterPath en base.
-    private(set) var posters: [Int: String] = [:]
+    /// Métadonnées (affiche, titre, année) enrichies depuis TMDB, indexées par tmdbId.
+    private(set) var meta: [Int: ItemMeta] = [:]
+
+    struct ItemMeta {
+        let posterPath: String?
+        let title: String
+        let year: String?
+    }
 
     private var page = 1
     private let api = APIService.shared
@@ -29,7 +35,17 @@ final class ListDetailViewModel {
 
     /// Poster à afficher : celui stocké en base, sinon celui enrichi depuis TMDB.
     func posterPath(for item: MediaListItem) -> String? {
-        item.posterPath ?? posters[item.tmdbId]
+        item.posterPath ?? meta[item.tmdbId]?.posterPath
+    }
+
+    /// Titre enrichi depuis TMDB (vide tant que non chargé).
+    func title(for item: MediaListItem) -> String {
+        meta[item.tmdbId]?.title ?? ""
+    }
+
+    /// Année enrichie depuis TMDB.
+    func year(for item: MediaListItem) -> String? {
+        meta[item.tmdbId]?.year
     }
 
     func loadFirstPage() async {
@@ -49,39 +65,48 @@ final class ListDetailViewModel {
             hasMore = page < result.totalPages
             page += 1
             isLoading = false
-            await enrichPosters(result.items)
+            await enrichItems(result.items)
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
         }
     }
 
-    /// Récupère en parallèle les posters TMDB des items qui n'en ont pas en base.
-    private func enrichPosters(_ newItems: [MediaListItem]) async {
-        let missing = newItems.filter { $0.posterPath == nil && posters[$0.tmdbId] == nil }
+    /// Récupère en parallèle, depuis TMDB, les métadonnées (affiche, titre, année)
+    /// des items pas encore enrichis. Le backend ne stocke pas ces métadonnées.
+    private func enrichItems(_ newItems: [MediaListItem]) async {
+        let missing = newItems.filter { meta[$0.tmdbId] == nil }
         guard !missing.isEmpty else { return }
         let service = tmdb
 
-        let fetched = await withTaskGroup(of: (Int, String?).self) { group -> [(Int, String?)] in
+        let fetched = await withTaskGroup(of: (Int, ItemMeta)?.self) { group -> [(Int, ItemMeta)] in
             for item in missing {
                 let id = item.tmdbId
                 let type = item.type
                 group.addTask {
-                    let path: String?
                     switch type {
-                    case .movie: path = try? await service.movie(id).posterPath
-                    case .tv:    path = try? await service.show(id).posterPath
+                    case .movie:
+                        guard let m = try? await service.movie(id) else { return nil }
+                        return (id, ItemMeta(posterPath: m.posterPath, title: m.title,
+                                             year: Self.yearString(m.releaseDate)))
+                    case .tv:
+                        guard let s = try? await service.show(id) else { return nil }
+                        return (id, ItemMeta(posterPath: s.posterPath, title: s.name,
+                                             year: Self.yearString(s.firstAirDate)))
                     }
-                    return (id, path)
                 }
             }
-            var results: [(Int, String?)] = []
-            for await pair in group { results.append(pair) }
+            var results: [(Int, ItemMeta)] = []
+            for await pair in group { if let pair { results.append(pair) } }
             return results
         }
 
-        for (id, path) in fetched where path != nil {
-            posters[id] = path
-        }
+        for (id, m) in fetched { meta[id] = m }
+    }
+
+    /// Extrait l'année (4 premiers caractères) d'une date TMDB "yyyy-MM-dd".
+    private nonisolated static func yearString(_ date: String?) -> String? {
+        guard let date, date.count >= 4 else { return nil }
+        return String(date.prefix(4))
     }
 }
