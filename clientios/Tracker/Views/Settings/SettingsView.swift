@@ -41,6 +41,10 @@ struct SettingsView: View {
                 }
             }
         }
+        // La feuille a son propre contexte de présentation et n'hérite pas du
+        // preferredColorScheme appliqué à la racine : on le réapplique ici pour
+        // que le changement de thème soit visible immédiatement dans cet écran.
+        .preferredColorScheme(theme.colorScheme)
     }
 }
 
