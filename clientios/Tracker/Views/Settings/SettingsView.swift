@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
@@ -19,6 +20,15 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Apparence") {
+                    Picker("Thème", selection: $theme) {
+                        ForEach(AppTheme.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 Section("À propos") {
                     LabeledContent("Version", value: appVersion)
                 }

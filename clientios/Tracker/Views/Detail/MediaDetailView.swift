@@ -7,6 +7,7 @@ import SwiftUI
 
 struct MediaDetailView: View {
     @State private var viewModel: MediaDetailViewModel
+    @State private var showingPoster = false
     @Environment(\.openURL) private var openURL
 
     init(tmdbId: Int, type: MediaType) {
@@ -54,6 +55,9 @@ struct MediaDetailView: View {
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load(forceRefresh: true) }
+        .fullScreenCover(isPresented: $showingPoster) {
+            PosterFullScreenView(posterPath: viewModel.posterPath)
+        }
     }
 
     // ── Sous-vues ─────────────────────────────────────────────────────────
@@ -63,6 +67,10 @@ struct MediaDetailView: View {
             PosterImage(path: viewModel.posterPath)
                 .aspectRatio(2.0 / 3.0, contentMode: .fit)
                 .frame(width: 130)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if viewModel.posterPath != nil { showingPoster = true }
+                }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(viewModel.title)
