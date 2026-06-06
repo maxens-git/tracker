@@ -13,12 +13,14 @@ struct MediaCard: View {
     var subtitle: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             PosterImage(path: posterPath)
                 .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                // Ombre douce pour donner du relief aux affiches.
+                .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
 
             Text(title)
-                .font(.subheadline.weight(.medium))
+                .font(.subheadline.weight(.semibold))
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)

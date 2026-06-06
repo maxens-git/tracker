@@ -22,7 +22,7 @@ struct MediaDetailView: View {
                 if !viewModel.genres.isEmpty { genresRow }
                 if let overview = viewModel.overview, !overview.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Synopsis").font(.headline)
+                        Text("Synopsis").font(.title3.bold())
                         Text(overview).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal)
@@ -46,6 +46,7 @@ struct MediaDetailView: View {
             }
             .padding(.vertical)
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
@@ -111,15 +112,22 @@ struct MediaDetailView: View {
         Button {
             Task { await action() }
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 5) {
                 Image(systemName: systemImage).font(.title3)
-                Text(title).font(.caption)
+                Text(title).font(.caption.weight(.medium))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(active ? tint.opacity(0.15) : Color(.secondarySystemBackground))
+            .padding(.vertical, 12)
+            .background {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(active ? AnyShapeStyle(tint.opacity(0.15)) : AnyShapeStyle(.ultraThinMaterial))
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(active ? tint.opacity(0.4) : Color.primary.opacity(0.06), lineWidth: 1)
+            }
             .foregroundStyle(active ? tint : .primary)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -129,7 +137,7 @@ struct MediaDetailView: View {
     private var seasonsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Saisons")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             VStack(spacing: 10) {
@@ -262,7 +270,7 @@ struct MediaDetailView: View {
     private var trailersSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Bandes-annonces")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -307,7 +315,7 @@ struct MediaDetailView: View {
     private var castSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Distribution")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -330,7 +338,7 @@ struct MediaDetailView: View {
     private var crewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Équipe technique")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -378,7 +386,7 @@ struct MediaDetailView: View {
     private var similarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Similaires")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {

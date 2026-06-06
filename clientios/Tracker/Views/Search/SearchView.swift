@@ -40,6 +40,7 @@ struct SearchView: View {
                 .padding(.vertical)
             }
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Recherche")
         .searchable(text: $viewModel.query, prompt: "Films, séries…")
         .onChange(of: viewModel.query) { viewModel.search() }

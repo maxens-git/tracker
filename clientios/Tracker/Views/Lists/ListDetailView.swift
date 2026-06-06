@@ -42,6 +42,7 @@ struct ListDetailView: View {
                 ProgressView().padding()
             }
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {

@@ -23,9 +23,14 @@ struct StatsView: View {
                 }
                 .padding()
             } else if viewModel.isLoading {
-                ProgressView().padding(.top, 80)
+                // Contenu minimal : on remplit l'écran pour que le fond reste uniforme
+                // pendant le chargement (sinon une bande au mauvais fond apparaît).
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 400)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Statistiques")
         .overlay {
             if let error = viewModel.errorMessage, viewModel.stats == nil {
@@ -55,13 +60,14 @@ struct StatsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color.appSurface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
     }
 
     private func chart(_ title: String, data: [StatsYearBucket]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title).font(.headline)
+            Text(title).font(.title3.bold())
             Chart(data) { bucket in
                 BarMark(
                     x: .value("Année", String(bucket.year)),
@@ -73,8 +79,9 @@ struct StatsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color.appSurface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
     }
 }
 

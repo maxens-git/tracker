@@ -37,7 +37,7 @@ struct PosterImage: View {
                     placeholderIcon
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var placeholderIcon: some View {

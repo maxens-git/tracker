@@ -53,6 +53,7 @@ struct HeroView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(.white)
                 .lineLimit(2)
+                .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 2)
 
             if let year = item.year {
                 Text(year)
@@ -75,6 +76,7 @@ struct HeroView: View {
                     .background(.white)
                     .foregroundStyle(.black)
                     .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)
             }
             .padding(.top, 6)
         }

@@ -20,7 +20,7 @@ struct PersonView: View {
                 header
                 if let bio = viewModel.biography, !bio.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Biographie").font(.headline)
+                        Text("Biographie").font(.title3.bold())
                         Text(bio).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal)
@@ -29,6 +29,7 @@ struct PersonView: View {
             }
             .padding(.vertical)
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(viewModel.name)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
@@ -103,7 +104,7 @@ struct PersonView: View {
     private var filmographySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Filmographie")
-                .font(.headline)
+                .font(.title3.bold())
                 .padding(.horizontal)
 
             MediaGrid {

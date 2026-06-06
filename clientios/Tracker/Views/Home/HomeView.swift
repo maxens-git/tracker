@@ -27,6 +27,7 @@ struct HomeView: View {
                 .padding(.bottom)
             }
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(edges: .top)
         .task { await viewModel.load() }
@@ -46,7 +47,9 @@ struct HomeView: View {
                     .font(.title3)
                     .foregroundStyle(.white)
                     .padding(10)
-                    .background(.black.opacity(0.35), in: Circle())
+                    .background(.ultraThinMaterial, in: Circle())
+                    .environment(\.colorScheme, .dark)
+                    .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 3)
             }
             .padding(.top, 12)
             .padding(.trailing, 16)
@@ -59,9 +62,9 @@ struct HomeView: View {
     @ViewBuilder
     private func section(_ title: String, items: [TMDBSearchResult]) -> some View {
         if !items.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 14) {
                 Text(title)
-                    .font(.title3.bold())
+                    .font(.title2.bold())
                     .padding(.horizontal)
 
                 ScrollView(.horizontal, showsIndicators: false) {

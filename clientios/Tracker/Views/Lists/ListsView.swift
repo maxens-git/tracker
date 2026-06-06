@@ -18,11 +18,19 @@ struct ListsView: View {
                         NavigationLink(value: ListRoute(listId: list.routeId, title: list.name)) {
                             row(for: list)
                         }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.appSurface)
+                                .padding(.vertical, 3)
+                        )
                     }
                     .onDelete(perform: deleteLists)
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Listes")
         .overlay {
             if viewModel.isLoading && viewModel.lists.isEmpty {
@@ -59,9 +67,18 @@ struct ListsView: View {
     }
 
     private func row(for list: MediaListSummary) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.tint.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Text(list.icon ?? String(list.name.prefix(1)))
+                    .font(.title3)
+            }
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
+                    .font(.body.weight(.semibold))
                 Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -74,6 +91,7 @@ struct ListsView: View {
             }
             Spacer()
         }
+        .padding(.vertical, 4)
     }
 
     private func deleteLists(at offsets: IndexSet) {
