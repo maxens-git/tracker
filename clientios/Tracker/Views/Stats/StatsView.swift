@@ -9,22 +9,32 @@ import Charts
 struct StatsView: View {
     @State private var viewModel = StatsViewModel()
 
+    // Couleurs des catégories (alignées avec la légende).
+    private let movieColor = Color.accentColor
+    private let showColor = Color.orange
+
     var body: some View {
         ScrollView {
             if let stats = viewModel.stats {
                 VStack(spacing: 24) {
                     summaryGrid(stats)
-                    if !stats.moviesSeenByYear.isEmpty {
-                        chart("Films vus par année", data: stats.moviesSeenByYear)
+
+                    if !viewModel.byYear.isEmpty {
+                        ActivityChart(title: "Activité par année",
+                                      bars: viewModel.byYear.map {
+                                          .init(label: String($0.year), movies: $0.movies, shows: $0.shows)
+                                      },
+                                      movieColor: movieColor, showColor: showColor)
                     }
-                    if !stats.showsSeenByYear.isEmpty {
-                        chart("Séries vues par année", data: stats.showsSeenByYear)
-                    }
+
+                    ActivityChart(title: "12 derniers mois",
+                                  bars: viewModel.byMonth.map {
+                                      .init(label: $0.label, movies: $0.movies, shows: $0.shows)
+                                  },
+                                  movieColor: movieColor, showColor: showColor)
                 }
                 .padding()
             } else if viewModel.isLoading {
-                // Contenu minimal : on remplit l'écran pour que le fond reste uniforme
-                // pendant le chargement (sinon une bande au mauvais fond apparaît).
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 400)
             }
@@ -46,7 +56,7 @@ struct StatsView: View {
             statCard("Films vus", value: "\(stats.moviesSeenCount)", systemImage: "film")
             statCard("Séries vues", value: "\(stats.showsSeenCount)", systemImage: "tv")
             statCard("Épisodes vus", value: "\(stats.episodesSeenCount)", systemImage: "play.rectangle")
-            statCard("Temps total", value: "\(Int(stats.totalRuntimeHours)) h", systemImage: "clock")
+            statCard("Temps total", value: viewModel.formatRuntime(stats.totalRuntimeMinutes), systemImage: "clock")
         }
     }
 
@@ -64,24 +74,133 @@ struct StatsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
     }
+}
 
-    private func chart(_ title: String, data: [StatsYearBucket]) -> some View {
+// MARK: - Graphique d'activité (barres empilées films / séries)
+
+private struct ActivityChart: View {
+    struct Bar: Identifiable {
+        let label: String
+        let movies: Int
+        let shows: Int
+        var total: Int { movies + shows }
+        var id: String { label }
+    }
+
+    let title: String
+    let bars: [Bar]
+    let movieColor: Color
+    let showColor: Color
+
+    /// Barre actuellement sélectionnée par l'utilisateur (toucher / glissement).
+    @State private var selectedLabel: String?
+
+    private var selectedBar: Bar? {
+        guard let selectedLabel else { return nil }
+        return bars.first { $0.label == selectedLabel }
+    }
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title).font(.title3.bold())
-            Chart(data) { bucket in
-                BarMark(
-                    x: .value("Année", String(bucket.year)),
-                    y: .value("Nombre", bucket.count)
-                )
-                .foregroundStyle(Color.accentColor)
+            HStack(alignment: .firstTextBaseline) {
+                Text(title).font(.title3.bold())
+                Spacer()
+                if let bar = selectedBar {
+                    Text("\(bar.label) · \(bar.total)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
-            .frame(height: 200)
+
+            chart
+
+            legend
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.appSurface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+    }
+
+    private var chart: some View {
+        Chart(bars) { bar in
+            BarMark(
+                x: .value("Période", bar.label),
+                y: .value("Films", bar.movies)
+            )
+            .foregroundStyle(movieColor)
+            .position(by: .value("Catégorie", "Films"), axis: .vertical)
+            .opacity(selectedLabel == nil || selectedLabel == bar.label ? 1 : 0.35)
+
+            BarMark(
+                x: .value("Période", bar.label),
+                y: .value("Séries", bar.shows)
+            )
+            .foregroundStyle(showColor)
+            .position(by: .value("Catégorie", "Séries"), axis: .vertical)
+            .opacity(selectedLabel == nil || selectedLabel == bar.label ? 1 : 0.35)
+        }
+        .chartLegend(.hidden)
+        .chartXSelection(value: $selectedLabel)
+        .chartOverlay { proxy in
+            if let bar = selectedBar {
+                tooltipOverlay(for: bar, proxy: proxy)
+            }
+        }
+        .frame(height: 220)
+    }
+
+    /// Bulle d'information positionnée au-dessus de la barre sélectionnée.
+    @ViewBuilder
+    private func tooltipOverlay(for bar: Bar, proxy: ChartProxy) -> some View {
+        GeometryReader { geo in
+            if let plotFrame = proxy.plotFrame,
+               let xPosition = proxy.position(forX: bar.label) {
+                let origin = geo[plotFrame].origin
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(bar.label).font(.caption.bold())
+                    if bar.movies > 0 {
+                        tooltipRow(color: movieColor, text: "\(bar.movies) film\(bar.movies > 1 ? "s" : "")")
+                    }
+                    if bar.shows > 0 {
+                        tooltipRow(color: showColor, text: "\(bar.shows) série\(bar.shows > 1 ? "s" : "")")
+                    }
+                    Text("\(bar.total) total")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(8)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .shadow(radius: 4)
+                .fixedSize()
+                .position(x: origin.x + xPosition, y: 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func tooltipRow(color: Color, text: String) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(color).frame(width: 7, height: 7)
+            Text(text).font(.caption)
+        }
+    }
+
+    private var legend: some View {
+        HStack(spacing: 16) {
+            legendItem(color: movieColor, label: "Films")
+            legendItem(color: showColor, label: "Séries")
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+
+    private func legendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 6) {
+            Circle().fill(color).frame(width: 8, height: 8)
+            Text(label)
+        }
     }
 }
 
