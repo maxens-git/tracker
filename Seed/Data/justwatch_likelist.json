@@ -1,0 +1,4663 @@
+[
+  {
+    "id": "tm1931109",
+    "type": "MOVIE",
+    "title": "De Gaulle: Tilting Iron",
+    "year": 2026,
+    "url": null,
+    "imdbId": "tt28553375",
+    "tmdbId": "1165366",
+    "imdbScore": null,
+    "tmdbScore": 7.647,
+    "createdAt": "2026-06-06T11:31:56.67Z"
+  },
+  {
+    "id": "tm27911",
+    "type": "MOVIE",
+    "title": "The Departed",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/the-departed",
+    "imdbId": "tt0407887",
+    "tmdbId": "1422",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.16,
+    "createdAt": "2026-05-08T19:19:44.096Z"
+  },
+  {
+    "id": "tm84873",
+    "type": "MOVIE",
+    "title": "Pirates of the Caribbean: At World's End",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/pirates-of-the-caribbean-at-worlds-end",
+    "imdbId": "tt0449088",
+    "tmdbId": "285",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.27,
+    "createdAt": "2026-05-08T07:26:38.481Z"
+  },
+  {
+    "id": "tm138053",
+    "type": "MOVIE",
+    "title": "21 Grams",
+    "year": 2003,
+    "url": "https://www.justwatch.com/uk/movie/21-grams",
+    "imdbId": "tt0315733",
+    "tmdbId": "470",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.3,
+    "createdAt": "2026-05-02T22:24:32.616Z"
+  },
+  {
+    "id": "tm30053",
+    "type": "MOVIE",
+    "title": "Babel",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/babel",
+    "imdbId": "tt0449467",
+    "tmdbId": "1164",
+    "imdbScore": 7.4,
+    "tmdbScore": 7.2,
+    "createdAt": "2026-05-01T09:40:42.772Z"
+  },
+  {
+    "id": "tm21809",
+    "type": "MOVIE",
+    "title": "Traffic",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/movie/traffic",
+    "imdbId": "tt0181865",
+    "tmdbId": "1900",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.082,
+    "createdAt": "2026-04-06T19:35:21.077Z"
+  },
+  {
+    "id": "tm15897",
+    "type": "MOVIE",
+    "title": "Se7en",
+    "year": 1995,
+    "url": "https://www.justwatch.com/uk/movie/se7en",
+    "imdbId": "tt0114369",
+    "tmdbId": "807",
+    "imdbScore": 8.6,
+    "tmdbScore": 8.382,
+    "createdAt": "2026-04-03T20:53:12.681Z"
+  },
+  {
+    "id": "tm1486587",
+    "type": "MOVIE",
+    "title": "Project Hail Mary",
+    "year": 2026,
+    "url": "https://www.justwatch.com/uk/movie/project-hail-mary",
+    "imdbId": "tt12042730",
+    "tmdbId": "687163",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.655,
+    "createdAt": "2026-03-20T23:40:11.389Z"
+  },
+  {
+    "id": "tm134674",
+    "type": "MOVIE",
+    "title": "Dead Poets Society",
+    "year": 1989,
+    "url": "https://www.justwatch.com/uk/movie/dead-poets-society",
+    "imdbId": "tt0097165",
+    "tmdbId": "207",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.3,
+    "createdAt": "2026-03-14T22:01:19.801Z"
+  },
+  {
+    "id": "ts421489",
+    "type": "SHOW",
+    "title": "Paradise",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/tv-series/paradise-2025",
+    "imdbId": "tt27444205",
+    "tmdbId": "245927",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.4,
+    "createdAt": "2026-02-28T20:44:47.973Z",
+    "progress": 100,
+    "seenEpisodeCount": 16,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Wildcat Is Down",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Sinatra",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Architect of Social Well-Being",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Agent Billy Pace",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "In the Palaces of Crowned Kings",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "You Asked for Miracles",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Day",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Man Who Kept the Secrets",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Graceland",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Mayday",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Another Day in Paradise",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "A Holy Charge",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Mailman",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Jane",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Final Countdown",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Exodus",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2026-04-04T12:30:53.822Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm949044",
+    "type": "MOVIE",
+    "title": "Spider-Man: Across the Spider-Verse",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/spider-man-into-the-spider-verse-2",
+    "imdbId": "tt9362722",
+    "tmdbId": "569094",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.336,
+    "createdAt": "2025-11-20T23:09:16.25Z"
+  },
+  {
+    "id": "tm30245",
+    "type": "MOVIE",
+    "title": "The Fountain",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/the-fountain",
+    "imdbId": "tt0414993",
+    "tmdbId": "1381",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.907,
+    "createdAt": "2025-11-19T21:19:09.434Z"
+  },
+  {
+    "id": "tm42409",
+    "type": "MOVIE",
+    "title": "Fight Club",
+    "year": 1999,
+    "url": "https://www.justwatch.com/uk/movie/fight-club",
+    "imdbId": "tt0137523",
+    "tmdbId": "550",
+    "imdbScore": 8.8,
+    "tmdbScore": 8.438,
+    "createdAt": "2025-11-19T00:49:23.423Z"
+  },
+  {
+    "id": "tm73984",
+    "type": "MOVIE",
+    "title": "99 francs",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/99-francs",
+    "imdbId": "tt0875113",
+    "tmdbId": "8827",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.7,
+    "createdAt": "2025-11-19T00:21:00.117Z"
+  },
+  {
+    "id": "ts42405",
+    "type": "SHOW",
+    "title": "MINDHUNTER",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/tv-series/mindhunter",
+    "imdbId": "tt5290382",
+    "tmdbId": "67744",
+    "imdbScore": 8.6,
+    "tmdbScore": 8.1,
+    "createdAt": "2025-11-18T09:52:04.019Z",
+    "progress": 100,
+    "seenEpisodeCount": 19,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode 1",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Episode 2",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Episode 3",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Episode 4",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Episode 5",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Episode 6",
+            "runtime": 34,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Episode 7",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Episode 8",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Episode 9",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Episode #1.10",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 9,
+        "episodeCount": 9,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode 1",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Episode #2.2",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Episode 3",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Episode 4",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Episode 5",
+            "runtime": 71,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Episode 6",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Episode 7",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Episode #2.8",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Episode #2.9",
+            "runtime": 73,
+            "seen": true,
+            "seenAt": "2025-11-18T09:52:06.235Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ts37023",
+    "type": "SHOW",
+    "title": "Counterpart",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/tv-series/counterpart",
+    "imdbId": "tt4643084",
+    "tmdbId": "63646",
+    "imdbScore": 8,
+    "tmdbScore": 7.445,
+    "createdAt": "2025-11-14T22:45:23.092Z",
+    "progress": 100,
+    "seenEpisodeCount": 20,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Crossing",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Birds of a Feather",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Lost Art of Diplomacy",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Both Sides Now",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Shaking the Tree",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Act Like You've Been Here Before",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Sincerest Form of Flattery",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Love the Lie",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "No Man's Land (1)",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "No Man's Land (2)",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Inside Out",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Outside In",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Something Borrowed",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Point of Departure",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Shadow Puppets",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Twin Cities",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "No Strings Attached",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "In from the Cold",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "You to You",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Better Angels",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-02-09T18:12:05.472Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1241748",
+    "type": "MOVIE",
+    "title": "The Whale",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/the-whale",
+    "imdbId": "tt13833688",
+    "tmdbId": "785084",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.773,
+    "createdAt": "2025-11-02T23:30:16.241Z"
+  },
+  {
+    "id": "tm1492557",
+    "type": "MOVIE",
+    "title": "Heretic",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/movie/heretic-2024",
+    "imdbId": "tt28015403",
+    "tmdbId": "1138194",
+    "imdbScore": 7,
+    "tmdbScore": 6.975,
+    "createdAt": "2025-10-30T22:21:33.217Z"
+  },
+  {
+    "id": "tm170442",
+    "type": "MOVIE",
+    "title": "Margin Call",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/movie/margin-call",
+    "imdbId": "tt1615147",
+    "tmdbId": "50839",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.862,
+    "createdAt": "2025-10-29T22:22:03.069Z"
+  },
+  {
+    "id": "tm151601",
+    "type": "MOVIE",
+    "title": "Hector and the Search for Happiness",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/hector-and-the-search-for-happiness",
+    "imdbId": "tt1626146",
+    "tmdbId": "254375",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.7,
+    "createdAt": "2025-10-27T23:20:01.842Z"
+  },
+  {
+    "id": "tm1459877",
+    "type": "MOVIE",
+    "title": "One Battle After Another",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/the-battle-of-baktan-cross",
+    "imdbId": "tt30144839",
+    "tmdbId": "1054867",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.361,
+    "createdAt": "2025-10-10T21:23:49.26Z"
+  },
+  {
+    "id": "tm178333",
+    "type": "MOVIE",
+    "title": "The Ides of March",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/movie/the-ides-of-march",
+    "imdbId": "tt1124035",
+    "tmdbId": "10316",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.677,
+    "createdAt": "2025-09-30T22:15:00.039Z"
+  },
+  {
+    "id": "tm81909",
+    "type": "MOVIE",
+    "title": "Layer Cake",
+    "year": 2004,
+    "url": "https://www.justwatch.com/uk/movie/layer-cake",
+    "imdbId": "tt0375912",
+    "tmdbId": "4836",
+    "imdbScore": 7.2,
+    "tmdbScore": 6.915,
+    "createdAt": "2025-09-27T22:49:16.833Z"
+  },
+  {
+    "id": "tm165603",
+    "type": "MOVIE",
+    "title": "Coherence",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/coherence",
+    "imdbId": "tt2866360",
+    "tmdbId": "220289",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.211,
+    "createdAt": "2025-09-05T20:06:47.093Z"
+  },
+  {
+    "id": "tm435520",
+    "type": "MOVIE",
+    "title": "The Two Popes",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/the-two-popes",
+    "imdbId": "tt8404614",
+    "tmdbId": "551332",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.486,
+    "createdAt": "2025-08-20T17:44:06.921Z"
+  },
+  {
+    "id": "tm23485",
+    "type": "MOVIE",
+    "title": "Letters from Iwo Jima",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/letters-from-iwo-jima",
+    "imdbId": "tt0498380",
+    "tmdbId": "1251",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.5,
+    "createdAt": "2025-08-16T07:44:35.36Z"
+  },
+  {
+    "id": "tm55778",
+    "type": "MOVIE",
+    "title": "The Thomas Crown Affair",
+    "year": 1999,
+    "url": "https://www.justwatch.com/uk/movie/the-thomas-crown-affair",
+    "imdbId": "tt0155267",
+    "tmdbId": "913",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.8,
+    "createdAt": "2025-08-10T16:41:06.829Z"
+  },
+  {
+    "id": "tm37740",
+    "type": "MOVIE",
+    "title": "The Majestic",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/movie/the-majestic",
+    "imdbId": "tt0268995",
+    "tmdbId": "11086",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.8,
+    "createdAt": "2025-08-03T21:08:45.969Z"
+  },
+  {
+    "id": "tm1501899",
+    "type": "MOVIE",
+    "title": "The Life of Chuck",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/the-life-of-chuck",
+    "imdbId": "tt12908150",
+    "tmdbId": "842924",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.28,
+    "createdAt": "2025-07-31T14:41:58.852Z"
+  },
+  {
+    "id": "ts20142",
+    "type": "SHOW",
+    "title": "Hannibal",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/tv-series/hannibal",
+    "imdbId": "tt2243973",
+    "tmdbId": "40008",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.252,
+    "createdAt": "2025-07-29T05:45:21.61Z",
+    "progress": 100,
+    "seenEpisodeCount": 39,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 13,
+        "episodeCount": 13,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Apéritif",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Amuse-Bouche",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Potage",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Œuf",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Coquilles",
+            "runtime": 41,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Entrée",
+            "runtime": 41,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Sorbet",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Fromage",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Trou Normand",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Buffet Froid",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 11,
+            "title": "Rôti",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 12,
+            "title": "Relevés",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 13,
+            "title": "Savoureux",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 13,
+        "episodeCount": 13,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Kaiseki",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Sakizuke",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Hassun",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Takiawase",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Mukōzuke",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Futamono",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Yakimono",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Su-zakana",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Shiizakana",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Naka-Choko",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 11,
+            "title": "Kō No Mono",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 12,
+            "title": "Tome-wan",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 13,
+            "title": "Mizumono",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 3,
+        "title": "Season 3",
+        "progress": 100,
+        "seenEpisodeCount": 13,
+        "episodeCount": 13,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Antipasto",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Primavera",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Secondo",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Aperitivo",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Contorno",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Dolce",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Digestivo",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Great Red Dragon",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "And the Woman Clothed with the Sun…",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "And the Woman Clothed in Sun",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 11,
+            "title": "And the Beast from the Sea",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 12,
+            "title": "The Number of the Beast is 666…",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          },
+          {
+            "episodeNumber": 13,
+            "title": "The Wrath of the Lamb",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-08-13T18:40:14.411Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ts297165",
+    "type": "SHOW",
+    "title": "Foundation",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/tv-series/foundation",
+    "imdbId": "tt0804484",
+    "tmdbId": "93740",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.7,
+    "createdAt": "2025-07-25T16:45:58.316Z",
+    "progress": 100,
+    "seenEpisodeCount": 30,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Emperor's Peace",
+            "runtime": 69,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Preparing to Live",
+            "runtime": 61,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Mathematician's Ghost",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Barbarians at the Gate",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Upon Awakening",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Death and the Maiden",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Mysteries and Martyrs",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Missing Piece",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The First Crisis",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "The Leap",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "In Seldon's Shadow",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "A Glimpse of Darkness",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "King and Commoner",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Where the Stars Are Scattered Thinly",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Sighted and the Seen",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Why the Gods Made Wine",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "A Necessary Death",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Last Empress",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Long Ago, Not Far Away",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Creation Myths",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 3,
+        "title": "Season 3",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "A Song for the End of Everything",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Shadows in the Math",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "When a Book Finds You",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Stress of Her Regard",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Where Tyrants Spend Eternity",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Shape of Time",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Foundation’s End",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": " Skin in the Game",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": " The Paths That Choose Us",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": " The Darkness",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-09-12T09:36:06.108Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1358394",
+    "type": "MOVIE",
+    "title": "F1",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/movie/f1-the-movie",
+    "imdbId": "tt16311594",
+    "tmdbId": "911430",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.791,
+    "createdAt": "2025-06-29T19:44:01.125Z"
+  },
+  {
+    "id": "tm413757",
+    "type": "MOVIE",
+    "title": "A Private War",
+    "year": 2018,
+    "url": "https://www.justwatch.com/uk/movie/a-private-war",
+    "imdbId": "tt2368254",
+    "tmdbId": "475132",
+    "imdbScore": 6.7,
+    "tmdbScore": 6.8,
+    "createdAt": "2025-05-30T20:40:02.267Z"
+  },
+  {
+    "id": "tm77512",
+    "type": "MOVIE",
+    "title": "The Man from Earth",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/the-man-from-earth",
+    "imdbId": "tt0756683",
+    "tmdbId": "13363",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.624,
+    "createdAt": "2025-05-02T20:36:51.761Z"
+  },
+  {
+    "id": "tm171462",
+    "type": "MOVIE",
+    "title": "The Secret Life of Walter Mitty",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/the-secret-life-of-walter-mitty",
+    "imdbId": "tt0359950",
+    "tmdbId": "116745",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.223,
+    "createdAt": "2025-04-27T20:22:04.565Z"
+  },
+  {
+    "id": "ts9379",
+    "type": "SHOW",
+    "title": "Ascension",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/tv-series/ascension",
+    "imdbId": "tt3696720",
+    "tmdbId": "60741",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.626,
+    "createdAt": "2025-04-19T12:54:31.888Z",
+    "progress": 100,
+    "seenEpisodeCount": 3,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Miniseries",
+        "progress": 100,
+        "seenEpisodeCount": 3,
+        "episodeCount": 3,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Chapter One",
+            "runtime": 66,
+            "seen": true,
+            "seenAt": "2025-04-19T12:54:31.268Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Chapter Two",
+            "runtime": 79,
+            "seen": true,
+            "seenAt": "2025-04-19T12:54:31.268Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Chapter Three",
+            "runtime": 86,
+            "seen": true,
+            "seenAt": "2025-04-19T12:54:31.268Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1232018",
+    "type": "MOVIE",
+    "title": "The Creator",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/the-creator",
+    "imdbId": "tt11858890",
+    "tmdbId": "670292",
+    "imdbScore": 6.7,
+    "tmdbScore": 7.038,
+    "createdAt": "2025-03-18T19:23:43.431Z"
+  },
+  {
+    "id": "tm152335",
+    "type": "MOVIE",
+    "title": "Pompeii",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/pompeii",
+    "imdbId": "tt1921064",
+    "tmdbId": "76649",
+    "imdbScore": 5.5,
+    "tmdbScore": 5.5,
+    "createdAt": "2025-02-22T20:32:26.157Z"
+  },
+  {
+    "id": "ts374162",
+    "type": "SHOW",
+    "title": "Zero Day",
+    "year": 2025,
+    "url": "https://www.justwatch.com/uk/tv-series/zero-day",
+    "imdbId": "tt23872886",
+    "tmdbId": "216082",
+    "imdbScore": 7,
+    "tmdbScore": 6.976,
+    "createdAt": "2025-02-20T22:41:10.802Z",
+    "progress": 100,
+    "seenEpisodeCount": 6,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Limited Series",
+        "progress": 100,
+        "seenEpisodeCount": 6,
+        "episodeCount": 6,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode #1.1",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Episode #1.2",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Episode #1.3",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Episode #1.4",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Episode #1.5",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Episode #1.6",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-02-20T22:41:06.401Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm71893",
+    "type": "MOVIE",
+    "title": "Sunshine",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/sunshine-2007",
+    "imdbId": "tt0448134",
+    "tmdbId": "1272",
+    "imdbScore": 7.2,
+    "tmdbScore": 6.967,
+    "createdAt": "2025-02-20T13:06:45.279Z"
+  },
+  {
+    "id": "tm158112",
+    "type": "MOVIE",
+    "title": "The Adventures of Tintin",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/movie/the-adventures-of-tintin",
+    "imdbId": "tt0983193",
+    "tmdbId": "17578",
+    "imdbScore": 7.3,
+    "tmdbScore": 6.921,
+    "createdAt": "2025-02-07T17:23:10.388Z"
+  },
+  {
+    "id": "tm1325433",
+    "type": "MOVIE",
+    "title": "Paradise",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/paradise-0",
+    "imdbId": "tt21308888",
+    "tmdbId": "1140066",
+    "imdbScore": 6.3,
+    "tmdbScore": 6.5,
+    "createdAt": "2025-02-05T21:51:05.032Z"
+  },
+  {
+    "id": "ts412659",
+    "type": "SHOW",
+    "title": "Conflict",
+    "year": 2024,
+    "url": null,
+    "imdbId": "tt27579939",
+    "tmdbId": "240253",
+    "imdbScore": 7.2,
+    "tmdbScore": 6.442,
+    "createdAt": "2025-02-05T09:33:47.378Z",
+    "progress": 100,
+    "seenEpisodeCount": 6,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 6,
+        "episodeCount": 6,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Occupation",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Reaction",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Resistance",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Betrayal",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Sacrifice",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Attack",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-02-11T18:29:41.171Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm30821",
+    "type": "MOVIE",
+    "title": "The Great Escape",
+    "year": 1963,
+    "url": "https://www.justwatch.com/uk/movie/the-great-escape",
+    "imdbId": "tt0057115",
+    "tmdbId": "5925",
+    "imdbScore": 8.2,
+    "tmdbScore": 7.925,
+    "createdAt": "2025-01-25T08:33:00.313Z"
+  },
+  {
+    "id": "tm94058",
+    "type": "MOVIE",
+    "title": "Eternal Sunshine of the Spotless Mind",
+    "year": 2004,
+    "url": "https://www.justwatch.com/uk/movie/eternal-sunshine-of-the-spotless-mind",
+    "imdbId": "tt0338013",
+    "tmdbId": "38",
+    "imdbScore": 8.3,
+    "tmdbScore": 8.091,
+    "createdAt": "2025-01-24T20:45:51.139Z"
+  },
+  {
+    "id": "ts17149",
+    "type": "SHOW",
+    "title": "Band of Brothers",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/tv-series/band-of-brothers",
+    "imdbId": "tt0185906",
+    "tmdbId": "4613",
+    "imdbScore": 9.4,
+    "tmdbScore": 8.583,
+    "createdAt": "2025-01-22T21:43:00.499Z",
+    "progress": 100,
+    "seenEpisodeCount": 10,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Miniseries",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Currahee",
+            "runtime": 70,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Day of Days",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Carentan",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Replacements",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Crossroads",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Bastogne",
+            "runtime": 64,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Breaking Point",
+            "runtime": 69,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Last Patrol",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Why We Fight",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Points",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-01-23T17:57:27.054Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ts297178",
+    "type": "SHOW",
+    "title": "Silo",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/tv-series/silo",
+    "imdbId": "tt14688458",
+    "tmdbId": "125988",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.1,
+    "createdAt": "2025-01-17T22:03:17.329Z",
+    "progress": 100,
+    "seenEpisodeCount": 20,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Freedom Day",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Holston's Pick",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Machines",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Truth",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Janitor's Boy",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Relic",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Flamekeepers",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Hanna",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The Getaway",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Outside",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Engineer",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Order",
+            "runtime": 41,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Solo",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Harmonium",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Descent",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Barricades",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Dive",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Book of Quinn",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The Safeguard",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Into the Fire",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2025-01-17T21:15:02.343Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 3,
+        "title": "Season 3",
+        "progress": 0,
+        "seenEpisodeCount": 0,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode 1",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Episode 2",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Episode 3",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Episode 4",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Episode 5",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Episode 6",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Episode 7",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Episode 8",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Episode 9",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Episode 10",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm408218",
+    "type": "MOVIE",
+    "title": "Greyhound",
+    "year": 2020,
+    "url": "https://www.justwatch.com/uk/movie/greyhound",
+    "imdbId": "tt6048922",
+    "tmdbId": "516486",
+    "imdbScore": 7,
+    "tmdbScore": 7.4,
+    "createdAt": "2025-01-13T21:18:50.06Z"
+  },
+  {
+    "id": "tm29011",
+    "type": "MOVIE",
+    "title": "The Crimson Rivers",
+    "year": 2000,
+    "url": "https://www.justwatch.com/uk/movie/the-crimson-rivers",
+    "imdbId": "tt0228786",
+    "tmdbId": "60670",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.924,
+    "createdAt": "2025-01-03T22:11:06.054Z"
+  },
+  {
+    "id": "tm86254",
+    "type": "MOVIE",
+    "title": "36th Precinct",
+    "year": 2004,
+    "url": "https://www.justwatch.com/uk/movie/36th-precinct",
+    "imdbId": "tt0390808",
+    "tmdbId": "7291",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.906,
+    "createdAt": "2024-12-19T15:08:19.108Z"
+  },
+  {
+    "id": "ts385816",
+    "type": "SHOW",
+    "title": "The Day of the Jackal",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/tv-series/the-day-of-the-jackal",
+    "imdbId": "tt24053860",
+    "tmdbId": "222766",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.183,
+    "createdAt": "2024-12-15T12:42:33.423Z",
+    "progress": 100,
+    "seenEpisodeCount": 10,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Series 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode #1.1",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Episode #1.2",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Episode #1.3",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Episode #1.4",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Episode #1.5",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Episode #1.6",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Episode #1.7",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Episode #1.8",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Episode #1.9",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Episode #1.10",
+            "runtime": 61,
+            "seen": true,
+            "seenAt": "2024-12-15T12:42:36.208Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1314896",
+    "type": "MOVIE",
+    "title": "Gladiator II",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/movie/gladiator-2",
+    "imdbId": "tt9218128",
+    "tmdbId": "558449",
+    "imdbScore": 6.5,
+    "tmdbScore": 6.613,
+    "createdAt": "2024-11-10T21:31:29.908Z"
+  },
+  {
+    "id": "tm1321474",
+    "type": "MOVIE",
+    "title": "AKA",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/aka",
+    "imdbId": "tt27197387",
+    "tmdbId": "1102776",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.9,
+    "createdAt": "2024-09-15T16:54:57.993Z"
+  },
+  {
+    "id": "tm1260359",
+    "type": "MOVIE",
+    "title": "Mr. Blake at Your Service!",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/well-done-2023",
+    "imdbId": "tt18224752",
+    "tmdbId": "792614",
+    "imdbScore": 6.3,
+    "tmdbScore": 6.4,
+    "createdAt": "2024-09-01T14:23:44.202Z"
+  },
+  {
+    "id": "ts328373",
+    "type": "SHOW",
+    "title": "Presumed Innocent",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/tv-series/presumed-innocent",
+    "imdbId": "tt17677860",
+    "tmdbId": "156933",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.836,
+    "createdAt": "2024-07-27T20:31:06.289Z",
+    "progress": 100,
+    "seenEpisodeCount": 8,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Bases Loaded",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "People vs. Rozat Sabich",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Discovery",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Burden",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Pregame",
+            "runtime": 40,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Elements",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Witness",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Verdict",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2024-07-27T20:31:05.008Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 0,
+        "seenEpisodeCount": 0,
+        "episodeCount": 1,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Episode #2.1",
+            "runtime": 0,
+            "seen": false,
+            "seenAt": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ts2",
+    "type": "SHOW",
+    "title": "Game of Thrones",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/tv-series/game-of-thrones",
+    "imdbId": "tt0944947",
+    "tmdbId": "1399",
+    "imdbScore": 9.2,
+    "tmdbScore": 8.5,
+    "createdAt": "2024-07-11T21:18:03.794Z",
+    "progress": 100,
+    "seenEpisodeCount": 73,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Winter Is Coming",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Kingsroad",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Lord Snow",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Cripples, Bastards, and Broken Things",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Wolf and the Lion",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "A Golden Crown",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "You Win or You Die",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Pointy End",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Baelor",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Fire and Blood",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The North Remembers",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Night Lands",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "What Is Dead May Never Die",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Garden of Bones",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Ghost of Harrenhal",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Old Gods and the New",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "A Man Without Honor",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Prince of Winterfell",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Blackwater",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Valar Morghulis",
+            "runtime": 64,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 3,
+        "title": "Season 3",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Valar Dohaeris",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Dark Wings, Dark Words",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Walk of Punishment",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "And Now His Watch Is Ended",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Kissed by Fire",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Climb",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Bear and the Maiden Fair",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Second Sons",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The Rains of Castamere",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Mhysa",
+            "runtime": 63,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 4,
+        "title": "Season 4",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Two Swords",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Lion and the Rose",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Breaker of Chains",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Oathkeeper",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "First of His Name",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Laws of Gods and Men",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Mockingbird",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Mountain and the Viper",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The Watchers on the Wall",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "The Children",
+            "runtime": 65,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 5,
+        "title": "Season 5",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Wars to Come",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The House of Black and White",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "High Sparrow",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Sons of the Harpy",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Kill the Boy",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Unbowed, Unbent, Unbroken",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Gift",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Hardhome",
+            "runtime": 61,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "The Dance of Dragons",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Mother's Mercy",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 6,
+        "title": "Season 6",
+        "progress": 100,
+        "seenEpisodeCount": 10,
+        "episodeCount": 10,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Red Woman",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Homeward Bound",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Oathbreaker",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Book of the Stranger",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Door",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Blood of My Blood",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Broken Man",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "No One",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Battle of the Bastards",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "The Winds of Winter",
+            "runtime": 68,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 7,
+        "title": "Season 7",
+        "progress": 100,
+        "seenEpisodeCount": 7,
+        "episodeCount": 7,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Dragonstone",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Stormborn",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Queen's Justice",
+            "runtime": 63,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Spoils of War",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Eastwatch",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Beyond the Wall",
+            "runtime": 70,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Dragon and the Wolf",
+            "runtime": 80,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 8,
+        "title": "Season 8",
+        "progress": 100,
+        "seenEpisodeCount": 6,
+        "episodeCount": 6,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Winterfell",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "A Knight of the Seven Kingdoms",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Long Night",
+            "runtime": 82,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Last of the Starks",
+            "runtime": 78,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Bells",
+            "runtime": 78,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Iron Throne",
+            "runtime": 80,
+            "seen": true,
+            "seenAt": "2024-08-22T17:44:02.117Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1003750",
+    "type": "MOVIE",
+    "title": "Furiosa: A Mad Max Saga",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/movie/furiosa",
+    "imdbId": "tt12037194",
+    "tmdbId": "786892",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.456,
+    "createdAt": "2024-07-04T07:04:14.517Z"
+  },
+  {
+    "id": "tm244142",
+    "type": "MOVIE",
+    "title": "The Batman",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/the-batman",
+    "imdbId": "tt1877830",
+    "tmdbId": "414906",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.7,
+    "createdAt": "2024-06-02T20:31:36.165Z"
+  },
+  {
+    "id": "ts85391",
+    "type": "SHOW",
+    "title": "Andor",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/tv-series/andor",
+    "imdbId": "tt9253284",
+    "tmdbId": "83867",
+    "imdbScore": 8.6,
+    "tmdbScore": 8.295,
+    "createdAt": "2024-05-12T10:39:16.749Z",
+    "progress": 100,
+    "seenEpisodeCount": 24,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 12,
+        "episodeCount": 12,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Kassa",
+            "runtime": 41,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "That Would Be Me",
+            "runtime": 38,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Reckoning",
+            "runtime": 40,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Aldhani",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Axe Forgets",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Eye",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Announcement",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Narkina 5",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Nobody's Listening!",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "One Way Out",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 11,
+            "title": "Daughter of Ferrix",
+            "runtime": 43,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 12,
+            "title": "Rix Road",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 12,
+        "episodeCount": 12,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "One Year Later",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Sagrona Teema",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Harvest",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Ever Been to Ghorman?",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "I Have Friends Everywhere",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "What a Festive Evening",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Messenger",
+            "runtime": 44,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Who Are You?",
+            "runtime": 47,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Welcome to the Rebellion",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 10,
+            "title": "Make It Stop",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 11,
+            "title": "Who Else Knows?",
+            "runtime": 42,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          },
+          {
+            "episodeNumber": 12,
+            "title": "Jedha, Kyber, Erso",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2025-05-14T20:28:53.021Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm146426",
+    "type": "MOVIE",
+    "title": "The Age of Adaline",
+    "year": 2015,
+    "url": "https://www.justwatch.com/uk/movie/the-age-of-adaline",
+    "imdbId": "tt1655441",
+    "tmdbId": "293863",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.468,
+    "createdAt": "2024-05-10T21:20:55.254Z"
+  },
+  {
+    "id": "ts265779",
+    "type": "SHOW",
+    "title": "Fallout",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/tv-series/fallout-2024",
+    "imdbId": "tt12637874",
+    "tmdbId": "106379",
+    "imdbScore": 8.3,
+    "tmdbScore": 8.123,
+    "createdAt": "2024-04-17T16:51:46.827Z",
+    "progress": 100,
+    "seenEpisodeCount": 16,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The End",
+            "runtime": 74,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Target",
+            "runtime": 65,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Head",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Ghouls",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Past",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Trap",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Radio",
+            "runtime": 61,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Beginning",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Season 2",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Innovator",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Golden Rule",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Profligate",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Demon in the Snow",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Wrangler",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Other Player",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Handoff",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Strip",
+            "runtime": 56,
+            "seen": true,
+            "seenAt": "2026-02-28T20:48:03.799Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ts377014",
+    "type": "SHOW",
+    "title": "Das Signal",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/tv-series/the-signal",
+    "imdbId": "tt25375256",
+    "tmdbId": "241473",
+    "imdbScore": 6,
+    "tmdbScore": 6.34,
+    "createdAt": "2024-04-07T12:49:53.467Z",
+    "progress": 100,
+    "seenEpisodeCount": 4,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Limited Series",
+        "progress": 100,
+        "seenEpisodeCount": 4,
+        "episodeCount": 4,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Vanished",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2024-04-01T21:21:41.488Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Paula",
+            "runtime": 62,
+            "seen": true,
+            "seenAt": "2024-04-01T21:21:41.488Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Black Box",
+            "runtime": 69,
+            "seen": true,
+            "seenAt": "2024-04-01T21:21:41.488Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Departure",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-04-01T21:21:41.488Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm35465",
+    "type": "MOVIE",
+    "title": "Black Hawk Down",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/movie/black-hawk-down",
+    "imdbId": "tt0265086",
+    "tmdbId": "855",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.394,
+    "createdAt": "2024-04-04T20:46:26.389Z"
+  },
+  {
+    "id": "tm205009",
+    "type": "MOVIE",
+    "title": "The Magnificent Seven",
+    "year": 2016,
+    "url": "https://www.justwatch.com/uk/movie/the-magnificent-seven-2016",
+    "imdbId": "tt2404435",
+    "tmdbId": "333484",
+    "imdbScore": 6.9,
+    "tmdbScore": 6.5,
+    "createdAt": "2024-03-11T16:48:17.615Z"
+  },
+  {
+    "id": "tm1349300",
+    "type": "MOVIE",
+    "title": "Second tour",
+    "year": 2023,
+    "url": null,
+    "imdbId": "tt27851639",
+    "tmdbId": "962309",
+    "imdbScore": 6.2,
+    "tmdbScore": 6.25,
+    "createdAt": "2024-03-09T10:41:31.969Z"
+  },
+  {
+    "id": "tm1133934",
+    "type": "MOVIE",
+    "title": "Dune: Part Two",
+    "year": 2024,
+    "url": "https://www.justwatch.com/uk/movie/dune-part-two",
+    "imdbId": "tt15239678",
+    "tmdbId": "693134",
+    "imdbScore": 8.4,
+    "tmdbScore": 8.1,
+    "createdAt": "2024-02-28T17:39:11.305Z"
+  },
+  {
+    "id": "ts43075",
+    "type": "SHOW",
+    "title": "Halo",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/tv-series/halo",
+    "imdbId": "tt2934286",
+    "tmdbId": "52814",
+    "imdbScore": 7.3,
+    "tmdbScore": 8.208,
+    "createdAt": "2024-02-10T17:42:03.235Z",
+    "progress": 100,
+    "seenEpisodeCount": 17,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 9,
+        "episodeCount": 9,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Contact",
+            "runtime": 59,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Unbound",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Emergence",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Homecoming",
+            "runtime": 55,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Reckoning",
+            "runtime": 40,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Solace",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Inheritance",
+            "runtime": 51,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Allegiance",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 9,
+            "title": "Transcendence",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          }
+        ]
+      },
+      {
+        "seasonNumber": 2,
+        "title": "Halo",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "Sanctuary",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Sword",
+            "runtime": 46,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Visegrad",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Reach",
+            "runtime": 45,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Aleria",
+            "runtime": 61,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Onyx",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "Thermopylae",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "Halo",
+            "runtime": 54,
+            "seen": true,
+            "seenAt": "2024-03-23T14:48:25.24Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm1299129",
+    "type": "MOVIE",
+    "title": "Leave the World Behind",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/leave-the-world-behind-2023",
+    "imdbId": "tt12747748",
+    "tmdbId": "726209",
+    "imdbScore": 6.4,
+    "tmdbScore": 6.379,
+    "createdAt": "2024-01-03T23:07:12.465Z"
+  },
+  {
+    "id": "tm512536",
+    "type": "MOVIE",
+    "title": "Sound of Freedom",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/sound-of-freedom",
+    "imdbId": "tt7599146",
+    "tmdbId": "678512",
+    "imdbScore": 7.6,
+    "tmdbScore": 8,
+    "createdAt": "2024-01-03T19:44:52.165Z"
+  },
+  {
+    "id": "tm679789",
+    "type": "MOVIE",
+    "title": "Another Round",
+    "year": 2020,
+    "url": "https://www.justwatch.com/uk/movie/another-round",
+    "imdbId": "tt10288566",
+    "tmdbId": "580175",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.625,
+    "createdAt": "2023-11-18T17:06:45.244Z"
+  },
+  {
+    "id": "tm10",
+    "type": "MOVIE",
+    "title": "The Matrix",
+    "year": 1999,
+    "url": "https://www.justwatch.com/uk/movie/the-matrix",
+    "imdbId": "tt0133093",
+    "tmdbId": "603",
+    "imdbScore": 8.7,
+    "tmdbScore": 8.247,
+    "createdAt": "2023-11-18T17:06:37.173Z"
+  },
+  {
+    "id": "tm63441",
+    "type": "MOVIE",
+    "title": "Life of Pi",
+    "year": 2012,
+    "url": "https://www.justwatch.com/uk/movie/life-of-pi",
+    "imdbId": "tt0454876",
+    "tmdbId": "87827",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.409,
+    "createdAt": "2023-11-18T17:05:49.067Z"
+  },
+  {
+    "id": "ts104019",
+    "type": "SHOW",
+    "title": "1899",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/tv-series/1899",
+    "imdbId": "tt9319668",
+    "tmdbId": "90669",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.49,
+    "createdAt": "2023-11-18T17:03:02.753Z",
+    "progress": 100,
+    "seenEpisodeCount": 8,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Season 1",
+        "progress": 100,
+        "seenEpisodeCount": 8,
+        "episodeCount": 8,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Ship",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Boy",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "The Fog",
+            "runtime": 60,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Fight",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "The Calling",
+            "runtime": 48,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "The Pyramid",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 7,
+            "title": "The Storm",
+            "runtime": 52,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          },
+          {
+            "episodeNumber": 8,
+            "title": "The Key",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2023-03-10T07:20:19.369Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm62424",
+    "type": "MOVIE",
+    "title": "Gramps Is in the Resistance",
+    "year": 1983,
+    "url": null,
+    "imdbId": "tt0086079",
+    "tmdbId": "48769",
+    "imdbScore": 6.7,
+    "tmdbScore": 6.861,
+    "createdAt": "2023-11-18T17:02:57.424Z"
+  },
+  {
+    "id": "tm824398",
+    "type": "MOVIE",
+    "title": "The Platform",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/the-platform",
+    "imdbId": "tt8228288",
+    "tmdbId": "619264",
+    "imdbScore": 7,
+    "tmdbScore": 6.971,
+    "createdAt": "2023-11-18T17:02:32.982Z"
+  },
+  {
+    "id": "tm137377",
+    "type": "MOVIE",
+    "title": "OSS 117: Lost in Rio",
+    "year": 2009,
+    "url": "https://www.justwatch.com/uk/movie/oss-117-lost-in-rio",
+    "imdbId": "tt1167660",
+    "tmdbId": "15588",
+    "imdbScore": 6.8,
+    "tmdbScore": 7.1,
+    "createdAt": "2023-11-18T17:02:19.536Z"
+  },
+  {
+    "id": "ts299257",
+    "type": "SHOW",
+    "title": "Infiniti",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/tv-series/infiniti",
+    "imdbId": "tt14902026",
+    "tmdbId": "128798",
+    "imdbScore": 6.6,
+    "tmdbScore": 7.073,
+    "createdAt": "2023-11-18T17:01:22.753Z",
+    "progress": 100,
+    "seenEpisodeCount": 6,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Miniseries",
+        "progress": 100,
+        "seenEpisodeCount": 6,
+        "episodeCount": 6,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "The Tower of Silence",
+            "runtime": 57,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "The Tower of Babel",
+            "runtime": 50,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "First Lightning",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "Black Sun",
+            "runtime": 53,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Thus Spoke Zarathustra",
+            "runtime": 49,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          },
+          {
+            "episodeNumber": 6,
+            "title": "Through the Mirror",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2023-03-11T12:03:12.616Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm139694",
+    "type": "MOVIE",
+    "title": "Bridge of Spies",
+    "year": 2015,
+    "url": "https://www.justwatch.com/uk/movie/bridge-of-spies",
+    "imdbId": "tt3682448",
+    "tmdbId": "296098",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.24,
+    "createdAt": "2023-11-18T17:01:09.373Z"
+  },
+  {
+    "id": "tm218939",
+    "type": "MOVIE",
+    "title": "Going in Style",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/going-in-style-2017",
+    "imdbId": "tt2568862",
+    "tmdbId": "353070",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.691,
+    "createdAt": "2023-11-18T17:00:29.509Z"
+  },
+  {
+    "id": "ts88632",
+    "type": "SHOW",
+    "title": "Chernobyl",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/tv-series/chernobyl",
+    "imdbId": "tt7366338",
+    "tmdbId": "87108",
+    "imdbScore": 9.3,
+    "tmdbScore": 8.706,
+    "createdAt": "2023-11-18T16:59:12.028Z",
+    "progress": 100,
+    "seenEpisodeCount": 5,
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "title": "Miniseries",
+        "progress": 100,
+        "seenEpisodeCount": 5,
+        "episodeCount": 5,
+        "episodes": [
+          {
+            "episodeNumber": 1,
+            "title": "1:23:45",
+            "runtime": 58,
+            "seen": true,
+            "seenAt": "2023-03-11T21:45:29.37Z"
+          },
+          {
+            "episodeNumber": 2,
+            "title": "Please Remain Calm",
+            "runtime": 65,
+            "seen": true,
+            "seenAt": "2023-03-11T21:45:29.37Z"
+          },
+          {
+            "episodeNumber": 3,
+            "title": "Open Wide, O Earth",
+            "runtime": 65,
+            "seen": true,
+            "seenAt": "2023-03-11T21:45:29.37Z"
+          },
+          {
+            "episodeNumber": 4,
+            "title": "The Happiness of All Mankind",
+            "runtime": 67,
+            "seen": true,
+            "seenAt": "2023-03-11T21:45:29.37Z"
+          },
+          {
+            "episodeNumber": 5,
+            "title": "Vichnaya Pamyat",
+            "runtime": 72,
+            "seen": true,
+            "seenAt": "2023-03-11T21:45:29.37Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tm89040",
+    "type": "MOVIE",
+    "title": "Kill Bill: Vol. 2",
+    "year": 2004,
+    "url": "https://www.justwatch.com/uk/movie/kill-bill-vol-2",
+    "imdbId": "tt0378194",
+    "tmdbId": "393",
+    "imdbScore": 8,
+    "tmdbScore": 7.878,
+    "createdAt": "2023-11-18T16:58:08.188Z"
+  },
+  {
+    "id": "tm1111989",
+    "type": "MOVIE",
+    "title": "Oppenheimer",
+    "year": 2023,
+    "url": "https://www.justwatch.com/uk/movie/oppenheimer",
+    "imdbId": "tt15398776",
+    "tmdbId": "872585",
+    "imdbScore": 8.2,
+    "tmdbScore": 8.032,
+    "createdAt": "2023-11-18T16:39:45.911Z"
+  },
+  {
+    "id": "tm349873",
+    "type": "MOVIE",
+    "title": "Joker",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/joker-2019",
+    "imdbId": "tt7286456",
+    "tmdbId": "475557",
+    "imdbScore": 8.3,
+    "tmdbScore": 8.125,
+    "createdAt": "2023-11-16T20:25:39.409Z"
+  },
+  {
+    "id": "tm219267",
+    "type": "MOVIE",
+    "title": "Baby Driver",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/baby-driver",
+    "imdbId": "tt3890160",
+    "tmdbId": "339403",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.443,
+    "createdAt": "2023-11-16T20:25:28.179Z"
+  },
+  {
+    "id": "tm242630",
+    "type": "MOVIE",
+    "title": "Murder on the Orient Express",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/murder-on-the-orient-express-2017",
+    "imdbId": "tt3402236",
+    "tmdbId": "392044",
+    "imdbScore": 6.5,
+    "tmdbScore": 6.707,
+    "createdAt": "2023-11-16T20:24:47.682Z"
+  },
+  {
+    "id": "tm179029",
+    "type": "MOVIE",
+    "title": "Gravity",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/gravity",
+    "imdbId": "tt1454468",
+    "tmdbId": "49047",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.168,
+    "createdAt": "2023-11-16T20:24:19.572Z"
+  },
+  {
+    "id": "tm853831",
+    "type": "MOVIE",
+    "title": "Black Box",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/movie/black-box-2021-0",
+    "imdbId": "tt10341034",
+    "tmdbId": "663260",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.3,
+    "createdAt": "2023-11-16T20:24:07.352Z"
+  },
+  {
+    "id": "tm183480",
+    "type": "MOVIE",
+    "title": "Oblivion",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/oblivion",
+    "imdbId": "tt1483013",
+    "tmdbId": "75612",
+    "imdbScore": 7,
+    "tmdbScore": 6.681,
+    "createdAt": "2023-11-16T20:23:59.371Z"
+  },
+  {
+    "id": "tm139224",
+    "type": "MOVIE",
+    "title": "Ex Machina",
+    "year": 2015,
+    "url": "https://www.justwatch.com/uk/movie/ex-machina",
+    "imdbId": "tt0470752",
+    "tmdbId": "264660",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.573,
+    "createdAt": "2023-11-16T20:21:17.957Z"
+  },
+  {
+    "id": "tm154187",
+    "type": "MOVIE",
+    "title": "Sherlock Holmes",
+    "year": 2009,
+    "url": "https://www.justwatch.com/uk/movie/sherlock-holmes-2009",
+    "imdbId": "tt0988045",
+    "tmdbId": "10528",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.221,
+    "createdAt": "2023-11-16T20:16:52.716Z"
+  },
+  {
+    "id": "tm155068",
+    "type": "MOVIE",
+    "title": "Transcendence",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/transcendence",
+    "imdbId": "tt2209764",
+    "tmdbId": "157353",
+    "imdbScore": 6.2,
+    "tmdbScore": 6.072,
+    "createdAt": "2023-11-16T20:16:44.01Z"
+  },
+  {
+    "id": "tm133531",
+    "type": "MOVIE",
+    "title": "The Hunger Games: Mockingjay - Part 2",
+    "year": 2015,
+    "url": "https://www.justwatch.com/uk/movie/the-hunger-games-mockingjay-part-2",
+    "imdbId": "tt1951266",
+    "tmdbId": "131634",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.902,
+    "createdAt": "2023-11-16T20:16:17.305Z"
+  },
+  {
+    "id": "tm243734",
+    "type": "MOVIE",
+    "title": "An Officer and a Spy",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/an-officer-and-a-spy",
+    "imdbId": "tt2398149",
+    "tmdbId": "399121",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.071,
+    "createdAt": "2023-11-16T20:16:13.872Z"
+  },
+  {
+    "id": "tm855361",
+    "type": "MOVIE",
+    "title": "Reminiscence",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/movie/reminiscence-2021",
+    "imdbId": "tt3272066",
+    "tmdbId": "579047",
+    "imdbScore": 5.9,
+    "tmdbScore": 6.522,
+    "createdAt": "2023-11-16T20:15:43.467Z"
+  },
+  {
+    "id": "tm412871",
+    "type": "MOVIE",
+    "title": "Midway",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/midway-2019",
+    "imdbId": "tt6924650",
+    "tmdbId": "522162",
+    "imdbScore": 6.7,
+    "tmdbScore": 7.098,
+    "createdAt": "2023-11-16T20:15:35.949Z"
+  },
+  {
+    "id": "tm137220",
+    "type": "MOVIE",
+    "title": "Kill Bill: Vol. 1",
+    "year": 2003,
+    "url": "https://www.justwatch.com/uk/movie/kill-bill-vol-1",
+    "imdbId": "tt0266697",
+    "tmdbId": "24",
+    "imdbScore": 8.2,
+    "tmdbScore": 7.973,
+    "createdAt": "2023-11-16T20:13:34.178Z"
+  },
+  {
+    "id": "tm50138",
+    "type": "MOVIE",
+    "title": "Amélie",
+    "year": 2001,
+    "url": "https://www.justwatch.com/uk/movie/amelie",
+    "imdbId": "tt0211915",
+    "tmdbId": "194",
+    "imdbScore": 8.3,
+    "tmdbScore": 7.921,
+    "createdAt": "2023-11-16T20:13:31.189Z"
+  },
+  {
+    "id": "tm19246",
+    "type": "MOVIE",
+    "title": "Requiem for a Dream",
+    "year": 2000,
+    "url": "https://www.justwatch.com/uk/movie/requiem-for-a-dream",
+    "imdbId": "tt0180093",
+    "tmdbId": "641",
+    "imdbScore": 8.3,
+    "tmdbScore": 8.013,
+    "createdAt": "2023-11-01T17:12:47.949Z"
+  },
+  {
+    "id": "tm157099",
+    "type": "MOVIE",
+    "title": "Interstellar",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/interstellar",
+    "imdbId": "tt0816692",
+    "tmdbId": "157336",
+    "imdbScore": 8.7,
+    "tmdbScore": 8.5,
+    "createdAt": "2023-10-19T21:57:30.954Z"
+  },
+  {
+    "id": "tm191110",
+    "type": "MOVIE",
+    "title": "Titanic",
+    "year": 1997,
+    "url": "https://www.justwatch.com/uk/movie/titanic-1997",
+    "imdbId": "tt0120338",
+    "tmdbId": "597",
+    "imdbScore": 8,
+    "tmdbScore": 7.903,
+    "createdAt": "2023-10-19T21:57:20.756Z"
+  },
+  {
+    "id": "tm316242",
+    "type": "MOVIE",
+    "title": "Top Gun: Maverick",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/top-gun-maverick",
+    "imdbId": "tt1745960",
+    "tmdbId": "361743",
+    "imdbScore": 8.2,
+    "tmdbScore": 8.2,
+    "createdAt": "2023-10-19T21:57:19.105Z"
+  },
+  {
+    "id": "tm135853",
+    "type": "MOVIE",
+    "title": "Avatar",
+    "year": 2009,
+    "url": "https://www.justwatch.com/uk/movie/avatar",
+    "imdbId": "tt0499549",
+    "tmdbId": "19995",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.606,
+    "createdAt": "2023-10-19T21:57:15.495Z"
+  },
+  {
+    "id": "tm232799",
+    "type": "MOVIE",
+    "title": "No Time to Die",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/movie/no-time-to-die-2020",
+    "imdbId": "tt2382320",
+    "tmdbId": "370172",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.341,
+    "createdAt": "2023-10-19T21:57:12.5Z"
+  },
+  {
+    "id": "tm432043",
+    "type": "MOVIE",
+    "title": "Knives Out",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/knives-out",
+    "imdbId": "tt8946378",
+    "tmdbId": "546554",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.841,
+    "createdAt": "2023-10-19T21:57:04.195Z"
+  },
+  {
+    "id": "tm826550",
+    "type": "MOVIE",
+    "title": "Richard Jewell",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/richard-jewell",
+    "imdbId": "tt3513548",
+    "tmdbId": "292011",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.418,
+    "createdAt": "2023-10-19T21:57:02.497Z"
+  },
+  {
+    "id": "tm305113",
+    "type": "MOVIE",
+    "title": "Dune",
+    "year": 2021,
+    "url": "https://www.justwatch.com/uk/movie/dune-2020",
+    "imdbId": "tt1160419",
+    "tmdbId": "438631",
+    "imdbScore": 8,
+    "tmdbScore": 7.781,
+    "createdAt": "2023-10-19T21:56:55.766Z"
+  },
+  {
+    "id": "tm1198110",
+    "type": "MOVIE",
+    "title": "The Menu",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/the-menu",
+    "imdbId": "tt9764362",
+    "tmdbId": "593643",
+    "imdbScore": 7.2,
+    "tmdbScore": 7.179,
+    "createdAt": "2023-10-19T21:56:52.984Z"
+  },
+  {
+    "id": "tm239091",
+    "type": "MOVIE",
+    "title": "Blade Runner 2049",
+    "year": 2017,
+    "url": "https://www.justwatch.com/uk/movie/blade-runner-2049",
+    "imdbId": "tt1856101",
+    "tmdbId": "335984",
+    "imdbScore": 8,
+    "tmdbScore": 7.595,
+    "createdAt": "2023-10-19T21:56:51.088Z"
+  },
+  {
+    "id": "tm558",
+    "type": "MOVIE",
+    "title": "Puss in Boots: The Last Wish",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/puss-in-boots-2-nine-lives-and-40-thieves",
+    "imdbId": "tt3915174",
+    "tmdbId": "315162",
+    "imdbScore": 7.8,
+    "tmdbScore": 8.206,
+    "createdAt": "2023-10-19T21:56:39.763Z"
+  },
+  {
+    "id": "tm155607",
+    "type": "MOVIE",
+    "title": "The Connection",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/the-connection",
+    "imdbId": "tt2935564",
+    "tmdbId": "197950",
+    "imdbScore": 7.1,
+    "tmdbScore": 7.1,
+    "createdAt": "2023-10-19T21:56:22.339Z"
+  },
+  {
+    "id": "tm76351",
+    "type": "MOVIE",
+    "title": "Zodiac",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/zodiac",
+    "imdbId": "tt0443706",
+    "tmdbId": "1949",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.5,
+    "createdAt": "2023-10-19T21:56:12.712Z"
+  },
+  {
+    "id": "tm39030",
+    "type": "MOVIE",
+    "title": "Casino Royale",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/casino-royale",
+    "imdbId": "tt0381061",
+    "tmdbId": "36557",
+    "imdbScore": 8,
+    "tmdbScore": 7.57,
+    "createdAt": "2023-10-19T21:56:10.271Z"
+  },
+  {
+    "id": "tm92034",
+    "type": "MOVIE",
+    "title": "The King's Speech",
+    "year": 2010,
+    "url": "https://www.justwatch.com/uk/movie/the-kings-speech",
+    "imdbId": "tt1504320",
+    "tmdbId": "45269",
+    "imdbScore": 8,
+    "tmdbScore": 7.733,
+    "createdAt": "2023-10-19T21:55:53.892Z"
+  },
+  {
+    "id": "tm177297",
+    "type": "MOVIE",
+    "title": "Harry Potter and the Deathly Hallows: Part 2",
+    "year": 2011,
+    "url": "https://www.justwatch.com/uk/movie/harry-potter-and-the-deathly-hallows-part-2",
+    "imdbId": "tt1201607",
+    "tmdbId": "12445",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.08,
+    "createdAt": "2023-10-19T21:55:44.675Z"
+  },
+  {
+    "id": "tm491195",
+    "type": "MOVIE",
+    "title": "Three Thousand Years of Longing",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/three-thousand-years-of-longing",
+    "imdbId": "tt9198364",
+    "tmdbId": "556694",
+    "imdbScore": 6.7,
+    "tmdbScore": 6.9,
+    "createdAt": "2023-10-19T21:55:15.38Z"
+  },
+  {
+    "id": "tm92641",
+    "type": "MOVIE",
+    "title": "Inception",
+    "year": 2010,
+    "url": "https://www.justwatch.com/uk/movie/inception",
+    "imdbId": "tt1375666",
+    "tmdbId": "27205",
+    "imdbScore": 8.8,
+    "tmdbScore": 8.372,
+    "createdAt": "2023-10-19T21:54:24.545Z"
+  },
+  {
+    "id": "tm205861",
+    "type": "MOVIE",
+    "title": "Arrival",
+    "year": 2016,
+    "url": "https://www.justwatch.com/uk/movie/arrival-2016",
+    "imdbId": "tt2543164",
+    "tmdbId": "329865",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.627,
+    "createdAt": "2023-10-19T21:54:20.826Z"
+  },
+  {
+    "id": "tm22747",
+    "type": "MOVIE",
+    "title": "The Prestige",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/the-prestige",
+    "imdbId": "tt0482571",
+    "tmdbId": "1124",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.208,
+    "createdAt": "2023-10-19T21:54:13.663Z"
+  },
+  {
+    "id": "tm266641",
+    "type": "MOVIE",
+    "title": "Ad Astra",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/ad-astra",
+    "imdbId": "tt2935510",
+    "tmdbId": "419704",
+    "imdbScore": 6.5,
+    "tmdbScore": 6.13,
+    "createdAt": "2023-10-19T21:54:10.284Z"
+  },
+  {
+    "id": "tm135878",
+    "type": "MOVIE",
+    "title": "Edge of Tomorrow",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/un-jour-sans-lendemain",
+    "imdbId": "tt1631867",
+    "tmdbId": "137113",
+    "imdbScore": 7.9,
+    "tmdbScore": 7.6,
+    "createdAt": "2023-10-19T21:54:01.053Z"
+  },
+  {
+    "id": "tm376676",
+    "type": "MOVIE",
+    "title": "Keep an Eye Out",
+    "year": 2018,
+    "url": "https://www.justwatch.com/uk/movie/keep-an-eye-out",
+    "imdbId": "tt7156222",
+    "tmdbId": "474331",
+    "imdbScore": 6.7,
+    "tmdbScore": 6.645,
+    "createdAt": "2023-10-19T21:53:48.623Z"
+  },
+  {
+    "id": "tm28142",
+    "type": "MOVIE",
+    "title": "Gladiator",
+    "year": 2000,
+    "url": "https://www.justwatch.com/uk/movie/gladiator",
+    "imdbId": "tt0172495",
+    "tmdbId": "98",
+    "imdbScore": 8.5,
+    "tmdbScore": 8.227,
+    "createdAt": "2023-10-19T21:53:14.274Z"
+  },
+  {
+    "id": "tm33514",
+    "type": "MOVIE",
+    "title": "300",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/300",
+    "imdbId": "tt0416449",
+    "tmdbId": "1271",
+    "imdbScore": 7.6,
+    "tmdbScore": 7.199,
+    "createdAt": "2023-10-19T21:53:10.974Z"
+  },
+  {
+    "id": "tm192405",
+    "type": "MOVIE",
+    "title": "Gattaca",
+    "year": 1997,
+    "url": "https://www.justwatch.com/uk/movie/gattaca",
+    "imdbId": "tt0119177",
+    "tmdbId": "782",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.567,
+    "createdAt": "2023-10-19T21:53:05.805Z"
+  },
+  {
+    "id": "tm141107",
+    "type": "MOVIE",
+    "title": "Sicario",
+    "year": 2015,
+    "url": "https://www.justwatch.com/uk/movie/sicario",
+    "imdbId": "tt3397884",
+    "tmdbId": "273481",
+    "imdbScore": 7.7,
+    "tmdbScore": 7.419,
+    "createdAt": "2023-10-19T21:52:59.552Z"
+  },
+  {
+    "id": "tm146588",
+    "type": "MOVIE",
+    "title": "Predestination",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/predestination",
+    "imdbId": "tt2397535",
+    "tmdbId": "206487",
+    "imdbScore": 7.4,
+    "tmdbScore": 7.4,
+    "createdAt": "2023-10-19T21:52:29.343Z"
+  },
+  {
+    "id": "tm46993",
+    "type": "MOVIE",
+    "title": "Valkyrie",
+    "year": 2008,
+    "url": "https://www.justwatch.com/uk/movie/valkyrie",
+    "imdbId": "tt0985699",
+    "tmdbId": "2253",
+    "imdbScore": 7.1,
+    "tmdbScore": 6.957,
+    "createdAt": "2023-10-19T21:52:20.683Z"
+  },
+  {
+    "id": "tm99496",
+    "type": "MOVIE",
+    "title": "TRON: Legacy",
+    "year": 2010,
+    "url": "https://www.justwatch.com/uk/movie/tron-legacy",
+    "imdbId": "tt1104001",
+    "tmdbId": "20526",
+    "imdbScore": 6.8,
+    "tmdbScore": 6.5,
+    "createdAt": "2023-10-19T21:52:13.503Z"
+  },
+  {
+    "id": "tm228812",
+    "type": "MOVIE",
+    "title": "Sully",
+    "year": 2016,
+    "url": "https://www.justwatch.com/uk/movie/sully",
+    "imdbId": "tt3263904",
+    "tmdbId": "363676",
+    "imdbScore": 7.4,
+    "tmdbScore": 7.204,
+    "createdAt": "2023-10-19T21:52:09.867Z"
+  },
+  {
+    "id": "tm854098",
+    "type": "MOVIE",
+    "title": "Bye Bye Morons",
+    "year": 2020,
+    "url": "https://www.justwatch.com/uk/movie/bye-bye-morons",
+    "imdbId": "tt10196398",
+    "tmdbId": "651881",
+    "imdbScore": 6.7,
+    "tmdbScore": 7.179,
+    "createdAt": "2023-10-19T21:51:29.136Z"
+  },
+  {
+    "id": "tm63108",
+    "type": "MOVIE",
+    "title": "Cloud Atlas",
+    "year": 2012,
+    "url": "https://www.justwatch.com/uk/movie/cloud-atlas",
+    "imdbId": "tt1371111",
+    "tmdbId": "83542",
+    "imdbScore": 7.3,
+    "tmdbScore": 6.9,
+    "createdAt": "2023-10-19T21:51:17.283Z"
+  },
+  {
+    "id": "tm23568",
+    "type": "MOVIE",
+    "title": "The Da Vinci Code",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/the-da-vinci-code",
+    "imdbId": "tt0382625",
+    "tmdbId": "591",
+    "imdbScore": 6.7,
+    "tmdbScore": 6.727,
+    "createdAt": "2023-10-19T21:51:09.291Z"
+  },
+  {
+    "id": "tm99575",
+    "type": "MOVIE",
+    "title": "Shutter Island",
+    "year": 2010,
+    "url": "https://www.justwatch.com/uk/movie/shutter-island",
+    "imdbId": "tt1130884",
+    "tmdbId": "11324",
+    "imdbScore": 8.2,
+    "tmdbScore": 8.199,
+    "createdAt": "2023-10-19T21:51:05.805Z"
+  },
+  {
+    "id": "tm68909",
+    "type": "MOVIE",
+    "title": "The Truman Show",
+    "year": 1998,
+    "url": "https://www.justwatch.com/uk/movie/the-truman-show",
+    "imdbId": "tt0120382",
+    "tmdbId": "37165",
+    "imdbScore": 8.2,
+    "tmdbScore": 8.153,
+    "createdAt": "2023-10-19T21:50:45.836Z"
+  },
+  {
+    "id": "tm72846",
+    "type": "MOVIE",
+    "title": "Skyfall",
+    "year": 2012,
+    "url": "https://www.justwatch.com/uk/movie/skyfall",
+    "imdbId": "tt1074638",
+    "tmdbId": "37724",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.261,
+    "createdAt": "2023-10-19T21:50:30.344Z"
+  },
+  {
+    "id": "tm54285",
+    "type": "MOVIE",
+    "title": "The Green Mile",
+    "year": 1999,
+    "url": "https://www.justwatch.com/uk/movie/the-green-mile",
+    "imdbId": "tt0120689",
+    "tmdbId": "497",
+    "imdbScore": 8.6,
+    "tmdbScore": 8.507,
+    "createdAt": "2023-10-19T21:50:15.742Z"
+  },
+  {
+    "id": "tm71121",
+    "type": "MOVIE",
+    "title": "The Good, the Bad and the Ugly",
+    "year": 1966,
+    "url": "https://www.justwatch.com/uk/movie/the-good-the-bad-and-the-ugly",
+    "imdbId": "tt0060196",
+    "tmdbId": "429",
+    "imdbScore": 8.8,
+    "tmdbScore": 8.468,
+    "createdAt": "2023-10-19T21:49:47.963Z"
+  },
+  {
+    "id": "tm162843",
+    "type": "MOVIE",
+    "title": "The Grand Budapest Hotel",
+    "year": 2014,
+    "url": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel",
+    "imdbId": "tt2278388",
+    "tmdbId": "120467",
+    "imdbScore": 8.1,
+    "tmdbScore": 8.028,
+    "createdAt": "2023-10-19T21:49:42.464Z"
+  },
+  {
+    "id": "tm184362",
+    "type": "MOVIE",
+    "title": "V for Vendetta",
+    "year": 2006,
+    "url": "https://www.justwatch.com/uk/movie/v-for-vendetta",
+    "imdbId": "tt0434409",
+    "tmdbId": "752",
+    "imdbScore": 8.1,
+    "tmdbScore": 7.9,
+    "createdAt": "2023-10-19T21:49:37.503Z"
+  },
+  {
+    "id": "tm191853",
+    "type": "MOVIE",
+    "title": "Contact",
+    "year": 1997,
+    "url": "https://www.justwatch.com/uk/movie/contact",
+    "imdbId": "tt0118884",
+    "tmdbId": "686",
+    "imdbScore": 7.5,
+    "tmdbScore": 7.444,
+    "createdAt": "2023-10-19T21:49:20.695Z"
+  },
+  {
+    "id": "tm173038",
+    "type": "MOVIE",
+    "title": "The Last Stand",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/the-last-stand",
+    "imdbId": "tt1549920",
+    "tmdbId": "76640",
+    "imdbScore": 6.3,
+    "tmdbScore": 6.085,
+    "createdAt": "2023-10-19T21:49:06.738Z"
+  },
+  {
+    "id": "tm236706",
+    "type": "MOVIE",
+    "title": "Split",
+    "year": 2016,
+    "url": "https://www.justwatch.com/uk/movie/split-2017",
+    "imdbId": "tt4972582",
+    "tmdbId": "381288",
+    "imdbScore": 7.3,
+    "tmdbScore": 7.341,
+    "createdAt": "2023-10-19T21:48:58.317Z"
+  },
+  {
+    "id": "tm315727",
+    "type": "MOVIE",
+    "title": "Glass",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/glass-2019",
+    "imdbId": "tt6823368",
+    "tmdbId": "450465",
+    "imdbScore": 6.6,
+    "tmdbScore": 6.665,
+    "createdAt": "2023-10-19T21:48:53.447Z"
+  },
+  {
+    "id": "tm423666",
+    "type": "MOVIE",
+    "title": "The Wandering Earth",
+    "year": 2019,
+    "url": "https://www.justwatch.com/uk/movie/the-wandering-earth",
+    "imdbId": "tt7605074",
+    "tmdbId": "535167",
+    "imdbScore": 5.9,
+    "tmdbScore": 6.651,
+    "createdAt": "2023-10-19T21:48:38.062Z"
+  },
+  {
+    "id": "tm176861",
+    "type": "MOVIE",
+    "title": "Captain Phillips",
+    "year": 2013,
+    "url": "https://www.justwatch.com/uk/movie/captain-philips",
+    "imdbId": "tt1535109",
+    "tmdbId": "109424",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.5,
+    "createdAt": "2023-10-19T21:48:27.641Z"
+  },
+  {
+    "id": "tm72301",
+    "type": "MOVIE",
+    "title": "Persepolis",
+    "year": 2007,
+    "url": "https://www.justwatch.com/uk/movie/persepolis",
+    "imdbId": "tt0808417",
+    "tmdbId": "2011",
+    "imdbScore": 8,
+    "tmdbScore": 7.9,
+    "createdAt": "2023-10-19T21:33:20.212Z"
+  },
+  {
+    "id": "tm463762",
+    "type": "MOVIE",
+    "title": "RRR",
+    "year": 2022,
+    "url": "https://www.justwatch.com/uk/movie/roudram-ranam-rudhiram",
+    "imdbId": "tt8178634",
+    "tmdbId": "579974",
+    "imdbScore": 7.8,
+    "tmdbScore": 7.717,
+    "createdAt": "2023-10-19T21:19:24.343Z"
+  }
+]

@@ -16,20 +16,20 @@ export interface Stats {
   totalRuntimeMinutes: number;
   moviesSeenByYear: StatsYearBucket[];
   moviesSeenByMonth: StatsMonthBucket[];
-  showsSeenByYear: StatsYearBucket[];
-  showsSeenByMonth: StatsMonthBucket[];
+  episodesSeenByYear: StatsYearBucket[];
+  episodesSeenByMonth: StatsMonthBucket[];
 }
 
 export interface CombinedYearBucket {
   year: number;
   movies: number;
-  shows: number;
+  episodes: number;
   total: number;
 }
 
 export interface CombinedMonthBucket {
   label: string;
   movies: number;
-  shows: number;
+  episodes: number;
   total: number;
 }

@@ -14,8 +14,8 @@ public class StatsDto
     public List<StatsYearBucket> MoviesSeenByYear { get; set; } = new();
     public List<StatsMonthBucket> MoviesSeenByMonth { get; set; } = new();
 
-    public List<StatsYearBucket> ShowsSeenByYear { get; set; } = new();
-    public List<StatsMonthBucket> ShowsSeenByMonth { get; set; } = new();
+    public List<StatsYearBucket> EpisodesSeenByYear { get; set; } = new();
+    public List<StatsMonthBucket> EpisodesSeenByMonth { get; set; } = new();
 }
 
 public class StatsYearBucket

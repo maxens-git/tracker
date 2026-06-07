@@ -98,8 +98,8 @@ struct Stats: Decodable {
     let totalRuntimeHours: Double
     let moviesSeenByYear: [StatsYearBucket]
     let moviesSeenByMonth: [StatsMonthBucket]
-    let showsSeenByYear: [StatsYearBucket]
-    let showsSeenByMonth: [StatsMonthBucket]
+    let episodesSeenByYear: [StatsYearBucket]
+    let episodesSeenByMonth: [StatsMonthBucket]
 }
 
 struct StatsYearBucket: Decodable, Identifiable, Hashable {

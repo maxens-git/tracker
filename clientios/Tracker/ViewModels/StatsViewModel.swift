@@ -5,21 +5,21 @@
 
 import Foundation
 
-/// Activité combinée (films + séries) d'une année, pour les graphiques empilés.
+/// Activité combinée (films + épisodes) d'une année, pour les graphiques empilés.
 struct CombinedYearBucket: Identifiable, Hashable {
     let year: Int
     let movies: Int
-    let shows: Int
-    var total: Int { movies + shows }
+    let episodes: Int
+    var total: Int { movies + episodes }
     var id: Int { year }
 }
 
-/// Activité combinée (films + séries) d'un mois, pour les graphiques empilés.
+/// Activité combinée (films + épisodes) d'un mois, pour les graphiques empilés.
 struct CombinedMonthBucket: Identifiable, Hashable {
     let label: String
     let movies: Int
-    let shows: Int
-    var total: Int { movies + shows }
+    let episodes: Int
+    var total: Int { movies + episodes }
     var id: String { label }
 }
 
@@ -46,17 +46,17 @@ final class StatsViewModel {
         isLoading = false
     }
 
-    /// Activité par année (films + séries fusionnés), triée par année croissante.
+    /// Activité par année (films + épisodes fusionnés), triée par année croissante.
     var byYear: [CombinedYearBucket] {
         guard let stats else { return [] }
-        var map: [Int: (movies: Int, shows: Int)] = [:]
+        var map: [Int: (movies: Int, episodes: Int)] = [:]
         for b in stats.moviesSeenByYear { map[b.year, default: (0, 0)].movies = b.count }
-        for b in stats.showsSeenByYear { map[b.year, default: (0, 0)].shows = b.count }
-        return map.map { CombinedYearBucket(year: $0.key, movies: $0.value.movies, shows: $0.value.shows) }
+        for b in stats.episodesSeenByYear { map[b.year, default: (0, 0)].episodes = b.count }
+        return map.map { CombinedYearBucket(year: $0.key, movies: $0.value.movies, episodes: $0.value.episodes) }
             .sorted { $0.year < $1.year }
     }
 
-    /// Activité des 12 derniers mois (films + séries fusionnés).
+    /// Activité des 12 derniers mois (films + épisodes fusionnés).
     var byMonth: [CombinedMonthBucket] {
         guard let stats else { return [] }
         let calendar = Calendar.current
@@ -68,8 +68,8 @@ final class StatsViewModel {
             let comps = calendar.dateComponents([.year, .month], from: date)
             guard let y = comps.year, let m = comps.month else { continue }
             let movies = stats.moviesSeenByMonth.first { $0.year == y && $0.month == m }?.count ?? 0
-            let shows = stats.showsSeenByMonth.first { $0.year == y && $0.month == m }?.count ?? 0
-            buckets.append(CombinedMonthBucket(label: Self.monthsFR[m - 1], movies: movies, shows: shows))
+            let episodes = stats.episodesSeenByMonth.first { $0.year == y && $0.month == m }?.count ?? 0
+            buckets.append(CombinedMonthBucket(label: Self.monthsFR[m - 1], movies: movies, episodes: episodes))
         }
         return buckets
     }

@@ -11,7 +11,7 @@ struct StatsView: View {
 
     // Couleurs des catégories (alignées avec la légende).
     private let movieColor = Color.accentColor
-    private let showColor = Color.orange
+    private let episodeColor = Color.orange
 
     var body: some View {
         ScrollView {
@@ -22,16 +22,16 @@ struct StatsView: View {
                     if !viewModel.byYear.isEmpty {
                         ActivityChart(title: "Activité par année",
                                       bars: viewModel.byYear.map {
-                                          .init(label: String($0.year), movies: $0.movies, shows: $0.shows)
+                                          .init(label: String($0.year), movies: $0.movies, episodes: $0.episodes)
                                       },
-                                      movieColor: movieColor, showColor: showColor)
+                                      movieColor: movieColor, episodeColor: episodeColor)
                     }
 
                     ActivityChart(title: "12 derniers mois",
                                   bars: viewModel.byMonth.map {
-                                      .init(label: $0.label, movies: $0.movies, shows: $0.shows)
+                                      .init(label: $0.label, movies: $0.movies, episodes: $0.episodes)
                                   },
-                                  movieColor: movieColor, showColor: showColor)
+                                  movieColor: movieColor, episodeColor: episodeColor)
                 }
                 .padding()
             } else if viewModel.isLoading {
@@ -76,21 +76,21 @@ struct StatsView: View {
     }
 }
 
-// MARK: - Graphique d'activité (barres empilées films / séries)
+// MARK: - Graphique d'activité (barres empilées films / épisodes)
 
 private struct ActivityChart: View {
     struct Bar: Identifiable {
         let label: String
         let movies: Int
-        let shows: Int
-        var total: Int { movies + shows }
+        let episodes: Int
+        var total: Int { movies + episodes }
         var id: String { label }
     }
 
     let title: String
     let bars: [Bar]
     let movieColor: Color
-    let showColor: Color
+    let episodeColor: Color
 
     /// Barre actuellement sélectionnée par l'utilisateur (toucher / glissement).
     @State private var selectedLabel: String?
@@ -135,10 +135,10 @@ private struct ActivityChart: View {
 
             BarMark(
                 x: .value("Période", bar.label),
-                y: .value("Séries", bar.shows)
+                y: .value("Épisodes", bar.episodes)
             )
-            .foregroundStyle(showColor)
-            .position(by: .value("Catégorie", "Séries"), axis: .vertical)
+            .foregroundStyle(episodeColor)
+            .position(by: .value("Catégorie", "Épisodes"), axis: .vertical)
             .opacity(selectedLabel == nil || selectedLabel == bar.label ? 1 : 0.35)
         }
         .chartLegend(.hidden)
@@ -163,8 +163,8 @@ private struct ActivityChart: View {
                     if bar.movies > 0 {
                         tooltipRow(color: movieColor, text: "\(bar.movies) film\(bar.movies > 1 ? "s" : "")")
                     }
-                    if bar.shows > 0 {
-                        tooltipRow(color: showColor, text: "\(bar.shows) série\(bar.shows > 1 ? "s" : "")")
+                    if bar.episodes > 0 {
+                        tooltipRow(color: episodeColor, text: "\(bar.episodes) épisode\(bar.episodes > 1 ? "s" : "")")
                     }
                     Text("\(bar.total) total")
                         .font(.caption2)
@@ -190,7 +190,7 @@ private struct ActivityChart: View {
     private var legend: some View {
         HStack(spacing: 16) {
             legendItem(color: movieColor, label: "Films")
-            legendItem(color: showColor, label: "Séries")
+            legendItem(color: episodeColor, label: "Épisodes")
         }
         .font(.caption)
         .foregroundStyle(.secondary)

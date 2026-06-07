@@ -37,15 +37,15 @@
               <div class="tooltip">
                 <div class="tooltip-title">{{ b.year }}</div>
                 @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
-                @if (b.shows > 0) { <div class="tooltip-row"><span class="dot shows"></span>{{ b.shows }} série{{ b.shows > 1 ? 's' : '' }}</div> }
+                @if (b.episodes > 0) { <div class="tooltip-row"><span class="dot episodes"></span>{{ b.episodes }} épisode{{ b.episodes > 1 ? 's' : '' }}</div> }
                 <div class="tooltip-total">{{ b.total }} total</div>
               </div>
               <div class="bar-stack" [style.height]="pct(b.total, maxYear())">
                 @if (b.movies > 0) {
                   <div class="bar-segment movies" [style.flex]="b.movies"></div>
                 }
-                @if (b.shows > 0) {
-                  <div class="bar-segment shows" [style.flex]="b.shows"></div>
+                @if (b.episodes > 0) {
+                  <div class="bar-segment episodes" [style.flex]="b.episodes"></div>
                 }
               </div>
               <div class="bar-label">{{ b.year }}</div>
@@ -54,7 +54,7 @@
         </div>
         <div class="legend mt-3">
           <span class="legend-dot movies"></span><span class="legend-text">Films</span>
-          <span class="legend-dot shows"></span><span class="legend-text">Séries</span>
+          <span class="legend-dot episodes"></span><span class="legend-text">Épisodes</span>
         </div>
       </div>
     }
@@ -68,7 +68,7 @@
             <div class="tooltip">
               <div class="tooltip-title">{{ b.label }}</div>
               @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
-              @if (b.shows > 0) { <div class="tooltip-row"><span class="dot shows"></span>{{ b.shows }} série{{ b.shows > 1 ? 's' : '' }}</div> }
+              @if (b.episodes > 0) { <div class="tooltip-row"><span class="dot episodes"></span>{{ b.episodes }} épisode{{ b.episodes > 1 ? 's' : '' }}</div> }
               @if (b.total === 0) { <div class="tooltip-row" style="color: var(--muted)">Aucun</div> }
               @if (b.total > 0) { <div class="tooltip-total">{{ b.total }} total</div> }
             </div>
@@ -76,8 +76,8 @@
               @if (b.movies > 0) {
                 <div class="bar-segment movies" [style.flex]="b.movies"></div>
               }
-              @if (b.shows > 0) {
-                <div class="bar-segment shows" [style.flex]="b.shows"></div>
+              @if (b.episodes > 0) {
+                <div class="bar-segment episodes" [style.flex]="b.episodes"></div>
               }
             </div>
             <div class="bar-label">{{ b.label }}</div>

@@ -24,12 +24,12 @@ export class StatsPage implements OnInit {
     if (!s) return [];
     const map = new Map<number, CombinedYearBucket>();
     for (const b of s.moviesSeenByYear) {
-      map.set(b.year, { year: b.year, movies: b.count, shows: 0, total: b.count });
+      map.set(b.year, { year: b.year, movies: b.count, episodes: 0, total: b.count });
     }
-    for (const b of s.showsSeenByYear) {
+    for (const b of s.episodesSeenByYear) {
       const existing = map.get(b.year);
-      if (existing) { existing.shows = b.count; existing.total += b.count; }
-      else map.set(b.year, { year: b.year, movies: 0, shows: b.count, total: b.count });
+      if (existing) { existing.episodes = b.count; existing.total += b.count; }
+      else map.set(b.year, { year: b.year, movies: 0, episodes: b.count, total: b.count });
     }
     return Array.from(map.values()).sort((a, b) => a.year - b.year);
   });
@@ -45,8 +45,8 @@ export class StatsPage implements OnInit {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const y = d.getFullYear(), m = d.getMonth() + 1;
       const movies = s.moviesSeenByMonth.find(b => b.year === y && b.month === m)?.count ?? 0;
-      const shows = s.showsSeenByMonth.find(b => b.year === y && b.month === m)?.count ?? 0;
-      buckets.push({ label: MONTHS_FR[m - 1], movies, shows, total: movies + shows });
+      const episodes = s.episodesSeenByMonth.find(b => b.year === y && b.month === m)?.count ?? 0;
+      buckets.push({ label: MONTHS_FR[m - 1], movies, episodes, total: movies + episodes });
     }
     return buckets;
   });
