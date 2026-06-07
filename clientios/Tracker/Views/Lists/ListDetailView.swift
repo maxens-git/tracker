@@ -16,7 +16,7 @@ struct ListDetailView: View {
 
     var body: some View {
         ScrollView {
-            MediaGrid {
+            MediaGrid(spacing: 12) {
                 ForEach(viewModel.items) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
                         MediaCard(posterPath: viewModel.posterPath(for: item),

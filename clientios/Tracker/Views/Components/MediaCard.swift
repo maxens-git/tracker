@@ -41,10 +41,13 @@ struct MediaCard: View {
 /// Grille adaptative réutilisée par Home / Recherche / Détail de liste.
 struct MediaGrid<Content: View>: View {
     let columns = [GridItem(.adaptive(minimum: 110), spacing: 16)]
+    /// Espacement vertical entre les rangées. Par défaut 20 ; réduit dans le
+    /// détail d'une liste où les vignettes sont plus denses.
+    var spacing: CGFloat = 20
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 20) {
+        LazyVGrid(columns: columns, spacing: spacing) {
             content()
         }
         .padding(.horizontal)
