@@ -100,8 +100,9 @@ struct MediaDetailView: View {
                          active: viewModel.liked, tint: .red) {
                 await viewModel.toggleLiked()
             }
-            actionButton(title: "À voir", systemImage: "bookmark") {
-                await viewModel.addToWatchlist()
+            actionButton(title: "À voir", systemImage: viewModel.inWatchlist ? "bookmark.fill" : "bookmark",
+                         active: viewModel.inWatchlist) {
+                await viewModel.toggleWatchlist()
             }
         }
         .padding(.horizontal)

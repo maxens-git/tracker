@@ -14,6 +14,9 @@ final class MediaDetailViewModel {
     private(set) var movie: TMDBMovie?
     private(set) var show: TMDBShow?
     private(set) var state: UserState?
+    /// Identifiant de la liste système « Watchlist » (chargé une fois), nécessaire
+    /// pour dériver l'appartenance depuis `state.listIds` et basculer add/remove.
+    private(set) var watchlistId: Int?
     private(set) var similar: [TMDBSearchResult] = []
     private(set) var cast: [TMDBCastMember] = []
     private(set) var crew: [TMDBCrewMember] = []
@@ -56,6 +59,12 @@ final class MediaDetailViewModel {
     var seen: Bool { state?.seen ?? false }
     var liked: Bool { state?.liked ?? false }
 
+    /// Vrai si le média figure dans la watchlist (dérivé de `state.listIds`).
+    var inWatchlist: Bool {
+        guard let watchlistId, let listIds = state?.listIds else { return false }
+        return listIds.contains(watchlistId)
+    }
+
     func load(forceRefresh: Bool = false) async {
         // Pull-to-refresh : on ignore le cache HTTP pour refaire de vrais appels réseau
         // (sinon TMDB resert les mêmes réponses depuis le cache → "rien ne change").
@@ -72,6 +81,11 @@ final class MediaDetailViewModel {
             case .tv: show = try await tmdb.show(tmdbId)
             }
             state = try await api.states(tmdbIds: [tmdbId], type: type).first
+            // Id de la watchlist (liste système) : nécessaire pour afficher l'état
+            // actif du bouton « À voir » et basculer add/remove. Chargé une seule fois.
+            if watchlistId == nil {
+                watchlistId = try? await api.lists().first { $0.isSystem && $0.name == "Watchlist" }?.id
+            }
             if type == .tv {
                 let seen = try await api.showEpisodes(showTmdbId: tmdbId)
                 episodesSeen = Set(seen.filter(\.seen).map { epKey($0.seasonNumber, $0.episodeNumber) })
@@ -203,15 +217,37 @@ final class MediaDetailViewModel {
         }
     }
 
-    func addToWatchlist() async {
+    /// Ajoute / retire le média de la watchlist (mise à jour optimiste).
+    func toggleWatchlist() async {
+        let adding = !inWatchlist
+        let previous = state
+        setWatchlistMembership(adding)
         do {
-            try await api.addToWatchlist(tmdbId: tmdbId, type: type,
-                                         posterPath: posterPath, runtime: movie?.runtime)
-            Haptics.success()
+            if adding {
+                try await api.addToWatchlist(tmdbId: tmdbId, type: type,
+                                             posterPath: posterPath, runtime: movie?.runtime)
+            } else {
+                try await api.removeFromWatchlist(tmdbId: tmdbId, type: type)
+            }
+            adding ? Haptics.success() : Haptics.impact(.light)
         } catch {
+            state = previous
             errorMessage = error.localizedDescription
             Haptics.error()
         }
+    }
+
+    /// Met à jour localement l'appartenance à la watchlist dans `state.listIds`.
+    private func setWatchlistMembership(_ member: Bool) {
+        guard let watchlistId, let current = state else { return }
+        var ids = current.listIds
+        if member {
+            if !ids.contains(watchlistId) { ids.append(watchlistId) }
+        } else {
+            ids.removeAll { $0 == watchlistId }
+        }
+        state = UserState(tmdbId: current.tmdbId, seen: current.seen,
+                          liked: current.liked, listIds: ids)
     }
 
     // ── Saisons / épisodes ────────────────────────────────────────────────
