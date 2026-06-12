@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { UserState } from '../interfaces/media';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { MediaItem, UserState } from '../interfaces/media';
 import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/list';
 import { Stats } from '../interfaces/stats';
 import { EpisodeSeenDto } from '../interfaces/episode';
@@ -44,6 +45,23 @@ export class Api {
     return this.http.get<UserState[]>(`${API}/Media/states`, {
       params: { tmdbIds: tmdbIds.join(','), type }
     });
+  }
+
+  /**
+   * Charge en une fois les états utilisateur (vu / aimé / listes) des films et séries
+   * donnés, indexés par tmdbId. Une erreur réseau renvoie simplement une map vide.
+   */
+  statesByTmdbId(items: Pick<MediaItem, 'id' | 'media_type'>[]): Observable<Map<number, UserState>> {
+    const movieIds = items.filter(i => i.media_type === 'movie').map(i => i.id);
+    const showIds = items.filter(i => i.media_type === 'tv').map(i => i.id);
+
+    const movieStates$ = movieIds.length ? this.states(movieIds, 'movie').pipe(catchError(() => of([]))) : of([]);
+    const showStates$ = showIds.length ? this.states(showIds, 'tv').pipe(catchError(() => of([]))) : of([]);
+
+    return forkJoin([movieStates$, showStates$]).pipe(
+      map(([movieStates, showStates]) =>
+        new Map([...movieStates, ...showStates].map(s => [s.tmdbId, s])))
+    );
   }
 
   markSeen(tmdbId: number, type: 'movie' | 'tv', payload: MarkSeenPayload): Observable<unknown> {
@@ -124,4 +142,12 @@ export class Api {
   stats(): Observable<Stats> {
     return this.http.get<Stats>(`${API}/Stats`);
   }
+}
+
+/** Recopie les états utilisateur (vu / aimé / listes) sur chaque item, à partir de la map. */
+export function withUserStates(items: MediaItem[], states: Map<number, UserState>): MediaItem[] {
+  return items.map(item => {
+    const s = states.get(item.id);
+    return { ...item, seen: s?.seen ?? false, liked: s?.liked ?? false, listIds: s?.listIds ?? [] };
+  });
 }

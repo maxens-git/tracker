@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
-import { Api } from '../../../shared/services/api';
+import { Api, withUserStates } from '../../../shared/services/api';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { TmdbPerson, TmdbPersonCredit } from '../../../shared/interfaces/person';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
@@ -45,7 +45,9 @@ export class Person implements OnInit {
           switchMap(({ person, credits }) => {
             this.person.set(person);
             const items = this.buildFilmography(credits?.cast ?? []);
-            return this.enrichWithStates(items);
+            return this.api.statesByTmdbId(items).pipe(
+              map(states => withUserStates(items, states))
+            );
           }),
           catchError(() => {
             this.error.set('Impossible de charger cette personne');
@@ -109,24 +111,5 @@ export class Person implements OnInit {
       const db = b.release_date || b.first_air_date || '';
       return db.localeCompare(da);
     });
-  }
-
-  /** Renseigne les états utilisateur (vu / aimé / listes) sur la filmographie. */
-  private enrichWithStates(items: MediaItem[]) {
-    const movieIds = items.filter(i => i.media_type === 'movie').map(i => i.id);
-    const showIds = items.filter(i => i.media_type === 'tv').map(i => i.id);
-
-    const movieStates$ = movieIds.length ? this.api.states(movieIds, 'movie').pipe(catchError(() => of([]))) : of([]);
-    const showStates$ = showIds.length ? this.api.states(showIds, 'tv').pipe(catchError(() => of([]))) : of([]);
-
-    return forkJoin({ movieStates: movieStates$, showStates: showStates$ }).pipe(
-      map(({ movieStates, showStates }) => {
-        const stateMap = new Map([...movieStates, ...showStates].map(s => [s.tmdbId, s]));
-        return items.map(i => {
-          const s = stateMap.get(i.id);
-          return { ...i, seen: s?.seen ?? false, liked: s?.liked ?? false, listIds: s?.listIds ?? [] };
-        });
-      })
-    );
   }
 }

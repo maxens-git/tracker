@@ -79,81 +79,104 @@ export class MediaDetail implements OnInit {
       switchMap(params => {
         const type = this.route.snapshot.data['type'] as MediaType;
         const tmdbId = Number(params.get('tmdbId'));
-        this.mediaType.set(type);
-        this.loading.set(true);
-        this.error.set(null);
-        this.movie.set(null);
-        this.show.set(null);
-        this.seasons.set([]);
-        this.episodesSeen.set(new Map());
-        this.credits.set(null);
-        this.videos.set(null);
-        this.similar.set([]);
-        this.expandedSeason.set(null);
-        this.showListPicker.set(false);
-        this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
-
-        const state$ = this.api.states([tmdbId], type).pipe(catchError(() => of([])));
-        const lists$ = this.api.lists().pipe(catchError(() => of([])));
-
-        if (type === 'movie') {
-          return forkJoin({
-            data: this.tmdb.movie(tmdbId),
-            credits: this.tmdb.movieCredits(tmdbId).pipe(catchError(() => of(null))),
-            videos: this.tmdb.movieVideos(tmdbId).pipe(catchError(() => of(null))),
-            similar: this.tmdb.similarMovies(tmdbId).pipe(catchError(() => of(null))),
-            state: state$,
-            lists: lists$,
-          });
-        } else {
-          return forkJoin({
-            data: this.tmdb.show(tmdbId),
-            credits: this.tmdb.showCredits(tmdbId).pipe(catchError(() => of(null))),
-            videos: this.tmdb.showVideos(tmdbId).pipe(catchError(() => of(null))),
-            similar: this.tmdb.similarShows(tmdbId).pipe(catchError(() => of(null))),
-            state: state$,
-            lists: lists$,
-            episodesSeen: this.api.showEpisodes(tmdbId).pipe(catchError(() => of([]))),
-          });
-        }
+        this.resetForNavigation(type, tmdbId);
+        return type === 'movie' ? this.loadMovieData$(tmdbId) : this.loadShowData$(tmdbId);
       }),
     ).subscribe({
-      next: (result: MediaDetailData) => {
-        const { data, credits, videos, similar, state, lists } = result;
-        const st: UserState = state[0] ?? { tmdbId: data.id, seen: false, liked: false, listIds: [] };
-        this.userState.set(st);
-        this.credits.set(credits);
-        this.videos.set(videos);
-        this.similar.set(similar?.results ?? []);
-        this.lists.set(lists);
-
-        if (this.isMovie) {
-          this.movie.set(data as TmdbMovie);
-        } else {
-          const show = data as TmdbShow;
-          this.show.set(show);
-          const epSeenMap = new Map<string, boolean>();
-          for (const ep of (result.episodesSeen ?? [])) {
-            epSeenMap.set(epKey(ep.seasonNumber, ep.episodeNumber), ep.seen);
-          }
-          this.episodesSeen.set(epSeenMap);
-          this.seasons.set(
-            show.seasons
-              .filter(s => s.season_number > 0)
-              .map(s => ({ ...s, episodes: [], seen: false, loaded: false }))
-          );
-          this.refreshSeasonsSeen();
-          this.syncShowSeen();
-        }
-
-        this.loading.set(false);
-        window.scrollTo({ top: 0 });
-      },
+      next: result => this.applyLoadedData(result),
       error: () => {
         this.error.set('Impossible de charger les détails');
         this.loading.set(false);
       },
     });
+  }
+
+  /** Remet tous les signaux à zéro avant de charger un nouveau média (navigation interne incluse). */
+  private resetForNavigation(type: MediaType, tmdbId: number) {
+    this.mediaType.set(type);
+    this.loading.set(true);
+    this.error.set(null);
+    this.movie.set(null);
+    this.show.set(null);
+    this.seasons.set([]);
+    this.episodesSeen.set(new Map());
+    this.credits.set(null);
+    this.videos.set(null);
+    this.similar.set([]);
+    this.expandedSeason.set(null);
+    this.showListPicker.set(false);
+    this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
+  }
+
+  /** Charge en parallèle les données d'un film. Seul `data` est bloquant, le reste est optionnel. */
+  private loadMovieData$(tmdbId: number): Observable<MediaDetailData> {
+    return forkJoin({
+      data: this.tmdb.movie(tmdbId),
+      credits: this.tmdb.movieCredits(tmdbId).pipe(catchError(() => of(null))),
+      videos: this.tmdb.movieVideos(tmdbId).pipe(catchError(() => of(null))),
+      similar: this.tmdb.similarMovies(tmdbId).pipe(catchError(() => of(null))),
+      state: this.userState$(tmdbId),
+      lists: this.lists$(),
+    });
+  }
+
+  /** Comme pour les films, avec en plus les épisodes déjà vus. */
+  private loadShowData$(tmdbId: number): Observable<MediaDetailData> {
+    return forkJoin({
+      data: this.tmdb.show(tmdbId),
+      credits: this.tmdb.showCredits(tmdbId).pipe(catchError(() => of(null))),
+      videos: this.tmdb.showVideos(tmdbId).pipe(catchError(() => of(null))),
+      similar: this.tmdb.similarShows(tmdbId).pipe(catchError(() => of(null))),
+      state: this.userState$(tmdbId),
+      lists: this.lists$(),
+      episodesSeen: this.api.showEpisodes(tmdbId).pipe(catchError(() => of([]))),
+    });
+  }
+
+  private userState$(tmdbId: number): Observable<UserState[]> {
+    return this.api.states([tmdbId], this.mediaType()).pipe(catchError(() => of([])));
+  }
+
+  private lists$(): Observable<MediaListSummary[]> {
+    return this.api.lists().pipe(catchError(() => of([])));
+  }
+
+  /** Déverse le résultat du chargement dans les signaux de la page. */
+  private applyLoadedData(result: MediaDetailData) {
+    const { data, credits, videos, similar, state, lists } = result;
+    this.userState.set(state[0] ?? { tmdbId: data.id, seen: false, liked: false, listIds: [] });
+    this.credits.set(credits);
+    this.videos.set(videos);
+    this.similar.set(similar?.results ?? []);
+    this.lists.set(lists);
+
+    if (this.isMovie) {
+      this.movie.set(data as TmdbMovie);
+    } else {
+      this.initShowState(data as TmdbShow, result.episodesSeen ?? []);
+    }
+
+    this.loading.set(false);
+    window.scrollTo({ top: 0 });
+  }
+
+  /** Initialise les signaux propres aux séries : saisons réelles et map des épisodes vus. */
+  private initShowState(show: TmdbShow, episodesSeen: EpisodeSeenDto[]) {
+    this.show.set(show);
+
+    const epSeenMap = new Map<string, boolean>();
+    for (const ep of episodesSeen) {
+      epSeenMap.set(epKey(ep.seasonNumber, ep.episodeNumber), ep.seen);
+    }
+    this.episodesSeen.set(epSeenMap);
+
+    this.seasons.set(
+      show.seasons
+        .filter(s => s.season_number > 0)
+        .map(s => ({ ...s, episodes: [], seen: false, loaded: false }))
+    );
+    this.refreshSeasonsSeen();
+    this.syncShowSeen();
   }
 
   @HostListener('document:click', ['$event'])
@@ -187,16 +210,11 @@ export class MediaDetail implements OnInit {
   /** Membres clés de l'équipe technique : métiers prioritaires, sans doublon de personne. */
   get topCrew(): TmdbCrewMember[] {
     const crew = this.credits()?.crew ?? [];
-    const filtered = crew.filter(c => PRIORITY_CREW_JOBS.includes(c.job));
-    const seen = new Set<number>();
-    const result: TmdbCrewMember[] = [];
-    for (const member of filtered) {
-      if (!seen.has(member.id)) {
-        seen.add(member.id);
-        result.push(member);
-      }
+    const byPerson = new Map<number, TmdbCrewMember>();
+    for (const member of crew.filter(c => PRIORITY_CREW_JOBS.includes(c.job))) {
+      if (!byPerson.has(member.id)) byPerson.set(member.id, member);
     }
-    return result.slice(0, 10);
+    return [...byPerson.values()].slice(0, 10);
   }
 
   /** Libellé français d'un métier TMDB. */
@@ -406,16 +424,16 @@ export class MediaDetail implements OnInit {
     const newSeen = !ep.seen;
     const showId = this.show()!.id;
 
-    this.episodePending.update(s => new Set([...s, key]));
+    this.episodePending.update(s => setWith(s, key));
     this.patchEpisode(ep.season_number, ep.episode_number, newSeen);
 
     this.api.markEpisodeSeen(showId, ep.season_number, ep.episode_number, newSeen).subscribe({
       complete: () => {
-        this.episodePending.update(s => { const n = new Set(s); n.delete(key); return n; });
+        this.episodePending.update(s => setWithout(s, key));
       },
       error: () => {
         this.patchEpisode(ep.season_number, ep.episode_number, ep.seen ?? false);
-        this.episodePending.update(s => { const n = new Set(s); n.delete(key); return n; });
+        this.episodePending.update(s => setWithout(s, key));
       },
     });
   }
@@ -430,14 +448,14 @@ export class MediaDetail implements OnInit {
       ? season.episodes.map(ep => ep.episode_number)
       : episodeRange(season.episode_count);
 
-    this.seasonPending.update(s => new Set([...s, season.season_number]));
+    this.seasonPending.update(s => setWith(s, season.season_number));
     this.patchSeason(season.season_number, newSeen);
 
     this.api.markSeasonSeen(showId, season.season_number, { seen: newSeen, episodeNumbers }).subscribe({
-      complete: () => this.seasonPending.update(s => { const n = new Set(s); n.delete(season.season_number); return n; }),
+      complete: () => this.seasonPending.update(s => setWithout(s, season.season_number)),
       error: () => {
         this.patchSeason(season.season_number, !newSeen);
-        this.seasonPending.update(s => { const n = new Set(s); n.delete(season.season_number); return n; });
+        this.seasonPending.update(s => setWithout(s, season.season_number));
       },
     });
   }
@@ -528,10 +546,12 @@ export class MediaDetail implements OnInit {
 
   // ── Display helpers ───────────────────────────────────────────────────────
 
+  /** Bandes-annonces YouTube (Trailer/Teaser), françaises d'abord puis anglaises, max 6. */
   get filteredVideos() {
-    const all = this.videos()?.results ?? [];
-    const fr = all.filter(v => v.iso_639_1 === 'fr' && v.site === 'YouTube' && ['Trailer', 'Teaser'].includes(v.type));
-    const en = all.filter(v => v.iso_639_1 === 'en' && v.site === 'YouTube' && ['Trailer', 'Teaser'].includes(v.type));
+    const trailers = (this.videos()?.results ?? [])
+      .filter(v => v.site === 'YouTube' && ['Trailer', 'Teaser'].includes(v.type));
+    const fr = trailers.filter(v => v.iso_639_1 === 'fr');
+    const en = trailers.filter(v => v.iso_639_1 === 'en');
     return [...fr, ...en].slice(0, 6);
   }
 
@@ -570,6 +590,19 @@ export class MediaDetail implements OnInit {
 
 function epKey(season: number, episode: number): string {
   return `${season}-${episode}`;
+}
+
+// Les signaux comparent par référence : ces helpers renvoient toujours une nouvelle instance.
+function setWith<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set);
+  next.add(value);
+  return next;
+}
+
+function setWithout<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set);
+  next.delete(value);
+  return next;
 }
 
 /** Numéros d'épisodes 1..count. */

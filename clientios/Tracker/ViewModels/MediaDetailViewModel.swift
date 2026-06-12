@@ -73,6 +73,12 @@ final class MediaDetailViewModel {
         if forceRefresh {
             URLCache.shared.removeAllCachedResponses()
         }
+        await loadDetail()
+        await loadExtras()
+    }
+
+    /// Contenu principal : fiche TMDB, état utilisateur et épisodes vus.
+    private func loadDetail() async {
         isLoading = true
         errorMessage = nil
         do {
@@ -98,19 +104,19 @@ final class MediaDetailViewModel {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
 
-        // Contenus secondaires : un échec ne doit pas masquer le détail.
+    /// Contenus secondaires (similaires, distribution, bandes-annonces) : un échec
+    /// ne doit ni masquer le détail, ni vider le contenu déjà affiché.
+    private func loadExtras() async {
         isLoadingExtras = true
         async let similar = tmdb.similar(tmdbId, type: type)
         async let credits = tmdb.credits(tmdbId, type: type)
         async let videos = tmdb.videos(tmdbId, type: type)
 
-        // On ne remplace qu'en cas de succès : un échec réseau ne doit pas vider
-        // le contenu déjà affiché (sinon la section disparaît au rafraîchissement).
         if let similarResults = try? await similar {
             self.similar = similarResults
         }
-
         if let credits = try? await credits {
             cast = Array(credits.cast.prefix(12))
             crew = topCrew(from: credits.crew)
@@ -118,7 +124,6 @@ final class MediaDetailViewModel {
         if let videos = try? await videos {
             trailers = filterTrailers(videos.results)
         }
-
         isLoadingExtras = false
     }
 
@@ -187,7 +192,7 @@ final class MediaDetailViewModel {
         applyLocalState(seen: newValue, liked: liked)
         if newValue {
             for season in allSeasons {
-                for ep in season.episodeNumbers { episodesSeen.insert(epKey(season.seasonNumber, ep)) }
+                setEpisodesSeen(season: season.seasonNumber, episodes: season.episodeNumbers, seen: true)
             }
         } else {
             episodesSeen.removeAll()
@@ -291,16 +296,15 @@ final class MediaDetailViewModel {
 
     func toggleEpisodeSeen(season: Int, episode: Int) async {
         guard let showId = show?.id else { return }
-        let key = epKey(season, episode)
-        let newSeen = !episodesSeen.contains(key)
+        let newSeen = !isEpisodeSeen(season: season, episode: episode)
 
-        if newSeen { episodesSeen.insert(key) } else { episodesSeen.remove(key) }
+        setEpisodesSeen(season: season, episodes: [episode], seen: newSeen)
 
         do {
             try await api.markEpisodeSeen(showTmdbId: showId, season: season, episode: episode, seen: newSeen)
             Haptics.impact(.light)
         } catch {
-            if newSeen { episodesSeen.remove(key) } else { episodesSeen.insert(key) }
+            setEpisodesSeen(season: season, episodes: [episode], seen: !newSeen)
             errorMessage = error.localizedDescription
             Haptics.error()
         }
@@ -316,10 +320,7 @@ final class MediaDetailViewModel {
         guard !numbers.isEmpty else { return }
         let previous = episodesSeen
 
-        for number in numbers {
-            let key = epKey(season, number)
-            if newSeen { episodesSeen.insert(key) } else { episodesSeen.remove(key) }
-        }
+        setEpisodesSeen(season: season, episodes: numbers, seen: newSeen)
 
         do {
             try await api.markSeasonSeen(showTmdbId: showId, season: season, seen: newSeen, episodeNumbers: numbers)
@@ -351,10 +352,14 @@ final class MediaDetailViewModel {
     private func computeShowSeen() -> Bool {
         let real = seasons.filter { ($0.episodeCount ?? 0) > 0 }
         guard !real.isEmpty else { return false }
-        return real.allSatisfy { season in
-            let prefix = "\(season.seasonNumber)-"
-            let seenInSeason = episodesSeen.filter { $0.hasPrefix(prefix) }.count
-            return seenInSeason >= (season.episodeCount ?? 0)
+        return real.allSatisfy { isSeasonFullySeen($0.seasonNumber, episodeCount: $0.episodeCount ?? 0) }
+    }
+
+    /// Ajoute / retire d'un coup plusieurs épisodes d'une saison du set des épisodes vus.
+    private func setEpisodesSeen(season: Int, episodes: [Int], seen: Bool) {
+        for episode in episodes {
+            let key = epKey(season, episode)
+            if seen { episodesSeen.insert(key) } else { episodesSeen.remove(key) }
         }
     }
 

@@ -20,29 +20,13 @@ struct MediaDetailView: View {
                 header
                 actions
                 if !viewModel.genres.isEmpty { genresRow }
-                if let overview = viewModel.overview, !overview.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Synopsis").font(.title3.bold())
-                        Text(overview).foregroundStyle(.secondary)
-                    }
-                    .padding(.horizontal)
-                }
+                if let overview = viewModel.overview, !overview.isEmpty { synopsisSection(overview) }
                 if viewModel.type == .tv && !viewModel.seasons.isEmpty { seasonsSection }
                 if !viewModel.trailers.isEmpty { trailersSection }
                 if !viewModel.cast.isEmpty { castSection }
                 if !viewModel.crew.isEmpty { crewSection }
                 if !viewModel.similar.isEmpty { similarSection }
-
-                if viewModel.isLoadingExtras {
-                    HStack(spacing: 8) {
-                        ProgressView()
-                        Text("Chargement…")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                }
+                if viewModel.isLoadingExtras { loadingExtrasIndicator }
             }
             .padding(.vertical)
         }
@@ -62,6 +46,25 @@ struct MediaDetailView: View {
     }
 
     // ── Sous-vues ─────────────────────────────────────────────────────────
+
+    private func synopsisSection(_ overview: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Synopsis").font(.title3.bold())
+            Text(overview).foregroundStyle(.secondary)
+        }
+        .padding(.horizontal)
+    }
+
+    private var loadingExtrasIndicator: some View {
+        HStack(spacing: 8) {
+            ProgressView()
+            Text("Chargement…")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+    }
 
     private var header: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -280,34 +283,39 @@ struct MediaDetailView: View {
                         Button {
                             if let url = TMDBService.youtubeWatch(video.key) { openURL(url) }
                         } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                ZStack {
-                                    AsyncImage(url: TMDBService.youtubeThumbnail(video.key)) { image in
-                                        image.resizable().scaledToFill()
-                                    } placeholder: {
-                                        Rectangle().fill(Color(.secondarySystemBackground))
-                                    }
-                                    .frame(width: 220, height: 124)
-                                    .clipped()
-                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 40))
-                                        .foregroundStyle(.white.opacity(0.9))
-                                        .shadow(radius: 4)
-                                }
-                                Text(video.name)
-                                    .font(.caption)
-                                    .lineLimit(2)
-                                    .frame(width: 220, alignment: .leading)
-                                    .foregroundStyle(.primary)
-                            }
+                            trailerCard(video)
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal)
             }
+        }
+    }
+
+    /// Vignette YouTube + titre, avec un bouton lecture superposé.
+    private func trailerCard(_ video: TMDBVideo) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ZStack {
+                AsyncImage(url: TMDBService.youtubeThumbnail(video.key)) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Rectangle().fill(Color(.secondarySystemBackground))
+                }
+                .frame(width: 220, height: 124)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .shadow(radius: 4)
+            }
+            Text(video.name)
+                .font(.caption)
+                .lineLimit(2)
+                .frame(width: 220, alignment: .leading)
+                .foregroundStyle(.primary)
         }
     }
 

@@ -1,9 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, map, switchMap } from 'rxjs';
 import { TmdbService } from '../../../shared/services/tmdb.service';
-import { Api } from '../../../shared/services/api';
+import { Api, withUserStates } from '../../../shared/services/api';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -38,41 +38,29 @@ export class Home implements OnInit {
       popularMovies: this.tmdb.popularMovies(),
       popularShows: this.tmdb.popularShows(),
       topRated: this.tmdb.topRated('movie'),
-    }).subscribe({
-      next: ({ trending, popularMovies, popularShows, topRated }) => {
+    }).pipe(
+      // Une fois les rangées TMDB chargées, on récupère les états utilisateur de tous les items.
+      switchMap(rows => {
         const allItems = [
-          ...trending.results,
-          ...popularMovies.results,
-          ...popularShows.results,
-          ...topRated.results,
+          ...rows.trending.results,
+          ...rows.popularMovies.results,
+          ...rows.popularShows.results,
+          ...rows.topRated.results,
         ];
-        const uniqueIds = [...new Set(allItems.map(i => i.id))];
-        const movieIds = uniqueIds.filter(id => allItems.find(i => i.id === id)?.media_type === 'movie');
-        const showIds = uniqueIds.filter(id => allItems.find(i => i.id === id)?.media_type === 'tv');
-
-        const applyStates = (items: MediaItem[], stateMap: Map<number, { seen: boolean; liked: boolean }>) =>
-          items.map(i => ({ ...i, seen: stateMap.get(i.id)?.seen ?? false, liked: stateMap.get(i.id)?.liked ?? false }));
-
-        const movieStates$ = movieIds.length > 0 ? this.api.states(movieIds, 'movie') : of([]);
-        const showStates$ = showIds.length > 0 ? this.api.states(showIds, 'tv') : of([]);
-
-        forkJoin({ movieStates: movieStates$, showStates: showStates$ }).subscribe({
-          next: ({ movieStates, showStates }) => {
-            const stateMap = new Map<number, { seen: boolean; liked: boolean }>();
-            for (const s of [...movieStates, ...showStates]) {
-              stateMap.set(s.tmdbId, { seen: s.seen, liked: s.liked });
-            }
-
-            this.data.set({
-              featuredItem: trending.results[0],
-              trendingWeek: applyStates(trending.results.slice(0, 20), stateMap),
-              popularMovies: applyStates(popularMovies.results.slice(0, 20), stateMap),
-              popularShows: applyStates(popularShows.results.slice(0, 20), stateMap),
-              topRated: applyStates(topRated.results.slice(0, 20), stateMap),
-            });
-            this.loading.set(false);
-          },
+        return this.api.statesByTmdbId(allItems).pipe(
+          map(states => ({ rows, states })),
+        );
+      }),
+    ).subscribe({
+      next: ({ rows, states }) => {
+        this.data.set({
+          featuredItem: rows.trending.results[0],
+          trendingWeek: withUserStates(rows.trending.results.slice(0, 20), states),
+          popularMovies: withUserStates(rows.popularMovies.results.slice(0, 20), states),
+          popularShows: withUserStates(rows.popularShows.results.slice(0, 20), states),
+          topRated: withUserStates(rows.topRated.results.slice(0, 20), states),
         });
+        this.loading.set(false);
       },
       error: () => {
         this.error.set('Impossible de charger les tendances');

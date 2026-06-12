@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { MediaListSummary } from '../../../shared/interfaces/list';
@@ -62,36 +63,31 @@ export class ListDetail implements OnInit {
 
   loadPage(p: number) {
     this.loading.set(true);
-    this.api.listItems(this.listId, p).subscribe({
-      next: result => {
+    this.api.listItems(this.listId, p).pipe(
+      // La liste backend ne contient que des références (tmdbId + état) :
+      // on charge les fiches TMDB correspondantes puis on recopie les états dessus.
+      switchMap(result => {
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
         this.totalCount.set(result.totalCount);
 
-        const itemsToFetch = result.items.map(i => ({
-          tmdbId: i.tmdbId,
-          mediaType: i.mediaType === 'movie' ? 'movie' : 'tv' as 'movie' | 'tv'
-        }));
+        if (result.items.length === 0) return of([] as MediaItem[]);
 
-        if (itemsToFetch.length === 0) {
-          this.items.set([]);
-          this.loading.set(false);
-          return;
-        }
+        const refs = result.items.map(i => ({ tmdbId: i.tmdbId, mediaType: i.mediaType }));
+        const stateByTmdbId = new Map(result.items.map(i => [i.tmdbId, i]));
 
-        this.tmdb.fetchMany(itemsToFetch).subscribe({
-          next: tmdbItems => {
-            const stateMap = new Map(result.items.map(i => [i.tmdbId, i]));
-            const enriched = tmdbItems.map(item => {
-              const state = stateMap.get(item.id);
-              return { ...item, seen: state?.seen ?? false, liked: state?.liked ?? false };
-            });
-            this.items.set(enriched);
-            this.loading.set(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          },
-          error: () => this.loading.set(false),
-        });
+        return this.tmdb.fetchMany(refs).pipe(
+          map(tmdbItems => tmdbItems.map(item => {
+            const state = stateByTmdbId.get(item.id);
+            return { ...item, seen: state?.seen ?? false, liked: state?.liked ?? false };
+          })),
+        );
+      }),
+    ).subscribe({
+      next: items => {
+        this.items.set(items);
+        this.loading.set(false);
+        if (items.length > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: () => this.loading.set(false),
     });
