@@ -40,6 +40,17 @@ struct MediaDetailView: View {
                 ProgressView()
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await viewModel.reloadFromScratch() }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .disabled(viewModel.isLoading)
+                .accessibilityLabel("Rafraîchir")
+            }
+        }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load(forceRefresh: true) }
         .fullScreenCover(isPresented: $showingPoster) {

@@ -80,28 +80,46 @@ final class MediaDetailViewModel {
         state?.listIds.contains(listId) ?? false
     }
 
+    /// Rafraîchissement « depuis zéro » : vide le contenu affiché puis recharge tout,
+    /// reproduisant l'expérience de première ouverture (spinner plein écran, sections
+    /// qui réapparaissent au fur et à mesure). Utilisé par le bouton de rafraîchissement.
+    func reloadFromScratch() async {
+        movie = nil
+        show = nil
+        state = nil
+        similar = []
+        cast = []
+        crew = []
+        trailers = []
+        episodesSeen = []
+        seasonEpisodes = [:]
+        loadingSeasons = []
+        expandedSeason = nil
+        errorMessage = nil
+        await load(forceRefresh: true)
+    }
+
     func load(forceRefresh: Bool = false) async {
-        // Pull-to-refresh : on ignore le cache HTTP pour refaire de vrais appels réseau
-        // (sinon TMDB resert les mêmes réponses depuis le cache → "rien ne change").
-        // On NE vide PAS le contenu déjà affiché : les nouvelles données le remplacent
-        // en place, sans faire disparaître la partie sous le synopsis pendant le rechargement.
-        if forceRefresh {
-            URLCache.shared.removeAllCachedResponses()
-        }
-        await loadDetail()
-        await loadExtras()
+        // Rafraîchissement forcé : on ignore le cache HTTP des requêtes de données
+        // (sinon TMDB/backend resservent les mêmes réponses → "rien ne change").
+        // Le contournement est ciblé par requête (cf. services) : on NE purge PAS le
+        // cache global, sinon les images devraient se re-télécharger → toute la page
+        // clignote (contenu effacé puis réaffiché). Le contenu déjà affiché est juste
+        // remplacé en place par les nouvelles données.
+        await loadDetail(forceRefresh: forceRefresh)
+        await loadExtras(forceRefresh: forceRefresh)
     }
 
     /// Contenu principal : fiche TMDB, état utilisateur et épisodes vus.
-    private func loadDetail() async {
+    private func loadDetail(forceRefresh: Bool = false) async {
         isLoading = true
         errorMessage = nil
         do {
             switch type {
-            case .movie: movie = try await tmdb.movie(tmdbId)
-            case .tv: show = try await tmdb.show(tmdbId)
+            case .movie: movie = try await tmdb.movie(tmdbId, forceRefresh: forceRefresh)
+            case .tv: show = try await tmdb.show(tmdbId, forceRefresh: forceRefresh)
             }
-            state = try await api.states(tmdbIds: [tmdbId], type: type).first
+            state = try await api.states(tmdbIds: [tmdbId], type: type, forceRefresh: forceRefresh).first
             // Listes (système + perso), chargées une seule fois : sert à l'état actif
             // du bouton « À voir » (watchlist) et au sélecteur de listes personnalisées.
             if allLists.isEmpty {
@@ -109,7 +127,7 @@ final class MediaDetailViewModel {
                 watchlistId = allLists.first { $0.isSystem && $0.name == "Watchlist" }?.id
             }
             if type == .tv {
-                let seen = try await api.showEpisodes(showTmdbId: tmdbId)
+                let seen = try await api.showEpisodes(showTmdbId: tmdbId, forceRefresh: forceRefresh)
                 episodesSeen = Set(seen.filter(\.seen).map { epKey($0.seasonNumber, $0.episodeNumber) })
                 // Ne PAS recalculer l'état "vu" global ici : une série peut être marquée
                 // vue directement (bouton « Vu ») sans qu'aucun épisode soit enregistré.
@@ -124,11 +142,11 @@ final class MediaDetailViewModel {
 
     /// Contenus secondaires (similaires, distribution, bandes-annonces) : un échec
     /// ne doit ni masquer le détail, ni vider le contenu déjà affiché.
-    private func loadExtras() async {
+    private func loadExtras(forceRefresh: Bool = false) async {
         isLoadingExtras = true
-        async let similar = tmdb.similar(tmdbId, type: type)
-        async let credits = tmdb.credits(tmdbId, type: type)
-        async let videos = tmdb.videos(tmdbId, type: type)
+        async let similar = tmdb.similar(tmdbId, type: type, forceRefresh: forceRefresh)
+        async let credits = tmdb.credits(tmdbId, type: type, forceRefresh: forceRefresh)
+        async let videos = tmdb.videos(tmdbId, type: type, forceRefresh: forceRefresh)
 
         if let similarResults = try? await similar {
             self.similar = similarResults

@@ -61,10 +61,15 @@ struct TMDBService {
         return components?.url
     }
 
-    private func get<T: Decodable>(_ path: String, query: [String: String] = [:]) async throws -> T {
+    private func get<T: Decodable>(_ path: String, query: [String: String] = [:],
+                                   forceRefresh: Bool = false) async throws -> T {
         guard let url = makeURL(path, query: query) else { throw NetworkError.invalidURL }
+        // Rafraîchissement forcé : on ignore le cache HTTP pour CETTE requête seulement,
+        // sans toucher au cache des images (qui ferait clignoter toute la page).
+        var request = URLRequest(url: url)
+        if forceRefresh { request.cachePolicy = .reloadIgnoringLocalCacheData }
         do {
-            let (data, response) = try await session.data(from: url)
+            let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
                 throw NetworkError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
             }
@@ -113,12 +118,12 @@ struct TMDBService {
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
-    func movie(_ id: Int) async throws -> TMDBMovie {
-        try await get("/movie/\(id)")
+    func movie(_ id: Int, forceRefresh: Bool = false) async throws -> TMDBMovie {
+        try await get("/movie/\(id)", forceRefresh: forceRefresh)
     }
 
-    func show(_ id: Int) async throws -> TMDBShow {
-        try await get("/tv/\(id)")
+    func show(_ id: Int, forceRefresh: Bool = false) async throws -> TMDBShow {
+        try await get("/tv/\(id)", forceRefresh: forceRefresh)
     }
 
     /// Détail d'une saison (avec la liste des épisodes).
@@ -127,22 +132,22 @@ struct TMDBService {
     }
 
     /// Médias similaires (même type que le média consulté).
-    func similar(_ id: Int, type: MediaType) async throws -> [TMDBSearchResult] {
+    func similar(_ id: Int, type: MediaType, forceRefresh: Bool = false) async throws -> [TMDBSearchResult] {
         let path = type == .movie ? "/movie/\(id)/similar" : "/tv/\(id)/similar"
-        let response: TMDBPagedResponse = try await get(path)
+        let response: TMDBPagedResponse = try await get(path, forceRefresh: forceRefresh)
         return response.results
     }
 
     /// Distribution + équipe.
-    func credits(_ id: Int, type: MediaType) async throws -> TMDBCredits {
+    func credits(_ id: Int, type: MediaType, forceRefresh: Bool = false) async throws -> TMDBCredits {
         let path = type == .movie ? "/movie/\(id)/credits" : "/tv/\(id)/credits"
-        return try await get(path)
+        return try await get(path, forceRefresh: forceRefresh)
     }
 
     /// Bandes-annonces et autres vidéos.
-    func videos(_ id: Int, type: MediaType) async throws -> TMDBVideos {
+    func videos(_ id: Int, type: MediaType, forceRefresh: Bool = false) async throws -> TMDBVideos {
         let path = type == .movie ? "/movie/\(id)/videos" : "/tv/\(id)/videos"
-        return try await get(path)
+        return try await get(path, forceRefresh: forceRefresh)
     }
 
     /// Détail d'une personne (acteur / membre d'équipe).

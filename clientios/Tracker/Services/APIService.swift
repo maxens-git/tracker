@@ -31,9 +31,10 @@ struct APIService {
         _ path: String,
         method: String = "GET",
         query: [URLQueryItem] = [],
-        body: Data? = nil
+        body: Data? = nil,
+        forceRefresh: Bool = false
     ) async throws -> T {
-        let data = try await rawRequest(path, method: method, query: query, body: body)
+        let data = try await rawRequest(path, method: method, query: query, body: body, forceRefresh: forceRefresh)
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
@@ -47,7 +48,8 @@ struct APIService {
         _ path: String,
         method: String = "GET",
         query: [URLQueryItem] = [],
-        body: Data? = nil
+        body: Data? = nil,
+        forceRefresh: Bool = false
     ) async throws -> Data {
         var components = URLComponents(string: AppConfig.apiBaseURL + path)
         if !query.isEmpty { components?.queryItems = query }
@@ -55,6 +57,7 @@ struct APIService {
 
         var req = URLRequest(url: url)
         req.httpMethod = method
+        if forceRefresh { req.cachePolicy = .reloadIgnoringLocalCacheData }
         if let body {
             req.httpBody = body
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -89,12 +92,12 @@ struct APIService {
 
     // ── États utilisateur ─────────────────────────────────────────────────
 
-    func states(tmdbIds: [Int], type: MediaType) async throws -> [UserState] {
+    func states(tmdbIds: [Int], type: MediaType, forceRefresh: Bool = false) async throws -> [UserState] {
         guard !tmdbIds.isEmpty else { return [] }
         return try await request("/Media/states", query: [
             URLQueryItem(name: "tmdbIds", value: tmdbIds.map(String.init).joined(separator: ",")),
             URLQueryItem(name: "type", value: type.rawValue),
-        ])
+        ], forceRefresh: forceRefresh)
     }
 
     /// Ensemble des médias déjà « vus » parmi les résultats donnés.
@@ -149,8 +152,8 @@ struct APIService {
 
     // ── Épisodes ──────────────────────────────────────────────────────────
 
-    func showEpisodes(showTmdbId: Int) async throws -> [EpisodeSeen] {
-        try await request("/Shows/\(showTmdbId)/episodes")
+    func showEpisodes(showTmdbId: Int, forceRefresh: Bool = false) async throws -> [EpisodeSeen] {
+        try await request("/Shows/\(showTmdbId)/episodes", forceRefresh: forceRefresh)
     }
 
     func markEpisodeSeen(showTmdbId: Int, season: Int, episode: Int, seen: Bool) async throws {
