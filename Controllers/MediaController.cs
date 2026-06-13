@@ -69,7 +69,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
             .AnyAsync(i => i.MediaListId == watchlist.Id && i.TmdbId == tmdbId && i.MediaType == mediaType);
 
         if (alreadyIn)
-            return BadRequest("Already in watchlist");
+            return BadRequest("Déjà dans la watchlist");
 
         context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath));
         watchlist.UpdatedAt = DateTime.UtcNow;
@@ -85,13 +85,13 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
         MediaList? watchlist = await mediaService.FindWatchlist();
 
         if (watchlist == null)
-            return NotFound("Watchlist not found");
+            return NotFound("Watchlist introuvable");
 
         MediaListItem? item = await context.MediaListItems
             .FirstOrDefaultAsync(i => i.MediaListId == watchlist.Id && i.TmdbId == tmdbId && i.MediaType == mediaType);
 
         if (item == null)
-            return NotFound("Not in watchlist");
+            return NotFound("Pas dans la watchlist");
 
         context.MediaListItems.Remove(item);
         watchlist.UpdatedAt = DateTime.UtcNow;

@@ -92,7 +92,9 @@ struct EpisodeSeen: Decodable, Hashable {
 
 /// Nature d'une action journalisée. Décodage tolérant : toute valeur inconnue → `.unknown`.
 enum ActivityType: String, Decodable {
-    case seen, unseen, liked, unliked, addedToList, removedFromList, unknown
+    case seen, unseen, liked, unliked, addedToList, removedFromList
+    case seasonSeen, seasonUnseen, episodeSeen, episodeUnseen
+    case unknown
 
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode(String.self)
@@ -109,6 +111,8 @@ struct Activity: Decodable, Identifiable {
     let posterPath: String?
     let listId: Int?
     let listName: String?
+    let seasonNumber: Int?
+    let episodeNumber: Int?
     let createdAt: Date?
 
     var type2: MediaType { mediaType == "tv" ? .tv : .movie }

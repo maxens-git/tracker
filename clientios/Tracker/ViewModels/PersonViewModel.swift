@@ -63,7 +63,7 @@ final class PersonViewModel {
             let items = buildFilmography(credits.cast)
             filmography = await enrichWithStates(items)
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }

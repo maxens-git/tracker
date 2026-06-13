@@ -14,6 +14,7 @@ import {
 import { PRIORITY_CREW_JOBS, localizedJob } from '../../../shared/services/crew';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/services/tmdb-image';
+import { errorMessage } from '../../../shared/services/http-error';
 import { EpisodeSeenDto } from '../../../shared/interfaces/episode';
 import { SYSTEM_LIST } from '../../../shared/constants';
 
@@ -51,6 +52,7 @@ export class MediaDetail implements OnInit {
 
   loading = signal(true);
   error = signal<string | null>(null);
+  toast = signal<string | null>(null);
   mediaType = signal<MediaType>('movie');
 
   movie = signal<TmdbMovie | null>(null);
@@ -250,8 +252,16 @@ export class MediaDetail implements OnInit {
     apply();
     request.subscribe({
       complete: done,
-      error: () => { revert(); done(); },
+      error: err => { revert(); done(); this.showToast(errorMessage(err)); },
     });
+  }
+
+  /** Affiche un message transitoire en bas d'écran (échec d'une action). */
+  private toastTimer?: ReturnType<typeof setTimeout>;
+  showToast(message: string): void {
+    this.toast.set(message);
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => this.toast.set(null), 3500);
   }
 
   // ── Seen ─────────────────────────────────────────────────────────────────
@@ -289,7 +299,7 @@ export class MediaDetail implements OnInit {
           this.refreshSeasonsSeen();
           this.seenPending.set(false);
         },
-        error: () => { this.patchUserState({ seen: !newSeen }); this.seenPending.set(false); },
+        error: err => { this.patchUserState({ seen: !newSeen }); this.seenPending.set(false); this.showToast(errorMessage(err)); },
       });
     }
   }

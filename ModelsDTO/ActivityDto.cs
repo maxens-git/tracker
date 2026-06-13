@@ -12,6 +12,8 @@ public class ActivityDto
     public string? PosterPath { get; set; }
     public int? ListId { get; set; }
     public string? ListName { get; set; }
+    public int? SeasonNumber { get; set; }
+    public int? EpisodeNumber { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public ActivityDto(ActivityEvent e)
@@ -25,6 +27,10 @@ public class ActivityDto
             ActivityType.Unliked => "unliked",
             ActivityType.AddedToList => "addedToList",
             ActivityType.RemovedFromList => "removedFromList",
+            ActivityType.MarkedSeasonSeen => "seasonSeen",
+            ActivityType.MarkedSeasonUnseen => "seasonUnseen",
+            ActivityType.MarkedEpisodeSeen => "episodeSeen",
+            ActivityType.MarkedEpisodeUnseen => "episodeUnseen",
             _ => "unknown",
         };
         TmdbId = e.TmdbId;
@@ -32,6 +38,8 @@ public class ActivityDto
         PosterPath = e.PosterPath;
         ListId = e.ListId;
         ListName = e.ListName;
+        SeasonNumber = e.SeasonNumber;
+        EpisodeNumber = e.EpisodeNumber;
         CreatedAt = e.CreatedAt;
     }
 }

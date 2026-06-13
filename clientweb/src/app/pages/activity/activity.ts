@@ -4,6 +4,7 @@ import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Activity, ActivityType } from '../../../shared/interfaces/activity';
+import { MediaItem } from '../../../shared/interfaces/media';
 import { posterUrl } from '../../../shared/services/tmdb-image';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 
@@ -15,6 +16,10 @@ const TYPE_STYLE: Record<ActivityType, { icon: string; tone: string }> = {
   unliked:         { icon: '♡', tone: 'tone-like' },
   addedToList:     { icon: '＋', tone: 'tone-add' },
   removedFromList: { icon: '−', tone: 'tone-remove' },
+  seasonSeen:      { icon: '✓', tone: 'tone-seen' },
+  seasonUnseen:    { icon: '↺', tone: 'tone-muted' },
+  episodeSeen:     { icon: '✓', tone: 'tone-seen' },
+  episodeUnseen:   { icon: '↺', tone: 'tone-muted' },
 };
 
 function actionLabel(a: Activity): string {
@@ -25,6 +30,10 @@ function actionLabel(a: Activity): string {
     case 'unliked':         return 'Retiré des j\'aime';
     case 'addedToList':     return `Ajouté à « ${a.listName ?? 'une liste'} »`;
     case 'removedFromList': return `Retiré de « ${a.listName ?? 'une liste'} »`;
+    case 'seasonSeen':      return `Saison ${a.seasonNumber} vue`;
+    case 'seasonUnseen':    return `Saison ${a.seasonNumber} non vue`;
+    case 'episodeSeen':     return `Épisode S${a.seasonNumber}E${a.episodeNumber} vu`;
+    case 'episodeUnseen':   return `Épisode S${a.seasonNumber}E${a.episodeNumber} non vu`;
   }
 }
 
@@ -90,11 +99,12 @@ export class ActivityPage implements OnInit {
 
         if (result.items.length === 0) return of([] as ActivityRow[]);
 
-        // Les titres sont résolus via TMDB (métadonnées côté frontend).
+        // Titre et affiche résolus via TMDB (métadonnées côté frontend) : indispensable
+        // pour les actions sans poster stocké (série/saison/épisode vus).
         return this.tmdb.fetchMany(uniqueRefs(result.items)).pipe(
           map(media => {
-            const titleById = new Map(media.map(m => [m.id, m.title ?? m.name ?? '']));
-            return result.items.map(a => this.toRow(a, titleById.get(a.tmdbId)));
+            const mediaById = new Map(media.map(m => [m.id, m]));
+            return result.items.map(a => this.toRow(a, mediaById.get(a.tmdbId)));
           }),
         );
       }),
@@ -108,12 +118,13 @@ export class ActivityPage implements OnInit {
     });
   }
 
-  private toRow(a: Activity, title?: string): ActivityRow {
+  private toRow(a: Activity, media?: MediaItem): ActivityRow {
     const type = a.mediaType === 'tv' ? 'tv' : 'movie';
     const style = TYPE_STYLE[a.type];
+    const title = media?.title ?? media?.name ?? '';
     return {
       id: a.id,
-      posterUrl: posterUrl(a.posterPath, 'w185'),
+      posterUrl: posterUrl(a.posterPath ?? media?.poster_path, 'w185'),
       title: title || (type === 'tv' ? 'Série' : 'Film'),
       label: actionLabel(a),
       icon: style.icon,

@@ -719,3 +719,26 @@
     max-height: calc(0.8rem * 1.35 * 2);
   }
 }
+
+/* Toast d'erreur transitoire (échec d'une action) */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 1100;
+  max-width: 90vw;
+  padding: 0.7rem 1.1rem;
+  background: rgba(20, 12, 14, 0.95);
+  border: 1px solid var(--danger);
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: toast-in 0.18s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}

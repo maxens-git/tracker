@@ -49,7 +49,7 @@
 
       <label class="field">
         <span>Nom</span>
-        <input type="text" [(ngModel)]="formName" placeholder="Ma liste" maxlength="100" autofocus />
+        <input type="text" [(ngModel)]="formName" placeholder="Ma liste" maxlength="100" appAutofocus />
       </label>
 
       <label class="field">
@@ -61,6 +61,10 @@
         <span>Description</span>
         <textarea [(ngModel)]="formDescription" rows="2" placeholder="Optionnelle" maxlength="500"></textarea>
       </label>
+
+      @if (formError()) {
+        <p class="form-error">{{ formError() }}</p>
+      }
 
       <div class="modal-actions">
         <button class="btn-cancel" (click)="closeEditor()" [disabled]="saving()">Annuler</button>

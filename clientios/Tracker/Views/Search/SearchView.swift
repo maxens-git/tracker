@@ -43,6 +43,7 @@ struct SearchView: View {
         }
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Recherche")
+        .errorToast($viewModel.errorMessage)
         .searchable(text: $viewModel.query, prompt: "Films, séries…")
         .onChange(of: viewModel.query) { viewModel.search() }
     }

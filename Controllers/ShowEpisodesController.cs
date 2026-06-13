@@ -9,7 +9,10 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/shows")]
-public class ShowEpisodesController(ApiDbContext context, UserMediaService mediaService) : ControllerBase
+public class ShowEpisodesController(
+    ApiDbContext context,
+    UserMediaService mediaService,
+    ActivityService activityService) : ControllerBase
 {
     [HttpGet("{showTmdbId}/episodes")]
     public async Task<ActionResult<List<EpisodeSeenDto>>> GetEpisodes(int showTmdbId)
@@ -31,6 +34,8 @@ public class ShowEpisodesController(ApiDbContext context, UserMediaService media
             foreach (int epNumber in season.EpisodeNumbers)
                 await UpsertEpisode(showTmdbId, season.SeasonNumber, epNumber, dto.Seen);
 
+        activityService.Log(dto.Seen ? ActivityType.MarkedSeen : ActivityType.MarkedUnseen,
+                            showTmdbId, MediaType.Show, um.PosterPath);
         await context.SaveChangesAsync();
         return Ok(new { showTmdbId, seen = dto.Seen });
     }
@@ -38,9 +43,13 @@ public class ShowEpisodesController(ApiDbContext context, UserMediaService media
     [HttpPost("{showTmdbId}/seasons/{seasonNumber}/seen")]
     public async Task<IActionResult> MarkSeasonSeen(int showTmdbId, int seasonNumber, [FromBody] MarkSeasonSeenDto dto)
     {
+        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
+
         foreach (int epNumber in dto.EpisodeNumbers)
             await UpsertEpisode(showTmdbId, seasonNumber, epNumber, dto.Seen);
 
+        activityService.Log(dto.Seen ? ActivityType.MarkedSeasonSeen : ActivityType.MarkedSeasonUnseen,
+                            showTmdbId, MediaType.Show, um.PosterPath, seasonNumber: seasonNumber);
         await context.SaveChangesAsync();
         return Ok(new { showTmdbId, seasonNumber, seen = dto.Seen });
     }
@@ -48,8 +57,12 @@ public class ShowEpisodesController(ApiDbContext context, UserMediaService media
     [HttpPost("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/seen")]
     public async Task<IActionResult> MarkEpisodeSeen(int showTmdbId, int seasonNumber, int episodeNumber, [FromBody] bool seen)
     {
-        await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
+        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
         await UpsertEpisode(showTmdbId, seasonNumber, episodeNumber, seen);
+
+        activityService.Log(seen ? ActivityType.MarkedEpisodeSeen : ActivityType.MarkedEpisodeUnseen,
+                            showTmdbId, MediaType.Show, um.PosterPath,
+                            seasonNumber: seasonNumber, episodeNumber: episodeNumber);
         await context.SaveChangesAsync();
 
         return Ok(new { showTmdbId, seasonNumber, episodeNumber, seen });

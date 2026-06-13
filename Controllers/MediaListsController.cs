@@ -85,7 +85,7 @@ public class MediaListsController(
     {
         bool exists = await context.MediaLists.AnyAsync(ml => ml.Id == id);
         if (!exists)
-            return NotFound("List not found");
+            return NotFound("Liste introuvable");
 
         return await mediaListService.GetListItemsPaginated(id, page, type);
     }
@@ -95,7 +95,7 @@ public class MediaListsController(
     {
         MediaList? list = await context.MediaLists.FindAsync(id);
         if (list == null)
-            return NotFound("List not found");
+            return NotFound("Liste introuvable");
 
         MediaType mediaType = MediaTypeExtensions.Parse(dto.MediaType);
 
@@ -103,7 +103,7 @@ public class MediaListsController(
             .AnyAsync(i => i.MediaListId == id && i.TmdbId == dto.TmdbId && i.MediaType == mediaType);
 
         if (alreadyIn)
-            return BadRequest("Already in list");
+            return BadRequest("Déjà dans la liste");
 
         UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath);
 
@@ -124,7 +124,7 @@ public class MediaListsController(
             .FirstOrDefaultAsync(i => i.MediaListId == id && i.TmdbId == tmdbId && i.MediaType == mediaType);
 
         if (item == null)
-            return NotFound("Item not in list");
+            return NotFound("Élément absent de la liste");
 
         MediaList? list = await context.MediaLists.FindAsync(id);
         if (list != null) list.UpdatedAt = DateTime.UtcNow;
@@ -140,6 +140,12 @@ public class MediaListsController(
     [HttpPost]
     public async Task<ActionResult<MediaListSummaryDto>> Create([FromBody] MediaListCreateDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest("Le nom est requis.");
+
+        if (await context.MediaLists.AnyAsync(l => l.Name == dto.Name))
+            return BadRequest("Une liste portant ce nom existe déjà.");
+
         MediaList list = new(dto.Name, dto.Description, dto.Icon);
 
         context.MediaLists.Add(list);
@@ -157,7 +163,11 @@ public class MediaListsController(
             return NotFound();
 
         if (list.IsSystem)
-            return BadRequest("Cannot modify system list");
+            return BadRequest("Impossible de modifier une liste système");
+
+        if (dto.Name != null && dto.Name != list.Name &&
+            await context.MediaLists.AnyAsync(l => l.Name == dto.Name && l.Id != id))
+            return BadRequest("Une liste portant ce nom existe déjà.");
 
         list.Name = dto.Name ?? list.Name;
         list.Description = dto.Description ?? list.Description;
@@ -177,7 +187,7 @@ public class MediaListsController(
             return NotFound();
 
         if (list.IsSystem)
-            return BadRequest("Cannot delete system list");
+            return BadRequest("Impossible de supprimer une liste système");
 
         context.MediaLists.Remove(list);
         await context.SaveChangesAsync();

@@ -12,11 +12,15 @@ public enum ActivityType
     Unliked = 3,
     AddedToList = 4,
     RemovedFromList = 5,
+    MarkedSeasonSeen = 6,
+    MarkedSeasonUnseen = 7,
+    MarkedEpisodeSeen = 8,
+    MarkedEpisodeUnseen = 9,
 }
 
 /// <summary>
-/// Journal des dernières actions de l'utilisateur (vu / aimé / ajout ou retrait d'une liste).
-/// La watchlist est traitée comme une liste : <see cref="ListName"/> = "Watchlist".
+/// Journal des dernières actions de l'utilisateur (vu / aimé / ajout ou retrait d'une liste,
+/// saison ou épisode marqué vu). La watchlist est traitée comme une liste : <see cref="ListName"/> = "Watchlist".
 /// Le nom de la liste est dénormalisé pour rester lisible même après suppression de la liste.
 /// </summary>
 [Table("ActivityEvents")]
@@ -24,7 +28,8 @@ public class ActivityEvent
 {
     public ActivityEvent(
         ActivityType type, int tmdbId, MediaType mediaType,
-        string? posterPath = null, int? listId = null, string? listName = null)
+        string? posterPath = null, int? listId = null, string? listName = null,
+        int? seasonNumber = null, int? episodeNumber = null)
     {
         Type = type;
         TmdbId = tmdbId;
@@ -32,6 +37,8 @@ public class ActivityEvent
         PosterPath = posterPath;
         ListId = listId;
         ListName = listName;
+        SeasonNumber = seasonNumber;
+        EpisodeNumber = episodeNumber;
     }
 
     [Key]
@@ -51,6 +58,12 @@ public class ActivityEvent
 
     [MaxLength(200)]
     public string? ListName { get; set; }
+
+    /// <summary>Numéro de saison (actions saison / épisode).</summary>
+    public int? SeasonNumber { get; set; }
+
+    /// <summary>Numéro d'épisode (actions épisode).</summary>
+    public int? EpisodeNumber { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

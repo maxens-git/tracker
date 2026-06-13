@@ -10,17 +10,30 @@ import Foundation
 /// Erreurs réseau génériques de l'app.
 enum NetworkError: LocalizedError {
     case invalidURL
-    case badStatus(Int)
+    case badStatus(Int, message: String? = nil)
     case decoding(Error)
     case transport(Error)
 
     var errorDescription: String? {
         switch self {
         case .invalidURL: return "URL invalide."
-        case .badStatus(let code): return "Réponse serveur invalide (\(code))."
+        case .badStatus(let code, let message): return message ?? "Réponse serveur invalide (\(code))."
         case .decoding: return "Impossible de lire la réponse du serveur."
         case .transport(let error): return error.localizedDescription
         }
+    }
+}
+
+extension Error {
+    /// Vrai si l'erreur n'est qu'une annulation de tâche (requête remplacée, vue quittée).
+    /// À ignorer côté UI plutôt que d'afficher un message « cancelled » trompeur.
+    var isCancellation: Bool {
+        if self is CancellationError { return true }
+        if let urlError = self as? URLError, urlError.code == .cancelled { return true }
+        if let netError = self as? NetworkError,
+           case .transport(let underlying) = netError,
+           (underlying as? URLError)?.code == .cancelled { return true }
+        return false
     }
 }
 

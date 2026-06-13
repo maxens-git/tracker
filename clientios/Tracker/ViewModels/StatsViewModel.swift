@@ -41,7 +41,7 @@ final class StatsViewModel {
         do {
             stats = try await api.stats()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }

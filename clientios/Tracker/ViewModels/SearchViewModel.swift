@@ -66,7 +66,7 @@ final class SearchViewModel {
             }
             seenKeys = await api.seenStateKeys(for: allResults)
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }

@@ -34,6 +34,7 @@ struct MediaDetailView: View {
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
+        .errorToast($viewModel.errorMessage)
         .overlay {
             if viewModel.isLoading && viewModel.title.isEmpty {
                 ProgressView()

@@ -20,7 +20,7 @@ final class ListsViewModel {
         do {
             lists = try await api.lists()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }
@@ -33,7 +33,7 @@ final class ListsViewModel {
             await load()
             Haptics.success()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -45,7 +45,7 @@ final class ListsViewModel {
             await load()
             Haptics.success()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -56,7 +56,7 @@ final class ListsViewModel {
             lists.removeAll { $0.id == list.id }
             Haptics.warning()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }

@@ -67,7 +67,7 @@ final class ListDetailViewModel {
             isLoading = false
             await enrichItems(result.items)
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             isLoading = false
         }
     }

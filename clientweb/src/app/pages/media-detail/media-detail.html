@@ -336,3 +336,7 @@
 
   </div>
 }
+
+@if (toast()) {
+  <div class="toast" role="alert">{{ toast() }}</div>
+}

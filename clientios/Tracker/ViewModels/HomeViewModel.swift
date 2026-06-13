@@ -45,7 +45,7 @@ final class HomeViewModel {
             self.popularShows = try await shows.results
             await refreshSeenStates()
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }

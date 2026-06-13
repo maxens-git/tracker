@@ -8,10 +8,11 @@
 
 import Foundation
 
-/// Entrée d'activité prête pour l'affichage (titre résolu).
+/// Entrée d'activité prête pour l'affichage (titre + affiche résolus via TMDB).
 struct ActivityEntry: Identifiable {
     let activity: Activity
     let title: String
+    let posterPath: String?
     var id: Int { activity.id }
 }
 
@@ -48,7 +49,7 @@ final class ActivityViewModel {
             entries = try await fetchPage(1)
             page = 1
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }
@@ -61,7 +62,7 @@ final class ActivityViewModel {
             entries.append(contentsOf: try await fetchPage(page + 1))
             page += 1
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }
@@ -72,14 +73,18 @@ final class ActivityViewModel {
         totalPages = result.totalPages
         totalCount = result.totalCount
 
-        let titles = await resolveTitles(for: result.items)
-        return result.items.map {
-            ActivityEntry(activity: $0, title: titles[$0.tmdbId] ?? $0.type2.label)
+        let metas = await resolveMeta(for: result.items)
+        return result.items.map { activity in
+            let meta = metas[activity.tmdbId]
+            return ActivityEntry(activity: activity,
+                                 title: meta?.title ?? activity.type2.label,
+                                 posterPath: activity.posterPath ?? meta?.posterPath)
         }
     }
 
-    /// Récupère les titres TMDB des médias de la page (chaque média demandé une seule fois).
-    private func resolveTitles(for items: [Activity]) async -> [Int: String] {
+    /// Métadonnées TMDB (titre + affiche) des médias de la page, chaque média demandé une seule fois.
+    /// L'affiche sert de repli pour les actions sans poster stocké (série / saison / épisode).
+    private func resolveMeta(for items: [Activity]) async -> [Int: (title: String, posterPath: String?)] {
         var seenKeys = Set<String>()
         var refs: [(id: Int, type: MediaType)] = []
         for a in items where seenKeys.insert("\(a.tmdbId)-\(a.mediaType)").inserted {
@@ -87,22 +92,25 @@ final class ActivityViewModel {
         }
 
         let tmdb = self.tmdb
-        return await withTaskGroup(of: (Int, String?).self) { group in
+        return await withTaskGroup(of: (Int, String, String?)?.self) { group in
             for ref in refs {
                 group.addTask {
                     do {
-                        let title = ref.type == .movie
-                            ? try await tmdb.movie(ref.id).title
-                            : try await tmdb.show(ref.id).name
-                        return (ref.id, title)
+                        if ref.type == .movie {
+                            let m = try await tmdb.movie(ref.id)
+                            return (ref.id, m.title, m.posterPath)
+                        } else {
+                            let s = try await tmdb.show(ref.id)
+                            return (ref.id, s.name, s.posterPath)
+                        }
                     } catch {
-                        return (ref.id, nil)
+                        return nil
                     }
                 }
             }
-            var map: [Int: String] = [:]
-            for await (id, title) in group {
-                if let title { map[id] = title }
+            var map: [Int: (title: String, posterPath: String?)] = [:]
+            for await result in group {
+                if let (id, title, poster) = result { map[id] = (title, poster) }
             }
             return map
         }

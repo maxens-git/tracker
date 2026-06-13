@@ -63,7 +63,8 @@ struct APIService {
         do {
             let (data, response) = try await session.data(for: req)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                throw NetworkError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
+                let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+                throw NetworkError.badStatus(code, message: Self.serverMessage(from: data))
             }
             return data
         } catch let error as NetworkError {
@@ -71,6 +72,19 @@ struct APIService {
         } catch {
             throw NetworkError.transport(error)
         }
+    }
+
+    /// Extrait un message d'erreur lisible du corps d'une réponse en échec.
+    /// Le backend renvoie souvent une chaîne JSON ("Already in list") ou un objet { message }.
+    private static func serverMessage(from data: Data) -> String? {
+        guard !data.isEmpty else { return nil }
+        if let s = try? JSONDecoder().decode(String.self, from: data),
+           !s.isEmpty { return s }
+        if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let message = obj["message"] as? String { return message }
+        if let s = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !s.isEmpty, !s.hasPrefix("<") { return s }
+        return nil
     }
 
     // ── États utilisateur ─────────────────────────────────────────────────
@@ -90,12 +104,15 @@ struct APIService {
         let movieIds = results.filter { $0.mediaType == .movie }.map(\.id)
         let showIds = results.filter { $0.mediaType == .tv }.map(\.id)
 
-        async let movieStates = try? states(tmdbIds: movieIds, type: .movie)
-        async let showStates = try? states(tmdbIds: showIds, type: .tv)
+        async let movieStates = states(tmdbIds: movieIds, type: .movie)
+        async let showStates = states(tmdbIds: showIds, type: .tv)
+
+        let movies = (try? await movieStates) ?? []
+        let shows = (try? await showStates) ?? []
 
         var keys: Set<String> = []
-        for s in (await movieStates ?? []) where s.seen { keys.insert("movie-\(s.tmdbId)") }
-        for s in (await showStates ?? []) where s.seen { keys.insert("tv-\(s.tmdbId)") }
+        for s in movies where s.seen { keys.insert("movie-\(s.tmdbId)") }
+        for s in shows where s.seen { keys.insert("tv-\(s.tmdbId)") }
         return keys
     }
 

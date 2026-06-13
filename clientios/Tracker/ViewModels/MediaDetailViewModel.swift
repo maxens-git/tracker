@@ -117,7 +117,7 @@ final class MediaDetailViewModel {
                 // tourner qu'après un toggle d'épisode/saison.
             }
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
     }
@@ -186,7 +186,7 @@ final class MediaDetailViewModel {
             newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
             applyLocalState(seen: !newValue, liked: liked)
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -220,7 +220,7 @@ final class MediaDetailViewModel {
         } catch {
             state = previousState
             episodesSeen = previousEpisodes
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -233,7 +233,7 @@ final class MediaDetailViewModel {
             Haptics.impact(newValue ? .medium : .light)
         } catch {
             applyLocalState(seen: seen, liked: !newValue)
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -253,7 +253,7 @@ final class MediaDetailViewModel {
             adding ? Haptics.success() : Haptics.impact(.light)
         } catch {
             state = previous
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
     }
@@ -280,7 +280,7 @@ final class MediaDetailViewModel {
             adding ? Haptics.success() : Haptics.impact(.light)
         } catch {
             state = previous
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
         listPendingId = nil
@@ -349,7 +349,7 @@ final class MediaDetailViewModel {
             Haptics.impact(.light)
         } catch {
             setEpisodesSeen(season: season, episodes: [episode], seen: !newSeen)
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
         await syncShowSeen()
@@ -371,7 +371,7 @@ final class MediaDetailViewModel {
             newSeen ? Haptics.success() : Haptics.impact(.light)
         } catch {
             episodesSeen = previous
-            errorMessage = error.localizedDescription
+            if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
         await syncShowSeen()

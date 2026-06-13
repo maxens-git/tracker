@@ -48,6 +48,7 @@ struct ListsView: View {
         .scrollContentBackground(.hidden)
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Listes")
+        .errorToast($viewModel.errorMessage)
         .overlay {
             if viewModel.isLoading && viewModel.lists.isEmpty {
                 ProgressView()
@@ -166,8 +167,10 @@ private struct ListEditorSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
+                        // Icône limitée à quelques caractères (un emoji) pour rester sous la limite backend.
+                        let trimmedIcon = String(icon.trimmingCharacters(in: .whitespaces).prefix(4))
                         onSave(trimmedName,
-                               icon.trimmingCharacters(in: .whitespaces),
+                               trimmedIcon,
                                description.trimmingCharacters(in: .whitespaces))
                         dismiss()
                     }

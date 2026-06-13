@@ -4,7 +4,11 @@ export type ActivityType =
   | 'liked'
   | 'unliked'
   | 'addedToList'
-  | 'removedFromList';
+  | 'removedFromList'
+  | 'seasonSeen'
+  | 'seasonUnseen'
+  | 'episodeSeen'
+  | 'episodeUnseen';
 
 /** Entrée du journal d'activité renvoyée par le backend. */
 export interface Activity {
@@ -15,5 +19,7 @@ export interface Activity {
   posterPath?: string | null;
   listId?: number | null;
   listName?: string | null;
+  seasonNumber?: number | null;
+  episodeNumber?: number | null;
   createdAt: string;
 }

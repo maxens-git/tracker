@@ -18,10 +18,11 @@ public class ActivityService(ApiDbContext context)
     /// <summary>Enregistre une action. N'appelle pas SaveChanges (laissé à l'appelant).</summary>
     public void Log(
         ActivityType type, int tmdbId, MediaType mediaType,
-        string? posterPath = null, int? listId = null, string? listName = null)
+        string? posterPath = null, int? listId = null, string? listName = null,
+        int? seasonNumber = null, int? episodeNumber = null)
     {
         context.ActivityEvents.Add(
-            new ActivityEvent(type, tmdbId, mediaType, posterPath, listId, listName));
+            new ActivityEvent(type, tmdbId, mediaType, posterPath, listId, listName, seasonNumber, episodeNumber));
     }
 
     /// <summary>Flux d'activité, du plus récent au plus ancien, paginé.</summary>

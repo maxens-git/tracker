@@ -38,6 +38,7 @@ struct ListDetailView: View {
         }
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(title)
+        .errorToast($viewModel.errorMessage)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
             if viewModel.items.isEmpty && !viewModel.isLoading {

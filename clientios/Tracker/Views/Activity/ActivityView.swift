@@ -23,6 +23,7 @@ struct ActivityView: View {
         }
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Activité")
+        .errorToast($viewModel.errorMessage)
         .task { await viewModel.loadInitial() }
         .refreshable { await viewModel.reload() }
     }
@@ -172,7 +173,7 @@ private struct ActivityRow: View {
 
     /// Affiche + pastille d'action colorée incrustée en bas à droite.
     private var poster: some View {
-        PosterImage(path: activity.posterPath, size: "w185")
+        PosterImage(path: entry.posterPath, size: "w185")
             .frame(width: 48, height: 72)
             .overlay(alignment: .bottomTrailing) {
                 Image(systemName: style.icon)
@@ -195,14 +196,20 @@ private struct ActivityRow: View {
         case .unliked: return "Retiré des j'aime"
         case .addedToList: return "Ajouté à « \(activity.listName ?? "une liste") »"
         case .removedFromList: return "Retiré de « \(activity.listName ?? "une liste") »"
+        case .seasonSeen: return "Saison \(activity.seasonNumber ?? 0) vue"
+        case .seasonUnseen: return "Saison \(activity.seasonNumber ?? 0) non vue"
+        case .episodeSeen: return "Épisode S\(activity.seasonNumber ?? 0)E\(activity.episodeNumber ?? 0) vu"
+        case .episodeUnseen: return "Épisode S\(activity.seasonNumber ?? 0)E\(activity.episodeNumber ?? 0) non vu"
         case .unknown: return ""
         }
     }
 
     private var style: ActivityStyle {
         switch activity.type {
-        case .seen:            return ActivityStyle(icon: "checkmark", tint: .accentColor)
-        case .unseen:          return ActivityStyle(icon: "arrow.uturn.backward", tint: .secondary)
+        case .seen, .seasonSeen, .episodeSeen:
+            return ActivityStyle(icon: "checkmark", tint: .accentColor)
+        case .unseen, .seasonUnseen, .episodeUnseen:
+            return ActivityStyle(icon: "arrow.uturn.backward", tint: .secondary)
         case .liked:           return ActivityStyle(icon: "heart.fill", tint: .pink)
         case .unliked:         return ActivityStyle(icon: "heart.slash.fill", tint: .pink)
         case .addedToList:     return ActivityStyle(icon: "plus", tint: .orange)

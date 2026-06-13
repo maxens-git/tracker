@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Api } from '../../../shared/services/api';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { Autofocus } from '../../../shared/directives/autofocus';
+import { errorMessage } from '../../../shared/services/http-error';
 import { SLUG_BY_SYSTEM_LIST } from '../../../shared/constants';
 
 @Component({
   selector: 'app-lists',
   standalone: true,
-  imports: [RouterLink, FormsModule, Spinner],
+  imports: [RouterLink, FormsModule, Spinner, Autofocus],
   templateUrl: './lists.html',
   styleUrl: './lists.scss',
 })
@@ -25,6 +27,7 @@ export class Lists implements OnInit {
   /** Liste en cours d'édition ; null = création. */
   editing = signal<MediaListSummary | null>(null);
   saving = signal(false);
+  formError = signal<string | null>(null);
   formName = '';
   formIcon = '';
   formDescription = '';
@@ -65,6 +68,7 @@ export class Lists implements OnInit {
     this.formName = '';
     this.formIcon = '';
     this.formDescription = '';
+    this.formError.set(null);
     this.editorOpen.set(true);
   }
 
@@ -75,6 +79,7 @@ export class Lists implements OnInit {
     this.formName = list.name;
     this.formIcon = list.icon ?? '';
     this.formDescription = list.description ?? '';
+    this.formError.set(null);
     this.editorOpen.set(true);
   }
 
@@ -89,6 +94,7 @@ export class Lists implements OnInit {
 
     const dto = { name, icon: this.formIcon.trim(), description: this.formDescription.trim() };
     this.saving.set(true);
+    this.formError.set(null);
 
     const list = this.editing();
     const request$ = list
@@ -97,7 +103,7 @@ export class Lists implements OnInit {
 
     request$.subscribe({
       next: () => { this.saving.set(false); this.editorOpen.set(false); this.reload(); },
-      error: () => { this.saving.set(false); },
+      error: err => { this.saving.set(false); this.formError.set(errorMessage(err)); },
     });
   }
 
@@ -108,6 +114,7 @@ export class Lists implements OnInit {
 
     this.api.deleteList(list.id).subscribe({
       next: () => this.lists.update(ls => ls.filter(l => l.id !== list.id)),
+      error: err => alert(errorMessage(err)),
     });
   }
 }
