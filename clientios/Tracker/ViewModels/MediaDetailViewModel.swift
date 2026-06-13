@@ -80,25 +80,6 @@ final class MediaDetailViewModel {
         state?.listIds.contains(listId) ?? false
     }
 
-    /// Rafraîchissement « depuis zéro » : vide le contenu affiché puis recharge tout,
-    /// reproduisant l'expérience de première ouverture (spinner plein écran, sections
-    /// qui réapparaissent au fur et à mesure). Utilisé par le bouton de rafraîchissement.
-    func reloadFromScratch() async {
-        movie = nil
-        show = nil
-        state = nil
-        similar = []
-        cast = []
-        crew = []
-        trailers = []
-        episodesSeen = []
-        seasonEpisodes = [:]
-        loadingSeasons = []
-        expandedSeason = nil
-        errorMessage = nil
-        await load(forceRefresh: true)
-    }
-
     func load(forceRefresh: Bool = false) async {
         // Rafraîchissement forcé : on ignore le cache HTTP des requêtes de données
         // (sinon TMDB/backend resservent les mêmes réponses → "rien ne change").

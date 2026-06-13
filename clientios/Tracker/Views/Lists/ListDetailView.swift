@@ -17,7 +17,7 @@ struct ListDetailView: View {
     var body: some View {
         ScrollView {
             MediaGrid(spacing: 12) {
-                ForEach(viewModel.items) { item in
+                ForEach(viewModel.filteredItems) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
                         MediaCard(posterPath: viewModel.posterPath(for: item),
                                   title: viewModel.title(for: item),
@@ -40,12 +40,17 @@ struct ListDetailView: View {
         .navigationTitle(title)
         .errorToast($viewModel.errorMessage)
         .navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $viewModel.query, prompt: "Rechercher dans la liste")
         .overlay {
-            if viewModel.items.isEmpty && !viewModel.isLoading {
-                ContentUnavailableView("Liste vide", systemImage: "rectangle.stack",
-                                       description: Text("Aucun média dans cette liste."))
+            if viewModel.filteredItems.isEmpty && !viewModel.isLoading {
+                if viewModel.items.isEmpty {
+                    ContentUnavailableView("Liste vide", systemImage: "rectangle.stack",
+                                           description: Text("Aucun média dans cette liste."))
+                } else {
+                    ContentUnavailableView.search(text: viewModel.query)
+                }
             }
         }
-        .task { await viewModel.loadFirstPage() }
+        .task { await viewModel.loadInitialIfNeeded() }
     }
 }

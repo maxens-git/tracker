@@ -16,6 +16,16 @@ final class ListDetailViewModel {
     private(set) var hasMore = true
     var errorMessage: String?
 
+    /// Recherche dans la liste (filtre par titre, appliqué aux éléments déjà chargés).
+    var query = ""
+
+    /// Éléments visibles après filtre de recherche par titre.
+    var filteredItems: [MediaListItem] {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !q.isEmpty else { return items }
+        return items.filter { title(for: $0).lowercased().contains(q) }
+    }
+
     /// Métadonnées (affiche, titre, année) enrichies depuis TMDB, indexées par tmdbId.
     private(set) var meta: [Int: ItemMeta] = [:]
 
@@ -26,6 +36,9 @@ final class ListDetailViewModel {
     }
 
     private var page = 1
+    /// Évite de recharger (et de perdre la position de scroll) à chaque réapparition
+    /// de la vue, par exemple au retour depuis le détail d'un média.
+    private var hasLoaded = false
     private let api = APIService.shared
     private let tmdb = TMDBService.shared
 
@@ -46,6 +59,13 @@ final class ListDetailViewModel {
     /// Année enrichie depuis TMDB.
     func year(for item: MediaListItem) -> String? {
         meta[item.tmdbId]?.year
+    }
+
+    /// Chargement initial : une seule fois sur la durée de vie de la vue.
+    func loadInitialIfNeeded() async {
+        guard !hasLoaded else { return }
+        hasLoaded = true
+        await loadFirstPage()
     }
 
     func loadFirstPage() async {

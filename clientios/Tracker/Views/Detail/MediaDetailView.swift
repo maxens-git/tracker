@@ -43,7 +43,7 @@ struct MediaDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    Task { await viewModel.reloadFromScratch() }
+                    Task { await viewModel.load(forceRefresh: true) }
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
