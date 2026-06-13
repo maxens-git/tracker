@@ -31,6 +31,13 @@ struct RootView: View {
                 }
             }
 
+            Tab("Activité", systemImage: "clock.arrow.circlepath") {
+                NavigationStack {
+                    ActivityView()
+                        .trackerNavigationDestinations()
+                }
+            }
+
             Tab("Stats", systemImage: "chart.bar") {
                 NavigationStack {
                     StatsView()

@@ -1,0 +1,46 @@
+<div class="activity-page mx-auto px-4 pb-5 pt-4">
+  <h1 class="page-title mb-1">Activité</h1>
+  <p class="subtitle mb-4">Vos dernières actions{{ totalCount() ? ' · ' + totalCount() : '' }}</p>
+
+  @if (error() && rows().length === 0) {
+    <div class="status text-center py-5">Erreur lors du chargement.</div>
+  } @else if (rows().length === 0 && loading()) {
+    <app-spinner />
+  } @else if (rows().length === 0) {
+    <div class="status text-center py-5">Aucune activité pour le moment.</div>
+  } @else {
+    <ul class="feed">
+      @for (a of rows(); track a.id) {
+        <li class="feed-item">
+          <a [routerLink]="a.link" class="poster" [class.empty]="!a.posterUrl">
+            @if (a.posterUrl) {
+              <img [src]="a.posterUrl" [alt]="a.title" loading="lazy" />
+            } @else {
+              <span class="poster-fallback">🎬</span>
+            }
+          </a>
+
+          <div class="body">
+            <a [routerLink]="a.link" class="title">{{ a.title }}</a>
+            <div class="action">
+              <span class="badge" [class]="a.tone">{{ a.icon }}</span>
+              <span class="action-text">{{ a.label }}</span>
+            </div>
+          </div>
+
+          <time class="time">{{ relativeTime(a.createdAt) }}</time>
+        </li>
+      }
+    </ul>
+
+    @if (hasMore) {
+      <div class="load-more">
+        <button (click)="loadMore()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Voir plus' }}
+        </button>
+      </div>
+    } @else if (loading()) {
+      <app-spinner />
+    }
+  }
+</div>

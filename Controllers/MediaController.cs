@@ -9,7 +9,7 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MediaController(ApiDbContext context, UserMediaService mediaService) : ControllerBase
+public class MediaController(ApiDbContext context, UserMediaService mediaService, ActivityService activityService) : ControllerBase
 {
     [HttpGet("states")]
     public async Task<ActionResult<List<UserStateDto>>> GetStates([FromQuery] string tmdbIds, [FromQuery] string type = "movie")
@@ -39,8 +39,10 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     [HttpPost("{tmdbId}/seen")]
     public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
     {
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type), dto.PosterPath, dto.Runtime);
+        MediaType mediaType = MediaTypeExtensions.Parse(type);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime);
         um.Seen = dto.Seen;
+        activityService.Log(dto.Seen ? ActivityType.MarkedSeen : ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
         return Ok(new { tmdbId, seen = um.Seen });
     }
@@ -48,8 +50,10 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     [HttpPost("{tmdbId}/liked")]
     public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromQuery] string? posterPath, [FromBody] bool liked)
     {
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, MediaTypeExtensions.Parse(type), posterPath);
+        MediaType mediaType = MediaTypeExtensions.Parse(type);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, posterPath);
         um.Liked = liked;
+        activityService.Log(liked ? ActivityType.Liked : ActivityType.Unliked, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
         return Ok(new { tmdbId, liked = um.Liked });
     }
@@ -69,6 +73,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
 
         context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath));
         watchlist.UpdatedAt = DateTime.UtcNow;
+        activityService.Log(ActivityType.AddedToList, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, watchlist.Id, watchlist.Name);
         await context.SaveChangesAsync();
         return NoContent();
     }
@@ -90,6 +95,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
 
         context.MediaListItems.Remove(item);
         watchlist.UpdatedAt = DateTime.UtcNow;
+        activityService.Log(ActivityType.RemovedFromList, tmdbId, mediaType, item.PosterPath, watchlist.Id, watchlist.Name);
         await context.SaveChangesAsync();
         return NoContent();
     }

@@ -194,6 +194,12 @@ struct APIService {
     func stats() async throws -> Stats {
         try await request("/Stats")
     }
+
+    // ── Activité ────────────────────────────────────────────────────────────
+
+    func activity(page: Int = 1) async throws -> PaginatedResult<Activity> {
+        try await request("/Activity", query: [URLQueryItem(name: "page", value: String(page))])
+    }
 }
 
 // MARK: - Helpers d'encodage JSON hétérogène

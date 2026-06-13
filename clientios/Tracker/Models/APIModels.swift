@@ -88,6 +88,32 @@ struct EpisodeSeen: Decodable, Hashable {
     let seen: Bool
 }
 
+// ── Activité ────────────────────────────────────────────────────────────────
+
+/// Nature d'une action journalisée. Décodage tolérant : toute valeur inconnue → `.unknown`.
+enum ActivityType: String, Decodable {
+    case seen, unseen, liked, unliked, addedToList, removedFromList, unknown
+
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = ActivityType(rawValue: raw) ?? .unknown
+    }
+}
+
+/// Entrée du journal d'activité (le titre est résolu via TMDB côté client).
+struct Activity: Decodable, Identifiable {
+    let id: Int
+    let type: ActivityType
+    let tmdbId: Int
+    let mediaType: String
+    let posterPath: String?
+    let listId: Int?
+    let listName: String?
+    let createdAt: Date?
+
+    var type2: MediaType { mediaType == "tv" ? .tv : .movie }
+}
+
 // ── Statistiques ──────────────────────────────────────────────────────────
 
 struct Stats: Decodable {

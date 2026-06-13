@@ -40,6 +40,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
 builder.Services.AddScoped<StatsService>();
+builder.Services.AddScoped<ActivityService>();
 
 var app = builder.Build();
 

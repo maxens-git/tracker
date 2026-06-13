@@ -12,7 +12,8 @@ namespace Tracker.Controllers;
 public class MediaListsController(
     ApiDbContext context,
     MediaListService mediaListService,
-    UserMediaService userMediaService) : ControllerBase
+    UserMediaService userMediaService,
+    ActivityService activityService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MediaListSummaryDto>>> GetAll()
@@ -109,6 +110,7 @@ public class MediaListsController(
         context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath));
 
         list.UpdatedAt = DateTime.UtcNow;
+        activityService.Log(ActivityType.AddedToList, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, list.Id, list.Name);
         await context.SaveChangesAsync();
         return NoContent();
     }
@@ -128,6 +130,7 @@ public class MediaListsController(
         if (list != null) list.UpdatedAt = DateTime.UtcNow;
 
         context.MediaListItems.Remove(item);
+        activityService.Log(ActivityType.RemovedFromList, tmdbId, mediaType, item.PosterPath, id, list?.Name);
         await context.SaveChangesAsync();
         return NoContent();
     }

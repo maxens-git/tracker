@@ -6,6 +6,7 @@ import { MediaItem, UserState } from '../interfaces/media';
 import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/list';
 import { Stats } from '../interfaces/stats';
 import { EpisodeSeenDto } from '../interfaces/episode';
+import { Activity } from '../interfaces/activity';
 
 const API = '/api';
 
@@ -141,6 +142,12 @@ export class Api {
 
   stats(): Observable<Stats> {
     return this.http.get<Stats>(`${API}/Stats`);
+  }
+
+  // ── Activité ─────────────────────────────────────────────────────────────
+
+  activity(page = 1): Observable<PaginatedResult<Activity>> {
+    return this.http.get<PaginatedResult<Activity>>(`${API}/Activity`, { params: { page } });
   }
 }
 

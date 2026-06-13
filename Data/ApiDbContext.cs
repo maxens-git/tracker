@@ -13,6 +13,7 @@ public class ApiDbContext : DbContext
     public DbSet<UserEpisode> UserEpisodes { get; set; } = null!;
     public DbSet<MediaList> MediaLists { get; set; } = null!;
     public DbSet<MediaListItem> MediaListItems { get; set; } = null!;
+    public DbSet<ActivityEvent> ActivityEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,5 +40,8 @@ public class ApiDbContext : DbContext
             .WithMany(ml => ml.Items)
             .HasForeignKey(i => i.MediaListId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ActivityEvent>()
+            .HasIndex(e => e.CreatedAt);
     }
 }
