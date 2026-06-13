@@ -11,11 +11,16 @@ struct MediaCard: View {
     let posterPath: String?
     let title: String
     var subtitle: String?
+    /// Affiche un badge « VU » en haut de l'affiche quand le média est déjà vu.
+    var seen: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             PosterImage(path: posterPath)
                 .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                .overlay(alignment: .topTrailing) {
+                    if seen { seenBadge }
+                }
                 // Ombre douce pour donner du relief aux affiches.
                 .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
 
@@ -35,6 +40,17 @@ struct MediaCard: View {
         // vignette à l'autre, et l'espace libre des titres courts passe en bas
         // (plutôt qu'entre le titre et l'année).
         .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    /// Pastille « VU » (accent) posée en haut à droite de l'affiche.
+    private var seenBadge: some View {
+        Text("VU")
+            .font(.system(size: 10, weight: .heavy))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(Color.accentColor))
+            .padding(6)
     }
 }
 

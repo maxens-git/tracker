@@ -90,3 +90,157 @@
   font-size: 0.78rem;
   color: #6b7884;
 }
+
+/* ── Bouton « Nouvelle liste » ───────────────────────────────────────────── */
+.btn-new {
+  background: var(--accent-grad, var(--accent));
+  color: #fff;
+  border: none;
+  border-radius: var(--r-pill, 999px);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.05s ease;
+
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: scale(0.97); }
+}
+
+/* ── Carte + actions (modifier / supprimer) ──────────────────────────────── */
+.list-card-wrap {
+  position: relative;
+
+  &:hover .list-actions { opacity: 1; }
+}
+
+.list-actions {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  gap: 0.35rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  background: rgba(10, 12, 18, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: var(--accent); }
+  &.danger:hover { border-color: var(--danger); color: var(--danger); }
+}
+
+/* Sur tactile (pas de survol), garder les actions visibles. */
+@media (hover: none) {
+  .list-actions { opacity: 1; }
+}
+
+/* ── Modale création / édition ───────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg, 18px);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-2, 0 14px 44px rgba(0, 0, 0, 0.55));
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+}
+
+.field {
+  display: block;
+  margin-bottom: 1rem;
+
+  span {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    background: var(--bg-elevated, #0d1118);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+  }
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.btn-cancel,
+.btn-save {
+  border-radius: var(--r-pill, 999px);
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, border-color 0.15s ease;
+
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.btn-cancel {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+
+  &:hover:not(:disabled) { border-color: var(--text); }
+}
+
+.btn-save {
+  background: var(--accent-grad, var(--accent));
+  color: #fff;
+  border: none;
+
+  &:hover:not(:disabled) { filter: brightness(1.08); }
+}

@@ -38,11 +38,19 @@ final class ActivityViewModel {
     }
 
     /// Recharge depuis le début (pull-to-refresh).
+    /// On ne vide pas `entries` avant la réponse : la `List` reste montée, ce qui
+    /// évite que SwiftUI annule la tâche de refresh (erreur "cancelled").
     func reload() async {
-        page = 0
-        totalPages = 1
-        entries = []
-        await loadMore()
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+        do {
+            entries = try await fetchPage(1)
+            page = 1
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 
     func loadMore() async {
@@ -50,19 +58,24 @@ final class ActivityViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            let result = try await api.activity(page: page + 1)
-            totalPages = result.totalPages
-            totalCount = result.totalCount
-
-            let titles = await resolveTitles(for: result.items)
-            entries.append(contentsOf: result.items.map {
-                ActivityEntry(activity: $0, title: titles[$0.tmdbId] ?? $0.type2.label)
-            })
+            entries.append(contentsOf: try await fetchPage(page + 1))
             page += 1
         } catch {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    /// Récupère une page et résout les titres TMDB, sans toucher à l'état `entries`/`page`.
+    private func fetchPage(_ p: Int) async throws -> [ActivityEntry] {
+        let result = try await api.activity(page: p)
+        totalPages = result.totalPages
+        totalCount = result.totalCount
+
+        let titles = await resolveTitles(for: result.items)
+        return result.items.map {
+            ActivityEntry(activity: $0, title: titles[$0.tmdbId] ?? $0.type2.label)
+        }
     }
 
     /// Récupère les titres TMDB des médias de la page (chaque média demandé une seule fois).

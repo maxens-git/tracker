@@ -25,8 +25,16 @@ final class SearchViewModel {
     var movieCount: Int { allResults.filter { $0.mediaType == .movie }.count }
     var showCount: Int { allResults.filter { $0.mediaType == .tv }.count }
 
+    /// Clés ("movie-123" / "tv-123") des médias déjà vus, pour le badge sur l'affiche.
+    private(set) var seenKeys: Set<String> = []
+
     private let tmdb = TMDBService.shared
+    private let api = APIService.shared
     private var searchTask: Task<Void, Never>?
+
+    func isSeen(_ result: TMDBSearchResult) -> Bool {
+        seenKeys.contains("\(result.mediaType.rawValue)-\(result.id)")
+    }
 
     /// Lance une recherche debouncée (300 ms) sur la requête courante.
     func search() {
@@ -56,6 +64,7 @@ final class SearchViewModel {
             allResults = response.results.filter {
                 $0.mediaTypeRaw == nil || $0.mediaTypeRaw == "movie" || $0.mediaTypeRaw == "tv"
             }
+            seenKeys = await api.seenStateKeys(for: allResults)
         } catch {
             errorMessage = error.localizedDescription
         }

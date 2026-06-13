@@ -32,7 +32,8 @@ struct SearchView: View {
                         NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
                             MediaCard(posterPath: item.posterPath,
                                       title: item.displayTitle,
-                                      subtitle: item.year)
+                                      subtitle: item.year,
+                                      seen: viewModel.isSeen(item))
                         }
                         .buttonStyle(.plain)
                     }

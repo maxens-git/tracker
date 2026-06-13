@@ -8,6 +8,7 @@ import SwiftUI
 struct MediaDetailView: View {
     @State private var viewModel: MediaDetailViewModel
     @State private var showingPoster = false
+    @State private var showingListPicker = false
     @Environment(\.openURL) private var openURL
 
     init(tmdbId: Int, type: MediaType) {
@@ -107,8 +108,47 @@ struct MediaDetailView: View {
                          active: viewModel.inWatchlist) {
                 await viewModel.toggleWatchlist()
             }
+            if !viewModel.customLists.isEmpty {
+                actionButton(title: "Listes", systemImage: viewModel.isInAnyCustomList ? "text.badge.checkmark" : "text.badge.plus",
+                             active: viewModel.isInAnyCustomList) {
+                    showingListPicker = true
+                }
+            }
         }
         .padding(.horizontal)
+        .sheet(isPresented: $showingListPicker) { listPickerSheet }
+    }
+
+    /// Feuille de sélection : ajoute / retire le média de chaque liste personnalisée.
+    private var listPickerSheet: some View {
+        NavigationStack {
+            List(viewModel.customLists) { list in
+                Button {
+                    Task { await viewModel.toggleList(list.id) }
+                } label: {
+                    HStack(spacing: 12) {
+                        Text(list.icon ?? "📋")
+                        Text(list.name)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if viewModel.isInList(list.id) {
+                            Image(systemName: "checkmark")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                }
+                .disabled(viewModel.listPendingId == list.id)
+            }
+            .navigationTitle("Ajouter à une liste")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("OK") { showingListPicker = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 
     private func actionButton(title: String, systemImage: String, active: Bool = false,

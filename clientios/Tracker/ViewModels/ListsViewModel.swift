@@ -25,9 +25,23 @@ final class ListsViewModel {
         isLoading = false
     }
 
-    func createList(name: String) async {
+    func createList(name: String, description: String = "", icon: String = "") async {
         do {
-            _ = try await api.createList(name: name)
+            _ = try await api.createList(name: name,
+                                         description: description.isEmpty ? nil : description,
+                                         icon: icon.isEmpty ? nil : icon)
+            await load()
+            Haptics.success()
+        } catch {
+            errorMessage = error.localizedDescription
+            Haptics.error()
+        }
+    }
+
+    /// Modifie une liste personnalisée (nom / icône / description).
+    func update(_ list: MediaListSummary, name: String, description: String, icon: String) async {
+        do {
+            try await api.updateList(id: list.id, name: name, description: description, icon: icon)
             await load()
             Haptics.success()
         } catch {

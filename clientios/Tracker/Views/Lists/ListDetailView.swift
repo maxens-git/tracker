@@ -21,14 +21,8 @@ struct ListDetailView: View {
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
                         MediaCard(posterPath: viewModel.posterPath(for: item),
                                   title: viewModel.title(for: item),
-                                  subtitle: viewModel.year(for: item))
-                            .overlay(alignment: .topTrailing) {
-                                if item.seen {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.white, .green)
-                                        .padding(6)
-                                }
-                            }
+                                  subtitle: viewModel.year(for: item),
+                                  seen: item.seen)
                             .task {
                                 if item == viewModel.items.last { await viewModel.loadMore() }
                             }

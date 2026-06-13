@@ -17,6 +17,10 @@ final class MediaDetailViewModel {
     /// Identifiant de la liste système « Watchlist » (chargé une fois), nécessaire
     /// pour dériver l'appartenance depuis `state.listIds` et basculer add/remove.
     private(set) var watchlistId: Int?
+    /// Toutes les listes (système + perso), chargées une fois.
+    private(set) var allLists: [MediaListSummary] = []
+    /// Liste dont l'ajout/retrait est en cours (pour désactiver la ligne correspondante).
+    private(set) var listPendingId: Int?
     private(set) var similar: [TMDBSearchResult] = []
     private(set) var cast: [TMDBCastMember] = []
     private(set) var crew: [TMDBCrewMember] = []
@@ -61,8 +65,19 @@ final class MediaDetailViewModel {
 
     /// Vrai si le média figure dans la watchlist (dérivé de `state.listIds`).
     var inWatchlist: Bool {
-        guard let watchlistId, let listIds = state?.listIds else { return false }
-        return listIds.contains(watchlistId)
+        guard let watchlistId else { return false }
+        return isInList(watchlistId)
+    }
+
+    /// Listes personnalisées (non système) proposées dans le sélecteur.
+    var customLists: [MediaListSummary] { allLists.filter { !$0.isSystem } }
+
+    /// Vrai si le média appartient à au moins une liste personnalisée (état actif du bouton).
+    var isInAnyCustomList: Bool { customLists.contains { isInList($0.id) } }
+
+    /// Vrai si le média figure dans la liste donnée (dérivé de `state.listIds`).
+    func isInList(_ listId: Int) -> Bool {
+        state?.listIds.contains(listId) ?? false
     }
 
     func load(forceRefresh: Bool = false) async {
@@ -87,10 +102,11 @@ final class MediaDetailViewModel {
             case .tv: show = try await tmdb.show(tmdbId)
             }
             state = try await api.states(tmdbIds: [tmdbId], type: type).first
-            // Id de la watchlist (liste système) : nécessaire pour afficher l'état
-            // actif du bouton « À voir » et basculer add/remove. Chargé une seule fois.
-            if watchlistId == nil {
-                watchlistId = try? await api.lists().first { $0.isSystem && $0.name == "Watchlist" }?.id
+            // Listes (système + perso), chargées une seule fois : sert à l'état actif
+            // du bouton « À voir » (watchlist) et au sélecteur de listes personnalisées.
+            if allLists.isEmpty {
+                allLists = (try? await api.lists()) ?? []
+                watchlistId = allLists.first { $0.isSystem && $0.name == "Watchlist" }?.id
             }
             if type == .tv {
                 let seen = try await api.showEpisodes(showTmdbId: tmdbId)
@@ -244,12 +260,40 @@ final class MediaDetailViewModel {
 
     /// Met à jour localement l'appartenance à la watchlist dans `state.listIds`.
     private func setWatchlistMembership(_ member: Bool) {
-        guard let watchlistId, let current = state else { return }
+        guard let watchlistId else { return }
+        setListMembership(watchlistId, member: member)
+    }
+
+    /// Ajoute / retire le média d'une liste personnalisée (mise à jour optimiste).
+    func toggleList(_ listId: Int) async {
+        guard listPendingId == nil else { return }
+        let adding = !isInList(listId)
+        let previous = state
+        listPendingId = listId
+        setListMembership(listId, member: adding)
+        do {
+            if adding {
+                try await api.addItemToList(listId: listId, tmdbId: tmdbId, type: type, posterPath: posterPath)
+            } else {
+                try await api.removeItemFromList(listId: listId, tmdbId: tmdbId, type: type)
+            }
+            adding ? Haptics.success() : Haptics.impact(.light)
+        } catch {
+            state = previous
+            errorMessage = error.localizedDescription
+            Haptics.error()
+        }
+        listPendingId = nil
+    }
+
+    /// Met à jour localement l'appartenance à une liste dans `state.listIds`.
+    private func setListMembership(_ listId: Int, member: Bool) {
+        guard let current = state else { return }
         var ids = current.listIds
         if member {
-            if !ids.contains(watchlistId) { ids.append(watchlistId) }
+            if !ids.contains(listId) { ids.append(listId) }
         } else {
-            ids.removeAll { $0 == watchlistId }
+            ids.removeAll { $0 == listId }
         }
         state = UserState(tmdbId: current.tmdbId, seen: current.seen,
                           liked: current.liked, listIds: ids)

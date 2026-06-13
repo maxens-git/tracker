@@ -7,8 +7,9 @@ import SwiftUI
 
 struct ListsView: View {
     @State private var viewModel = ListsViewModel()
-    @State private var showingNewList = false
-    @State private var newListName = ""
+    @State private var showingEditor = false
+    /// Liste en cours d'édition ; `nil` = création d'une nouvelle liste.
+    @State private var editingList: MediaListSummary?
 
     var body: some View {
         List {
@@ -24,8 +25,23 @@ struct ListsView: View {
                                 .fill(Color.appSurface)
                                 .padding(.vertical, 3)
                         )
+                        // Modifier / supprimer : réservé aux listes non-système.
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if !list.isSystem {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.delete(list) }
+                                } label: {
+                                    Label("Supprimer", systemImage: "trash")
+                                }
+                                Button {
+                                    edit(list)
+                                } label: {
+                                    Label("Modifier", systemImage: "pencil")
+                                }
+                                .tint(.accentColor)
+                            }
+                        }
                     }
-                    .onDelete(perform: deleteLists)
                 }
             }
         }
@@ -46,24 +62,35 @@ struct ListsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    newListName = ""
-                    showingNewList = true
+                    create()
                 } label: {
                     Image(systemName: "plus")
                 }
             }
         }
-        .alert("Nouvelle liste", isPresented: $showingNewList) {
-            TextField("Nom", text: $newListName)
-            Button("Annuler", role: .cancel) {}
-            Button("Créer") {
-                let name = newListName.trimmingCharacters(in: .whitespaces)
-                guard !name.isEmpty else { return }
-                Task { await viewModel.createList(name: name) }
+        .sheet(isPresented: $showingEditor) {
+            ListEditorSheet(list: editingList) { name, icon, description in
+                Task {
+                    if let editingList {
+                        await viewModel.update(editingList, name: name, description: description, icon: icon)
+                    } else {
+                        await viewModel.createList(name: name, description: description, icon: icon)
+                    }
+                }
             }
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
+    }
+
+    private func create() {
+        editingList = nil
+        showingEditor = true
+    }
+
+    private func edit(_ list: MediaListSummary) {
+        editingList = list
+        showingEditor = true
     }
 
     private func row(for list: MediaListSummary) -> some View {
@@ -93,13 +120,62 @@ struct ListsView: View {
         }
         .padding(.vertical, 4)
     }
+}
 
-    private func deleteLists(at offsets: IndexSet) {
-        for index in offsets {
-            let list = viewModel.lists[index]
-            guard !list.isSystem else { continue }
-            Task { await viewModel.delete(list) }
+// MARK: - Éditeur de liste (création / modification)
+
+/// Feuille de saisie réutilisée pour créer ou modifier une liste personnalisée.
+private struct ListEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let isEditing: Bool
+    private let onSave: (_ name: String, _ icon: String, _ description: String) -> Void
+
+    @State private var name: String
+    @State private var icon: String
+    @State private var description: String
+
+    init(list: MediaListSummary?,
+         onSave: @escaping (_ name: String, _ icon: String, _ description: String) -> Void) {
+        self.isEditing = list != nil
+        self.onSave = onSave
+        _name = State(initialValue: list?.name ?? "")
+        _icon = State(initialValue: list?.icon ?? "")
+        _description = State(initialValue: list?.description ?? "")
+    }
+
+    private var trimmedName: String { name.trimmingCharacters(in: .whitespaces) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Nom", text: $name)
+                    TextField("Icône (emoji)", text: $icon)
+                }
+                Section("Description") {
+                    TextField("Optionnelle", text: $description, axis: .vertical)
+                        .lineLimit(1...4)
+                }
+            }
+            .navigationTitle(isEditing ? "Modifier la liste" : "Nouvelle liste")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annuler") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Enregistrer") {
+                        onSave(trimmedName,
+                               icon.trimmingCharacters(in: .whitespaces),
+                               description.trimmingCharacters(in: .whitespaces))
+                        dismiss()
+                    }
+                    .disabled(trimmedName.isEmpty)
+                }
+            }
         }
+        .presentationDetents([.medium, .large])
     }
 }
 

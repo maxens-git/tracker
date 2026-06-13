@@ -83,6 +83,22 @@ struct APIService {
         ])
     }
 
+    /// Ensemble des médias déjà « vus » parmi les résultats donnés.
+    /// Clé : "movie-123" / "tv-123" (évite les collisions d'id entre films et séries).
+    /// Les erreurs réseau sont ignorées : un badge manquant ne doit pas casser l'écran.
+    func seenStateKeys(for results: [TMDBSearchResult]) async -> Set<String> {
+        let movieIds = results.filter { $0.mediaType == .movie }.map(\.id)
+        let showIds = results.filter { $0.mediaType == .tv }.map(\.id)
+
+        async let movieStates = try? states(tmdbIds: movieIds, type: .movie)
+        async let showStates = try? states(tmdbIds: showIds, type: .tv)
+
+        var keys: Set<String> = []
+        for s in (await movieStates ?? []) where s.seen { keys.insert("movie-\(s.tmdbId)") }
+        for s in (await showStates ?? []) where s.seen { keys.insert("tv-\(s.tmdbId)") }
+        return keys
+    }
+
     func markSeen(tmdbId: Int, type: MediaType, seen: Bool, posterPath: String? = nil, runtime: Int? = nil) async throws {
         var payload: [String: AnyEncodable] = ["seen": AnyEncodable(seen)]
         if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
@@ -168,6 +184,18 @@ struct APIService {
         if let icon { payload["icon"] = AnyEncodable(icon) }
         let body = try encoder.encode(payload)
         return try await request("/MediaLists", method: "POST", body: body)
+    }
+
+    /// Met à jour une liste personnalisée (le backend refuse les listes système).
+    /// Les champs vides sont envoyés tels quels (chaîne vide = efface description/icône).
+    func updateList(id: Int, name: String, description: String, icon: String) async throws {
+        let payload: [String: AnyEncodable] = [
+            "name": AnyEncodable(name),
+            "description": AnyEncodable(description),
+            "icon": AnyEncodable(icon),
+        ]
+        let body = try encoder.encode(payload)
+        try await rawRequest("/MediaLists/\(id)", method: "PUT", body: body)
     }
 
     func deleteList(id: Int) async throws {
