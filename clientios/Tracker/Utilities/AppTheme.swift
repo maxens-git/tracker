@@ -11,6 +11,8 @@ import SwiftUI
 /// Clé partagée pour @AppStorage entre le point d'entrée et les réglages.
 enum AppStorageKeys {
     static let theme = "appTheme"
+    /// Masquer les médias déjà vus sur la page d'accueil.
+    static let hideSeenItems = "hideSeenItems"
 }
 
 /// Préférence de thème choisie par l'utilisateur.

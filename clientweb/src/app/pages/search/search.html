@@ -11,17 +11,58 @@
   </div>
 
   @if (searched()) {
-    <div class="filter-tabs mb-4">
-      <button class="filter-tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">
-        Tout <span class="count">{{ allResults().length }}</span>
-      </button>
-      <button class="filter-tab" [class.active]="filter() === 'movie'" (click)="setFilter('movie')">
-        Films <span class="count">{{ movieCount() }}</span>
-      </button>
-      <button class="filter-tab" [class.active]="filter() === 'tv'" (click)="setFilter('tv')">
-        Séries <span class="count">{{ showCount() }}</span>
-      </button>
+    <div class="filter-row mb-4">
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">
+          Tout <span class="count">{{ allResults().length }}</span>
+        </button>
+        <button class="filter-tab" [class.active]="filter() === 'movie'" (click)="setFilter('movie')">
+          Films <span class="count">{{ movieCount() }}</span>
+        </button>
+        <button class="filter-tab" [class.active]="filter() === 'tv'" (click)="setFilter('tv')">
+          Séries <span class="count">{{ showCount() }}</span>
+        </button>
+      </div>
+
+      @if (allResults().length > 0) {
+        <button class="filter-toggle" [class.active]="showFilters() || hasActiveFilters()" (click)="toggleFilters()">
+          Filtres & tri
+          @if (hasActiveFilters()) { <span class="dot"></span> }
+        </button>
+      }
     </div>
+
+    @if (showFilters() && allResults().length > 0) {
+      <div class="filter-panel mb-4">
+        <div class="panel-section">
+          <span class="panel-label">Trier par</span>
+          <div class="chips">
+            @for (opt of sortOptions; track opt.key) {
+              <button class="chip" [class.active]="sort() === opt.key" (click)="setSort(opt.key)">
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (relevantGenres().length > 0) {
+          <div class="panel-section">
+            <span class="panel-label">Genres</span>
+            <div class="chips">
+              @for (g of relevantGenres(); track g.id) {
+                <button class="chip" [class.active]="isGenreSelected(g.id)" (click)="toggleGenre(g.id)">
+                  {{ g.name }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (hasActiveFilters()) {
+          <button class="reset-btn" (click)="resetFilters()">Réinitialiser</button>
+        }
+      </div>
+    }
   }
 
   @if (loading()) {

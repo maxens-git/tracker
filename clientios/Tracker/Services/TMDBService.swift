@@ -101,6 +101,18 @@ struct TMDBService {
         try await get("/search/multi", query: ["query": query, "page": String(page)])
     }
 
+    /// Liste des genres (films + séries fusionnés, doublons retirés par id).
+    /// Sert à proposer des filtres lisibles à partir des `genre_ids` des résultats.
+    func allGenres() async throws -> [TMDBGenre] {
+        async let movie: TMDBGenreList = get("/genre/movie/list")
+        async let tv: TMDBGenreList = get("/genre/tv/list")
+        let combined = try await movie.genres + tv.genres
+        var seen = Set<Int>()
+        return combined
+            .filter { seen.insert($0.id).inserted }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
     func movie(_ id: Int) async throws -> TMDBMovie {
         try await get("/movie/\(id)")
     }

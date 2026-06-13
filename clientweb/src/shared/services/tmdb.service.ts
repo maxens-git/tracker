@@ -5,7 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
   TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
-  TmdbSearchResponse, TmdbTrendingResult, MediaItem
+  TmdbSearchResponse, TmdbTrendingResult, MediaItem, TmdbGenre
 } from '../interfaces/media';
 import { TmdbPerson, TmdbCombinedCredits } from '../interfaces/person';
 
@@ -67,6 +67,20 @@ export class TmdbService {
     return this.http.get<TmdbSearchResponse>(`${BASE}/search/multi`, {
       params: params({ query, page })
     });
+  }
+
+  /** Liste des genres (films + séries fusionnés, doublons retirés par id, triés par nom). */
+  genres(): Observable<TmdbGenre[]> {
+    const movie$ = this.http.get<{ genres: TmdbGenre[] }>(`${BASE}/genre/movie/list`, { params: params() });
+    const tv$ = this.http.get<{ genres: TmdbGenre[] }>(`${BASE}/genre/tv/list`, { params: params() });
+    return forkJoin([movie$, tv$]).pipe(
+      map(([m, t]) => {
+        const byId = new Map<number, TmdbGenre>();
+        for (const g of [...m.genres, ...t.genres]) byId.set(g.id, g);
+        return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+      }),
+      catchError(() => of([] as TmdbGenre[]))
+    );
   }
 
   trendingWeek(): Observable<TmdbTrendingResult> {

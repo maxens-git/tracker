@@ -17,19 +17,23 @@ struct TMDBSearchResult: Decodable, Identifiable, Hashable {
     let backdropPath: String?
     let overview: String?
     let voteAverage: Double?
+    let popularity: Double?
     let releaseDate: String?    // films
     let firstAirDate: String?   // séries
     /// Présent dans /search/multi ; absent des endpoints typés (movie/tv).
     let mediaTypeRaw: String?
+    /// Identifiants de genres TMDB (présents dans les listes/recherches, pas le détail).
+    let genreIds: [Int]?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, name, overview
+        case id, title, name, overview, popularity
         case posterPath = "poster_path"
         case backdropPath = "backdrop_path"
         case voteAverage = "vote_average"
         case releaseDate = "release_date"
         case firstAirDate = "first_air_date"
         case mediaTypeRaw = "media_type"
+        case genreIds = "genre_ids"
     }
 
     /// Titre affichable quel que soit le type.
@@ -128,6 +132,11 @@ struct TMDBSeasonSummary: Decodable, Identifiable, Hashable {
 struct TMDBGenre: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
+}
+
+/// Réponse de /genre/{movie,tv}/list.
+struct TMDBGenreList: Decodable {
+    let genres: [TMDBGenre]
 }
 
 /// Détail d'une saison avec ses épisodes (GET /tv/{id}/season/{n}).

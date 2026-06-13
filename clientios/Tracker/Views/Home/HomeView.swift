@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var showingSettings = false
+    @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
 
     var body: some View {
         ScrollView {
@@ -17,12 +18,12 @@ struct HomeView: View {
                     .padding(.top, 80)
             } else {
                 VStack(alignment: .leading, spacing: 28) {
-                    if let featured = viewModel.featured {
+                    if let featured = viewModel.featured, !(hideSeenItems && viewModel.isSeen(featured)) {
                         HeroView(item: featured)
                     }
-                    section("Tendances de la semaine", items: viewModel.trending)
-                    section("Films populaires", items: viewModel.popularMovies)
-                    section("Séries populaires", items: viewModel.popularShows)
+                    section("Tendances de la semaine", items: visible(viewModel.trending))
+                    section("Films populaires", items: visible(viewModel.popularMovies))
+                    section("Séries populaires", items: visible(viewModel.popularShows))
                 }
                 .padding(.bottom)
             }
@@ -57,6 +58,12 @@ struct HomeView: View {
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
+    }
+
+    /// Filtre les médias déjà vus si l'option correspondante est activée dans les réglages.
+    private func visible(_ items: [TMDBSearchResult]) -> [TMDBSearchResult] {
+        guard hideSeenItems else { return items }
+        return items.filter { !viewModel.isSeen($0) }
     }
 
     @ViewBuilder

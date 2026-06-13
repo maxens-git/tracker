@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
+    @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
@@ -27,6 +28,14 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                }
+
+                Section {
+                    Toggle("Masquer les médias déjà vus", isOn: $hideSeenItems)
+                } header: {
+                    Text("Accueil")
+                } footer: {
+                    Text("Les films et séries marqués comme vus n'apparaîtront plus sur la page d'accueil.")
                 }
 
                 Section("À propos") {
