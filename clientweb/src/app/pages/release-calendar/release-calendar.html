@@ -1,0 +1,47 @@
+<div class="release-page mx-auto px-4 pb-5 pt-4">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Sorties</h1>
+      <p class="subtitle">{{ tracked().length }} média{{ tracked().length > 1 ? 's' : '' }} suivi{{ tracked().length > 1 ? 's' : '' }}</p>
+    </div>
+    <a routerLink="/settings" class="settings-link">Réglages</a>
+  </div>
+
+  @if (loading()) {
+    <app-spinner />
+  } @else if (error()) {
+    <div class="status">Impossible de charger le calendrier.</div>
+  } @else if (tracked().length === 0) {
+    <div class="empty">
+      <h2>Aucun média suivi</h2>
+      <p>Ajoutez un film ou une série depuis sa fiche détail.</p>
+      <a routerLink="/search">Rechercher</a>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="empty">
+      <h2>Aucune date à venir</h2>
+      <p>Les médias suivis sont enregistrés; aucune sortie future n'est disponible côté TMDB pour le moment.</p>
+    </div>
+  } @else {
+    <div class="timeline">
+      @for (item of items(); track item.id) {
+        <a class="release-row" [routerLink]="['/', item.type, item.tmdbId]">
+          <time>{{ formatDate(item.date) }}</time>
+          <div class="poster" [class.empty]="!poster(item.posterPath)">
+            @if (poster(item.posterPath); as p) {
+              <img [src]="p" [alt]="item.title" loading="lazy" />
+            } @else {
+              <span>🎬</span>
+            }
+          </div>
+          <div class="body">
+            <span class="kind">{{ item.kind }}</span>
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.subtitle }}</span>
+          </div>
+          <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+        </a>
+      }
+    </div>
+  }
+</div>

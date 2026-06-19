@@ -248,6 +248,50 @@ struct APIService {
     func activity(page: Int = 1) async throws -> PaginatedResult<Activity> {
         try await request("/Activity", query: [URLQueryItem(name: "page", value: String(page))])
     }
+
+    // ── Réglages & sorties ────────────────────────────────────────────────
+
+    func settings(forceRefresh: Bool = false) async throws -> AppSettingsDTO {
+        try await request("/Settings", forceRefresh: forceRefresh)
+    }
+
+    func updateSettings(_ settings: AppSettingsDTO) async throws -> AppSettingsDTO {
+        let body = try encoder.encode(settings)
+        return try await request("/Settings", method: "PUT", body: body)
+    }
+
+    func trackedMedia(forceRefresh: Bool = false) async throws -> [TrackedMedia] {
+        try await request("/TrackedMedia", forceRefresh: forceRefresh)
+    }
+
+    func trackedMediaState(tmdbId: Int, type: MediaType, forceRefresh: Bool = false) async throws -> TrackedMediaState {
+        try await request("/TrackedMedia/state", query: [
+            URLQueryItem(name: "tmdbId", value: String(tmdbId)),
+            URLQueryItem(name: "type", value: type.rawValue),
+        ], forceRefresh: forceRefresh)
+    }
+
+    /// Variante tolérante : renvoie `false` plutôt que de propager une erreur réseau,
+    /// pour l'état initial du bouton « Sortie » qui ne doit pas bloquer le chargement.
+    func isReleaseTracked(tmdbId: Int, type: MediaType, forceRefresh: Bool = false) async -> Bool {
+        (try? await trackedMediaState(tmdbId: tmdbId, type: type, forceRefresh: forceRefresh))?.tracked ?? false
+    }
+
+    func addTrackedMedia(tmdbId: Int, type: MediaType, title: String, posterPath: String?) async throws -> TrackedMedia {
+        var payload: [String: AnyEncodable] = [
+            "tmdbId": AnyEncodable(tmdbId),
+            "mediaType": AnyEncodable(type.rawValue),
+            "title": AnyEncodable(title),
+        ]
+        if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
+        let body = try encoder.encode(payload)
+        return try await request("/TrackedMedia", method: "POST", body: body)
+    }
+
+    func removeTrackedMedia(tmdbId: Int, type: MediaType) async throws {
+        try await rawRequest("/TrackedMedia/\(tmdbId)", method: "DELETE",
+                             query: [URLQueryItem(name: "type", value: type.rawValue)])
+    }
 }
 
 // MARK: - Helpers d'encodage JSON hétérogène

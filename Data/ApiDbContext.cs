@@ -14,6 +14,9 @@ public class ApiDbContext : DbContext
     public DbSet<MediaList> MediaLists { get; set; } = null!;
     public DbSet<MediaListItem> MediaListItems { get; set; } = null!;
     public DbSet<ActivityEvent> ActivityEvents { get; set; } = null!;
+    public DbSet<AppSettings> Settings { get; set; } = null!;
+    public DbSet<TrackedMediaRelease> TrackedMediaReleases { get; set; } = null!;
+    public DbSet<ReleaseNotification> ReleaseNotifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,5 +46,13 @@ public class ApiDbContext : DbContext
 
         modelBuilder.Entity<ActivityEvent>()
             .HasIndex(e => e.CreatedAt);
+
+        modelBuilder.Entity<TrackedMediaRelease>()
+            .HasIndex(m => new { m.TmdbId, m.MediaType })
+            .IsUnique();
+
+        modelBuilder.Entity<ReleaseNotification>()
+            .HasIndex(n => new { n.TmdbId, n.MediaType, n.ReleaseKey })
+            .IsUnique();
     }
 }

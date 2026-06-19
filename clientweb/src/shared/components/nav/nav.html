@@ -5,8 +5,10 @@
     <a routerLink="/home" routerLinkActive="active" class="text-uppercase text-decoration-none">Accueil</a>
     <a routerLink="/search" routerLinkActive="active" class="text-uppercase text-decoration-none">Recherche</a>
     <a routerLink="/lists" routerLinkActive="active" class="text-uppercase text-decoration-none">Listes</a>
+    <a routerLink="/releases" routerLinkActive="active" class="text-uppercase text-decoration-none">Sorties</a>
     <a routerLink="/activity" routerLinkActive="active" class="text-uppercase text-decoration-none">Activité</a>
     <a routerLink="/stats" routerLinkActive="active" class="text-uppercase text-decoration-none">Statistiques</a>
+    <a routerLink="/settings" routerLinkActive="active" class="text-uppercase text-decoration-none">Réglages</a>
   </div>
 
   <button class="burger" (click)="toggle()" [class.is-open]="open()" aria-label="Menu">
@@ -22,8 +24,10 @@
       <a routerLink="/home" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Accueil</a>
       <a routerLink="/search" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Recherche</a>
       <a routerLink="/lists" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Listes</a>
+      <a routerLink="/releases" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Sorties</a>
       <a routerLink="/activity" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Activité</a>
       <a routerLink="/stats" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Statistiques</a>
+      <a routerLink="/settings" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Réglages</a>
     </div>
   </div>
 }

@@ -181,6 +181,10 @@ struct MediaDetailView: View {
                          active: viewModel.inWatchlist) {
                 await viewModel.toggleWatchlist()
             }
+            actionButton(title: "Sortie", systemImage: viewModel.releaseTracked ? "bell.fill" : "bell",
+                         active: viewModel.releaseTracked, tint: .blue) {
+                await viewModel.toggleReleaseTracking()
+            }
             if !viewModel.customLists.isEmpty {
                 actionButton(title: "Listes", systemImage: viewModel.isInAnyCustomList ? "text.badge.checkmark" : "text.badge.plus",
                              active: viewModel.isInAnyCustomList) {

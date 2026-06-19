@@ -1,0 +1,97 @@
+.settings-page {
+  max-width: 760px;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 1.5rem;
+}
+
+.status {
+  color: var(--muted);
+}
+
+.settings-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--muted);
+  }
+
+  input {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+
+  span {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    background: var(--bg-elevated, #0d1118);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    font: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+  }
+
+  &.compact {
+    max-width: 260px;
+  }
+}
+
+.form-error {
+  color: var(--danger);
+  margin: 0;
+}
+
+.form-success {
+  color: var(--accent);
+  margin: 0;
+}
+
+.save-btn {
+  justify-self: start;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

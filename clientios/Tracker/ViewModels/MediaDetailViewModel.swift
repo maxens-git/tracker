@@ -26,6 +26,8 @@ final class MediaDetailViewModel {
     private(set) var crew: [TMDBCrewMember] = []
     private(set) var trailers: [TMDBVideo] = []
     private(set) var isLoading = false
+    private(set) var releaseTracked = false
+    private(set) var releasePending = false
     /// Chargement du contenu secondaire (distribution, équipe, bandes-annonces, similaires).
     private(set) var isLoadingExtras = false
     var errorMessage: String?
@@ -101,6 +103,7 @@ final class MediaDetailViewModel {
             case .tv: show = try await tmdb.show(tmdbId, forceRefresh: forceRefresh)
             }
             state = try await api.states(tmdbIds: [tmdbId], type: type, forceRefresh: forceRefresh).first
+            releaseTracked = await api.isReleaseTracked(tmdbId: tmdbId, type: type, forceRefresh: forceRefresh)
             // Listes (système + perso), chargées une seule fois : sert à l'état actif
             // du bouton « À voir » (watchlist) et au sélecteur de listes personnalisées.
             if allLists.isEmpty {
@@ -283,6 +286,27 @@ final class MediaDetailViewModel {
             Haptics.error()
         }
         listPendingId = nil
+    }
+
+    func toggleReleaseTracking() async {
+        guard !releasePending else { return }
+        let adding = !releaseTracked
+        releasePending = true
+        releaseTracked = adding
+        do {
+            if adding {
+                _ = try await api.addTrackedMedia(tmdbId: tmdbId, type: type, title: title, posterPath: posterPath)
+                Haptics.success()
+            } else {
+                try await api.removeTrackedMedia(tmdbId: tmdbId, type: type)
+                Haptics.impact(.light)
+            }
+        } catch {
+            releaseTracked.toggle()
+            if !error.isCancellation { errorMessage = error.localizedDescription }
+            Haptics.error()
+        }
+        releasePending = false
     }
 
     /// Met à jour localement l'appartenance à une liste dans `state.listIds`.

@@ -111,6 +111,16 @@
             {{ currentInWatchlist ? 'Watchlist' : '+ Watchlist' }}
           </button>
 
+          <button
+            class="btn-action btn-release"
+            [class.active]="releaseTracked()"
+            [disabled]="releasePending()"
+            (click)="toggleReleaseTracking()"
+          >
+            <span class="icon">{{ releaseTracked() ? '🔔' : '◇' }}</span>
+            {{ releaseTracked() ? 'Sortie suivie' : 'Suivre sortie' }}
+          </button>
+
           @if (customLists.length > 0) {
             <div class="list-picker-wrap">
               <button

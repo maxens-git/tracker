@@ -66,6 +66,46 @@ namespace TrackerApi.Migrations
                     b.ToTable("ActivityEvents");
                 });
 
+            modelBuilder.Entity("Tracker.Models.AppSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("NtfyEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("NtfyToken")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("NtfyTopic")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("NtfyUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("NotifyDaysAhead")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NotificationHour")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NotificationMinute")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Settings");
+                });
+
             modelBuilder.Entity("Tracker.Models.MediaList", b =>
                 {
                     b.Property<int>("Id")
@@ -134,6 +174,70 @@ namespace TrackerApi.Migrations
                         .IsUnique();
 
                     b.ToTable("MediaListItems");
+                });
+
+            modelBuilder.Entity("Tracker.Models.ReleaseNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MediaType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReleaseKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("TmdbId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TmdbId", "MediaType", "ReleaseKey")
+                        .IsUnique();
+
+                    b.ToTable("ReleaseNotifications");
+                });
+
+            modelBuilder.Entity("Tracker.Models.TrackedMediaRelease", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("MediaType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PosterPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("TmdbId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TmdbId", "MediaType")
+                        .IsUnique();
+
+                    b.ToTable("TrackedMediaReleases");
                 });
 
             modelBuilder.Entity("Tracker.Models.UserEpisode", b =>

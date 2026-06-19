@@ -208,6 +208,18 @@
     }
   }
 
+  .btn-release {
+    &.active {
+      border-color: #4dabf7;
+      background: rgba(77, 171, 247, 0.12);
+      color: #74c0fc;
+    }
+    &:hover:not(:disabled) {
+      border-color: #4dabf7;
+      background: rgba(77, 171, 247, 0.08);
+    }
+  }
+
   .btn-lists {
     &.open, &:hover:not(:disabled) {
       border-color: rgba(255, 255, 255, 0.3);

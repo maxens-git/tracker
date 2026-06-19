@@ -88,6 +88,36 @@ struct EpisodeSeen: Decodable, Hashable {
     let seen: Bool
 }
 
+// ── Réglages & sorties ───────────────────────────────────────────────────
+
+struct AppSettingsDTO: Codable {
+    var ntfyEnabled: Bool
+    var ntfyUrl: String?
+    var ntfyTopic: String?
+    var ntfyToken: String?
+    var notifyDaysAhead: Int
+    var notificationHour: Int
+    var notificationMinute: Int
+    var updatedAt: Date?
+}
+
+struct TrackedMedia: Codable, Identifiable, Hashable {
+    let id: Int
+    let tmdbId: Int
+    let mediaType: String
+    let title: String
+    let posterPath: String?
+    let addedAt: Date?
+
+    var type: MediaType { mediaType == "tv" ? .tv : .movie }
+}
+
+struct TrackedMediaState: Decodable {
+    let tmdbId: Int
+    let mediaType: String
+    let tracked: Bool
+}
+
 // ── Activité ────────────────────────────────────────────────────────────────
 
 /// Nature d'une action journalisée. Décodage tolérant : toute valeur inconnue → `.unknown`.

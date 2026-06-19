@@ -1,0 +1,52 @@
+<div class="settings-page mx-auto px-4 pb-5 pt-4">
+  <h1 class="page-title">Réglages</h1>
+
+  @if (loading()) {
+    <div class="status">Chargement…</div>
+  } @else {
+    <form class="settings-panel" (ngSubmit)="save()">
+      <label class="toggle-row">
+        <span>
+          <strong>Notifications ntfy</strong>
+          <small>Envoyer une notification quand une sortie suivie approche.</small>
+        </span>
+        <input type="checkbox" name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" />
+      </label>
+
+      <label class="field">
+        <span>URL ntfy</span>
+        <input name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
+      </label>
+
+      <label class="field">
+        <span>Topic</span>
+        <input name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
+      </label>
+
+      <label class="field">
+        <span>Token</span>
+        <input name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
+      </label>
+
+      <label class="field compact">
+        <span>Prévenir combien de jours avant</span>
+        <input name="notifyDaysAhead" type="number" min="0" max="30" [(ngModel)]="form.notifyDaysAhead" />
+      </label>
+
+      <label class="field compact">
+        <span>Heure d’envoi</span>
+        <input name="notificationTime" type="time" [(ngModel)]="notificationTime" />
+      </label>
+
+      @if (error()) {
+        <p class="form-error">{{ error() }}</p>
+      } @else if (saved()) {
+        <p class="form-success">Réglages enregistrés.</p>
+      }
+
+      <button class="save-btn" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </form>
+  }
+</div>

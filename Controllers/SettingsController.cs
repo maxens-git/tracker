@@ -1,0 +1,58 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Tracker.Data;
+using Tracker.Models;
+using Tracker.ModelsDTO;
+
+namespace Tracker.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class SettingsController(ApiDbContext context) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<SettingsDto>> Get()
+    {
+        AppSettings settings = await EnsureSettings();
+        return ToDto(settings);
+    }
+
+    [HttpPut]
+    public async Task<ActionResult<SettingsDto>> Update(UpdateSettingsDto dto)
+    {
+        AppSettings settings = await EnsureSettings();
+        settings.NtfyEnabled = dto.NtfyEnabled;
+        settings.NtfyUrl = dto.NtfyUrl.NullIfBlank();
+        settings.NtfyTopic = dto.NtfyTopic.NullIfBlank();
+        settings.NtfyToken = dto.NtfyToken.NullIfBlank();
+        settings.NotifyDaysAhead = Math.Clamp(dto.NotifyDaysAhead, 0, 30);
+        settings.NotificationHour = Math.Clamp(dto.NotificationHour, 0, 23);
+        settings.NotificationMinute = Math.Clamp(dto.NotificationMinute, 0, 59);
+        settings.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+        return ToDto(settings);
+    }
+
+    private async Task<AppSettings> EnsureSettings()
+    {
+        AppSettings? settings = await context.Settings.FirstOrDefaultAsync(s => s.Id == 1);
+        if (settings != null) return settings;
+
+        settings = new AppSettings { Id = 1 };
+        context.Settings.Add(settings);
+        await context.SaveChangesAsync();
+        return settings;
+    }
+
+    private static SettingsDto ToDto(AppSettings settings) =>
+        new(
+            settings.NtfyEnabled,
+            settings.NtfyUrl,
+            settings.NtfyTopic,
+            settings.NtfyToken,
+            settings.NotifyDaysAhead,
+            settings.NotificationHour,
+            settings.NotificationMinute,
+            settings.UpdatedAt);
+}

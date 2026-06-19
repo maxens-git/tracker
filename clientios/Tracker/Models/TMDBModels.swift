@@ -119,12 +119,14 @@ struct TMDBSeasonSummary: Decodable, Identifiable, Hashable {
     let seasonNumber: Int
     let name: String
     let episodeCount: Int?
+    let airDate: String?
     let posterPath: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case seasonNumber = "season_number"
         case episodeCount = "episode_count"
+        case airDate = "air_date"
         case posterPath = "poster_path"
     }
 }

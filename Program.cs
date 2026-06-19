@@ -41,6 +41,9 @@ builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
 builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddHttpClient<TmdbReleaseService>();
+builder.Services.AddHttpClient<NtfyService>();
+builder.Services.AddHostedService<ReleaseNotificationWorker>();
 
 var app = builder.Build();
 

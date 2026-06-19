@@ -36,6 +36,39 @@ export interface MarkShowSeenPayload {
   seasons: { seasonNumber: number; episodeNumbers: number[] }[];
 }
 
+export interface Settings {
+  ntfyEnabled: boolean;
+  ntfyUrl?: string | null;
+  ntfyTopic?: string | null;
+  ntfyToken?: string | null;
+  notifyDaysAhead: number;
+  notificationHour: number;
+  notificationMinute: number;
+  updatedAt: string;
+}
+
+export interface TrackedMedia {
+  id: number;
+  tmdbId: number;
+  mediaType: 'movie' | 'tv';
+  title: string;
+  posterPath?: string | null;
+  addedAt: string;
+}
+
+export interface TrackedMediaState {
+  tmdbId: number;
+  mediaType: 'movie' | 'tv';
+  tracked: boolean;
+}
+
+export interface AddTrackedMediaPayload {
+  tmdbId: number;
+  mediaType: 'movie' | 'tv';
+  title: string;
+  posterPath?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Api {
   private http = inject(HttpClient);
@@ -148,6 +181,32 @@ export class Api {
 
   activity(page = 1): Observable<PaginatedResult<Activity>> {
     return this.http.get<PaginatedResult<Activity>>(`${API}/Activity`, { params: { page } });
+  }
+
+  // ── Réglages & sorties ─────────────────────────────────────────────────
+
+  settings(): Observable<Settings> {
+    return this.http.get<Settings>(`${API}/Settings`);
+  }
+
+  updateSettings(settings: Omit<Settings, 'updatedAt'>): Observable<Settings> {
+    return this.http.put<Settings>(`${API}/Settings`, settings);
+  }
+
+  trackedMedia(): Observable<TrackedMedia[]> {
+    return this.http.get<TrackedMedia[]>(`${API}/TrackedMedia`);
+  }
+
+  trackedMediaState(tmdbId: number, type: 'movie' | 'tv'): Observable<TrackedMediaState> {
+    return this.http.get<TrackedMediaState>(`${API}/TrackedMedia/state`, { params: { tmdbId, type } });
+  }
+
+  addTrackedMedia(payload: AddTrackedMediaPayload): Observable<TrackedMedia> {
+    return this.http.post<TrackedMedia>(`${API}/TrackedMedia`, payload);
+  }
+
+  removeTrackedMedia(tmdbId: number, type: 'movie' | 'tv'): Observable<unknown> {
+    return this.http.delete(`${API}/TrackedMedia/${tmdbId}`, { params: { type } });
   }
 }
 

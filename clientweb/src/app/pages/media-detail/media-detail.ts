@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -34,6 +34,7 @@ interface MediaDetailData {
   similar: { results: MediaItem[] } | null;
   state: UserState[];
   lists: MediaListSummary[];
+  tracked: boolean;
   episodesSeen?: EpisodeSeenDto[];
 }
 
@@ -75,6 +76,8 @@ export class MediaDetail implements OnInit {
   showListPicker = signal(false);
   episodePending = signal<Set<string>>(new Set());
   seasonPending = signal<Set<number>>(new Set());
+  releaseTracked = signal(false);
+  releasePending = signal(false);
 
   ngOnInit() {
     this.route.paramMap.pipe(
@@ -108,6 +111,8 @@ export class MediaDetail implements OnInit {
     this.expandedSeason.set(null);
     this.showListPicker.set(false);
     this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
+    this.releaseTracked.set(false);
+    this.releasePending.set(false);
   }
 
   /** Charge en parallèle les données d'un film. Seul `data` est bloquant, le reste est optionnel. */
@@ -119,6 +124,7 @@ export class MediaDetail implements OnInit {
       similar: this.tmdb.similarMovies(tmdbId).pipe(catchError(() => of(null))),
       state: this.userState$(tmdbId),
       lists: this.lists$(),
+      tracked: this.trackedState$(tmdbId),
     });
   }
 
@@ -131,6 +137,7 @@ export class MediaDetail implements OnInit {
       similar: this.tmdb.similarShows(tmdbId).pipe(catchError(() => of(null))),
       state: this.userState$(tmdbId),
       lists: this.lists$(),
+      tracked: this.trackedState$(tmdbId),
       episodesSeen: this.api.showEpisodes(tmdbId).pipe(catchError(() => of([]))),
     });
   }
@@ -143,6 +150,13 @@ export class MediaDetail implements OnInit {
     return this.api.lists().pipe(catchError(() => of([])));
   }
 
+  private trackedState$(tmdbId: number): Observable<boolean> {
+    return this.api.trackedMediaState(tmdbId, this.mediaType()).pipe(
+      map(state => state.tracked),
+      catchError(() => of(false)),
+    );
+  }
+
   /** Déverse le résultat du chargement dans les signaux de la page. */
   private applyLoadedData(result: MediaDetailData) {
     const { data, credits, videos, similar, state, lists } = result;
@@ -151,6 +165,7 @@ export class MediaDetail implements OnInit {
     this.videos.set(videos);
     this.similar.set(similar?.results ?? []);
     this.lists.set(lists);
+    this.releaseTracked.set(result.tracked);
 
     if (this.isMovie) {
       this.movie.set(data as TmdbMovie);
@@ -160,6 +175,27 @@ export class MediaDetail implements OnInit {
 
     this.loading.set(false);
     window.scrollTo({ top: 0 });
+  }
+
+  toggleReleaseTracking() {
+    if (this.releasePending()) return;
+    this.releasePending.set(true);
+    const tracked = this.releaseTracked();
+    const tmdbId = this.userState().tmdbId;
+    const type = this.mediaType();
+    const title = this.isMovie ? (this.movie()?.title ?? 'Film') : (this.show()?.name ?? 'Série');
+    const posterPath = this.currentPosterPath();
+
+    const request = tracked
+      ? this.api.removeTrackedMedia(tmdbId, type)
+      : this.api.addTrackedMedia({ tmdbId, mediaType: type, title, posterPath });
+
+    this.runOptimistic(
+      () => this.releaseTracked.set(!tracked),
+      () => this.releaseTracked.set(tracked),
+      request,
+      () => this.releasePending.set(false),
+    );
   }
 
   /** Initialise les signaux propres aux séries : saisons réelles et map des épisodes vus. */
