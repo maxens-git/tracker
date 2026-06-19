@@ -18,7 +18,7 @@ struct MediaDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                header
+                hero
                 actions
                 if !viewModel.genres.isEmpty { genresRow }
                 if let overview = viewModel.overview, !overview.isEmpty { synopsisSection(overview) }
@@ -29,11 +29,17 @@ struct MediaDetailView: View {
                 if !viewModel.similar.isEmpty { similarSection }
                 if viewModel.isLoadingExtras { loadingExtrasIndicator }
             }
-            .padding(.vertical)
+            .padding(.bottom)
         }
+        // Le contenu démarre tout en haut de l'écran : le backdrop passe derrière la
+        // barre de navigation (boutons retour / refresh) pour un en-tête immersif.
+        .ignoresSafeArea(edges: .top)
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
+        // Barre transparente + contrôles clairs, lisibles par-dessus l'image.
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .errorToast($viewModel.errorMessage)
         .overlay {
             if viewModel.isLoading && viewModel.title.isEmpty {
@@ -63,7 +69,7 @@ struct MediaDetailView: View {
     private func synopsisSection(_ overview: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Synopsis").font(.title3.bold())
-            Text(overview).foregroundStyle(.secondary)
+            ExpandableText(text: overview)
         }
         .padding(.horizontal)
     }
@@ -79,19 +85,73 @@ struct MediaDetailView: View {
         .padding(.vertical, 20)
     }
 
-    private var header: some View {
-        HStack(alignment: .top, spacing: 16) {
+    // Dimensions de l'en-tête (fixes pour un chevauchement net et sans débordement).
+    // Hauteur calée sur le ratio 16:9 d'un backdrop à la largeur d'un iPhone (~220pt) :
+    // au-delà, `scaledToFill` rogne fort l'image et donne un effet « zoom ». Le backdrop
+    // démarre tout en haut de l'écran (cf. ignoresSafeArea), donc sa partie haute passe
+    // simplement derrière la barre de navigation, sans grossir l'image.
+    private let backdropHeight: CGFloat = 230
+    private let heroPosterWidth: CGFloat = 110
+    private let heroPosterHeight: CGFloat = 165
+    private let posterOverlap: CGFloat = 55   // remontée de l'affiche sur le backdrop
+
+    /// En-tête immersif type Infuse : grande image (backdrop) du média fondue par un
+    /// dégradé vers le fond de page, avec l'affiche qui chevauche le bas et le titre à côté.
+    private var hero: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            backdropLayer
+            heroInfo
+                .padding(.horizontal)
+                .padding(.top, -posterOverlap)
+        }
+    }
+
+    /// Image large TMDB cadrée en hauteur fixe, recouverte d'un dégradé qui se
+    /// fond progressivement dans `appBackground` (transition douce vers le contenu).
+    private var backdropLayer: some View {
+        AsyncImage(url: TMDBService.backdropURL(viewModel.backdropPath, size: "w780")) { phase in
+            switch phase {
+            case .success(let image):
+                image.resizable().scaledToFill()
+            default:
+                Color(.secondarySystemBackground)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: backdropHeight)
+        .clipped()
+        // Voile sombre en haut : lisibilité des boutons de la barre par-dessus l'image.
+        .overlay(alignment: .top) {
+            LinearGradient(
+                colors: [.black.opacity(0.45), .clear],
+                startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: 140)
+        }
+        // Fondu vers le fond de page en bas, pour une transition douce vers le contenu.
+        .overlay {
+            LinearGradient(
+                colors: [.clear, .clear, Color.appBackground.opacity(0.7), Color.appBackground],
+                startPoint: .top, endPoint: .bottom
+            )
+        }
+    }
+
+    /// Affiche (taille fixe + ombre portée) + titre / type / note, alignés en bas.
+    private var heroInfo: some View {
+        HStack(alignment: .bottom, spacing: 14) {
             PosterImage(path: viewModel.posterPath)
-                .aspectRatio(2.0 / 3.0, contentMode: .fit)
-                .frame(width: 130)
+                .frame(width: heroPosterWidth, height: heroPosterHeight)
+                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     if viewModel.posterPath != nil { showingPoster = true }
                 }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.title)
                     .font(.title2.bold())
+                    .fixedSize(horizontal: false, vertical: true)
                 Label(viewModel.type.label, systemImage: viewModel.type.symbol)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -101,9 +161,10 @@ struct MediaDetailView: View {
                         .foregroundStyle(.orange)
                 }
             }
-            Spacer()
+            .padding(.bottom, 6)
+
+            Spacer(minLength: 0)
         }
-        .padding(.horizontal)
     }
 
     private var actions: some View {
@@ -480,6 +541,64 @@ struct MediaDetailView: View {
                 }
             }
             .padding(.horizontal)
+        }
+    }
+}
+
+// ── Texte repliable ───────────────────────────────────────────────────────
+
+/// Texte tronqué à `collapsedLimit` lignes avec un bouton « Voir plus / Voir moins ».
+/// Le bouton n'apparaît que si le texte dépasse réellement la limite (mesuré hors écran).
+private struct ExpandableText: View {
+    let text: String
+    var collapsedLimit: Int = 4
+
+    @State private var expanded = false
+    @State private var fullHeight: CGFloat = 0
+    @State private var limitedHeight: CGFloat = 0
+
+    private var isTruncated: Bool { fullHeight > limitedHeight + 1 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(text)
+                .foregroundStyle(.secondary)
+                .lineLimit(expanded ? nil : collapsedLimit)
+                .fixedSize(horizontal: false, vertical: true)
+                .animation(.easeInOut(duration: 0.2), value: expanded)
+
+            if isTruncated {
+                Button(expanded ? "Voir moins" : "Voir plus") {
+                    withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() }
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.tint)
+            }
+        }
+        .background(measurement)
+    }
+
+    /// Deux rendus masqués (texte complet vs tronqué) à la même largeur, pour comparer
+    /// leur hauteur et savoir si la troncature s'applique.
+    private var measurement: some View {
+        ZStack(alignment: .top) {
+            Text(text)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(heightReader { fullHeight = $0 })
+            Text(text)
+                .lineLimit(collapsedLimit)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(heightReader { limitedHeight = $0 })
+        }
+        .hidden()
+        .allowsHitTesting(false)
+    }
+
+    private func heightReader(_ update: @escaping (CGFloat) -> Void) -> some View {
+        GeometryReader { proxy in
+            Color.clear
+                .onAppear { update(proxy.size.height) }
+                .onChange(of: proxy.size.height) { _, newValue in update(newValue) }
         }
     }
 }
