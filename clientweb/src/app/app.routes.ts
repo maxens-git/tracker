@@ -1,26 +1,18 @@
 import { Routes } from '@angular/router';
-import { Home } from './pages/home/home';
-import { Search } from './pages/search/search';
-import { MediaDetail } from './pages/media-detail/media-detail';
-import { Lists } from './pages/lists/lists';
-import { ListDetail } from './pages/list-detail/list-detail';
-import { StatsPage } from './pages/stats/stats';
-import { ActivityPage } from './pages/activity/activity';
-import { Person } from './pages/person/person';
-import { ReleaseCalendar } from './pages/release-calendar/release-calendar';
-import { SettingsPage } from './pages/settings/settings';
 
+// Pages chargées à la demande : chaque écran est un chunk lazy, ce qui sort les
+// dépendances lourdes (ex. primeng du calendrier des sorties) du bundle initial.
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
-    { path: 'home', component: Home },
-    { path: 'search', component: Search },
-    { path: 'lists', component: Lists },
-    { path: 'lists/:id', component: ListDetail },
-    { path: 'stats', component: StatsPage },
-    { path: 'activity', component: ActivityPage },
-    { path: 'releases', component: ReleaseCalendar },
-    { path: 'settings', component: SettingsPage },
-    { path: 'movie/:tmdbId', component: MediaDetail, data: { type: 'movie' } },
-    { path: 'tv/:tmdbId', component: MediaDetail, data: { type: 'tv' } },
-    { path: 'person/:id', component: Person },
+    { path: 'home', loadComponent: () => import('./pages/home/home').then(m => m.Home) },
+    { path: 'search', loadComponent: () => import('./pages/search/search').then(m => m.Search) },
+    { path: 'lists', loadComponent: () => import('./pages/lists/lists').then(m => m.Lists) },
+    { path: 'lists/:id', loadComponent: () => import('./pages/list-detail/list-detail').then(m => m.ListDetail) },
+    { path: 'stats', loadComponent: () => import('./pages/stats/stats').then(m => m.StatsPage) },
+    { path: 'activity', loadComponent: () => import('./pages/activity/activity').then(m => m.ActivityPage) },
+    { path: 'releases', loadComponent: () => import('./pages/release-calendar/release-calendar').then(m => m.ReleaseCalendar) },
+    { path: 'settings', loadComponent: () => import('./pages/settings/settings').then(m => m.SettingsPage) },
+    { path: 'movie/:tmdbId', loadComponent: () => import('./pages/media-detail/media-detail').then(m => m.MediaDetail), data: { type: 'movie' } },
+    { path: 'tv/:tmdbId', loadComponent: () => import('./pages/media-detail/media-detail').then(m => m.MediaDetail), data: { type: 'tv' } },
+    { path: 'person/:id', loadComponent: () => import('./pages/person/person').then(m => m.Person) },
 ];
