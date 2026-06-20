@@ -57,5 +57,26 @@
         </button>
       </div>
     </form>
+
+    <section class="settings-panel calendar-panel">
+      <div class="toggle-row">
+        <span>
+          <strong>Calendrier des sorties</strong>
+          <small>Abonne ton calendrier aux sorties suivies. Ajouts et suppressions se synchronisent automatiquement.</small>
+        </span>
+      </div>
+
+      <div class="form-actions">
+        <button pButton class="save-btn" type="button" (click)="subscribeToCalendar()">
+          <i class="pi pi-calendar-plus"></i>
+          <span>S'abonner</span>
+        </button>
+
+        <button pButton type="button" severity="secondary" (click)="copyCalendarLink()">
+          <i class="pi pi-copy"></i>
+          <span>Copier le lien</span>
+        </button>
+      </div>
+    </section>
   }
 </div>

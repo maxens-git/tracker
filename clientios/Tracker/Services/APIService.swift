@@ -292,6 +292,11 @@ struct APIService {
         try await rawRequest("/TrackedMedia/\(tmdbId)", method: "DELETE",
                              query: [URLQueryItem(name: "type", value: type.rawValue)])
     }
+
+    /// URL d'abonnement au calendrier des sorties (webcal + https), prête à ouvrir.
+    func calendarInfo(forceRefresh: Bool = false) async throws -> CalendarInfo {
+        try await request("/calendar/info", forceRefresh: forceRefresh)
+    }
 }
 
 // MARK: - Helpers d'encodage JSON hétérogène

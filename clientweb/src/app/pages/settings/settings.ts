@@ -91,6 +91,23 @@ export class SettingsPage implements OnInit {
     });
   }
 
+  subscribeToCalendar() {
+    this.api.calendarInfo().subscribe({
+      next: info => { window.location.href = info.webcalUrl; },
+      error: () => this.showError('Impossible de récupérer le lien du calendrier.'),
+    });
+  }
+
+  copyCalendarLink() {
+    this.api.calendarInfo().subscribe({
+      next: info => {
+        navigator.clipboard?.writeText(info.httpsUrl);
+        this.showSuccess('Lien du calendrier copié.');
+      },
+      error: () => this.showError('Impossible de récupérer le lien du calendrier.'),
+    });
+  }
+
   get notificationTime(): string {
     return `${String(this.form.notificationHour).padStart(2, '0')}:${String(this.form.notificationMinute).padStart(2, '0')}`;
   }

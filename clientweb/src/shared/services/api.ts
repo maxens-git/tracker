@@ -62,6 +62,11 @@ export interface TrackedMediaState {
   tracked: boolean;
 }
 
+export interface CalendarInfo {
+  webcalUrl: string;
+  httpsUrl: string;
+}
+
 export interface AddTrackedMediaPayload {
   tmdbId: number;
   mediaType: 'movie' | 'tv';
@@ -211,6 +216,10 @@ export class Api {
 
   removeTrackedMedia(tmdbId: number, type: 'movie' | 'tv'): Observable<unknown> {
     return this.http.delete(`${API}/TrackedMedia/${tmdbId}`, { params: { type } });
+  }
+
+  calendarInfo(): Observable<CalendarInfo> {
+    return this.http.get<CalendarInfo>(`${API}/calendar/info`);
   }
 }
 

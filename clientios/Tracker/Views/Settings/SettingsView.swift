@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.openURL) private var openURL
     @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
     @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
     @State private var ntfyEnabled = false
@@ -18,7 +19,9 @@ struct SettingsView: View {
     @State private var notificationTime = Self.makeNotificationTime(hour: 9, minute: 0)
     @State private var isLoadingSettings = false
     @State private var isSavingSettings = false
+    @State private var isSubscribingCalendar = false
     @State private var statusMessage: String?
+    @State private var calendarMessage: String?
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
@@ -75,6 +78,23 @@ struct SettingsView: View {
                 Text(statusMessage ?? "Les sorties suivies peuvent déclencher une notification via ntfy.")
             }
 
+            Section {
+                Button {
+                    Task { await subscribeToCalendar() }
+                } label: {
+                    HStack {
+                        Label("S'abonner au calendrier", systemImage: "calendar.badge.plus")
+                        Spacer()
+                        if isSubscribingCalendar { ProgressView() }
+                    }
+                }
+                .disabled(isSubscribingCalendar)
+            } header: {
+                Text("Calendrier")
+            } footer: {
+                Text(calendarMessage ?? "Ajoute les sorties suivies à ton calendrier. Les ajouts et suppressions se synchronisent automatiquement.")
+            }
+
             Section("À propos") {
                 LabeledContent("Version", value: appVersion)
             }
@@ -125,6 +145,26 @@ struct SettingsView: View {
             Haptics.success()
         } catch {
             if !error.isCancellation { statusMessage = error.localizedDescription }
+            Haptics.error()
+        }
+    }
+
+    /// Récupère l'URL d'abonnement auprès du backend puis l'ouvre en `webcal://`,
+    /// ce qui propose l'ajout du calendrier dans l'app Calendrier d'iOS.
+    private func subscribeToCalendar() async {
+        guard !isSubscribingCalendar else { return }
+        isSubscribingCalendar = true
+        defer { isSubscribingCalendar = false }
+        do {
+            let info = try await APIService.shared.calendarInfo(forceRefresh: true)
+            guard let url = URL(string: info.webcalUrl) else {
+                calendarMessage = "URL de calendrier invalide."
+                return
+            }
+            openURL(url)
+            Haptics.success()
+        } catch {
+            if !error.isCancellation { calendarMessage = error.localizedDescription }
             Haptics.error()
         }
     }

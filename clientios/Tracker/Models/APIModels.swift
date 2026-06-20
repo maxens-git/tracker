@@ -118,6 +118,12 @@ struct TrackedMediaState: Decodable {
     let tracked: Bool
 }
 
+/// URL d'abonnement au calendrier des sorties (flux .ics) fournie par le backend.
+struct CalendarInfo: Decodable {
+    let webcalUrl: String
+    let httpsUrl: String
+}
+
 // ── Activité ────────────────────────────────────────────────────────────────
 
 /// Nature d'une action journalisée. Décodage tolérant : toute valeur inconnue → `.unknown`.
