@@ -49,7 +49,7 @@ struct SettingsView: View {
             }
 
             Section {
-                Toggle("Activer ntfy", isOn: $ntfyEnabled)
+                Toggle("Activer NTFY", isOn: $ntfyEnabled)
                 TextField("https://ntfy.sh", text: $ntfyUrl)
                     .textContentType(.URL)
                     .textInputAutocapitalization(.never)
@@ -92,7 +92,7 @@ struct SettingsView: View {
             } header: {
                 Text("Calendrier")
             } footer: {
-                Text(calendarMessage ?? "Ajoute les sorties suivies à ton calendrier. Les ajouts et suppressions se synchronisent automatiquement.")
+                Text(calendarMessage ?? "Ajoute les sorties suivies au calendrier.")
             }
 
             Section("À propos") {
