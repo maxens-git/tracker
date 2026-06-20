@@ -75,15 +75,24 @@ struct ReleaseCalendarView: View {
             }
 
             if !viewModel.pendingItems.isEmpty {
-                Section {
-                    ForEach(viewModel.pendingItems) { item in
-                        releaseLink(item)
-                    }
-                } header: {
-                    Text("À venir · date à confirmer")
-                } footer: {
-                    Text("Annoncé sur TMDB sans date. Basculera dans le calendrier dès qu'une date sera publiée.")
+                // Lignes simples (et non une Section) pour garder un fond transparent :
+                // le header/footer d'une Section affiche un rectangle blanc collé aux bords.
+                Text("À venir · date à confirmer")
+                    .font(.headline)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 18, leading: 16, bottom: 2, trailing: 16))
+
+                ForEach(viewModel.pendingItems) { item in
+                    releaseLink(item)
                 }
+
+                Text("Annoncé sur TMDB sans date. Basculera dans le calendrier dès qu'une date sera publiée.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
             }
         }
         .listStyle(.plain)

@@ -155,6 +155,17 @@ struct MediaDetailView: View {
                 Label(viewModel.type.label, systemImage: viewModel.type.symbol)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                // Film : date de sortie. Série : statut terminé / en cours.
+                if let releaseDate = viewModel.releaseDateDisplay {
+                    Label(releaseDate, systemImage: "calendar")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                if let status = viewModel.showStatusLabel {
+                    Label(status, systemImage: viewModel.showIsEnded ? "checkmark.seal.fill" : "dot.radiowaves.up.forward")
+                        .font(.subheadline)
+                        .foregroundStyle(viewModel.showIsEnded ? .secondary : Color.appGreen)
+                }
                 if let rating = viewModel.rating, rating > 0 {
                     Label(String(format: "%.1f", rating), systemImage: "star.fill")
                         .font(.subheadline.weight(.semibold))

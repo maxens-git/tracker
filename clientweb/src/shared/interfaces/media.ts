@@ -44,6 +44,7 @@ export interface TmdbShow {
   vote_count: number;
   popularity: number;
   status: string;
+  in_production: boolean;
   tagline: string;
   number_of_seasons: number;
   number_of_episodes: number;

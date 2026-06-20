@@ -102,15 +102,26 @@ struct TMDBShow: Decodable, Identifiable {
     let voteAverage: Double?
     let genres: [TMDBGenre]?
     let seasons: [TMDBSeasonSummary]?
+    /// `true` = une nouvelle saison est en fabrication, même si TMDB ne l'a pas encore détaillée.
+    let inProduction: Bool?
+    /// Statut TMDB brut : "Returning Series", "Ended", "Canceled", "In Production"…
+    let status: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, overview, genres, seasons
+        case id, name, overview, genres, seasons, status
         case posterPath = "poster_path"
         case backdropPath = "backdrop_path"
         case firstAirDate = "first_air_date"
         case numberOfSeasons = "number_of_seasons"
         case numberOfEpisodes = "number_of_episodes"
         case voteAverage = "vote_average"
+        case inProduction = "in_production"
+    }
+
+    /// Série considérée terminée si TMDB la marque "Ended" ou "Canceled".
+    var isEnded: Bool {
+        guard let status else { return false }
+        return status == "Ended" || status == "Canceled"
     }
 }
 

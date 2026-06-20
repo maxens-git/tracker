@@ -62,6 +62,21 @@ final class MediaDetailViewModel {
     var rating: Double? { movie?.voteAverage ?? show?.voteAverage }
     var genres: [TMDBGenre] { movie?.genres ?? show?.genres ?? [] }
 
+    /// Date de sortie du film, formatée en français (ex. « 14 mai 2026 »), si disponible.
+    var releaseDateDisplay: String? {
+        guard let raw = movie?.releaseDate, !raw.isEmpty else { return nil }
+        return DateOnlyFormatter.display(raw)
+    }
+
+    /// Statut d'une série pour l'en-tête (« Terminée » / « En cours »), nil pour un film.
+    var showStatusLabel: String? {
+        guard type == .tv, show != nil else { return nil }
+        return showIsEnded ? "Terminée" : "En cours"
+    }
+
+    /// Vrai si la série est marquée terminée par TMDB (Ended/Canceled).
+    var showIsEnded: Bool { show?.isEnded ?? false }
+
     var seen: Bool { state?.seen ?? false }
     var liked: Bool { state?.liked ?? false }
 

@@ -176,33 +176,45 @@ export class ReleaseCalendar implements OnInit {
       .map(season => this.seasonRelease(tracked, show, season));
 
     // Datées + annoncées-sans-date : ces dernières iront dans la section « à venir ».
-    const baseItems = [...datedSeasons, ...this.pendingSeasons(tracked, show)];
+    const undatedSeasons = this.undatedSeasons(tracked, show);
+    const baseItems = [...datedSeasons, ...undatedSeasons];
 
     const seasonsToInspect = show.seasons
       .filter(season => shouldInspectSeason(season))
       .slice(-3);
 
-    if (seasonsToInspect.length === 0) return of(baseItems);
+    const episodes$ = seasonsToInspect.length === 0
+      ? of([] as ReleaseCalendarItem[])
+      : forkJoin(seasonsToInspect.map(season =>
+          this.tmdb.season(show.id, season.season_number).pipe(
+            map(detail => detail.episodes
+              .filter(ep => isFuture(ep.air_date))
+              .map((ep): ReleaseCalendarItem => ({
+                id: `tv-${show.id}-s${ep.season_number}-e${ep.episode_number}-${ep.air_date}`,
+                tmdbId: show.id,
+                type: 'tv' as const,
+                kind: 'Episode' as const,
+                title: show.name,
+                subtitle: `S${String(ep.season_number).padStart(2, '0')}E${String(ep.episode_number).padStart(2, '0')} - ${ep.name}`,
+                date: ep.air_date!,
+                posterPath: show.poster_path ?? tracked.posterPath,
+              }))),
+            catchError(() => of([] as ReleaseCalendarItem[])),
+          )
+        )).pipe(map(groups => groups.flat()));
 
-    return forkJoin(seasonsToInspect.map(season =>
-      this.tmdb.season(show.id, season.season_number).pipe(
-        map(detail => detail.episodes
-          .filter(ep => isFuture(ep.air_date))
-          .map((ep): ReleaseCalendarItem => ({
-            id: `tv-${show.id}-s${ep.season_number}-e${ep.episode_number}-${ep.air_date}`,
-            tmdbId: show.id,
-            type: 'tv' as const,
-            kind: 'Episode' as const,
-            title: show.name,
-            subtitle: `S${String(ep.season_number).padStart(2, '0')}E${String(ep.episode_number).padStart(2, '0')} - ${ep.name}`,
-            date: ep.air_date!,
-            posterPath: show.poster_path ?? tracked.posterPath,
-          }))),
-        catchError(() => of([] as ReleaseCalendarItem[])),
-      )
-    )).pipe(
-      map(groups => [...baseItems, ...groups.flat()]
-        .filter((item, index, all) => all.findIndex(other => other.id === item.id) === index))
+    return episodes$.pipe(
+      map(episodes => {
+        const items = [...baseItems, ...episodes]
+          .filter((item, index, all) => all.findIndex(other => other.id === item.id) === index);
+
+        // Rien de concret à venir mais TMDB indique la série en production (cas typique :
+        // saison confirmée mais pas encore créée comme entrée TMDB) → carte « en préparation ».
+        if (datedSeasons.length === 0 && undatedSeasons.length === 0 && episodes.length === 0 && show.in_production) {
+          items.push(this.inProductionPlaceholder(tracked, show));
+        }
+        return items;
+      })
     );
   }
 
@@ -210,14 +222,9 @@ export class ReleaseCalendar implements OnInit {
    * Saisons annoncées mais sans date TMDB, plus récentes que la dernière saison déjà
    * diffusée (cas typique : série marquée « terminée » dont une nouvelle saison arrive).
    */
-  private pendingSeasons(tracked: TrackedMedia, show: TmdbShow): ReleaseCalendarItem[] {
-    const airedNumbers = show.seasons
-      .filter(s => s.season_number > 0 && s.air_date && !isFuture(s.air_date))
-      .map(s => s.season_number);
-    const lastAired = airedNumbers.length ? Math.max(...airedNumbers) : 0;
-
+  private undatedSeasons(tracked: TrackedMedia, show: TmdbShow): ReleaseCalendarItem[] {
     return show.seasons
-      .filter(s => s.season_number > 0 && !s.air_date && s.season_number > lastAired)
+      .filter(s => s.season_number > 0 && !s.air_date && s.season_number > lastAiredSeason(show))
       .map(s => ({
         id: `tv-${show.id}-season-${s.season_number}-pending`,
         tmdbId: show.id,
@@ -229,6 +236,25 @@ export class ReleaseCalendar implements OnInit {
         pending: true,
         posterPath: s.poster_path ?? show.poster_path ?? tracked.posterPath,
       }));
+  }
+
+  /**
+   * Carte « saison en préparation » quand TMDB signale la série en production mais n'a
+   * pas encore créé d'entrée pour la prochaine saison (ex. The White Lotus S4 confirmée).
+   */
+  private inProductionPlaceholder(tracked: TrackedMedia, show: TmdbShow): ReleaseCalendarItem {
+    const nextNumber = lastAiredSeason(show) + 1;
+    return {
+      id: `tv-${show.id}-inproduction`,
+      tmdbId: show.id,
+      type: 'tv',
+      kind: 'Saison',
+      title: show.name,
+      subtitle: `Saison ${nextNumber} en préparation · date à confirmer`,
+      date: '',
+      pending: true,
+      posterPath: show.poster_path ?? tracked.posterPath,
+    };
   }
 
   private seasonRelease(tracked: TrackedMedia, show: TmdbShow, season: TmdbSeasonSummary): ReleaseCalendarItem {
@@ -248,6 +274,14 @@ export class ReleaseCalendar implements OnInit {
 /** Construit une clé `yyyy-mm-dd` à partir d'une année, d'un mois 0-based et d'un jour. */
 function dayKey(year: number, month0: number, day: number): string {
   return `${year}-${String(month0 + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** Numéro de la dernière saison déjà diffusée (date passée), ou 0 si aucune. */
+function lastAiredSeason(show: TmdbShow): number {
+  const aired = show.seasons
+    .filter(s => s.season_number > 0 && s.air_date && !isFuture(s.air_date))
+    .map(s => s.season_number);
+  return aired.length ? Math.max(...aired) : 0;
 }
 
 function isFuture(date?: string | null): boolean {

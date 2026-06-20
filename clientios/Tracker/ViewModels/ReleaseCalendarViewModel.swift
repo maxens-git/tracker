@@ -93,7 +93,7 @@ final class ReleaseCalendarViewModel {
 
         case .tv:
             guard let show = try? await tmdb.show(tracked.tmdbId, forceRefresh: forceRefresh) else { return [] }
-            var result = show.seasons?
+            let datedSeasons = show.seasons?
                 .filter { $0.seasonNumber > 0 && isFuture($0.airDate) }
                 .map { season in
                     ReleaseCalendarItem(
@@ -107,15 +107,16 @@ final class ReleaseCalendarViewModel {
                         posterPath: season.posterPath ?? show.posterPath ?? tracked.posterPath)
                 } ?? []
 
-            result += pendingSeasons(for: tracked, show: show)
+            let undatedSeasons = self.undatedSeasons(for: tracked, show: show)
 
             let seasonsToInspect = (show.seasons ?? [])
                 .filter(shouldInspectSeason)
                 .suffix(3)
 
+            var episodes: [ReleaseCalendarItem] = []
             for season in seasonsToInspect {
                 if let detail = try? await tmdb.season(showId: show.id, seasonNumber: season.seasonNumber) {
-                    result += detail.episodes
+                    episodes += detail.episodes
                         .filter { isFuture($0.airDate) }
                         .map { episode in
                             ReleaseCalendarItem(
@@ -130,21 +131,24 @@ final class ReleaseCalendarViewModel {
                         }
                 }
             }
+
             var seen = Set<String>()
-            return result.filter { seen.insert($0.id).inserted }
+            var deduped = (datedSeasons + undatedSeasons + episodes).filter { seen.insert($0.id).inserted }
+
+            // Rien de concret à venir mais TMDB signale la série en production (saison
+            // confirmée mais pas encore créée comme entrée TMDB) → carte « en préparation ».
+            if datedSeasons.isEmpty && undatedSeasons.isEmpty && episodes.isEmpty && (show.inProduction ?? false) {
+                deduped.append(inProductionPlaceholder(for: tracked, show: show))
+            }
+            return deduped
         }
     }
 
     /// Saisons annoncées mais sans date TMDB, plus récentes que la dernière saison déjà
     /// diffusée (cas typique : série marquée « terminée » dont une nouvelle saison arrive).
-    private func pendingSeasons(for tracked: TrackedMedia, show: TMDBShow) -> [ReleaseCalendarItem] {
-        let seasons = show.seasons ?? []
-        let lastAired = seasons
-            .filter { $0.seasonNumber > 0 && $0.airDate != nil && !isFuture($0.airDate) }
-            .map { $0.seasonNumber }
-            .max() ?? 0
-
-        return seasons
+    private func undatedSeasons(for tracked: TrackedMedia, show: TMDBShow) -> [ReleaseCalendarItem] {
+        let lastAired = lastAiredSeason(show)
+        return (show.seasons ?? [])
             .filter { $0.seasonNumber > 0 && $0.airDate == nil && $0.seasonNumber > lastAired }
             .map { season in
                 ReleaseCalendarItem(
@@ -159,6 +163,30 @@ final class ReleaseCalendarViewModel {
                     pending: true)
             }
     }
+
+    /// Carte « saison en préparation » quand TMDB signale la série en production mais n'a
+    /// pas encore créé d'entrée pour la prochaine saison (ex. The White Lotus S4 confirmée).
+    private func inProductionPlaceholder(for tracked: TrackedMedia, show: TMDBShow) -> ReleaseCalendarItem {
+        let nextNumber = lastAiredSeason(show) + 1
+        return ReleaseCalendarItem(
+            id: "tv-\(show.id)-inproduction",
+            tmdbId: show.id,
+            type: .tv,
+            kind: "Saison",
+            title: show.name,
+            subtitle: "Saison \(nextNumber) en préparation · date à confirmer",
+            date: "",
+            posterPath: show.posterPath ?? tracked.posterPath,
+            pending: true)
+    }
+}
+
+/// Numéro de la dernière saison déjà diffusée (date passée), ou 0 si aucune.
+private func lastAiredSeason(_ show: TMDBShow) -> Int {
+    (show.seasons ?? [])
+        .filter { $0.seasonNumber > 0 && $0.airDate != nil && !isFuture($0.airDate) }
+        .map { $0.seasonNumber }
+        .max() ?? 0
 }
 
 private func isFuture(_ value: String?) -> Bool {
