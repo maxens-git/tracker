@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
     @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
     @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
     @State private var ntfyEnabled = false
@@ -28,71 +27,65 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Apparence") {
-                    Picker("Thème", selection: $theme) {
-                        ForEach(AppTheme.allCases) { option in
-                            Text(option.label).tag(option)
-                        }
+        Form {
+            Section("Apparence") {
+                Picker("Thème", selection: $theme) {
+                    ForEach(AppTheme.allCases) { option in
+                        Text(option.label).tag(option)
                     }
-                    .pickerStyle(.segmented)
                 }
-
-                Section {
-                    Toggle("Masquer les médias déjà vus", isOn: $hideSeenItems)
-                } header: {
-                    Text("Accueil")
-                } footer: {
-                    Text("Les films et séries marqués comme vus n'apparaîtront plus sur la page d'accueil.")
-                }
-
-                Section {
-                    Toggle("Activer ntfy", isOn: $ntfyEnabled)
-                    TextField("https://ntfy.sh", text: $ntfyUrl)
-                        .textContentType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Topic", text: $ntfyTopic)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    SecureField("Token", text: $ntfyToken)
-                    Stepper("Prévenir \(notifyDaysAhead) jour\(notifyDaysAhead > 1 ? "s" : "") avant",
-                            value: $notifyDaysAhead, in: 0...30)
-                    DatePicker("Heure d’envoi", selection: $notificationTime, displayedComponents: .hourAndMinute)
-
-                    Button {
-                        Task { await saveRemoteSettings() }
-                    } label: {
-                        if isSavingSettings {
-                            ProgressView()
-                        } else {
-                            Text("Enregistrer")
-                        }
-                    }
-                    .disabled(isSavingSettings || isLoadingSettings)
-                } header: {
-                    Text("Notifications")
-                } footer: {
-                    Text(statusMessage ?? "Les sorties suivies peuvent déclencher une notification via ntfy.")
-                }
-
-                Section("À propos") {
-                    LabeledContent("Version", value: appVersion)
-                }
+                .pickerStyle(.segmented)
             }
-            .navigationTitle("Réglages")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("OK") { dismiss() }
+
+            Section {
+                Toggle("Masquer les médias déjà vus", isOn: $hideSeenItems)
+            } header: {
+                Text("Accueil")
+            } footer: {
+                Text("Les films et séries marqués comme vus n'apparaîtront plus sur la page d'accueil.")
+            }
+
+            Section {
+                Toggle("Activer ntfy", isOn: $ntfyEnabled)
+                TextField("https://ntfy.sh", text: $ntfyUrl)
+                    .textContentType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                TextField("Topic", text: $ntfyTopic)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                SecureField("Token", text: $ntfyToken)
+                Stepper("Prévenir \(notifyDaysAhead) jour\(notifyDaysAhead > 1 ? "s" : "") avant",
+                        value: $notifyDaysAhead, in: 0...30)
+                DatePicker("Heure d’envoi", selection: $notificationTime, displayedComponents: .hourAndMinute)
+
+                Button {
+                    Task { await saveRemoteSettings() }
+                } label: {
+                    if isSavingSettings {
+                        ProgressView()
+                    } else {
+                        Text("Enregistrer")
+                    }
                 }
+                .disabled(isSavingSettings || isLoadingSettings)
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text(statusMessage ?? "Les sorties suivies peuvent déclencher une notification via ntfy.")
+            }
+
+            Section("À propos") {
+                LabeledContent("Version", value: appVersion)
             }
         }
+        .navigationTitle("Réglages")
+        .navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground.ignoresSafeArea())
         .task { await loadRemoteSettings() }
-        // La feuille a son propre contexte de présentation et n'hérite pas du
-        // preferredColorScheme appliqué à la racine : on le réapplique ici pour
-        // que le changement de thème soit visible immédiatement dans cet écran.
+        // Réappliqué ici pour que le changement de thème soit visible
+        // immédiatement dans cet écran, sans attendre un retour à la racine.
         .preferredColorScheme(theme.colorScheme)
     }
 

@@ -14,6 +14,10 @@ struct ReleaseCalendarView: View {
                 NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
                     releaseRow(item)
                 }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
                         Task { await viewModel.remove(item) }
@@ -75,8 +79,13 @@ struct ReleaseCalendarView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+        .cinemaCard()
     }
 }
 
