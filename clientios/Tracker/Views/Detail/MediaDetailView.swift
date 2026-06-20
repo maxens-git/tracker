@@ -68,7 +68,7 @@ struct MediaDetailView: View {
 
     private func synopsisSection(_ overview: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Synopsis").font(.title3.bold())
+            Text("Synopsis").font(.display(20))
             ExpandableText(text: overview)
         }
         .padding(.horizontal)
@@ -150,15 +150,15 @@ struct MediaDetailView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.title)
-                    .font(.title2.bold())
+                    .font(.display(24))
                     .fixedSize(horizontal: false, vertical: true)
                 Label(viewModel.type.label, systemImage: viewModel.type.symbol)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 if let rating = viewModel.rating, rating > 0 {
                     Label(String(format: "%.1f", rating), systemImage: "star.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(.orange)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.appGold)
                 }
             }
             .padding(.bottom, 6)
@@ -258,7 +258,7 @@ struct MediaDetailView: View {
     private var seasonsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Saisons")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             VStack(spacing: 10) {
@@ -293,7 +293,7 @@ struct MediaDetailView: View {
                     // Progression dérivée des états (sans charger les épisodes).
                     if episodeCount > 0 {
                         ProgressView(value: min(Double(seen) / Double(episodeCount), 1))
-                            .tint(.green)
+                            .tint(.appGreen)
                         Text("\(seen)/\(episodeCount) vus")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -309,7 +309,7 @@ struct MediaDetailView: View {
                     } label: {
                         Image(systemName: fullySeen ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.title3)
-                            .foregroundStyle(fullySeen ? .green : .secondary)
+                            .foregroundStyle(fullySeen ? Color.appGreen : Color.secondary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -319,9 +319,7 @@ struct MediaDetailView: View {
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(expanded ? 90 : 0))
             }
-            .padding(10)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .cinemaCard(cornerRadius: 12, padding: 10)
             .contentShape(Rectangle())
             .onTapGesture {
                 Task { await viewModel.toggleSeason(number) }
@@ -378,7 +376,7 @@ struct MediaDetailView: View {
             } label: {
                 Image(systemName: seen ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(seen ? .green : .secondary)
+                    .foregroundStyle(seen ? Color.appGreen : Color.secondary)
             }
             .buttonStyle(.plain)
         }
@@ -391,7 +389,7 @@ struct MediaDetailView: View {
     private var trailersSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Bandes-annonces")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -441,7 +439,7 @@ struct MediaDetailView: View {
     private var castSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Distribution")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -464,7 +462,7 @@ struct MediaDetailView: View {
     private var crewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Équipe technique")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -512,7 +510,7 @@ struct MediaDetailView: View {
     private var similarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Similaires")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -536,12 +534,7 @@ struct MediaDetailView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(viewModel.genres) { genre in
-                    Text(genre.name)
-                        .font(.caption)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(Capsule())
+                    TagChip(label: genre.name)
                 }
             }
             .padding(.horizontal)

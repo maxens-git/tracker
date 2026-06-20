@@ -50,7 +50,7 @@ struct HeroView: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(item.displayTitle)
-                .font(.largeTitle.bold())
+                .font(.display(34))
                 .foregroundStyle(.white)
                 .lineLimit(2)
                 .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 2)
@@ -70,10 +70,10 @@ struct HeroView: View {
 
             NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
                 Label("Voir la fiche", systemImage: "info.circle.fill")
-                    .font(.headline)
+                    .font(.system(.headline, design: .rounded))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
-                    .background(.white)
+                    .background(Color.appGoldGradient)
                     .foregroundStyle(.black)
                     .clipShape(Capsule())
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)

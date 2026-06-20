@@ -10,31 +10,34 @@ struct ReleaseCalendarView: View {
 
     var body: some View {
         List {
-            if viewModel.trackedCount == 0 && !viewModel.isLoading {
-                ContentUnavailableView("Aucun média suivi", systemImage: "bell", description: Text("Ajoutez un film ou une série depuis sa fiche détail."))
-            } else if viewModel.items.isEmpty && !viewModel.isLoading {
-                ContentUnavailableView("Aucune sortie à venir", systemImage: "calendar", description: Text("Les médias suivis sont enregistrés, mais TMDB ne remonte pas encore de prochaine date."))
-            } else {
-                ForEach(viewModel.items) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        releaseRow(item)
-                    }
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            Task { await viewModel.remove(item) }
-                        } label: {
-                            Label("Ne plus suivre", systemImage: "bell.slash")
-                        }
+            ForEach(viewModel.items) { item in
+                NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                    releaseRow(item)
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        Task { await viewModel.remove(item) }
+                    } label: {
+                        Label("Ne plus suivre", systemImage: "bell.slash")
                     }
                 }
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .navigationTitle("Sorties")
         .background(Color.appBackground.ignoresSafeArea())
+        // États vides / chargement en overlay (et non comme ligne de List) : la liste
+        // reste vide, donc le fond chaud `appBackground` couvre tout l'écran.
         .overlay {
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView()
+            } else if viewModel.trackedCount == 0 && !viewModel.isLoading {
+                ContentUnavailableView("Aucun média suivi", systemImage: "bell",
+                                       description: Text("Ajoutez un film ou une série depuis sa fiche détail."))
+            } else if viewModel.items.isEmpty && !viewModel.isLoading {
+                ContentUnavailableView("Aucune sortie à venir", systemImage: "calendar",
+                                       description: Text("Les médias suivis sont enregistrés, mais TMDB ne remonte pas encore de prochaine date."))
             }
         }
         .errorToast($viewModel.errorMessage)
@@ -62,7 +65,7 @@ struct ReleaseCalendarView: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.tint)
                 Text(item.title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .lineLimit(1)
                 Text(item.subtitle)
                     .font(.caption)

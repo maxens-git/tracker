@@ -25,7 +25,7 @@ struct MediaCard: View {
                 .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
 
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)

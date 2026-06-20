@@ -9,6 +9,11 @@ import SwiftUI
 
 @main
 struct TrackerApp: App {
+    init() {
+        // Titres de navigation en police d'affichage « arrondie » (cf. Seance).
+        AppAppearance.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ThemedRootView()
@@ -26,6 +31,7 @@ private struct ThemedRootView: View {
 
     var body: some View {
         RootView()
+            .tint(.appGold)
             .preferredColorScheme(theme.colorScheme)
     }
 }

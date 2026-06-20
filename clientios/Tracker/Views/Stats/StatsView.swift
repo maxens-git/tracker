@@ -10,8 +10,8 @@ struct StatsView: View {
     @State private var viewModel = StatsViewModel()
 
     // Couleurs des catégories (alignées avec la légende).
-    private let movieColor = Color.accentColor
-    private let episodeColor = Color.orange
+    private let movieColor = Color.appGold
+    private let episodeColor = Color.appGreen
 
     var body: some View {
         ScrollView {
@@ -65,14 +65,12 @@ struct StatsView: View {
             Image(systemName: systemImage)
                 .font(.title2)
                 .foregroundStyle(.tint)
-            Text(value).font(.title.bold())
+            Text(value).font(.display(28))
             Text(title).font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color.appSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+        .cinemaCard()
     }
 }
 
@@ -103,7 +101,7 @@ private struct ActivityChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-                Text(title).font(.title3.bold())
+                Text(title).font(.display(20))
                 Spacer()
                 if let bar = selectedBar {
                     Text("\(bar.label) · \(bar.total)")
@@ -118,9 +116,7 @@ private struct ActivityChart: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color.appSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+        .cinemaCard()
     }
 
     private var chart: some View {

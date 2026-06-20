@@ -63,9 +63,7 @@ struct ActivityView: View {
                 }
             }
         }
-        .background(Color.appSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 3)
+        .cinemaCard()
         .padding(.horizontal)
     }
 

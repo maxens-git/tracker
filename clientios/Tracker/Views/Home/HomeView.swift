@@ -71,7 +71,7 @@ struct HomeView: View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
                 Text(title)
-                    .font(.title2.bold())
+                    .font(.display(20))
                     .padding(.horizontal)
 
                 ScrollView(.horizontal, showsIndicators: false) {

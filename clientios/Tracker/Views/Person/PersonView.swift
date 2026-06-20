@@ -20,7 +20,7 @@ struct PersonView: View {
                 header
                 if let bio = viewModel.biography, !bio.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Biographie").font(.title3.bold())
+                        Text("Biographie").font(.display(20))
                         Text(bio).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal)
@@ -59,7 +59,7 @@ struct PersonView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.name)
-                    .font(.title2.bold())
+                    .font(.display(24))
                 if let department = viewModel.department, !department.isEmpty {
                     Text(department)
                         .font(.subheadline)
@@ -104,7 +104,7 @@ struct PersonView: View {
     private var filmographySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Filmographie")
-                .font(.title3.bold())
+                .font(.display(20))
                 .padding(.horizontal)
 
             MediaGrid {
@@ -116,7 +116,7 @@ struct PersonView: View {
                                 .overlay(alignment: .topTrailing) {
                                     if item.seen {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(.white, .green)
+                                            .foregroundStyle(.white, Color.appGreen)
                                             .padding(6)
                                     }
                                 }
