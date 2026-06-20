@@ -110,28 +110,10 @@ struct PersonView: View {
             MediaGrid {
                 ForEach(viewModel.filmography) { item in
                     NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            PosterImage(path: item.posterPath)
-                                .aspectRatio(2.0 / 3.0, contentMode: .fit)
-                                .overlay(alignment: .topTrailing) {
-                                    if item.seen {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(.white, Color.appGreen)
-                                            .padding(6)
-                                    }
-                                }
-                            Text(item.title)
-                                .font(.subheadline.weight(.medium))
-                                .lineLimit(2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(.primary)
-                            Text(item.year ?? " ")
-                                .font(.caption)
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxHeight: .infinity, alignment: .top)
+                        MediaCard(posterPath: item.posterPath,
+                                  title: item.title,
+                                  subtitle: item.year,
+                                  seen: item.seen)
                     }
                     .buttonStyle(.plain)
                 }
