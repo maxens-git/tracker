@@ -18,7 +18,10 @@ interface ReleaseCalendarItem {
   kind: 'Film' | 'Saison' | 'Episode';
   title: string;
   subtitle: string;
+  /** Vide pour un item « à confirmer » (saison/film annoncé sans date TMDB). */
   date: string;
+  /** Vrai = annoncé mais sans date publiée : affiché hors calendrier, dans la section « à venir ». */
+  pending?: boolean;
   posterPath?: string | null;
 }
 
@@ -34,6 +37,8 @@ export class ReleaseCalendar implements OnInit {
   private tmdb = inject(TmdbService);
 
   items = signal<ReleaseCalendarItem[]>([]);
+  /** Saisons/films annoncés sans date confirmée sur TMDB (ex. série « terminée » avec une saison à venir). */
+  pendingItems = signal<ReleaseCalendarItem[]>([]);
   tracked = signal<TrackedMedia[]>([]);
   loading = signal(true);
   error = signal(false);
@@ -70,14 +75,18 @@ export class ReleaseCalendar implements OnInit {
         if (tracked.length === 0) return of([] as ReleaseCalendarItem[]);
         return forkJoin(tracked.map(item => this.releaseItemsFor(item).pipe(catchError(() => of([])))));
       }),
-      map(groups => groups.flat().sort((a, b) => a.date.localeCompare(b.date))),
+      map(groups => groups.flat()),
     ).subscribe({
-      next: items => {
-        this.items.set(items);
+      next: all => {
+        // Les items datés alimentent le calendrier/la liste ; ceux « à confirmer » leur section dédiée.
+        const dated = all.filter(item => !item.pending).sort((a, b) => a.date.localeCompare(b.date));
+        const pending = all.filter(item => item.pending);
+        this.items.set(dated);
+        this.pendingItems.set(pending);
         // Cale le calendrier sur la première sortie à venir pour qu'un jour soit déjà rempli.
-        if (items.length > 0) {
-          this.selectedKey.set(items[0].date);
-          this.calendarDate = new Date(items[0].date + 'T00:00:00');
+        if (dated.length > 0) {
+          this.selectedKey.set(dated[0].date);
+          this.calendarDate = new Date(dated[0].date + 'T00:00:00');
         }
         this.loading.set(false);
       },
@@ -132,23 +141,42 @@ export class ReleaseCalendar implements OnInit {
   }
 
   private movieRelease(tracked: TrackedMedia, movie: TmdbMovie): ReleaseCalendarItem[] {
-    if (!isFuture(movie.release_date)) return [];
-    return [{
-      id: `movie-${movie.id}-${movie.release_date}`,
-      tmdbId: movie.id,
-      type: 'movie',
-      kind: 'Film',
-      title: movie.title,
-      subtitle: 'Sortie du film',
-      date: movie.release_date,
-      posterPath: movie.poster_path ?? tracked.posterPath,
-    }];
+    if (isFuture(movie.release_date)) {
+      return [{
+        id: `movie-${movie.id}-${movie.release_date}`,
+        tmdbId: movie.id,
+        type: 'movie',
+        kind: 'Film',
+        title: movie.title,
+        subtitle: 'Sortie du film',
+        date: movie.release_date,
+        posterPath: movie.poster_path ?? tracked.posterPath,
+      }];
+    }
+    // Film annoncé mais sans date publiée → section « à venir ».
+    if (!movie.release_date) {
+      return [{
+        id: `movie-${movie.id}-pending`,
+        tmdbId: movie.id,
+        type: 'movie',
+        kind: 'Film',
+        title: movie.title,
+        subtitle: 'Sortie à confirmer',
+        date: '',
+        pending: true,
+        posterPath: movie.poster_path ?? tracked.posterPath,
+      }];
+    }
+    return [];
   }
 
   private showReleaseItems(tracked: TrackedMedia, show: TmdbShow) {
-    const baseItems = show.seasons
+    const datedSeasons = show.seasons
       .filter(season => season.season_number > 0 && isFuture(season.air_date))
       .map(season => this.seasonRelease(tracked, show, season));
+
+    // Datées + annoncées-sans-date : ces dernières iront dans la section « à venir ».
+    const baseItems = [...datedSeasons, ...this.pendingSeasons(tracked, show)];
 
     const seasonsToInspect = show.seasons
       .filter(season => shouldInspectSeason(season))
@@ -160,7 +188,7 @@ export class ReleaseCalendar implements OnInit {
       this.tmdb.season(show.id, season.season_number).pipe(
         map(detail => detail.episodes
           .filter(ep => isFuture(ep.air_date))
-          .map(ep => ({
+          .map((ep): ReleaseCalendarItem => ({
             id: `tv-${show.id}-s${ep.season_number}-e${ep.episode_number}-${ep.air_date}`,
             tmdbId: show.id,
             type: 'tv' as const,
@@ -176,6 +204,31 @@ export class ReleaseCalendar implements OnInit {
       map(groups => [...baseItems, ...groups.flat()]
         .filter((item, index, all) => all.findIndex(other => other.id === item.id) === index))
     );
+  }
+
+  /**
+   * Saisons annoncées mais sans date TMDB, plus récentes que la dernière saison déjà
+   * diffusée (cas typique : série marquée « terminée » dont une nouvelle saison arrive).
+   */
+  private pendingSeasons(tracked: TrackedMedia, show: TmdbShow): ReleaseCalendarItem[] {
+    const airedNumbers = show.seasons
+      .filter(s => s.season_number > 0 && s.air_date && !isFuture(s.air_date))
+      .map(s => s.season_number);
+    const lastAired = airedNumbers.length ? Math.max(...airedNumbers) : 0;
+
+    return show.seasons
+      .filter(s => s.season_number > 0 && !s.air_date && s.season_number > lastAired)
+      .map(s => ({
+        id: `tv-${show.id}-season-${s.season_number}-pending`,
+        tmdbId: show.id,
+        type: 'tv' as const,
+        kind: 'Saison' as const,
+        title: show.name,
+        subtitle: `${s.name} · date à confirmer`,
+        date: '',
+        pending: true,
+        posterPath: s.poster_path ?? show.poster_path ?? tracked.posterPath,
+      }));
   }
 
   private seasonRelease(tracked: TrackedMedia, show: TmdbShow, season: TmdbSeasonSummary): ReleaseCalendarItem {

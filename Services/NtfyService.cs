@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using Tracker.Models;
@@ -17,6 +18,28 @@ public class NtfyService(HttpClient http)
         string tags = release.MediaType == MediaType.Movie ? "movie_camera" : "tv";
 
         await Send(settings, title, body, tags, cancellationToken);
+    }
+
+    /// <summary>
+    /// Prévient qu'une nouvelle saison vient d'apparaître sur TMDB pour une série
+    /// suivie (même si la série est marquée « terminée »), date confirmée ou non.
+    /// </summary>
+    public Task SendSeasonAnnouncedNotification(
+        AppSettings settings,
+        string showTitle,
+        string seasonLabel,
+        string? airDate,
+        CancellationToken cancellationToken)
+    {
+        if (!settings.NtfyEnabled || string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
+            return Task.CompletedTask;
+
+        string body = TryFormatDate(airDate, out string formatted)
+            ? $"{seasonLabel} a été annoncée pour le {formatted}."
+            : $"{seasonLabel} a été annoncée (date à confirmer).";
+        string title = $"Nouvelle saison: {showTitle}";
+
+        return Send(settings, title, body, "tv", cancellationToken);
     }
 
     public Task SendTestNotification(AppSettings settings, CancellationToken cancellationToken) =>
@@ -56,6 +79,17 @@ public class NtfyService(HttpClient http)
 
         string base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         return $"=?UTF-8?B?{base64}?=";
+    }
+
+    private static bool TryFormatDate(string? raw, out string formatted)
+    {
+        if (DateOnly.TryParseExact(raw, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly date))
+        {
+            formatted = date.ToString("dd/MM/yyyy");
+            return true;
+        }
+        formatted = string.Empty;
+        return false;
     }
 
     private static Uri BuildEndpoint(string baseUrl, string topic)

@@ -23,32 +23,60 @@
       <p>Ajoutez un film ou une série depuis sa fiche détail.</p>
       <a routerLink="/search">Rechercher</a>
     </div>
-  } @else if (items().length === 0) {
+  } @else if (items().length === 0 && pendingItems().length === 0) {
     <div class="empty">
       <h2>Aucune date à venir</h2>
       <p>Les médias suivis sont enregistrés; aucune sortie future n'est disponible côté TMDB pour le moment.</p>
     </div>
   } @else if (view() === 'list') {
-    <div class="timeline">
-      @for (item of items(); track item.id) {
-        <a class="release-row" [routerLink]="['/', item.type, item.tmdbId]">
-          <time>{{ formatDate(item.date) }}</time>
-          <div class="poster" [class.empty]="!poster(item.posterPath)">
-            @if (poster(item.posterPath); as p) {
-              <img [src]="p" [alt]="item.title" loading="lazy" />
-            } @else {
-              <span>🎬</span>
-            }
-          </div>
-          <div class="body">
-            <span class="kind">{{ item.kind }}</span>
-            <strong>{{ item.title }}</strong>
-            <span>{{ item.subtitle }}</span>
-          </div>
-          <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
-        </a>
-      }
-    </div>
+    @if (items().length > 0) {
+      <div class="timeline">
+        @for (item of items(); track item.id) {
+          <a class="release-row" [routerLink]="['/', item.type, item.tmdbId]">
+            <time>{{ formatDate(item.date) }}</time>
+            <div class="poster" [class.empty]="!poster(item.posterPath)">
+              @if (poster(item.posterPath); as p) {
+                <img [src]="p" [alt]="item.title" loading="lazy" />
+              } @else {
+                <span>🎬</span>
+              }
+            </div>
+            <div class="body">
+              <span class="kind">{{ item.kind }}</span>
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.subtitle }}</span>
+            </div>
+            <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+          </a>
+        }
+      </div>
+    }
+    @if (pendingItems().length > 0) {
+      <section class="pending">
+        <h2 class="pending-title">À venir · date à confirmer</h2>
+        <p class="pending-hint">Annoncé sur TMDB sans date de sortie. Basculera dans le calendrier dès qu'une date sera publiée.</p>
+        <div class="timeline">
+          @for (item of pendingItems(); track item.id) {
+            <a class="release-row pending-row" [routerLink]="['/', item.type, item.tmdbId]">
+              <time class="tba">à confirmer</time>
+              <div class="poster" [class.empty]="!poster(item.posterPath)">
+                @if (poster(item.posterPath); as p) {
+                  <img [src]="p" [alt]="item.title" loading="lazy" />
+                } @else {
+                  <span>🎬</span>
+                }
+              </div>
+              <div class="body">
+                <span class="kind">{{ item.kind }}</span>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.subtitle }}</span>
+              </div>
+              <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+            </a>
+          }
+        </div>
+      </section>
+    }
   } @else {
     <div class="calendar-view">
       <p-datepicker
@@ -90,5 +118,32 @@
         }
       </div>
     </div>
+
+    @if (pendingItems().length > 0) {
+      <section class="pending">
+        <h2 class="pending-title">À venir · date à confirmer</h2>
+        <p class="pending-hint">Annoncé sur TMDB sans date de sortie. Basculera dans le calendrier dès qu'une date sera publiée.</p>
+        <div class="timeline">
+          @for (item of pendingItems(); track item.id) {
+            <a class="release-row pending-row" [routerLink]="['/', item.type, item.tmdbId]">
+              <time class="tba">à confirmer</time>
+              <div class="poster" [class.empty]="!poster(item.posterPath)">
+                @if (poster(item.posterPath); as p) {
+                  <img [src]="p" [alt]="item.title" loading="lazy" />
+                } @else {
+                  <span>🎬</span>
+                }
+              </div>
+              <div class="body">
+                <span class="kind">{{ item.kind }}</span>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.subtitle }}</span>
+              </div>
+              <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+            </a>
+          }
+        </div>
+      </section>
+    }
   }
 </div>

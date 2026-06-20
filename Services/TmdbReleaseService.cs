@@ -49,6 +49,47 @@ public class TmdbReleaseService(HttpClient http, IConfiguration configuration, I
         return [new ReleaseCandidate(media.TmdbId, MediaType.Movie, title, $"movie:{media.TmdbId}:{releaseDate:yyyy-MM-dd}", title, releaseDate!.Value, posterPath)];
     }
 
+    /// <summary>
+    /// Liste les saisons « réelles » (numéro &gt; 0) d'une série, datées ou non,
+    /// sans filtre de fenêtre. Sert au suivi des nouveautés (saison annoncée mais
+    /// pas encore programmée) — contrairement à <see cref="GetUpcomingReleases"/>
+    /// qui ne remonte que les sorties datées dans la fenêtre.
+    /// </summary>
+    public async Task<List<SeasonInfo>> GetShowSeasons(int tmdbId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            return [];
+
+        try
+        {
+            using JsonDocument doc = await GetJson($"/tv/{tmdbId}", cancellationToken);
+            if (!doc.RootElement.TryGetProperty("seasons", out JsonElement seasons) || seasons.ValueKind != JsonValueKind.Array)
+                return [];
+
+            List<SeasonInfo> result = [];
+            foreach (JsonElement season in seasons.EnumerateArray())
+            {
+                int number = ReadInt(season, "season_number") ?? 0;
+                if (number <= 0) continue;
+
+                string? airDate = ReadString(season, "air_date");
+                if (string.IsNullOrWhiteSpace(airDate)) airDate = null;
+
+                result.Add(new SeasonInfo(
+                    number,
+                    ReadString(season, "name") ?? $"Saison {number}",
+                    airDate,
+                    ReadInt(season, "episode_count") ?? 0));
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Impossible de récupérer les saisons TMDB pour {TmdbId}", tmdbId);
+            return [];
+        }
+    }
+
     private async Task<List<ReleaseCandidate>> GetShowReleases(
         TrackedMediaRelease media,
         DateOnly today,

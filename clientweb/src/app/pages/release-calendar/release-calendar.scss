@@ -222,6 +222,36 @@
   }
 }
 
+.pending {
+  margin-top: 1.75rem;
+
+  .pending-title {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .pending-hint {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-bottom: 0.85rem;
+  }
+}
+
+.pending-row {
+  // Saisons/films annoncés sans date : aspect estompé + pastille « à confirmer ».
+  border-style: dashed;
+
+  time.tba {
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0.85;
+  }
+}
+
 @media (max-width: 640px) {
   .page-head {
     align-items: flex-start;

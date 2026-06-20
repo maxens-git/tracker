@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
@@ -40,6 +41,7 @@ public class ReleaseNotificationWorker(
             TmdbReleaseService tmdb = scope.ServiceProvider.GetRequiredService<TmdbReleaseService>();
             NtfyService ntfy = scope.ServiceProvider.GetRequiredService<NtfyService>();
             await NotifyUpcoming(context, tmdb, ntfy, settings!, today, cancellationToken);
+            await DetectNewSeasons(context, tmdb, ntfy, settings!, today, cancellationToken);
 
             lastRunDate = today;
         }
@@ -113,4 +115,76 @@ public class ReleaseNotificationWorker(
             }
         }
     }
+
+    /// <summary>
+    /// Synchronise l'instantané des saisons connues (table <c>KnownSeasons</c>) avec
+    /// TMDB et notifie les saisons qui viennent d'apparaître. La première rencontre
+    /// d'une série (aucune saison mémorisée) ne fait que semer l'instantané sans
+    /// notifier — sinon chaque saison existante déclencherait une fausse alerte.
+    /// </summary>
+    private async Task DetectNewSeasons(
+        ApiDbContext context,
+        TmdbReleaseService tmdb,
+        NtfyService ntfy,
+        AppSettings settings,
+        DateOnly today,
+        CancellationToken cancellationToken)
+    {
+        List<TrackedMediaRelease> shows = await context.TrackedMediaReleases
+            .Where(m => m.MediaType == MediaType.Show)
+            .ToListAsync(cancellationToken);
+
+        foreach (TrackedMediaRelease media in shows)
+        {
+            List<SeasonInfo> seasons = await tmdb.GetShowSeasons(media.TmdbId, cancellationToken);
+            if (seasons.Count == 0) continue;
+
+            List<KnownSeason> known = await context.KnownSeasons
+                .Where(s => s.TmdbId == media.TmdbId)
+                .ToListAsync(cancellationToken);
+            Dictionary<int, KnownSeason> knownByNumber = known.ToDictionary(k => k.SeasonNumber);
+
+            // Aucune saison mémorisée = première rencontre : on sème sans notifier.
+            bool seeding = known.Count == 0;
+
+            foreach (SeasonInfo season in seasons)
+            {
+                if (knownByNumber.TryGetValue(season.SeasonNumber, out KnownSeason? existing))
+                {
+                    existing.SeasonName = season.Name;
+                    existing.AirDate = season.AirDate;
+                    existing.EpisodeCount = season.EpisodeCount;
+                    existing.LastCheckedAt = DateTime.UtcNow;
+                    continue;
+                }
+
+                context.KnownSeasons.Add(new KnownSeason(
+                    media.TmdbId, season.SeasonNumber, season.Name, season.AirDate, season.EpisodeCount));
+
+                if (seeding || !IsUpcoming(season.AirDate, today)) continue;
+
+                try
+                {
+                    await ntfy.SendSeasonAnnouncedNotification(
+                        settings, media.Title, $"{media.Title} — saison {season.SeasonNumber}", season.AirDate, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Notification de nouvelle saison échouée pour {TmdbId} S{Season}.",
+                        media.TmdbId, season.SeasonNumber);
+                }
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>Une saison est « à venir » si elle n'a pas de date, ou une date non passée.</summary>
+    private static bool IsUpcoming(string? airDate, DateOnly today) =>
+        !DateOnly.TryParseExact(airDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly date)
+        || date >= today;
 }

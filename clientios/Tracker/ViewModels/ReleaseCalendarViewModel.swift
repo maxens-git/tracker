@@ -14,6 +14,8 @@ struct ReleaseCalendarItem: Identifiable, Hashable {
     let subtitle: String
     let date: String
     let posterPath: String?
+    /// Annoncé sur TMDB sans date publiée : affiché hors calendrier, dans la section « à venir ».
+    var pending: Bool = false
 }
 
 @Observable
@@ -23,6 +25,8 @@ final class ReleaseCalendarViewModel {
     private let tmdb = TMDBService.shared
 
     private(set) var items: [ReleaseCalendarItem] = []
+    /// Saisons/films annoncés sans date confirmée sur TMDB (ex. série « terminée » avec une saison à venir).
+    private(set) var pendingItems: [ReleaseCalendarItem] = []
     private(set) var trackedCount = 0
     private(set) var isLoading = false
     var errorMessage: String?
@@ -37,7 +41,9 @@ final class ReleaseCalendarViewModel {
             for item in tracked {
                 result += await releaseItems(for: item, forceRefresh: forceRefresh)
             }
-            items = result.sorted { $0.date < $1.date }
+            // Les items datés alimentent le calendrier/la liste ; ceux « à confirmer » leur section dédiée.
+            items = result.filter { !$0.pending }.sorted { $0.date < $1.date }
+            pendingItems = result.filter { $0.pending }
         } catch {
             if !error.isCancellation { errorMessage = error.localizedDescription }
         }
@@ -48,6 +54,7 @@ final class ReleaseCalendarViewModel {
         do {
             try await api.removeTrackedMedia(tmdbId: item.tmdbId, type: item.type)
             items.removeAll { $0.tmdbId == item.tmdbId && $0.type == item.type }
+            pendingItems.removeAll { $0.tmdbId == item.tmdbId && $0.type == item.type }
             trackedCount = max(0, trackedCount - 1)
             Haptics.impact(.light)
         } catch {
@@ -59,17 +66,30 @@ final class ReleaseCalendarViewModel {
     private func releaseItems(for tracked: TrackedMedia, forceRefresh: Bool) async -> [ReleaseCalendarItem] {
         switch tracked.type {
         case .movie:
-            guard let movie = try? await tmdb.movie(tracked.tmdbId, forceRefresh: forceRefresh),
-                  isFuture(movie.releaseDate) else { return [] }
+            guard let movie = try? await tmdb.movie(tracked.tmdbId, forceRefresh: forceRefresh) else { return [] }
+            if isFuture(movie.releaseDate) {
+                return [ReleaseCalendarItem(
+                    id: "movie-\(movie.id)-\(movie.releaseDate ?? "")",
+                    tmdbId: movie.id,
+                    type: .movie,
+                    kind: "Film",
+                    title: movie.title,
+                    subtitle: "Sortie du film",
+                    date: movie.releaseDate ?? "",
+                    posterPath: movie.posterPath ?? tracked.posterPath)]
+            }
+            // Film annoncé mais sans date publiée → section « à venir ».
+            guard movie.releaseDate == nil else { return [] }
             return [ReleaseCalendarItem(
-                id: "movie-\(movie.id)-\(movie.releaseDate ?? "")",
+                id: "movie-\(movie.id)-pending",
                 tmdbId: movie.id,
                 type: .movie,
                 kind: "Film",
                 title: movie.title,
-                subtitle: "Sortie du film",
-                date: movie.releaseDate ?? "",
-                posterPath: movie.posterPath ?? tracked.posterPath)]
+                subtitle: "Sortie à confirmer",
+                date: "",
+                posterPath: movie.posterPath ?? tracked.posterPath,
+                pending: true)]
 
         case .tv:
             guard let show = try? await tmdb.show(tracked.tmdbId, forceRefresh: forceRefresh) else { return [] }
@@ -86,6 +106,8 @@ final class ReleaseCalendarViewModel {
                         date: season.airDate ?? "",
                         posterPath: season.posterPath ?? show.posterPath ?? tracked.posterPath)
                 } ?? []
+
+            result += pendingSeasons(for: tracked, show: show)
 
             let seasonsToInspect = (show.seasons ?? [])
                 .filter(shouldInspectSeason)
@@ -111,6 +133,31 @@ final class ReleaseCalendarViewModel {
             var seen = Set<String>()
             return result.filter { seen.insert($0.id).inserted }
         }
+    }
+
+    /// Saisons annoncées mais sans date TMDB, plus récentes que la dernière saison déjà
+    /// diffusée (cas typique : série marquée « terminée » dont une nouvelle saison arrive).
+    private func pendingSeasons(for tracked: TrackedMedia, show: TMDBShow) -> [ReleaseCalendarItem] {
+        let seasons = show.seasons ?? []
+        let lastAired = seasons
+            .filter { $0.seasonNumber > 0 && $0.airDate != nil && !isFuture($0.airDate) }
+            .map { $0.seasonNumber }
+            .max() ?? 0
+
+        return seasons
+            .filter { $0.seasonNumber > 0 && $0.airDate == nil && $0.seasonNumber > lastAired }
+            .map { season in
+                ReleaseCalendarItem(
+                    id: "tv-\(show.id)-season-\(season.seasonNumber)-pending",
+                    tmdbId: show.id,
+                    type: .tv,
+                    kind: "Saison",
+                    title: show.name,
+                    subtitle: "\(season.name) · date à confirmer",
+                    date: "",
+                    posterPath: season.posterPath ?? show.posterPath ?? tracked.posterPath,
+                    pending: true)
+            }
     }
 }
 

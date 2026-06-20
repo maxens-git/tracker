@@ -45,7 +45,7 @@ struct ReleaseCalendarView: View {
             } else if viewModel.trackedCount == 0 && !viewModel.isLoading {
                 ContentUnavailableView("Aucun média suivi", systemImage: "bell",
                                        description: Text("Ajoutez un film ou une série depuis sa fiche détail."))
-            } else if viewModel.items.isEmpty && !viewModel.isLoading {
+            } else if viewModel.items.isEmpty && viewModel.pendingItems.isEmpty && !viewModel.isLoading {
                 ContentUnavailableView("Aucune sortie à venir", systemImage: "calendar",
                                        description: Text("Les médias suivis sont enregistrés, mais TMDB ne remonte pas encore de prochaine date."))
             }
@@ -71,25 +71,41 @@ struct ReleaseCalendarView: View {
     private var listView: some View {
         List {
             ForEach(viewModel.items) { item in
-                NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                    releaseRow(item)
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        Task { await viewModel.remove(item) }
-                    } label: {
-                        Label("Ne plus suivre", systemImage: "bell.slash")
+                releaseLink(item)
+            }
+
+            if !viewModel.pendingItems.isEmpty {
+                Section {
+                    ForEach(viewModel.pendingItems) { item in
+                        releaseLink(item)
                     }
+                } header: {
+                    Text("À venir · date à confirmer")
+                } footer: {
+                    Text("Annoncé sur TMDB sans date. Basculera dans le calendrier dès qu'une date sera publiée.")
                 }
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .refreshable { await viewModel.load(forceRefresh: true) }
+    }
+
+    private func releaseLink(_ item: ReleaseCalendarItem) -> some View {
+        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+            releaseRow(item)
+        }
+        .buttonStyle(.plain)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                Task { await viewModel.remove(item) }
+            } label: {
+                Label("Ne plus suivre", systemImage: "bell.slash")
+            }
+        }
     }
 
     // ── Vue calendrier ─────────────────────────────────────────────────────────
@@ -103,11 +119,34 @@ struct ReleaseCalendarView: View {
                     .padding(.horizontal)
 
                 selectedDayList
+
+                pendingList
             }
             .padding(.vertical, 8)
         }
         .scrollContentBackground(.hidden)
         .refreshable { await viewModel.load(forceRefresh: true) }
+    }
+
+    /// Saisons/films annoncés sans date, affichés sous le calendrier (jamais sur une case).
+    @ViewBuilder
+    private var pendingList: some View {
+        if !viewModel.pendingItems.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("À venir · date à confirmer")
+                    .font(.headline)
+                    .padding(.horizontal, 4)
+
+                ForEach(viewModel.pendingItems) { item in
+                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                        releaseRow(item)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+        }
     }
 
     @ViewBuilder
@@ -162,9 +201,9 @@ struct ReleaseCalendarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                Text(DateOnlyFormatter.display(item.date))
+                Text(item.pending ? "À confirmer" : DateOnlyFormatter.display(item.date))
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(item.pending ? Color.accentColor : Color.secondary)
             }
 
             Spacer(minLength: 0)
