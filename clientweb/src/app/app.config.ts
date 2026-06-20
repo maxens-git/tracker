@@ -61,6 +61,15 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       ripple: true,
       inputVariant: 'filled',
+      translation: {
+        dayNames: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+        dayNamesShort: ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'],
+        dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+        monthNames: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+        monthNamesShort: ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'],
+        today: "Aujourd'hui",
+        clear: 'Effacer',
+      },
       theme: {
         preset: TrackerPreset,
         options: {

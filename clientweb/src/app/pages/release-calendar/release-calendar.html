@@ -4,7 +4,13 @@
       <h1 class="page-title">Sorties</h1>
       <p class="subtitle">{{ tracked().length }} média{{ tracked().length > 1 ? 's' : '' }} suivi{{ tracked().length > 1 ? 's' : '' }}</p>
     </div>
-    <a routerLink="/settings" class="settings-link">Réglages</a>
+    <div class="head-actions">
+      <div class="view-toggle" role="group" aria-label="Mode d'affichage">
+        <button type="button" [class.active]="view() === 'list'" (click)="setView('list')">Liste</button>
+        <button type="button" [class.active]="view() === 'calendar'" (click)="setView('calendar')">Calendrier</button>
+      </div>
+      <a routerLink="/settings" class="settings-link">Réglages</a>
+    </div>
   </div>
 
   @if (loading()) {
@@ -22,7 +28,7 @@
       <h2>Aucune date à venir</h2>
       <p>Les médias suivis sont enregistrés; aucune sortie future n'est disponible côté TMDB pour le moment.</p>
     </div>
-  } @else {
+  } @else if (view() === 'list') {
     <div class="timeline">
       @for (item of items(); track item.id) {
         <a class="release-row" [routerLink]="['/', item.type, item.tmdbId]">
@@ -42,6 +48,47 @@
           <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
         </a>
       }
+    </div>
+  } @else {
+    <div class="calendar-view">
+      <p-datepicker
+        [inline]="true"
+        [(ngModel)]="calendarDate"
+        [firstDayOfWeek]="1"
+        (onSelect)="onDaySelect($event)"
+        styleClass="release-datepicker"
+      >
+        <ng-template pTemplate="date" let-date>
+          <span class="cal-cell" [class.has-release]="hasRelease(date)">{{ date.day }}</span>
+        </ng-template>
+      </p-datepicker>
+
+      <div class="day-panel">
+        <h2 class="day-title">{{ selectedDayLabel() }}</h2>
+        @if (selectedDayItems().length === 0) {
+          <p class="day-empty">Aucune sortie ce jour.</p>
+        } @else {
+          <div class="timeline">
+            @for (item of selectedDayItems(); track item.id) {
+              <a class="release-row compact" [routerLink]="['/', item.type, item.tmdbId]">
+                <div class="poster" [class.empty]="!poster(item.posterPath)">
+                  @if (poster(item.posterPath); as p) {
+                    <img [src]="p" [alt]="item.title" loading="lazy" />
+                  } @else {
+                    <span>🎬</span>
+                  }
+                </div>
+                <div class="body">
+                  <span class="kind">{{ item.kind }}</span>
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.subtitle }}</span>
+                </div>
+                <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+              </a>
+            }
+          </div>
+        }
+      </div>
     </div>
   }
 </div>

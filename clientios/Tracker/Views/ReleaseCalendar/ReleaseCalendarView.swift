@@ -6,33 +6,39 @@
 import SwiftUI
 
 struct ReleaseCalendarView: View {
+    private enum Mode: Hashable { case list, calendar }
+
     @State private var viewModel = ReleaseCalendarViewModel()
+    @State private var mode: Mode = .list
+    @State private var selectedDay: String?
+    @State private var visibleMonth = Date()
+
+    /// Sorties regroupées par jour (`yyyy-MM-dd`), pour marquer les cases du calendrier.
+    private var itemsByDay: [String: [ReleaseCalendarItem]] {
+        Dictionary(grouping: viewModel.items, by: { $0.date })
+    }
 
     var body: some View {
-        List {
-            ForEach(viewModel.items) { item in
-                NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                    releaseRow(item)
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        Task { await viewModel.remove(item) }
-                    } label: {
-                        Label("Ne plus suivre", systemImage: "bell.slash")
-                    }
+        VStack(spacing: 0) {
+            Picker("Affichage", selection: $mode) {
+                Text("Liste").tag(Mode.list)
+                Text("Calendrier").tag(Mode.calendar)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+
+            Group {
+                switch mode {
+                case .list: listView
+                case .calendar: calendarView
                 }
             }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
         .navigationTitle("Sorties")
         .background(Color.appBackground.ignoresSafeArea())
-        // États vides / chargement en overlay (et non comme ligne de List) : la liste
-        // reste vide, donc le fond chaud `appBackground` couvre tout l'écran.
+        // États vides / chargement en overlay : le fond chaud `appBackground`
+        // couvre tout l'écran quand il n'y a rien à afficher.
         .overlay {
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView()
@@ -56,7 +62,88 @@ struct ReleaseCalendarView: View {
             }
         }
         .task { await viewModel.load() }
+        .onChange(of: viewModel.items) { _, _ in ensureSelection() }
+        .onChange(of: mode) { _, _ in ensureSelection() }
+    }
+
+    // ── Vue liste ────────────────────────────────────────────────────────────
+
+    private var listView: some View {
+        List {
+            ForEach(viewModel.items) { item in
+                NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                    releaseRow(item)
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        Task { await viewModel.remove(item) }
+                    } label: {
+                        Label("Ne plus suivre", systemImage: "bell.slash")
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .refreshable { await viewModel.load(forceRefresh: true) }
+    }
+
+    // ── Vue calendrier ─────────────────────────────────────────────────────────
+
+    private var calendarView: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                MonthCalendarView(month: $visibleMonth,
+                                  selectedDay: $selectedDay,
+                                  daysWithReleases: Set(itemsByDay.keys))
+                    .padding(.horizontal)
+
+                selectedDayList
+            }
+            .padding(.vertical, 8)
+        }
+        .scrollContentBackground(.hidden)
+        .refreshable { await viewModel.load(forceRefresh: true) }
+    }
+
+    @ViewBuilder
+    private var selectedDayList: some View {
+        let dayItems = selectedDay.flatMap { itemsByDay[$0] } ?? []
+        VStack(alignment: .leading, spacing: 10) {
+            if let selectedDay {
+                Text(DateOnlyFormatter.display(selectedDay))
+                    .font(.headline)
+                    .padding(.horizontal, 4)
+            }
+
+            if dayItems.isEmpty {
+                Text("Aucune sortie ce jour.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+            } else {
+                ForEach(dayItems) { item in
+                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                        releaseRow(item)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+    }
+
+    /// Sélectionne par défaut le premier jour à venir (une seule fois) et cale le mois dessus.
+    private func ensureSelection() {
+        guard selectedDay == nil, let first = viewModel.items.first else { return }
+        selectedDay = first.date
+        if let date = DateOnlyFormatter.date(from: first.date) { visibleMonth = date }
     }
 
     private func releaseRow(_ item: ReleaseCalendarItem) -> some View {

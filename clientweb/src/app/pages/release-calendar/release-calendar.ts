@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DatePickerModule } from 'primeng/datepicker';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Api, TrackedMedia } from '../../../shared/services/api';
@@ -23,7 +25,7 @@ interface ReleaseCalendarItem {
 @Component({
   selector: 'app-release-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink, Spinner],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerModule, Spinner],
   templateUrl: './release-calendar.html',
   styleUrl: './release-calendar.scss',
 })
@@ -35,6 +37,24 @@ export class ReleaseCalendar implements OnInit {
   tracked = signal<TrackedMedia[]>([]);
   loading = signal(true);
   error = signal(false);
+
+  view = signal<'list' | 'calendar'>('list');
+  /** Mois affiché + jour sélectionné dans le calendrier (lié au p-datepicker). */
+  calendarDate: Date = new Date();
+  selectedKey = signal<string>('');
+
+  /** Index des sorties par jour (clé `yyyy-mm-dd`), pour marquer les cases et lister un jour. */
+  private itemsByDay = computed(() => {
+    const map = new Map<string, ReleaseCalendarItem[]>();
+    for (const item of this.items()) {
+      const day = map.get(item.date) ?? [];
+      day.push(item);
+      map.set(item.date, day);
+    }
+    return map;
+  });
+
+  selectedDayItems = computed(() => this.itemsByDay().get(this.selectedKey()) ?? []);
 
   ngOnInit() {
     this.load();
@@ -52,9 +72,34 @@ export class ReleaseCalendar implements OnInit {
       }),
       map(groups => groups.flat().sort((a, b) => a.date.localeCompare(b.date))),
     ).subscribe({
-      next: items => { this.items.set(items); this.loading.set(false); },
+      next: items => {
+        this.items.set(items);
+        // Cale le calendrier sur la première sortie à venir pour qu'un jour soit déjà rempli.
+        if (items.length > 0) {
+          this.selectedKey.set(items[0].date);
+          this.calendarDate = new Date(items[0].date + 'T00:00:00');
+        }
+        this.loading.set(false);
+      },
       error: () => { this.error.set(true); this.loading.set(false); },
     });
+  }
+
+  setView(view: 'list' | 'calendar') {
+    this.view.set(view);
+  }
+
+  /** Vrai si la case de jour du calendrier porte au moins une sortie. */
+  hasRelease(date: { year: number; month: number; day: number }): boolean {
+    return this.itemsByDay().has(dayKey(date.year, date.month, date.day));
+  }
+
+  onDaySelect(date: Date) {
+    this.selectedKey.set(dayKey(date.getFullYear(), date.getMonth(), date.getDate()));
+  }
+
+  selectedDayLabel(): string {
+    return this.selectedKey() ? this.formatDate(this.selectedKey()) : '';
   }
 
   remove(item: ReleaseCalendarItem, event: Event) {
@@ -145,6 +190,11 @@ export class ReleaseCalendar implements OnInit {
       posterPath: season.poster_path ?? show.poster_path ?? tracked.posterPath,
     };
   }
+}
+
+/** Construit une clé `yyyy-mm-dd` à partir d'une année, d'un mois 0-based et d'un jour. */
+function dayKey(year: number, month0: number, day: number): string {
+  return `${year}-${String(month0 + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 function isFuture(date?: string | null): boolean {
