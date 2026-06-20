@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var isSubscribingCalendar = false
     @State private var statusMessage: String?
     @State private var calendarMessage: String?
+    @State private var cacheSize = 0
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
@@ -95,6 +96,22 @@ struct SettingsView: View {
                 Text(calendarMessage ?? "Ajoute les sorties suivies au calendrier.")
             }
 
+            Section {
+                LabeledContent("Espace utilisé", value: CacheManager.formatted(cacheSize))
+                Button(role: .destructive) {
+                    CacheManager.clear()
+                    cacheSize = CacheManager.diskUsage
+                    Haptics.success()
+                } label: {
+                    Label("Vider le cache", systemImage: "trash")
+                }
+                .disabled(cacheSize == 0)
+            } header: {
+                Text("Cache")
+            } footer: {
+                Text("Les affiches et fiches TMDB sont conservées pour un affichage plus rapide et hors-ligne. Vider le cache les retéléchargera au besoin.")
+            }
+
             Section("À propos") {
                 LabeledContent("Version", value: appVersion)
             }
@@ -103,6 +120,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden)
         .background(Color.appBackground.ignoresSafeArea())
+        .onAppear { cacheSize = CacheManager.diskUsage }
         .task { await loadRemoteSettings() }
         // Réappliqué ici pour que le changement de thème soit visible
         // immédiatement dans cet écran, sans attendre un retour à la racine.

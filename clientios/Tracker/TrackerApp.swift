@@ -10,6 +10,8 @@ import SwiftUI
 @main
 struct TrackerApp: App {
     init() {
+        // Agrandit le cache réseau partagé (affiches + fiches TMDB) avant toute requête.
+        CacheManager.configure()
         // Titres de navigation en police d'affichage « arrondie » (cf. Seance).
         AppAppearance.configure()
     }
