@@ -9,13 +9,17 @@ import { Api, withUserStates } from '../../../shared/services/api';
 import { MediaItem, TmdbGenre } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { ButtonModule } from 'primeng/button';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 
 type SortKey = 'relevance' | 'rating' | 'date_desc' | 'date_asc' | 'popularity';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterCard, Spinner],
+  imports: [CommonModule, FormsModule, PosterCard, Spinner, ButtonModule, IconFieldModule, InputIconModule, InputTextModule],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })

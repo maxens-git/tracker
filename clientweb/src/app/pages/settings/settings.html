@@ -5,48 +5,57 @@
     <div class="status">Chargement…</div>
   } @else {
     <form class="settings-panel" (ngSubmit)="save()">
-      <label class="toggle-row">
+      <div class="toggle-row">
         <span>
           <strong>Notifications ntfy</strong>
           <small>Envoyer une notification quand une sortie suivie approche.</small>
         </span>
-        <input type="checkbox" name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" />
-      </label>
+        <p-toggleswitch name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" ariaLabel="Notifications ntfy" />
+      </div>
 
       <label class="field">
         <span>URL ntfy</span>
-        <input name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
+        <input pInputText name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
       </label>
 
       <label class="field">
         <span>Topic</span>
-        <input name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
+        <input pInputText name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
       </label>
 
       <label class="field">
         <span>Token</span>
-        <input name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
+        <input pInputText name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
       </label>
 
       <label class="field compact">
         <span>Prévenir combien de jours avant</span>
-        <input name="notifyDaysAhead" type="number" min="0" max="30" [(ngModel)]="form.notifyDaysAhead" />
+        <input pInputText name="notifyDaysAhead" type="number" min="0" max="30" [(ngModel)]="form.notifyDaysAhead" />
       </label>
 
       <label class="field compact">
         <span>Heure d’envoi</span>
-        <input name="notificationTime" type="time" [(ngModel)]="notificationTime" />
+        <input pInputText name="notificationTime" type="time" [(ngModel)]="notificationTime" />
       </label>
 
-      @if (error()) {
-        <p class="form-error">{{ error() }}</p>
-      } @else if (saved()) {
-        <p class="form-success">Réglages enregistrés.</p>
-      }
+      <div class="form-actions">
+        <button pButton class="save-btn" type="submit" [disabled]="saving() || testing()">
+          <i [class]="saving() ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
+          <span>Enregistrer</span>
+        </button>
 
-      <button class="save-btn" type="submit" [disabled]="saving()">
-        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
-      </button>
+        <button
+          pButton
+          class="test-btn"
+          type="button"
+          severity="secondary"
+          [disabled]="saving() || testing()"
+          (click)="sendTestNotification()"
+        >
+          <i [class]="testing() ? 'pi pi-spinner pi-spin' : 'pi pi-send'"></i>
+          <span>Envoyer un test</span>
+        </button>
+      </div>
     </form>
   }
 </div>

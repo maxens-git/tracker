@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.ModelsDTO;
+using Tracker.Services;
 
 namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SettingsController(ApiDbContext context) : ControllerBase
+public class SettingsController(ApiDbContext context, NtfyService ntfy) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<SettingsDto>> Get()
@@ -32,6 +33,20 @@ public class SettingsController(ApiDbContext context) : ControllerBase
 
         await context.SaveChangesAsync();
         return ToDto(settings);
+    }
+
+    [HttpPost("test")]
+    public async Task<IActionResult> SendTestNotification(CancellationToken cancellationToken)
+    {
+        AppSettings settings = await EnsureSettings();
+        if (!settings.NtfyEnabled)
+            return BadRequest("Les notifications ntfy sont désactivées.");
+
+        if (string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
+            return BadRequest("L'URL ntfy et le topic sont requis.");
+
+        await ntfy.SendTestNotification(settings, cancellationToken);
+        return NoContent();
     }
 
     private async Task<AppSettings> EnsureSettings()

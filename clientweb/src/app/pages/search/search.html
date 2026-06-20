@@ -1,31 +1,32 @@
 <div class="search-page mx-auto px-4 pb-5 pt-4">
-  <div class="search-bar mb-3">
+  <p-iconfield iconPosition="left" styleClass="search-bar mb-3">
+    <p-inputicon styleClass="pi pi-search" />
     <input
+      pInputText
       type="search"
-      placeholder="Rechercher un film ou une série…"
+      placeholder="Rechercher un film ou une série..."
       [(ngModel)]="query"
       (ngModelChange)="onInput()"
       autofocus
-      class="w-100"
     />
-  </div>
+  </p-iconfield>
 
   @if (searched()) {
     <div class="filter-row mb-4">
       <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">
+        <button pButton type="button" class="filter-tab" [class.active]="filter() === 'all'" [outlined]="filter() !== 'all'" (click)="setFilter('all')">
           Tout <span class="count">{{ allResults().length }}</span>
         </button>
-        <button class="filter-tab" [class.active]="filter() === 'movie'" (click)="setFilter('movie')">
+        <button pButton type="button" class="filter-tab" [class.active]="filter() === 'movie'" [outlined]="filter() !== 'movie'" (click)="setFilter('movie')">
           Films <span class="count">{{ movieCount() }}</span>
         </button>
-        <button class="filter-tab" [class.active]="filter() === 'tv'" (click)="setFilter('tv')">
+        <button pButton type="button" class="filter-tab" [class.active]="filter() === 'tv'" [outlined]="filter() !== 'tv'" (click)="setFilter('tv')">
           Séries <span class="count">{{ showCount() }}</span>
         </button>
       </div>
 
       @if (allResults().length > 0) {
-        <button class="filter-toggle" [class.active]="showFilters() || hasActiveFilters()" (click)="toggleFilters()">
+        <button pButton type="button" icon="pi pi-sliders-h" class="filter-toggle" [outlined]="true" [class.active]="showFilters() || hasActiveFilters()" (click)="toggleFilters()">
           Filtres & tri
           @if (hasActiveFilters()) { <span class="dot"></span> }
         </button>
@@ -38,7 +39,7 @@
           <span class="panel-label">Trier par</span>
           <div class="chips">
             @for (opt of sortOptions; track opt.key) {
-              <button class="chip" [class.active]="sort() === opt.key" (click)="setSort(opt.key)">
+              <button pButton type="button" class="chip" [outlined]="sort() !== opt.key" [class.active]="sort() === opt.key" (click)="setSort(opt.key)">
                 {{ opt.label }}
               </button>
             }
@@ -50,7 +51,7 @@
             <span class="panel-label">Genres</span>
             <div class="chips">
               @for (g of relevantGenres(); track g.id) {
-                <button class="chip" [class.active]="isGenreSelected(g.id)" (click)="toggleGenre(g.id)">
+                <button pButton type="button" class="chip" [outlined]="!isGenreSelected(g.id)" [class.active]="isGenreSelected(g.id)" (click)="toggleGenre(g.id)">
                   {{ g.name }}
                 </button>
               }
@@ -59,7 +60,7 @@
         }
 
         @if (hasActiveFilters()) {
-          <button class="reset-btn" (click)="resetFilters()">Réinitialiser</button>
+          <button pButton type="button" text severity="secondary" icon="pi pi-refresh" class="reset-btn" (click)="resetFilters()">Réinitialiser</button>
         }
       </div>
     }

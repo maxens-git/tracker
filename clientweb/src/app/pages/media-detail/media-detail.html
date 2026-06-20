@@ -6,347 +6,535 @@
 
   @let m = movie();
   @let s = show();
+  @let voteAvg = isMovie ? m?.vote_average : s?.vote_average;
 
-  @if (isMovie && m) {
-    <div class="backdrop" [style.background-image]="backdropStyle(m.backdrop_path)"></div>
-  } @else if (!isMovie && s) {
-    <div class="backdrop" [style.background-image]="backdropStyle(s.backdrop_path)"></div>
-  }
+  <div
+    class="detail-page"
+    [style.background-image]="isMovie && m ? backdropStyle(m.backdrop_path) : (!isMovie && s ? backdropStyle(s.backdrop_path) : null)"
+  >
+    <button pButton type="button" class="back-btn" text severity="secondary" icon="pi pi-arrow-left" (click)="goBack()">
+      Retour
+    </button>
 
-  <div class="detail-page">
-
-    <button class="back-btn" (click)="goBack()">← Retour</button>
-
-    <!-- Header: poster + info -->
-    <section class="header-section">
-      <div class="poster-wrap">
-        @if (isMovie && m) {
-          @if (poster(m.poster_path); as p) {
-            <img class="poster-img" [src]="p" [alt]="m.title" />
-          } @else {
-            <div class="poster-placeholder">{{ m.title }}</div>
+    <section class="detail-hero">
+      <aside class="hero-panel">
+        <div class="poster-wrap">
+          @if (isMovie && m) {
+            @if (poster(m.poster_path); as p) {
+              <img class="poster-img" [src]="p" [alt]="m.title" />
+            } @else {
+              <div class="poster-placeholder">{{ m.title }}</div>
+            }
+          } @else if (!isMovie && s) {
+            @if (poster(s.poster_path); as p) {
+              <img class="poster-img" [src]="p" [alt]="s.name" />
+            } @else {
+              <div class="poster-placeholder">{{ s.name }}</div>
+            }
           }
-        } @else if (!isMovie && s) {
-          @if (poster(s.poster_path); as p) {
-            <img class="poster-img" [src]="p" [alt]="s.name" />
-          } @else {
-            <div class="poster-placeholder">{{ s.name }}</div>
-          }
-        }
-      </div>
+        </div>
+      </aside>
 
-      <div class="info">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          @if (!isMovie && s) {
+            Série
+          } @else {
+            Film
+          }
+        </div>
+
         @if (isMovie && m) {
-          <h1 class="title">{{ m.title }}</h1>
+          <h1>{{ m.title }}</h1>
           @if (m.original_title && m.original_title !== m.title) {
             <p class="original-title">{{ m.original_title }}</p>
           }
         } @else if (!isMovie && s) {
-          <h1 class="title">{{ s.name }}</h1>
+          <h1>{{ s.name }}</h1>
           @if (s.original_name && s.original_name !== s.name) {
             <p class="original-title">{{ s.original_name }}</p>
           }
         }
 
-        <div class="meta-row">
+        @if (isMovie && m?.tagline) {
+          <p class="tagline">{{ m!.tagline }}</p>
+        } @else if (!isMovie && s?.tagline) {
+          <p class="tagline">{{ s!.tagline }}</p>
+        }
+
+        <div class="meta-line">
           @if (isMovie && m) {
-            @if (year(m.release_date); as y) { <span class="meta-chip">{{ y }}</span> }
-            @if (m.runtime) { <span class="meta-chip">{{ formatRuntime(m.runtime) }}</span> }
-            @if (m.status) { <span class="meta-chip status">{{ m.status }}</span> }
-            @for (genre of m.genres; track genre.id) {
-              <span class="meta-chip genre">{{ genre.name }}</span>
+            @if (year(m.release_date); as y) { <span>{{ y }}</span> }
+            @if (m.runtime) { <span>{{ formatRuntime(m.runtime) }}</span> }
+            @if (m.status) { <span>{{ m.status }}</span> }
+          } @else if (!isMovie && s) {
+            @if (year(s.first_air_date); as y) { <span>{{ y }}</span> }
+            <span>{{ s.number_of_seasons }} saison{{ s.number_of_seasons > 1 ? 's' : '' }}</span>
+            <span>{{ s.number_of_episodes }} épisodes</span>
+            @if (s.status) { <span>{{ s.status }}</span> }
+          }
+        </div>
+
+        <div class="genre-line">
+          @if (isMovie && m) {
+            @for (genre of m.genres.slice(0, 4); track genre.id) {
+              <span>{{ genre.name }}</span>
             }
           } @else if (!isMovie && s) {
-            @if (year(s.first_air_date); as y) { <span class="meta-chip">{{ y }}</span> }
-            <span class="meta-chip">{{ s.number_of_seasons }} saison{{ s.number_of_seasons > 1 ? 's' : '' }}</span>
-            <span class="meta-chip">{{ s.number_of_episodes }} épisodes</span>
-            @if (s.status) { <span class="meta-chip status">{{ s.status }}</span> }
-            @for (genre of s.genres; track genre.id) {
-              <span class="meta-chip genre">{{ genre.name }}</span>
+            @for (genre of s.genres.slice(0, 4); track genre.id) {
+              <span>{{ genre.name }}</span>
             }
           }
         </div>
 
-        @if (isMovie && m?.tagline) {
-          <p class="tagline">"{{ m!.tagline }}"</p>
-        } @else if (!isMovie && s?.tagline) {
-          <p class="tagline">"{{ s!.tagline }}"</p>
-        }
+        <div class="facts hero-facts">
+          @if (voteAvg) {
+            <div class="fact rating-fact">
+              <span class="fact-label">TMDb</span>
+              <strong><i class="pi pi-star-fill"></i>{{ voteAvg!.toFixed(1) }}</strong>
+            </div>
+          }
 
-        @if (isMovie && m?.overview) {
-          <p class="overview">{{ m!.overview }}</p>
-        } @else if (!isMovie && s?.overview) {
-          <p class="overview">{{ s!.overview }}</p>
-        }
+          @if (isMovie && m && (m.budget || m.revenue)) {
+            @if (formatMoney(m.budget); as b) {
+              <div class="fact">
+                <span class="fact-label">Budget</span>
+                <strong>{{ b }}</strong>
+              </div>
+            }
+            @if (formatMoney(m.revenue); as r) {
+              <div class="fact">
+                <span class="fact-label">Recettes</span>
+                <strong>{{ r }}</strong>
+              </div>
+            }
+          }
 
-        <!-- Actions -->
+          @if (!isMovie && s) {
+            <div class="fact">
+              <span class="fact-label">Progression</span>
+              <strong>{{ currentSeen ? 'Terminée' : 'En cours' }}</strong>
+            </div>
+          }
+        </div>
+
         <div class="actions">
           <button
+            pButton
+            type="button"
             class="btn-action btn-seen"
             [class.active]="currentSeen"
             [disabled]="seenPending()"
             (click)="toggleSeen()"
           >
-            @if (currentSeen) { <span class="icon">✓</span> Vu }
-            @else { <span class="icon">○</span> Marquer comme vu }
+            <i [class]="currentSeen ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+            <span>{{ currentSeen ? 'Vu' : 'Marquer vu' }}</span>
           </button>
 
           <button
+            pButton
+            type="button"
             class="btn-action btn-liked"
             [class.active]="currentLiked"
             [disabled]="likedPending()"
             (click)="toggleLiked()"
           >
-            <span class="icon">{{ currentLiked ? '♥' : '♡' }}</span>
-            {{ currentLiked ? 'Aimé' : "J'aime" }}
+            <i [class]="currentLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
+            <span>{{ currentLiked ? 'Aimé' : "J'aime" }}</span>
           </button>
 
           <button
+            pButton
+            type="button"
             class="btn-action btn-watchlist"
             [class.active]="currentInWatchlist"
             [disabled]="watchlistPending()"
             (click)="toggleWatchlist()"
           >
-            <span class="icon">{{ currentInWatchlist ? '★' : '☆' }}</span>
-            {{ currentInWatchlist ? 'Watchlist' : '+ Watchlist' }}
+            <i [class]="currentInWatchlist ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"></i>
+            <span>{{ currentInWatchlist ? 'Watchlist' : 'Watchlist' }}</span>
           </button>
 
           <button
+            pButton
+            type="button"
             class="btn-action btn-release"
             [class.active]="releaseTracked()"
             [disabled]="releasePending()"
             (click)="toggleReleaseTracking()"
           >
-            <span class="icon">{{ releaseTracked() ? '🔔' : '◇' }}</span>
-            {{ releaseTracked() ? 'Sortie suivie' : 'Suivre sortie' }}
+            <i [class]="releaseTracked() ? 'pi pi-bell-fill' : 'pi pi-bell'"></i>
+            <span>{{ releaseTracked() ? 'Sortie suivie' : 'Suivre sortie' }}</span>
           </button>
 
-          @if (customLists.length > 0) {
-            <div class="list-picker-wrap">
-              <button
-                class="btn-action btn-lists"
-                [class.open]="showListPicker()"
-                (click)="$event.stopPropagation(); showListPicker.set(!showListPicker())"
-              >
-                <span class="icon">≡</span> Listes
-              </button>
-              @if (showListPicker()) {
-                <div class="list-picker-dropdown">
-                  @for (list of customLists; track list.id) {
-                    <button
-                      class="list-picker-item"
-                      [class.in-list]="isInList(list.id)"
-                      [disabled]="listPending() === list.id"
-                      (click)="toggleList(list.id)"
-                    >
-                      <span class="list-check">{{ isInList(list.id) ? '✓' : '' }}</span>
-                      <span class="list-icon">{{ list.icon || '📋' }}</span>
-                      {{ list.name }}
-                    </button>
-                  }
-                </div>
-              }
-            </div>
-          }
+          <button
+            pButton
+            type="button"
+            class="btn-action btn-lists"
+            [class.active]="inAnyCustomList"
+            (click)="openListDialog()"
+          >
+            <i class="pi pi-list"></i>
+            <span>Listes</span>
+          </button>
         </div>
-
-        <!-- Movie finances -->
-        @if (isMovie && m && (m.budget || m.revenue)) {
-          <div class="finance-row">
-            @if (formatMoney(m.budget); as b) {
-              <span class="finance-item"><span class="label">Budget</span> {{ b }}</span>
-            }
-            @if (formatMoney(m.revenue); as r) {
-              <span class="finance-item"><span class="label">Recettes</span> {{ r }}</span>
-            }
-          </div>
-        }
       </div>
     </section>
 
-    <!-- Ratings (TMDB only) -->
-    @let voteAvg = isMovie ? m?.vote_average : s?.vote_average;
-    @if (voteAvg) {
-      <section class="ratings-section">
-        <div class="ratings-wrap">
-          <div class="rating-item tmdb">
-            <span class="rating-icon">★</span>
-            <div class="rating-body">
-              <span class="rating-value">{{ voteAvg!.toFixed(1) }}</span>
-              <span class="rating-label">TMDb</span>
+    <div class="detail-grid">
+      <main class="detail-main">
+        @if ((isMovie && m?.overview) || (!isMovie && s?.overview)) {
+          <section class="synopsis-section">
+            <h2>Synopsis</h2>
+            @if (isMovie && m?.overview) {
+              <p>{{ m!.overview }}</p>
+            } @else if (!isMovie && s?.overview) {
+              <p>{{ s!.overview }}</p>
+            }
+          </section>
+        }
+
+        @if (credits()?.cast?.length) {
+          <section class="content-section">
+            <div class="section-heading">
+              <h2>Distribution</h2>
+              <span>{{ credits()!.cast.length }} personnes</span>
             </div>
-          </div>
-        </div>
-      </section>
-    }
-
-    <!-- Cast -->
-    @if (credits()?.cast?.length) {
-      <section class="content-section">
-        <h2 class="section-title">Distribution</h2>
-        <div class="cast-list">
-          @for (person of credits()!.cast.slice(0, 12); track person.id) {
-            <a class="cast-card" [routerLink]="['/person', person.id]">
-              <div class="cast-photo">
-                @if (profileUrl(person.profile_path); as p) {
-                  <img [src]="p" [alt]="person.name" loading="lazy" />
-                } @else {
-                  <div class="cast-placeholder">{{ person.name[0] }}</div>
-                }
-              </div>
-              <p class="cast-name">{{ person.name }}</p>
-              @if (person.character) {
-                <p class="cast-character">{{ person.character }}</p>
-              }
-            </a>
-          }
-        </div>
-      </section>
-    }
-
-    <!-- Crew -->
-    @if (topCrew.length) {
-      <section class="content-section">
-        <h2 class="section-title">Équipe technique</h2>
-        <div class="cast-list">
-          @for (person of topCrew; track person.id) {
-            <a class="cast-card" [routerLink]="['/person', person.id]">
-              <div class="cast-photo">
-                @if (profileUrl(person.profile_path); as p) {
-                  <img [src]="p" [alt]="person.name" loading="lazy" />
-                } @else {
-                  <div class="cast-placeholder">{{ person.name[0] }}</div>
-                }
-              </div>
-              <p class="cast-name">{{ person.name }}</p>
-              @if (person.job) {
-                <p class="cast-character">{{ jobLabel(person.job) }}</p>
-              }
-            </a>
-          }
-        </div>
-      </section>
-    }
-
-    <!-- Seasons (shows only) -->
-    @if (!isMovie) {
-      @let seasonList = seasons();
-      @if (seasonList.length) {
-        <section class="content-section">
-          <h2 class="section-title">Saisons</h2>
-          <div class="seasons-list">
-            @for (season of seasonList; track season.season_number) {
-              @let seenCount = seasonSeenCount(season);
-              @let total = season.episode_count;
-              @let seasonSeen = isSeasonSeen(season);
-              @let isExpanded = isSeasonExpanded(season.season_number);
-
-              <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="seasonSeen">
-
-                <div class="season-header" (click)="toggleSeason(season.season_number)">
-                  @if (poster(season.poster_path); as p) {
-                    <img class="season-poster" [src]="p" [alt]="season.name" loading="lazy" />
-                  } @else {
-                    <div class="season-poster-placeholder">{{ season.season_number }}</div>
-                  }
-
-                  <div class="season-info">
-                    <span class="season-name">{{ season.name }}</span>
-                    <span class="season-sub">
-                      @if (year(season.air_date); as y) { {{ y }} · }
-                      {{ season.episode_count }} épisode{{ season.episode_count > 1 ? 's' : '' }}
-                    </span>
-                    @if (total > 0) {
-                      <div class="season-progress">
-                        <div class="progress-bar">
-                          <div class="progress-fill" [style.width.%]="seasonProgress(season)"></div>
-                        </div>
-                        <span class="progress-label">{{ seenCount }}/{{ total }}</span>
-                      </div>
+            <div class="cast-list">
+              @for (person of credits()!.cast.slice(0, 12); track person.id) {
+                <a class="cast-card" [routerLink]="['/person', person.id]">
+                  <div class="cast-photo">
+                    @if (profileUrl(person.profile_path); as p) {
+                      <img [src]="p" [alt]="person.name" loading="lazy" />
+                    } @else {
+                      <div class="cast-placeholder">{{ person.name[0] }}</div>
                     }
                   </div>
+                  <p class="cast-name">{{ person.name }}</p>
+                  @if (person.character) {
+                    <p class="cast-character">{{ person.character }}</p>
+                  }
+                </a>
+              }
+            </div>
+          </section>
+        }
 
-                  <div class="season-actions">
-                    <button
-                      class="btn-season-seen"
-                      [class.active]="seasonSeen"
-                      [disabled]="isSeasonPending(season.season_number)"
-                      (click)="toggleSeasonSeen(season, $event)"
-                      [title]="seasonSeen ? 'Marquer non vu' : 'Tout marquer vu'"
-                    >
-                      {{ seasonSeen ? '✓ Vu' : 'Tout vu' }}
-                    </button>
-                    <span class="chevron" [class.open]="isExpanded">›</span>
-                  </div>
-                </div>
+        @if (!isMovie) {
+          @let seasonList = seasons();
+          @if (seasonList.length) {
+            <section class="content-section">
+              <div class="section-heading">
+                <h2>Saisons</h2>
+                <span>{{ seasonList.length }} saison{{ seasonList.length > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="seasons-list">
+                @for (season of seasonList; track season.season_number) {
+                  @let seenCount = seasonSeenCount(season);
+                  @let total = season.episode_count;
+                  @let seasonSeen = isSeasonSeen(season);
+                  @let isExpanded = isSeasonExpanded(season.season_number);
 
-                @if (isExpanded) {
-                  @if (!season.loaded) {
-                    <div class="episodes-loading"><app-spinner /></div>
-                  } @else if (season.episodes.length) {
-                    <div class="episodes-list">
-                      @for (ep of season.episodes; track ep.episode_number) {
-                        @let epK = ep.season_number + '-' + ep.episode_number;
-                        <div class="episode-row" [class.seen]="ep.seen">
-                          <span class="ep-num">{{ ep.episode_number }}</span>
-                          <div class="ep-body">
-                            <span class="ep-title">{{ ep.name }}</span>
-                            <span class="ep-meta">
-                              @if (ep.air_date) { {{ ep.air_date | date:'dd MMM yyyy' }} }
-                              @if (ep.runtime) { · {{ ep.runtime }}min }
-                            </span>
+                  <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="seasonSeen">
+                    <div class="season-header" (click)="toggleSeason(season.season_number)">
+                      <div class="season-number">S{{ season.season_number }}</div>
+
+                      <div class="season-info">
+                        <span class="season-name">{{ season.name }}</span>
+                        <span class="season-sub">
+                          @if (year(season.air_date); as y) { {{ y }} · }
+                          {{ season.episode_count }} épisode{{ season.episode_count > 1 ? 's' : '' }}
+                        </span>
+                        @if (total > 0) {
+                          <div class="season-progress">
+                            <div class="progress-bar">
+                              <div class="progress-fill" [style.width.%]="seasonProgress(season)"></div>
+                            </div>
+                            <span class="progress-label">{{ seenCount }}/{{ total }}</span>
                           </div>
-                          <button
-                            class="btn-ep-seen"
-                            [class.seen]="ep.seen"
-                            [disabled]="isEpisodePending(epK)"
-                            (click)="toggleEpisodeSeen(ep, $event)"
-                            [title]="ep.seen ? 'Marquer non vu' : 'Marquer comme vu'"
-                          >
-                            {{ ep.seen ? '✓' : '○' }}
-                          </button>
+                        }
+                      </div>
+
+                      <div class="season-actions">
+                        <button
+                          pButton
+                          type="button"
+                          class="btn-season-seen"
+                          [class.active]="seasonSeen"
+                          [disabled]="isSeasonPending(season.season_number)"
+                          (click)="toggleSeasonSeen(season, $event)"
+                          [title]="seasonSeen ? 'Marquer non vu' : 'Tout marquer vu'"
+                        >
+                          {{ seasonSeen ? 'Vu' : 'Tout vu' }}
+                        </button>
+                        <i class="pi pi-chevron-right chevron" [class.open]="isExpanded"></i>
+                      </div>
+                    </div>
+
+                    @if (isExpanded) {
+                      @if (!season.loaded) {
+                        <div class="episodes-loading"><app-spinner /></div>
+                      } @else if (season.episodes.length) {
+                        <div class="episodes-list">
+                          @for (ep of season.episodes; track ep.episode_number) {
+                            @let epK = ep.season_number + '-' + ep.episode_number;
+                            <div class="episode-row" [class.seen]="ep.seen">
+                              <span class="ep-num">{{ ep.episode_number }}</span>
+                              <div class="ep-body">
+                                <span class="ep-title">{{ ep.name }}</span>
+                                <span class="ep-meta">
+                                  @if (ep.air_date) { {{ ep.air_date | date:'dd MMM yyyy' }} }
+                                  @if (ep.runtime) { · {{ ep.runtime }}min }
+                                </span>
+                              </div>
+                              <button
+                                pButton
+                                type="button"
+                                class="btn-ep-seen"
+                                [class.seen]="ep.seen"
+                                [disabled]="isEpisodePending(epK)"
+                                (click)="toggleEpisodeSeen(ep, $event)"
+                                [title]="ep.seen ? 'Marquer non vu' : 'Marquer comme vu'"
+                              >
+                                <i [class]="ep.seen ? 'pi pi-check' : 'pi pi-circle'"></i>
+                              </button>
+                            </div>
+                          }
                         </div>
                       }
-                    </div>
-                  }
+                    }
+                  </div>
                 }
-
               </div>
-            }
+            </section>
+          }
+        }
+
+        @if (topCrew.length) {
+          <section class="content-section">
+            <div class="section-heading">
+              <h2>Équipe technique</h2>
+            </div>
+            <div class="cast-list">
+              @for (person of topCrew; track person.id) {
+                <a class="cast-card" [routerLink]="['/person', person.id]">
+                  <div class="cast-photo">
+                    @if (profileUrl(person.profile_path); as p) {
+                      <img [src]="p" [alt]="person.name" loading="lazy" />
+                    } @else {
+                      <div class="cast-placeholder">{{ person.name[0] }}</div>
+                    }
+                  </div>
+                  <p class="cast-name">{{ person.name }}</p>
+                  @if (person.job) {
+                    <p class="cast-character">{{ jobLabel(person.job) }}</p>
+                  }
+                </a>
+              }
+            </div>
+          </section>
+        }
+
+        @if (filteredVideos.length) {
+          <section class="content-section">
+            <div class="section-heading">
+              <h2>Bandes-annonces</h2>
+            </div>
+            <div class="trailers-list">
+              @for (video of filteredVideos; track video.id) {
+                <a class="trailer-card" [href]="trailerLink(video.key)" target="_blank" rel="noopener">
+                  <div class="trailer-thumb">
+                    <img [src]="trailerThumb(video.key)" [alt]="video.name" loading="lazy" />
+                    <div class="play-btn"><i class="pi pi-play"></i></div>
+                  </div>
+                  <p class="trailer-name">{{ video.name }}</p>
+                </a>
+              }
+            </div>
+          </section>
+        }
+      </main>
+
+      <aside class="detail-aside">
+        @if (!isMovie && s) {
+          <section class="side-section progress-card">
+            <h2>Ta progression</h2>
+            <div class="progress-score">
+              <strong>{{ showSeenEpisodeCount }}</strong>
+              <span>/ {{ showEpisodeCount }} épisodes</span>
+            </div>
+            <div class="media-progress-bar">
+              <div class="media-progress-fill" [style.width.%]="showProgressPercent"></div>
+            </div>
+            <p>{{ currentSeen ? 'Série terminée' : 'Visionnage en cours' }}</p>
+          </section>
+        }
+
+        <section class="side-section">
+          <h2>Statut personnel</h2>
+          <div class="state-list">
+            <span [class.on]="currentSeen"><i class="pi pi-check-circle"></i> Vu</span>
+            <span [class.on]="currentLiked"><i class="pi pi-heart"></i> Aimé</span>
+            <span [class.on]="currentInWatchlist"><i class="pi pi-bookmark"></i> Watchlist</span>
+            <span [class.on]="releaseTracked()"><i class="pi pi-bell"></i> Sortie suivie</span>
           </div>
         </section>
-      }
-    }
 
-    <!-- Videos / trailers -->
-    @if (filteredVideos.length) {
-      <section class="content-section">
-        <h2 class="section-title">Bandes-annonces</h2>
-        <div class="trailers-list">
-          @for (video of filteredVideos; track video.id) {
-            <a class="trailer-card" [href]="trailerLink(video.key)" target="_blank" rel="noopener">
-              <div class="trailer-thumb">
-                <img [src]="trailerThumb(video.key)" [alt]="video.name" loading="lazy" />
-                <div class="play-btn">▶</div>
+        <section class="side-section">
+          <h2>Infos</h2>
+          <dl class="info-list">
+            @if (isMovie && m) {
+              @if (year(m.release_date); as y) {
+                <div>
+                  <dt>Sortie</dt>
+                  <dd>{{ y }}</dd>
+                </div>
+              }
+              @if (m.runtime) {
+                <div>
+                  <dt>Durée</dt>
+                  <dd>{{ formatRuntime(m.runtime) }}</dd>
+                </div>
+              }
+              @if (m.status) {
+                <div>
+                  <dt>Statut</dt>
+                  <dd>{{ m.status }}</dd>
+                </div>
+              }
+              @if (m.vote_count) {
+                <div>
+                  <dt>Votes</dt>
+                  <dd>{{ formatNumber(m.vote_count) }}</dd>
+                </div>
+              }
+            } @else if (!isMovie && s) {
+              @if (year(s.first_air_date); as y) {
+                <div>
+                  <dt>Première diffusion</dt>
+                  <dd>{{ y }}</dd>
+                </div>
+              }
+              @if (year(s.last_air_date); as y) {
+                <div>
+                  <dt>Dernier épisode</dt>
+                  <dd>{{ y }}</dd>
+                </div>
+              }
+              <div>
+                <dt>Saisons</dt>
+                <dd>{{ s.number_of_seasons }}</dd>
               </div>
-              <p class="trailer-name">{{ video.name }}</p>
-            </a>
-          }
-        </div>
-      </section>
-    }
+              <div>
+                <dt>Épisodes</dt>
+                <dd>{{ s.number_of_episodes }}</dd>
+              </div>
+              @if (s.status) {
+                <div>
+                  <dt>Statut</dt>
+                  <dd>{{ s.status }}</dd>
+                </div>
+              }
+            }
+          </dl>
+        </section>
+      </aside>
+    </div>
 
-    <!-- Similar -->
     @if (similar().length) {
       <app-media-row
+        class="similar-row"
         [title]="isMovie ? 'Films similaires' : 'Séries similaires'"
         [items]="similar()"
       />
     }
-
   </div>
-}
 
-@if (toast()) {
-  <div class="toast" role="alert">{{ toast() }}</div>
+  <p-dialog
+    header="Ajouter à une liste"
+    styleClass="list-dialog"
+    [visible]="listDialogOpen()"
+    (visibleChange)="$event ? listDialogOpen.set(true) : closeListDialog()"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [blockScroll]="true"
+    [style]="{ width: 'min(94vw, 560px)' }"
+  >
+    <div class="list-dialog-body">
+      <section class="list-dialog-section">
+        <div class="list-dialog-heading">
+          <h3>Mes listes</h3>
+          <span>{{ customLists.length }}</span>
+        </div>
+
+        @if (customLists.length) {
+          <div class="list-dialog-list">
+            @for (list of customLists; track list.id) {
+              <button
+                type="button"
+                class="list-dialog-row"
+                [class.in-list]="isInList(list.id)"
+                [disabled]="listPending() === list.id || creatingList()"
+                (click)="toggleList(list.id)"
+              >
+                <span class="list-dialog-icon">{{ list.icon || '📋' }}</span>
+                <span class="list-dialog-copy">
+                  <strong>{{ list.name }}</strong>
+                  @if (list.description) {
+                    <small>{{ list.description }}</small>
+                  } @else {
+                    <small>{{ list.itemsCount }} élément{{ list.itemsCount > 1 ? 's' : '' }}</small>
+                  }
+                </span>
+                <span class="list-dialog-state">
+                  @if (listPending() === list.id) {
+                    <i class="pi pi-spinner pi-spin"></i>
+                  } @else if (isInList(list.id)) {
+                    <i class="pi pi-check"></i>
+                  } @else {
+                    <i class="pi pi-plus"></i>
+                  }
+                </span>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="list-dialog-empty">Aucune liste personnalisée.</p>
+        }
+      </section>
+
+      <section class="list-dialog-section create-list-section">
+        <div class="list-dialog-heading">
+          <h3>Créer une liste</h3>
+        </div>
+
+        <form class="create-list-form" (ngSubmit)="createListAndAdd()">
+          <label class="dialog-field">
+            <span>Nom</span>
+            <input pInputText name="newListName" [(ngModel)]="newListName" maxlength="100" placeholder="Films du week-end" />
+          </label>
+
+          <label class="dialog-field">
+            <span>Icône</span>
+            <input pInputText name="newListIcon" [(ngModel)]="newListIcon" maxlength="4" placeholder="🎬" />
+          </label>
+
+          <label class="dialog-field full">
+            <span>Description</span>
+            <textarea pTextarea name="newListDescription" [(ngModel)]="newListDescription" rows="2" maxlength="500" placeholder="Optionnelle"></textarea>
+          </label>
+
+          @if (listCreateError()) {
+            <p class="dialog-error">{{ listCreateError() }}</p>
+          }
+
+          <button pButton type="submit" class="dialog-create-btn" icon="pi pi-plus" [disabled]="!newListName.trim() || creatingList()" [loading]="creatingList()">
+            Créer et ajouter
+          </button>
+        </form>
+      </section>
+    </div>
+  </p-dialog>
 }

@@ -3,8 +3,8 @@
 }
 
 .page-title {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.45rem;
+  font-weight: 800;
   color: var(--text);
   margin: 0 0 1.5rem;
 }
@@ -16,10 +16,10 @@
 .settings-panel {
   display: grid;
   gap: 1rem;
-  padding: 1.25rem;
+  padding: 1.15rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-md);
 }
 
 .toggle-row {
@@ -27,16 +27,13 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 
   small {
     display: block;
     margin-top: 0.2rem;
     color: var(--muted);
-  }
-
-  input {
-    width: 20px;
-    height: 20px;
   }
 }
 
@@ -47,22 +44,15 @@
   span {
     color: var(--muted);
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 800;
   }
 
-  input {
-    width: 100%;
-    background: var(--bg-elevated, #0d1118);
+  .p-inputtext {
+    border-color: var(--border);
+    border-radius: var(--r-md);
+    background: var(--bg-elevated);
     color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.65rem 0.75rem;
-    font: inherit;
-
-    &:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    font-weight: 600;
   }
 
   &.compact {
@@ -70,28 +60,46 @@
   }
 }
 
-.form-error {
-  color: var(--danger);
-  margin: 0;
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
-.form-success {
-  color: var(--accent);
-  margin: 0;
+.save-btn,
+.test-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: var(--r-md) !important;
+  white-space: nowrap;
+
+  i {
+    display: inline-grid;
+    width: 1rem;
+    height: 1rem;
+    place-items: center;
+    line-height: 1;
+  }
+
+  .pi-spin {
+    animation: pi-spin 1s infinite linear;
+    transform-origin: center;
+  }
 }
 
 .save-btn {
-  justify-self: start;
-  border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  padding: 0.65rem 1rem;
-  font-weight: 700;
-  cursor: pointer;
+  min-width: 9rem;
+  color: var(--accent-contrast) !important;
+}
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
+.test-btn {
+  min-width: 11.5rem;
+}
+
+@keyframes pi-spin {
+  100% {
+    transform: rotate(360deg);
   }
 }

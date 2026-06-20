@@ -1,9 +1,15 @@
 import { Component } from '@angular/core';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-spinner',
   standalone: true,
-  template: `<div class="spinner-wrap"><div class="spinner"></div></div>`,
+  imports: [ProgressSpinnerModule],
+  template: `
+    <div class="spinner-wrap">
+      <p-progress-spinner strokeWidth="4" animationDuration=".7s" ariaLabel="Chargement" />
+    </div>
+  `,
   styles: [`
     .spinner-wrap {
       display: flex;
@@ -11,16 +17,9 @@ import { Component } from '@angular/core';
       align-items: center;
       padding: 3rem 0;
     }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    :host ::ng-deep .p-progressspinner {
+      width: 42px;
+      height: 42px;
     }
   `],
 })

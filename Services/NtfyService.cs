@@ -11,16 +11,31 @@ public class NtfyService(HttpClient http)
         if (!settings.NtfyEnabled || string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
             return;
 
-        Uri endpoint = BuildEndpoint(settings.NtfyUrl, settings.NtfyTopic);
         string date = release.ReleaseDate.ToString("dd/MM/yyyy");
         string body = $"{release.ReleaseTitle} sort le {date}.";
+        string title = $"Sortie Tracker: {release.MediaTitle}";
+        string tags = release.MediaType == MediaType.Movie ? "movie_camera" : "tv";
 
+        await Send(settings, title, body, tags, cancellationToken);
+    }
+
+    public Task SendTestNotification(AppSettings settings, CancellationToken cancellationToken) =>
+        Send(
+            settings,
+            "Test Tracker",
+            $"Notification de test envoyée le {DateTime.Now:dd/MM/yyyy à HH:mm}.",
+            "test_tube",
+            cancellationToken);
+
+    private async Task Send(AppSettings settings, string title, string body, string tags, CancellationToken cancellationToken)
+    {
+        Uri endpoint = BuildEndpoint(settings.NtfyUrl!, settings.NtfyTopic!);
         using HttpRequestMessage request = new(HttpMethod.Post, endpoint)
         {
             Content = new StringContent(body, Encoding.UTF8, "text/plain")
         };
-        request.Headers.Add("Title", EncodeHeader($"Sortie Tracker: {release.MediaTitle}"));
-        request.Headers.Add("Tags", release.MediaType == MediaType.Movie ? "movie_camera" : "tv");
+        request.Headers.Add("Title", EncodeHeader(title));
+        request.Headers.Add("Tags", tags);
 
         if (!string.IsNullOrWhiteSpace(settings.NtfyToken))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.NtfyToken);

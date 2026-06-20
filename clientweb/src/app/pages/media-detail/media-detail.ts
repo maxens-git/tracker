@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -17,6 +18,11 @@ import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/serv
 import { errorMessage } from '../../../shared/services/http-error';
 import { EpisodeSeenDto } from '../../../shared/interfaces/episode';
 import { SYSTEM_LIST } from '../../../shared/constants';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 
 type MediaType = 'movie' | 'tv';
 
@@ -41,7 +47,7 @@ interface MediaDetailData {
 @Component({
   selector: 'app-media-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, Spinner, MediaRow],
+  imports: [CommonModule, FormsModule, RouterLink, Spinner, MediaRow, ButtonModule, DialogModule, InputTextModule, TextareaModule],
   templateUrl: './media-detail.html',
   styleUrl: './media-detail.scss',
 })
@@ -50,10 +56,10 @@ export class MediaDetail implements OnInit {
   private tmdb = inject(TmdbService);
   private api = inject(Api);
   private location = inject(Location);
+  private messages = inject(MessageService);
 
   loading = signal(true);
   error = signal<string | null>(null);
-  toast = signal<string | null>(null);
   mediaType = signal<MediaType>('movie');
 
   movie = signal<TmdbMovie | null>(null);
@@ -73,11 +79,16 @@ export class MediaDetail implements OnInit {
   likedPending = signal(false);
   watchlistPending = signal(false);
   listPending = signal<number | null>(null);
-  showListPicker = signal(false);
+  listDialogOpen = signal(false);
+  creatingList = signal(false);
+  listCreateError = signal<string | null>(null);
   episodePending = signal<Set<string>>(new Set());
   seasonPending = signal<Set<number>>(new Set());
   releaseTracked = signal(false);
   releasePending = signal(false);
+  newListName = '';
+  newListIcon = '';
+  newListDescription = '';
 
   ngOnInit() {
     this.route.paramMap.pipe(
@@ -109,7 +120,8 @@ export class MediaDetail implements OnInit {
     this.videos.set(null);
     this.similar.set([]);
     this.expandedSeason.set(null);
-    this.showListPicker.set(false);
+    this.listDialogOpen.set(false);
+    this.resetListForm();
     this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
     this.releaseTracked.set(false);
     this.releasePending.set(false);
@@ -217,14 +229,6 @@ export class MediaDetail implements OnInit {
     this.syncShowSeen();
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.list-picker-wrap')) {
-      this.showListPicker.set(false);
-    }
-  }
-
   goBack() { this.location.back(); }
 
   get isMovie() { return this.mediaType() === 'movie'; }
@@ -243,6 +247,10 @@ export class MediaDetail implements OnInit {
 
   get customLists(): MediaListSummary[] {
     return this.lists().filter(l => !l.isSystem);
+  }
+
+  get inAnyCustomList(): boolean {
+    return this.customLists.some(list => this.isInList(list.id));
   }
 
   /** Membres clés de l'équipe technique : métiers prioritaires, sans doublon de personne. */
@@ -279,6 +287,14 @@ export class MediaDetail implements OnInit {
     });
   }
 
+  private bumpListItemCount(listId: number, delta: number): void {
+    this.lists.update(lists => lists.map(list =>
+      list.id === listId
+        ? { ...list, itemsCount: Math.max(0, list.itemsCount + delta) }
+        : list
+    ));
+  }
+
   private currentPosterPath(): string | null | undefined {
     return this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path;
   }
@@ -292,12 +308,12 @@ export class MediaDetail implements OnInit {
     });
   }
 
-  /** Affiche un message transitoire en bas d'écran (échec d'une action). */
-  private toastTimer?: ReturnType<typeof setTimeout>;
   showToast(message: string): void {
-    this.toast.set(message);
-    clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.toast.set(null), 3500);
+    this.messages.add({ severity: 'error', summary: 'Action impossible', detail: message, life: 4500 });
+  }
+
+  showSuccess(message: string): void {
+    this.messages.add({ severity: 'success', summary: 'Listes', detail: message, life: 3200 });
   }
 
   // ── Seen ─────────────────────────────────────────────────────────────────
@@ -383,10 +399,57 @@ export class MediaDetail implements OnInit {
 
   // ── Custom lists ──────────────────────────────────────────────────────────
 
+  openListDialog() {
+    this.listCreateError.set(null);
+    this.listDialogOpen.set(true);
+  }
+
+  closeListDialog() {
+    if (this.listPending() !== null || this.creatingList()) return;
+    this.listDialogOpen.set(false);
+  }
+
+  createListAndAdd() {
+    const name = this.newListName.trim();
+    if (!name || this.creatingList()) return;
+
+    const dto = {
+      name,
+      icon: this.newListIcon.trim(),
+      description: this.newListDescription.trim(),
+    };
+
+    this.creatingList.set(true);
+    this.listCreateError.set(null);
+
+    this.api.createList(dto).pipe(
+      switchMap(list =>
+        this.api.addItemToList(list.id, {
+          tmdbId: this.userState().tmdbId,
+          mediaType: this.mediaType(),
+          posterPath: this.currentPosterPath(),
+        }).pipe(map(() => list))
+      )
+    ).subscribe({
+      next: list => {
+        this.creatingList.set(false);
+        this.lists.update(lists => [...lists, { ...list, itemsCount: 1 }]);
+        this.setListMembership(list.id, true);
+        this.resetListForm();
+        this.showSuccess(`Ajouté à « ${list.name} ».`);
+      },
+      error: err => {
+        this.creatingList.set(false);
+        this.listCreateError.set(errorMessage(err));
+      },
+    });
+  }
+
   toggleList(listId: number) {
     if (this.listPending() !== null) return;
     this.listPending.set(listId);
     const inList = this.isInList(listId);
+    const delta = inList ? -1 : 1;
     const tmdbId = this.userState().tmdbId;
     const type = this.mediaType();
 
@@ -395,11 +458,18 @@ export class MediaDetail implements OnInit {
       : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath() });
 
     this.runOptimistic(
-      () => this.setListMembership(listId, !inList),
-      () => this.setListMembership(listId, inList),
+      () => { this.setListMembership(listId, !inList); this.bumpListItemCount(listId, delta); },
+      () => { this.setListMembership(listId, inList); this.bumpListItemCount(listId, -delta); },
       request,
       () => this.listPending.set(null),
     );
+  }
+
+  private resetListForm() {
+    this.newListName = '';
+    this.newListIcon = '';
+    this.newListDescription = '';
+    this.listCreateError.set(null);
   }
 
   // ── Seasons & episodes ────────────────────────────────────────────────────
@@ -455,6 +525,19 @@ export class MediaDetail implements OnInit {
   /** Saison entièrement vue, dérivé de la map + episode_count (sans charger les épisodes). */
   isSeasonSeen(season: SeasonView): boolean {
     return season.episode_count > 0 && this.seenCountInSeason(season.season_number) >= season.episode_count;
+  }
+
+  get showEpisodeCount(): number {
+    return this.seasons().reduce((total, season) => total + Math.max(0, season.episode_count), 0);
+  }
+
+  get showSeenEpisodeCount(): number {
+    return this.seasons().reduce((total, season) => total + this.seenCountInSeason(season.season_number), 0);
+  }
+
+  get showProgressPercent(): number {
+    const total = this.showEpisodeCount;
+    return total > 0 ? Math.min(100, (this.showSeenEpisodeCount / total) * 100) : 0;
   }
 
   /** Pourcentage de progression d'une saison, borné à 100. */
@@ -604,7 +687,7 @@ export class MediaDetail implements OnInit {
   backdropStyle(path?: string | null): string | null {
     const url = backdropUrl(path, 'original');
     return url
-      ? `linear-gradient(to bottom, rgba(7,9,13,0.35) 0%, rgba(7,9,13,0.95) 85%, rgba(7,9,13,1) 100%), url(${url})`
+      ? `linear-gradient(to right, rgba(20,18,16,0.98) 0%, rgba(20,18,16,0.84) 48%, rgba(20,18,16,0.48) 100%), linear-gradient(to top, rgba(20,18,16,0.96) 0%, rgba(20,18,16,0.16) 70%), url(${url})`
       : null;
   }
 
@@ -627,6 +710,10 @@ export class MediaDetail implements OnInit {
   formatMoney(amount: number): string | null {
     if (!amount) return null;
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  formatNumber(value: number): string {
+    return new Intl.NumberFormat('fr-FR').format(value);
   }
 
   genres(g: { id: number; name: string }[] | undefined): string {

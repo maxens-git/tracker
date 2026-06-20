@@ -1,21 +1,26 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Api, Settings } from '../../../shared/services/api';
+import { switchMap } from 'rxjs/operators';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })
 export class SettingsPage implements OnInit {
   private api = inject(Api);
+  private messages = inject(MessageService);
 
   loading = signal(true);
   saving = signal(false);
-  saved = signal(false);
-  error = signal<string | null>(null);
+  testing = signal(false);
 
   form: Omit<Settings, 'updatedAt'> = {
     ntfyEnabled: false,
@@ -42,8 +47,8 @@ export class SettingsPage implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Impossible de charger les réglages.');
         this.loading.set(false);
+        this.showError('Impossible de charger les réglages.');
       },
     });
   }
@@ -51,26 +56,37 @@ export class SettingsPage implements OnInit {
   save() {
     if (this.saving()) return;
     this.saving.set(true);
-    this.saved.set(false);
-    this.error.set(null);
 
-    const time = this.notificationTimeParts();
-    this.api.updateSettings({
-      ...this.form,
-      notifyDaysAhead: Number(this.form.notifyDaysAhead) || 0,
-      notificationHour: time.hour,
-      notificationMinute: time.minute,
-    }).subscribe({
+    this.api.updateSettings(this.normalizedSettings()).subscribe({
       next: settings => {
-        this.form.notifyDaysAhead = settings.notifyDaysAhead;
-        this.form.notificationHour = settings.notificationHour;
-        this.form.notificationMinute = settings.notificationMinute;
+        this.applySavedSettings(settings);
         this.saving.set(false);
-        this.saved.set(true);
+        this.showSuccess('Réglages enregistrés.');
       },
       error: () => {
-        this.error.set('Impossible d’enregistrer les réglages.');
         this.saving.set(false);
+        this.showError('Impossible d’enregistrer les réglages.');
+      },
+    });
+  }
+
+  sendTestNotification() {
+    if (this.testing() || this.saving()) return;
+    this.testing.set(true);
+
+    this.api.updateSettings(this.normalizedSettings()).pipe(
+      switchMap(settings => {
+        this.applySavedSettings(settings);
+        return this.api.sendTestNotification();
+      })
+    ).subscribe({
+      next: () => {
+        this.testing.set(false);
+        this.showSuccess('Notification de test envoyée.');
+      },
+      error: () => {
+        this.testing.set(false);
+        this.showError('Impossible d’envoyer la notification de test.');
       },
     });
   }
@@ -90,5 +106,29 @@ export class SettingsPage implements OnInit {
       hour: Math.max(0, Math.min(23, Number(this.form.notificationHour) || 0)),
       minute: Math.max(0, Math.min(59, Number(this.form.notificationMinute) || 0)),
     };
+  }
+
+  private normalizedSettings(): Omit<Settings, 'updatedAt'> {
+    const time = this.notificationTimeParts();
+    return {
+      ...this.form,
+      notifyDaysAhead: Number(this.form.notifyDaysAhead) || 0,
+      notificationHour: time.hour,
+      notificationMinute: time.minute,
+    };
+  }
+
+  private applySavedSettings(settings: Settings) {
+    this.form.notifyDaysAhead = settings.notifyDaysAhead;
+    this.form.notificationHour = settings.notificationHour;
+    this.form.notificationMinute = settings.notificationMinute;
+  }
+
+  private showSuccess(detail: string) {
+    this.messages.add({ severity: 'success', summary: 'Réglages', detail, life: 3500 });
+  }
+
+  private showError(detail: string) {
+    this.messages.add({ severity: 'error', summary: 'Réglages', detail, life: 5000 });
   }
 }

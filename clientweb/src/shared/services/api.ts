@@ -193,6 +193,10 @@ export class Api {
     return this.http.put<Settings>(`${API}/Settings`, settings);
   }
 
+  sendTestNotification(): Observable<unknown> {
+    return this.http.post(`${API}/Settings/test`, null);
+  }
+
   trackedMedia(): Observable<TrackedMedia[]> {
     return this.http.get<TrackedMedia[]>(`${API}/TrackedMedia`);
   }

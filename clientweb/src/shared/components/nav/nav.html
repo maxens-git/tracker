@@ -1,33 +1,84 @@
-<nav class="d-flex align-items-center">
-  <a routerLink="/home" class="brand text-uppercase text-decoration-none" (click)="close()">tracker</a>
+<nav class="topbar">
+  <a routerLink="/home" class="brand" (click)="close()" aria-label="Tracker accueil">
+    <span class="brand-mark">T</span>
+    <span>Tracker</span>
+  </a>
 
-  <div class="links d-flex">
-    <a routerLink="/home" routerLinkActive="active" class="text-uppercase text-decoration-none">Accueil</a>
-    <a routerLink="/search" routerLinkActive="active" class="text-uppercase text-decoration-none">Recherche</a>
-    <a routerLink="/lists" routerLinkActive="active" class="text-uppercase text-decoration-none">Listes</a>
-    <a routerLink="/releases" routerLinkActive="active" class="text-uppercase text-decoration-none">Sorties</a>
-    <a routerLink="/activity" routerLinkActive="active" class="text-uppercase text-decoration-none">Activité</a>
-    <a routerLink="/stats" routerLinkActive="active" class="text-uppercase text-decoration-none">Statistiques</a>
-    <a routerLink="/settings" routerLinkActive="active" class="text-uppercase text-decoration-none">Réglages</a>
-  </div>
-
-  <button class="burger" (click)="toggle()" [class.is-open]="open()" aria-label="Menu">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
+  <button
+    pButton
+    pRipple
+    type="button"
+    icon="pi pi-bars"
+    class="menu-button"
+    severity="secondary"
+    text
+    rounded
+    (click)="toggle()"
+    aria-label="Menu"
+  ></button>
 </nav>
 
-@if (open()) {
-  <div class="mobile-overlay" (click)="close()">
-    <div class="mobile-menu" (click)="$event.stopPropagation()">
-      <a routerLink="/home" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Accueil</a>
-      <a routerLink="/search" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Recherche</a>
-      <a routerLink="/lists" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Listes</a>
-      <a routerLink="/releases" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Sorties</a>
-      <a routerLink="/activity" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Activité</a>
-      <a routerLink="/stats" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Statistiques</a>
-      <a routerLink="/settings" routerLinkActive="active" class="text-uppercase text-decoration-none" (click)="close()">Réglages</a>
+<aside class="sidebar" aria-label="Navigation principale">
+  <a routerLink="/home" class="brand" aria-label="Tracker accueil">
+    <span class="brand-mark">T</span>
+    <span>Tracker</span>
+  </a>
+
+  <div class="nav-links">
+    @for (item of items; track item.path) {
+      <a
+        pRipple
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="item.path === '/home' ? { exact: true } : { exact: false }"
+        class="nav-link"
+      >
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+        @if (item.badge) {
+          <span class="nav-badge">{{ item.badge }}</span>
+        }
+      </a>
+    }
+  </div>
+
+  <div class="sidebar-footer">
+    <span class="status-dot"></span>
+    <span>Local</span>
+  </div>
+</aside>
+
+<p-drawer
+  [visible]="open()"
+  (visibleChange)="open.set($event)"
+  position="left"
+  styleClass="mobile-nav-drawer"
+  [showCloseIcon]="false"
+  [blockScroll]="true"
+>
+  <div class="drawer-content">
+    <a routerLink="/home" class="brand" (click)="close()" aria-label="Tracker accueil">
+      <span class="brand-mark">T</span>
+      <span>Tracker</span>
+    </a>
+
+    <div class="nav-links">
+      @for (item of items; track item.path) {
+        <a
+          pRipple
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="item.path === '/home' ? { exact: true } : { exact: false }"
+          class="nav-link"
+          (click)="close()"
+        >
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+          @if (item.badge) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
     </div>
   </div>
-}
+</p-drawer>
