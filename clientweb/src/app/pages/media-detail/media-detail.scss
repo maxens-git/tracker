@@ -149,14 +149,6 @@
   font-weight: 650;
 }
 
-.overview {
-  max-width: 68ch;
-  margin: 1rem 0 0;
-  color: #d8d1c5;
-  font-size: 0.98rem;
-  line-height: 1.7;
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -166,7 +158,6 @@
 
 .btn-action {
   --state-color: var(--accent);
-  --state-soft: rgba(var(--accent-rgb), 0.12);
   --state-border: rgba(var(--accent-rgb), 0.32);
   --state-contrast: var(--accent-contrast);
 
@@ -182,15 +173,14 @@
   font-size: 0.9rem !important;
   font-weight: 900 !important;
   backdrop-filter: blur(12px);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   i {
     color: inherit;
     font-size: 1rem;
   }
 
-  &:hover:not(:disabled),
-  &.open {
+  &:hover:not(:disabled) {
     border-color: var(--border-strong) !important;
     background: rgba(35, 31, 26, 0.9) !important;
     color: var(--text) !important;
@@ -206,7 +196,6 @@
   &.btn-seen {
     min-width: 118px;
     --state-color: var(--success);
-    --state-soft: rgba(130, 199, 154, 0.13);
     --state-border: rgba(130, 199, 154, 0.42);
     --state-contrast: #102016;
   }
@@ -214,14 +203,12 @@
   &.btn-watchlist {
     min-width: 154px;
     --state-color: var(--accent);
-    --state-soft: var(--accent-soft);
     --state-border: rgba(var(--accent-rgb), 0.42);
     --state-contrast: var(--accent-contrast);
   }
 
   &.btn-liked {
     --state-color: var(--like);
-    --state-soft: rgba(var(--like-rgb), 0.13);
     --state-border: rgba(var(--like-rgb), 0.42);
     --state-contrast: #fff;
   }
@@ -229,16 +216,6 @@
   &:disabled {
     opacity: 0.55;
     cursor: default;
-  }
-}
-
-.btn-action:not(.active) {
-  &:where(.btn-seen, .btn-watchlist, .btn-liked) {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-
-    i {
-      opacity: 0.78;
-    }
   }
 }
 
@@ -288,8 +265,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.65rem;
-  min-width: auto;
-  max-width: 100%;
   padding: 0.4rem 0.7rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r-pill);
@@ -807,29 +782,6 @@
   -webkit-line-clamp: 2;
 }
 
-.state-list {
-  display: grid;
-  gap: 0.55rem;
-
-  span {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--faint);
-    font-size: 0.84rem;
-    font-weight: 700;
-
-    i {
-      color: inherit;
-      font-size: 0.85rem;
-    }
-
-    &.on {
-      color: var(--accent);
-    }
-  }
-}
-
 .info-list {
   display: grid;
   gap: 0.7rem;
@@ -1118,13 +1070,6 @@
 
   .hero-copy h1 {
     font-size: 2rem;
-  }
-
-  .overview {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
   }
 
   .hero-panel {

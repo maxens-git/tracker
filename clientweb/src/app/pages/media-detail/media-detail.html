@@ -371,16 +371,6 @@
         }
 
         <section class="side-section">
-          <h2>Statut personnel</h2>
-          <div class="state-list">
-            <span [class.on]="currentSeen"><i class="pi pi-check-circle"></i> Vu</span>
-            <span [class.on]="currentLiked"><i class="pi pi-heart"></i> Aimé</span>
-            <span [class.on]="currentInWatchlist"><i class="pi pi-bookmark"></i> Watchlist</span>
-            <span [class.on]="releaseTracked()"><i class="pi pi-bell"></i> Sortie suivie</span>
-          </div>
-        </section>
-
-        <section class="side-section">
           <h2>Infos</h2>
           <dl class="info-list">
             @if (isMovie && m) {
