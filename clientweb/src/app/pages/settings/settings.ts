@@ -6,11 +6,12 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule],
+  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })

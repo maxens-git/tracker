@@ -4,7 +4,7 @@
   </div>
 
   @if (loading()) {
-    <div class="status">Chargement…</div>
+    <app-spinner />
   } @else {
     <form class="settings-panel" (ngSubmit)="save()">
       <div class="toggle-row">
