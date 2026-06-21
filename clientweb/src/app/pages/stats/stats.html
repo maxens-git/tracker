@@ -22,7 +22,10 @@
         <div class="kpi-label">Épisodes vus</div>
       </div>
       <div class="kpi-card accent">
-        <div class="kpi-value">{{ formatRuntime(s.totalRuntimeMinutes) }}</div>
+        <div class="kpi-value runtime-value">
+          <span>{{ formatRuntime(s.totalRuntimeMinutes) }}</span>
+          <small>{{ formatRuntimeHours(s.totalRuntimeMinutes) }}</small>
+        </div>
         <div class="kpi-label">Temps total</div>
       </div>
     </div>

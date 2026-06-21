@@ -38,6 +38,20 @@
   margin-bottom: 0.35rem;
 }
 
+.runtime-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+
+  small {
+    color: var(--faint);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 650;
+  }
+}
+
 .kpi-label {
   font-size: 0.68rem;
   font-weight: 500;

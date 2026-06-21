@@ -72,6 +72,12 @@ export class StatsPage implements OnInit {
     return `${mins}min`;
   }
 
+  formatRuntimeHours(minutes: number): string {
+    if (!minutes) return '—';
+    const hours = Math.floor(minutes / 60);
+    return `${new Intl.NumberFormat('fr-FR').format(hours)} h`;
+  }
+
   pct(value: number, max: number): string {
     return max > 0 ? `${Math.round((value / max) * 100)}%` : '0%';
   }
