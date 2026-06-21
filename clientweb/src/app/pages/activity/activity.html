@@ -1,6 +1,10 @@
-<div class="activity-page mx-auto px-4 pb-5 pt-4">
-  <h1 class="page-title mb-1">Activité</h1>
-  <p class="subtitle mb-4">Vos dernières actions{{ totalCount() ? ' · ' + totalCount() : '' }}</p>
+<div class="activity-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Activité</h1>
+      <p class="subtitle">Vos dernières actions{{ totalCount() ? ' · ' + totalCount() : '' }}</p>
+    </div>
+  </div>
 
   @if (error() && rows().length === 0) {
     <div class="status text-center py-5">Erreur lors du chargement.</div>

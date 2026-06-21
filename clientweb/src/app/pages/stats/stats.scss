@@ -1,17 +1,6 @@
 .stats-page {
-  width: min(100%, 1180px);
-  margin: 0 auto;
-  padding: 1rem clamp(0.75rem, 2vw, 1.5rem) 2rem;
   display: grid;
   gap: 1rem;
-}
-
-.page-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-  line-height: 1.15;
 }
 
 .status {

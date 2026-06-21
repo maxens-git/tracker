@@ -280,6 +280,43 @@ img { display: block; }
   letter-spacing: 0;
 }
 
+:where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .stats-page) {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  padding: 1rem clamp(0.75rem, 2vw, 1.5rem) 2rem;
+}
+
+.page-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.page-header,
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .page-header,
+  .page-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 @media (max-width: 860px) {
   .page-content {
     padding-top: var(--nav-h);

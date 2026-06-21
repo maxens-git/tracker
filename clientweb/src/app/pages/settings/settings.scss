@@ -1,19 +1,9 @@
-.settings-page {
-  max-width: 760px;
-}
-
-.page-title {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--text);
-  margin: 0 0 1.5rem;
-}
-
 .status {
   color: var(--muted);
 }
 
 .settings-panel {
+  max-width: 760px;
   display: grid;
   gap: 1rem;
   padding: 1.15rem;
