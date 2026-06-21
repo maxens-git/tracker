@@ -9,6 +9,12 @@ export interface StatsMonthBucket {
   count: number;
 }
 
+export interface StatsGenreBucket {
+  name: string;
+  count: number;
+  percentage: number;
+}
+
 export interface Stats {
   moviesSeenCount: number;
   showsSeenCount: number;
@@ -18,6 +24,7 @@ export interface Stats {
   moviesSeenByMonth: StatsMonthBucket[];
   episodesSeenByYear: StatsYearBucket[];
   episodesSeenByMonth: StatsMonthBucket[];
+  favoriteGenres: StatsGenreBucket[];
 }
 
 export interface CombinedYearBucket {

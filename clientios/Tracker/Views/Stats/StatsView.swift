@@ -19,6 +19,10 @@ struct StatsView: View {
                 VStack(spacing: 24) {
                     summaryGrid(stats)
 
+                    if !stats.favoriteGenres.isEmpty {
+                        GenrePreferenceCard(genres: stats.favoriteGenres)
+                    }
+
                     if !viewModel.byYear.isEmpty {
                         ActivityChart(title: "Activité par année",
                                       bars: viewModel.byYear.map {
@@ -71,6 +75,69 @@ struct StatsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .cinemaCard()
+    }
+}
+
+// MARK: - Genres préférés
+
+private struct GenrePreferenceCard: View {
+    let genres: [StatsGenreBucket]
+
+    private let colors: [Color] = [
+        Color(hex: 0xE89A63),
+        Color(hex: 0x8BA7EA),
+        Color(hex: 0x51B7D3),
+        Color(hex: 0xA7BA63),
+        Color(hex: 0x64BD8D),
+        Color(hex: 0xEA8E94),
+        Color(hex: 0xDD83AE),
+    ]
+
+    private var maxPercentage: Int {
+        max(genres.map(\.percentage).max() ?? 1, 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("Genres préférés")
+                .font(.display(22))
+
+            VStack(spacing: 20) {
+                ForEach(Array(genres.enumerated()), id: \.element.id) { index, genre in
+                    genreRow(genre, color: colors[index % colors.count])
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .cinemaCard()
+    }
+
+    private func genreRow(_ genre: StatsGenreBucket, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(genre.name)
+                    .font(.display(17, .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                Spacer()
+                Text("\(genre.percentage)%")
+                    .font(.display(17, .semibold))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.08))
+                    Capsule()
+                        .fill(color)
+                        .frame(width: proxy.size.width * CGFloat(genre.percentage) / CGFloat(maxPercentage))
+                }
+            }
+            .frame(height: 10)
+        }
     }
 }
 

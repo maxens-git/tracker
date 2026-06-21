@@ -199,7 +199,9 @@ final class MediaDetailViewModel {
 
         applyLocalState(seen: newValue, liked: liked)
         do {
-            try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue, posterPath: posterPath, runtime: movie?.runtime)
+            try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue,
+                                   posterPath: posterPath, runtime: movie?.runtime,
+                                   genres: movie?.genres ?? [])
             newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
             applyLocalState(seen: !newValue, liked: liked)
@@ -232,7 +234,8 @@ final class MediaDetailViewModel {
         }
 
         do {
-            try await api.markShowSeen(showTmdbId: tmdbId, seen: newValue, seasons: allSeasons)
+            try await api.markShowSeen(showTmdbId: tmdbId, seen: newValue, seasons: allSeasons,
+                                       posterPath: posterPath, genres: show?.genres ?? [])
             newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
             state = previousState
@@ -263,7 +266,8 @@ final class MediaDetailViewModel {
         do {
             if adding {
                 try await api.addToWatchlist(tmdbId: tmdbId, type: type,
-                                             posterPath: posterPath, runtime: movie?.runtime)
+                                             posterPath: posterPath, runtime: movie?.runtime,
+                                             genres: movie?.genres ?? show?.genres ?? [])
             } else {
                 try await api.removeFromWatchlist(tmdbId: tmdbId, type: type)
             }
@@ -424,7 +428,8 @@ final class MediaDetailViewModel {
         applyLocalState(seen: derived, liked: liked)
         do {
             try await api.markSeen(tmdbId: tmdbId, type: type, seen: derived,
-                                   posterPath: posterPath, runtime: movie?.runtime)
+                                   posterPath: posterPath, runtime: movie?.runtime,
+                                   genres: show?.genres ?? [])
         } catch {
             // Optimiste : réconcilié au prochain reload.
         }

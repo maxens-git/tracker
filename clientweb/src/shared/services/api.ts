@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { MediaItem, UserState } from '../interfaces/media';
+import { MediaItem, TmdbGenre, UserState } from '../interfaces/media';
 import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/list';
 import { Stats } from '../interfaces/stats';
 import { EpisodeSeenDto } from '../interfaces/episode';
@@ -19,11 +19,14 @@ export interface AddListItemPayload {
 export interface AddToWatchlistPayload {
   posterPath?: string | null;
   runtime?: number | null;
+  genres?: TmdbGenre[] | null;
 }
 
 export interface MarkSeenPayload {
   seen: boolean;
+  posterPath?: string | null;
   runtime?: number | null;
+  genres?: TmdbGenre[] | null;
 }
 
 export interface MarkSeasonSeenPayload {
@@ -33,6 +36,8 @@ export interface MarkSeasonSeenPayload {
 
 export interface MarkShowSeenPayload {
   seen: boolean;
+  posterPath?: string | null;
+  genres?: TmdbGenre[] | null;
   seasons: { seasonNumber: number; episodeNumbers: number[] }[];
 }
 

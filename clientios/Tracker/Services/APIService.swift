@@ -119,10 +119,11 @@ struct APIService {
         return keys
     }
 
-    func markSeen(tmdbId: Int, type: MediaType, seen: Bool, posterPath: String? = nil, runtime: Int? = nil) async throws {
+    func markSeen(tmdbId: Int, type: MediaType, seen: Bool, posterPath: String? = nil, runtime: Int? = nil, genres: [TMDBGenre] = []) async throws {
         var payload: [String: AnyEncodable] = ["seen": AnyEncodable(seen)]
         if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
         if let runtime { payload["runtime"] = AnyEncodable(runtime) }
+        if !genres.isEmpty { payload["genres"] = AnyEncodable(genres) }
         let body = try encoder.encode(payload)
         try await rawRequest("/Media/\(tmdbId)/seen", method: "POST",
                              query: [URLQueryItem(name: "type", value: type.rawValue)], body: body)
@@ -136,10 +137,11 @@ struct APIService {
                              query: query, body: body)
     }
 
-    func addToWatchlist(tmdbId: Int, type: MediaType, posterPath: String?, runtime: Int? = nil) async throws {
+    func addToWatchlist(tmdbId: Int, type: MediaType, posterPath: String?, runtime: Int? = nil, genres: [TMDBGenre] = []) async throws {
         var payload: [String: AnyEncodable] = [:]
         if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
         if let runtime { payload["runtime"] = AnyEncodable(runtime) }
+        if !genres.isEmpty { payload["genres"] = AnyEncodable(genres) }
         let body = try encoder.encode(payload)
         try await rawRequest("/Media/\(tmdbId)/watchlist", method: "POST",
                              query: [URLQueryItem(name: "type", value: type.rawValue)], body: body)
@@ -172,7 +174,7 @@ struct APIService {
     }
 
     /// Marque la série entière vue / non vue, en propageant à toutes les saisons/épisodes fournis.
-    func markShowSeen(showTmdbId: Int, seen: Bool, seasons: [(seasonNumber: Int, episodeNumbers: [Int])]) async throws {
+    func markShowSeen(showTmdbId: Int, seen: Bool, seasons: [(seasonNumber: Int, episodeNumbers: [Int])], posterPath: String? = nil, genres: [TMDBGenre] = []) async throws {
         let payload: [String: AnyEncodable] = [
             "seen": AnyEncodable(seen),
             "seasons": AnyEncodable(seasons.map { season in
@@ -180,7 +182,10 @@ struct APIService {
                  "episodeNumbers": AnyEncodable(season.episodeNumbers)]
             }),
         ]
-        let body = try encoder.encode(payload)
+        var enrichedPayload = payload
+        if let posterPath { enrichedPayload["posterPath"] = AnyEncodable(posterPath) }
+        if !genres.isEmpty { enrichedPayload["genres"] = AnyEncodable(genres) }
+        let body = try encoder.encode(enrichedPayload)
         try await rawRequest("/Shows/\(showTmdbId)/seen", method: "POST", body: body)
     }
 

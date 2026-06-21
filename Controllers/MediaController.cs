@@ -40,7 +40,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres);
         um.Seen = dto.Seen;
         activityService.Log(dto.Seen ? ActivityType.MarkedSeen : ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
@@ -62,7 +62,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     public async Task<IActionResult> AddToWatchlist(int tmdbId, [FromQuery] string type, [FromBody] AddToWatchlistDto? dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime, dto?.Genres);
         MediaList watchlist = await mediaService.EnsureWatchlist();
 
         bool alreadyIn = await context.MediaListItems

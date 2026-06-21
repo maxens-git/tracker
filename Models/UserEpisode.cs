@@ -25,5 +25,7 @@ public class UserEpisode
 
     public bool Seen { get; set; } = false;
 
+    public int? Runtime { get; set; }
+
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

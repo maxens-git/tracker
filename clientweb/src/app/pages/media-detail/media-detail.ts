@@ -330,13 +330,20 @@ export class MediaDetail implements OnInit {
       this.runOptimistic(
         () => {},
         () => this.patchUserState({ seen: !newSeen }),
-        this.api.markSeen(tmdbId, 'movie', { seen: newSeen, runtime: this.movie()?.runtime ?? null }),
+        this.api.markSeen(tmdbId, 'movie', {
+          seen: newSeen,
+          posterPath: this.currentPosterPath(),
+          runtime: this.movie()?.runtime ?? null,
+          genres: this.movie()?.genres ?? [],
+        }),
         () => this.seenPending.set(false),
       );
     } else {
       const seasons = this.show()?.seasons.filter(s => s.season_number > 0) ?? [];
       const payload: MarkShowSeenPayload = {
         seen: newSeen,
+        posterPath: this.currentPosterPath(),
+        genres: this.show()?.genres ?? [],
         seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: episodeRange(s.episode_count) }))
       };
       this.api.markShowSeen(tmdbId, payload).subscribe({
@@ -387,6 +394,7 @@ export class MediaDetail implements OnInit {
       : this.api.addToWatchlist(tmdbId, type, {
           posterPath: this.currentPosterPath(),
           runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
+          genres: this.isMovie ? (this.movie()?.genres ?? []) : (this.show()?.genres ?? []),
         });
 
     this.runOptimistic(
@@ -634,7 +642,11 @@ export class MediaDetail implements OnInit {
 
     this.patchUserState({ seen: derived });
     const showId = this.userState().tmdbId;
-    this.api.markSeen(showId, 'tv', { seen: derived }).subscribe({
+    this.api.markSeen(showId, 'tv', {
+      seen: derived,
+      posterPath: this.currentPosterPath(),
+      genres: this.show()?.genres ?? [],
+    }).subscribe({
       error: () => { /* optimiste : réconcilié au prochain reload */ },
     });
   }

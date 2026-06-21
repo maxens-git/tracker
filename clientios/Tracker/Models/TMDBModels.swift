@@ -142,7 +142,7 @@ struct TMDBSeasonSummary: Decodable, Identifiable, Hashable {
     }
 }
 
-struct TMDBGenre: Decodable, Identifiable, Hashable {
+struct TMDBGenre: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
 }

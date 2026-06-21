@@ -41,6 +41,7 @@ builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
 builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddHttpClient<SeenMediaMetadataBackfillService>();
 builder.Services.AddScoped<IcsCalendarService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<TmdbReleaseService>();
@@ -48,6 +49,17 @@ builder.Services.AddHttpClient<NtfyService>();
 builder.Services.AddHostedService<ReleaseNotificationWorker>();
 
 var app = builder.Build();
+
+if (args.Contains("--backfill-seen-media-metadata"))
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    await context.Database.MigrateAsync();
+
+    var backfill = scope.ServiceProvider.GetRequiredService<SeenMediaMetadataBackfillService>();
+    await backfill.Run(BackfillSeenMediaMetadataOptions.FromArgs(args));
+    return;
+}
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

@@ -16,6 +16,8 @@ public class StatsDto
 
     public List<StatsYearBucket> EpisodesSeenByYear { get; set; } = new();
     public List<StatsMonthBucket> EpisodesSeenByMonth { get; set; } = new();
+
+    public List<StatsGenreBucket> FavoriteGenres { get; set; } = new();
 }
 
 public class StatsYearBucket
@@ -29,4 +31,11 @@ public class StatsMonthBucket
     public int Year { get; set; }
     public int Month { get; set; }
     public int Count { get; set; }
+}
+
+public class StatsGenreBucket
+{
+    public string Name { get; set; } = "";
+    public int Count { get; set; }
+    public int Percentage { get; set; }
 }

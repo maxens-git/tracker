@@ -25,6 +25,8 @@ public class MarkSeasonSeenDto
 public class MarkShowSeenDto
 {
     public bool Seen { get; set; }
+    public string? PosterPath { get; set; }
+    public List<MediaGenreDto> Genres { get; set; } = new();
     public List<SeasonEpisodesDto> Seasons { get; set; } = new();
 }
 

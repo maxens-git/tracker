@@ -300,6 +300,9 @@ namespace TrackerApi.Migrations
                     b.Property<bool>("Seen")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<int?>("Runtime")
+                        .HasColumnType("int");
+
                     b.Property<int>("ShowTmdbId")
                         .HasColumnType("int");
 
@@ -321,6 +324,9 @@ namespace TrackerApi.Migrations
 
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("GenreNamesJson")
+                        .HasColumnType("longtext");
 
                     b.Property<bool>("Liked")
                         .HasColumnType("tinyint(1)");

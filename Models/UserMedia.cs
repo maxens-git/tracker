@@ -8,12 +8,13 @@ public enum MediaType { Movie = 0, Show = 1 }
 [Table("UserMedia")]
 public class UserMedia
 {
-    public UserMedia(int tmdbId, MediaType mediaType, string? posterPath = null, int? runtime = null)
+    public UserMedia(int tmdbId, MediaType mediaType, string? posterPath = null, int? runtime = null, string? genreNamesJson = null)
     {
         TmdbId = tmdbId;
         MediaType = mediaType;
         PosterPath = posterPath;
         Runtime = runtime;
+        GenreNamesJson = genreNamesJson;
     }
 
     [Key]
@@ -31,6 +32,8 @@ public class UserMedia
     public string? PosterPath { get; set; }
 
     public int? Runtime { get; set; }
+
+    public string? GenreNamesJson { get; set; }
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

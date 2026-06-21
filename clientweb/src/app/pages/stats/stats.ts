@@ -53,6 +53,7 @@ export class StatsPage implements OnInit {
 
   maxYear = computed(() => Math.max(...this.byYear().map(b => b.total), 1));
   maxMonth = computed(() => Math.max(...this.byMonth().map(b => b.total), 1));
+  maxGenre = computed(() => Math.max(...(this.stats()?.favoriteGenres ?? []).map(g => g.percentage), 1));
 
   ngOnInit() {
     this.api.stats().subscribe({
@@ -73,5 +74,9 @@ export class StatsPage implements OnInit {
 
   pct(value: number, max: number): string {
     return max > 0 ? `${Math.round((value / max) * 100)}%` : '0%';
+  }
+
+  genreColor(index: number): string {
+    return ['#e89a63', '#8ba7ea', '#51b7d3', '#a7ba63', '#64bd8d', '#ea8e94', '#dd83ae'][index % 7];
   }
 }

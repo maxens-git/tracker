@@ -166,6 +166,7 @@ struct Stats: Decodable {
     let moviesSeenByMonth: [StatsMonthBucket]
     let episodesSeenByYear: [StatsYearBucket]
     let episodesSeenByMonth: [StatsMonthBucket]
+    let favoriteGenres: [StatsGenreBucket]
 }
 
 struct StatsYearBucket: Decodable, Identifiable, Hashable {
@@ -179,4 +180,11 @@ struct StatsMonthBucket: Decodable, Identifiable, Hashable {
     let month: Int
     let count: Int
     var id: String { "\(year)-\(month)" }
+}
+
+struct StatsGenreBucket: Decodable, Identifiable, Hashable {
+    let name: String
+    let count: Int
+    let percentage: Int
+    var id: String { name }
 }
