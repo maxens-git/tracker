@@ -12,18 +12,20 @@ import SwiftUI
 
 struct MoreView: View {
     var body: some View {
-        List {
-            row(icon: "clock.arrow.circlepath", title: "Activité",
-                subtitle: "Vos dernières actions") { ActivityView() }
+        ScrollView {
+            VStack(spacing: 10) {
+                row(icon: "clock.arrow.circlepath", title: "Activité",
+                    subtitle: "Vos dernières actions") { ActivityView() }
 
-            row(icon: "chart.bar", title: "Stats",
-                subtitle: "Votre suivi en chiffres") { StatsView() }
+                row(icon: "chart.bar", title: "Stats",
+                    subtitle: "Votre suivi en chiffres") { StatsView() }
 
-            row(icon: "gearshape", title: "Réglages",
-                subtitle: "Thème, accueil, notifications") { SettingsView() }
+                row(icon: "gearshape", title: "Réglages",
+                    subtitle: "Thème, accueil, notifications") { SettingsView() }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
         .navigationTitle("Plus")
         .background(Color.appBackground.ignoresSafeArea())
     }
@@ -40,9 +42,6 @@ struct MoreView: View {
             MoreRow(icon: icon, title: title, subtitle: subtitle)
         }
         .buttonStyle(.plain)
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
     }
 }
 
@@ -67,6 +66,10 @@ private struct MoreRow: View {
             }
 
             Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)

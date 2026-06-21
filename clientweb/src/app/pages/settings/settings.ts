@@ -21,6 +21,11 @@ export class SettingsPage implements OnInit {
   loading = signal(true);
   saving = signal(false);
   testing = signal(false);
+  saved = signal(false);
+  testSent = signal(false);
+  calendarSubscribeLoading = signal(false);
+  calendarCopying = signal(false);
+  calendarCopied = signal(false);
 
   form: Omit<Settings, 'updatedAt'> = {
     ntfyEnabled: false,
@@ -56,11 +61,14 @@ export class SettingsPage implements OnInit {
   save() {
     if (this.saving()) return;
     this.saving.set(true);
+    this.saved.set(false);
 
     this.api.updateSettings(this.normalizedSettings()).subscribe({
       next: settings => {
         this.applySavedSettings(settings);
         this.saving.set(false);
+        this.saved.set(true);
+        window.setTimeout(() => this.saved.set(false), 2200);
         this.showSuccess('Réglages enregistrés.');
       },
       error: () => {
@@ -73,6 +81,7 @@ export class SettingsPage implements OnInit {
   sendTestNotification() {
     if (this.testing() || this.saving()) return;
     this.testing.set(true);
+    this.testSent.set(false);
 
     this.api.updateSettings(this.normalizedSettings()).pipe(
       switchMap(settings => {
@@ -82,6 +91,8 @@ export class SettingsPage implements OnInit {
     ).subscribe({
       next: () => {
         this.testing.set(false);
+        this.testSent.set(true);
+        window.setTimeout(() => this.testSent.set(false), 2200);
         this.showSuccess('Notification de test envoyée.');
       },
       error: () => {
@@ -92,19 +103,43 @@ export class SettingsPage implements OnInit {
   }
 
   subscribeToCalendar() {
+    if (this.calendarSubscribeLoading()) return;
+    this.calendarSubscribeLoading.set(true);
+
     this.api.calendarInfo().subscribe({
-      next: info => { window.location.href = info.webcalUrl; },
-      error: () => this.showError('Impossible de récupérer le lien du calendrier.'),
+      next: info => {
+        window.location.href = info.webcalUrl;
+        this.calendarSubscribeLoading.set(false);
+      },
+      error: () => {
+        this.calendarSubscribeLoading.set(false);
+        this.showError('Impossible de récupérer le lien du calendrier.');
+      },
     });
   }
 
   copyCalendarLink() {
+    if (this.calendarCopying()) return;
+    this.calendarCopying.set(true);
+    this.calendarCopied.set(false);
+
     this.api.calendarInfo().subscribe({
-      next: info => {
-        navigator.clipboard?.writeText(info.httpsUrl);
-        this.showSuccess('Lien du calendrier copié.');
+      next: async info => {
+        try {
+          await navigator.clipboard?.writeText(info.httpsUrl);
+          this.calendarCopied.set(true);
+          window.setTimeout(() => this.calendarCopied.set(false), 2200);
+          this.showSuccess('Lien du calendrier copié.');
+        } catch {
+          this.showError('Impossible de copier le lien du calendrier.');
+        } finally {
+          this.calendarCopying.set(false);
+        }
       },
-      error: () => this.showError('Impossible de récupérer le lien du calendrier.'),
+      error: () => {
+        this.calendarCopying.set(false);
+        this.showError('Impossible de récupérer le lien du calendrier.');
+      },
     });
   }
 

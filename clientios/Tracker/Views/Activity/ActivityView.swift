@@ -29,7 +29,7 @@ struct ActivityView: View {
     }
 
     private var feed: some View {
-        LazyVStack(alignment: .leading, spacing: 20, pinnedViews: [.sectionHeaders]) {
+        LazyVStack(alignment: .leading, spacing: 20) {
             ForEach(sections) { section in
                 Section {
                     card(for: section)
@@ -74,7 +74,6 @@ struct ActivityView: View {
             .padding(.horizontal)
             .padding(.vertical, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.appBackground)
     }
 
     @ViewBuilder
@@ -140,7 +139,9 @@ private struct ActivityRow: View {
     private var activity: Activity { entry.activity }
 
     var body: some View {
-        NavigationLink(value: MediaRoute(tmdbId: activity.tmdbId, type: activity.type2)) {
+        NavigationLink {
+            MediaDetailView(tmdbId: activity.tmdbId, type: activity.type2)
+        } label: {
             HStack(spacing: 12) {
                 poster
 

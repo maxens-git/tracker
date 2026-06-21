@@ -22,6 +22,7 @@ struct MediaDetailView: View {
                 actions
                 if !viewModel.genres.isEmpty { genresRow }
                 if let overview = viewModel.overview, !overview.isEmpty { synopsisSection(overview) }
+                if viewModel.formattedBudget != nil || viewModel.formattedRevenue != nil { movieFinancialSection }
                 if viewModel.type == .tv && !viewModel.seasons.isEmpty { seasonsSection }
                 if !viewModel.trailers.isEmpty { trailersSection }
                 if !viewModel.cast.isEmpty { castSection }
@@ -72,6 +73,49 @@ struct MediaDetailView: View {
             ExpandableText(text: overview)
         }
         .padding(.horizontal)
+    }
+
+    private var movieFinancialSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                if let budget = viewModel.formattedBudget {
+                    infoMetric(title: "Budget", value: budget, systemImage: "banknote")
+                }
+                if let revenue = viewModel.formattedRevenue {
+                    infoMetric(title: "Recettes", value: revenue, systemImage: "chart.line.uptrend.xyaxis")
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private func infoMetric(title: String, value: String, systemImage: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title.uppercased())
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.tertiary)
+
+                Text(value)
+                    .font(.caption.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.appStroke, lineWidth: 1)
+        )
     }
 
     private var loadingExtrasIndicator: some View {
@@ -530,7 +574,8 @@ struct MediaDetailView: View {
                         NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
                             MediaCard(posterPath: item.posterPath,
                                       title: item.displayTitle,
-                                      subtitle: item.year)
+                                      subtitle: item.year,
+                                      seen: viewModel.isSimilarSeen(item))
                                 .frame(width: 120)
                         }
                         .buttonStyle(.plain)

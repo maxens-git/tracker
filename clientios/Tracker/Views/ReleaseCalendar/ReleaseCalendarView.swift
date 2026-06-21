@@ -101,10 +101,7 @@ struct ReleaseCalendarView: View {
     }
 
     private func releaseLink(_ item: ReleaseCalendarItem) -> some View {
-        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-            releaseRow(item)
-        }
-        .buttonStyle(.plain)
+        releaseNavigationRow(item)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
@@ -147,10 +144,7 @@ struct ReleaseCalendarView: View {
                     .padding(.horizontal, 4)
 
                 ForEach(viewModel.pendingItems) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        releaseRow(item)
-                    }
-                    .buttonStyle(.plain)
+                    releaseNavigationRow(item)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,10 +170,7 @@ struct ReleaseCalendarView: View {
                     .padding(.horizontal, 4)
             } else {
                 ForEach(dayItems) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                        releaseRow(item)
-                    }
-                    .buttonStyle(.plain)
+                    releaseNavigationRow(item)
                 }
             }
         }
@@ -192,6 +183,20 @@ struct ReleaseCalendarView: View {
         guard selectedDay == nil, let first = viewModel.items.first else { return }
         selectedDay = first.date
         if let date = DateOnlyFormatter.date(from: first.date) { visibleMonth = date }
+    }
+
+    private func releaseNavigationRow(_ item: ReleaseCalendarItem) -> some View {
+        ZStack {
+            releaseRow(item)
+                .allowsHitTesting(false)
+
+            NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                Color.clear
+            }
+            .opacity(0)
+            .buttonStyle(.plain)
+        }
+        .contentShape(Rectangle())
     }
 
     private func releaseRow(_ item: ReleaseCalendarItem) -> some View {
@@ -216,6 +221,10 @@ struct ReleaseCalendarView: View {
             }
 
             Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

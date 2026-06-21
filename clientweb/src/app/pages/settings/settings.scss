@@ -12,6 +12,10 @@
   border-radius: var(--r-md);
 }
 
+.settings-panel + .settings-panel {
+  margin-top: 1rem;
+}
+
 .toggle-row {
   display: flex;
   justify-content: space-between;
@@ -57,7 +61,8 @@
 }
 
 .save-btn,
-.test-btn {
+.test-btn,
+.copy-btn {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -86,6 +91,14 @@
 
 .test-btn {
   min-width: 11.5rem;
+}
+
+.save-btn.confirmed,
+.test-btn.confirmed,
+.copy-btn.confirmed {
+  border-color: rgba(130, 199, 154, 0.4) !important;
+  background: rgba(130, 199, 154, 0.12) !important;
+  color: var(--success) !important;
 }
 
 @keyframes pi-spin {

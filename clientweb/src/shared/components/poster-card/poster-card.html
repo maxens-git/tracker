@@ -1,4 +1,4 @@
-<article class="poster" [class.seen]="item.seen" [routerLink]="detailLink">
+<a class="poster" [class.seen]="item.seen" [routerLink]="detailLink">
   @if (poster) {
     <img [src]="poster" [alt]="title" loading="lazy" />
   } @else {
@@ -14,4 +14,4 @@
 
   @if (item.seen) { <span class="seen-badge">VU</span> }
   @if (rating) { <span class="rating-badge">★ {{ rating }}</span> }
-</article>
+</a>

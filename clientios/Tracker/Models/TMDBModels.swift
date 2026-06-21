@@ -78,10 +78,12 @@ struct TMDBMovie: Decodable, Identifiable {
     let releaseDate: String?
     let runtime: Int?
     let voteAverage: Double?
+    let budget: Int?
+    let revenue: Int?
     let genres: [TMDBGenre]?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, overview, runtime, genres
+        case id, title, overview, runtime, budget, revenue, genres
         case posterPath = "poster_path"
         case backdropPath = "backdrop_path"
         case releaseDate = "release_date"

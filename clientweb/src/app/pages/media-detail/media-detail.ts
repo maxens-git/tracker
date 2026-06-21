@@ -698,9 +698,7 @@ export class MediaDetail implements OnInit {
 
   backdropStyle(path?: string | null): string | null {
     const url = backdropUrl(path, 'original');
-    return url
-      ? `linear-gradient(to right, rgba(20,18,16,0.98) 0%, rgba(20,18,16,0.84) 48%, rgba(20,18,16,0.48) 100%), linear-gradient(to top, rgba(20,18,16,0.96) 0%, rgba(20,18,16,0.16) 70%), url(${url})`
-      : null;
+    return url ? `url(${url})` : null;
   }
 
   poster(path?: string | null): string | null { return posterUrl(path, 'w500'); }

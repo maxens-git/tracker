@@ -41,9 +41,9 @@
       </label>
 
       <div class="form-actions">
-        <button pButton class="save-btn" type="submit" [disabled]="saving() || testing()">
-          <i [class]="saving() ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
-          <span>Enregistrer</span>
+        <button pButton class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
+          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
+          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
         </button>
 
         <button
@@ -51,11 +51,12 @@
           class="test-btn"
           type="button"
           severity="secondary"
+          [class.confirmed]="testSent()"
           [disabled]="saving() || testing()"
           (click)="sendTestNotification()"
         >
-          <i [class]="testing() ? 'pi pi-spinner pi-spin' : 'pi pi-send'"></i>
-          <span>Envoyer un test</span>
+          <i [class]="testing() ? 'pi pi-spinner pi-spin' : (testSent() ? 'pi pi-check' : 'pi pi-send')"></i>
+          <span>{{ testSent() ? 'Envoyé' : 'Envoyer un test' }}</span>
         </button>
       </div>
     </form>
@@ -69,14 +70,22 @@
       </div>
 
       <div class="form-actions">
-        <button pButton class="save-btn" type="button" (click)="subscribeToCalendar()">
-          <i class="pi pi-calendar-plus"></i>
-          <span>S'abonner</span>
+        <button pButton class="save-btn" type="button" [disabled]="calendarSubscribeLoading()" (click)="subscribeToCalendar()">
+          <i [class]="calendarSubscribeLoading() ? 'pi pi-spinner pi-spin' : 'pi pi-calendar-plus'"></i>
+          <span>{{ calendarSubscribeLoading() ? 'Ouverture…' : "S'abonner" }}</span>
         </button>
 
-        <button pButton type="button" severity="secondary" (click)="copyCalendarLink()">
-          <i class="pi pi-copy"></i>
-          <span>Copier le lien</span>
+        <button
+          pButton
+          class="copy-btn"
+          type="button"
+          severity="secondary"
+          [class.confirmed]="calendarCopied()"
+          [disabled]="calendarCopying()"
+          (click)="copyCalendarLink()"
+        >
+          <i [class]="calendarCopying() ? 'pi pi-spinner pi-spin' : (calendarCopied() ? 'pi pi-check' : 'pi pi-copy')"></i>
+          <span>{{ calendarCopied() ? 'Copié' : 'Copier le lien' }}</span>
         </button>
       </div>
     </section>

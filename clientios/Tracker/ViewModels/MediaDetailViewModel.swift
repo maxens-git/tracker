@@ -22,6 +22,8 @@ final class MediaDetailViewModel {
     /// Liste dont l'ajout/retrait est en cours (pour désactiver la ligne correspondante).
     private(set) var listPendingId: Int?
     private(set) var similar: [TMDBSearchResult] = []
+    /// Clés ("movie-123" / "tv-123") des médias similaires déjà vus.
+    private(set) var similarSeenKeys: Set<String> = []
     private(set) var cast: [TMDBCastMember] = []
     private(set) var crew: [TMDBCrewMember] = []
     private(set) var trailers: [TMDBVideo] = []
@@ -61,6 +63,8 @@ final class MediaDetailViewModel {
     var backdropPath: String? { movie?.backdropPath ?? show?.backdropPath }
     var rating: Double? { movie?.voteAverage ?? show?.voteAverage }
     var genres: [TMDBGenre] { movie?.genres ?? show?.genres ?? [] }
+    var formattedBudget: String? { formatMoney(movie?.budget) }
+    var formattedRevenue: String? { formatMoney(movie?.revenue) }
 
     /// Date de sortie du film, formatée en français (ex. « 14 mai 2026 »), si disponible.
     var releaseDateDisplay: String? {
@@ -95,6 +99,10 @@ final class MediaDetailViewModel {
     /// Vrai si le média figure dans la liste donnée (dérivé de `state.listIds`).
     func isInList(_ listId: Int) -> Bool {
         state?.listIds.contains(listId) ?? false
+    }
+
+    func isSimilarSeen(_ result: TMDBSearchResult) -> Bool {
+        similarSeenKeys.contains("\(result.mediaType.rawValue)-\(result.id)")
     }
 
     func load(forceRefresh: Bool = false) async {
@@ -149,6 +157,7 @@ final class MediaDetailViewModel {
 
         if let similarResults = try? await similar {
             self.similar = similarResults
+            similarSeenKeys = await api.seenStateKeys(for: similarResults)
         }
         if let credits = try? await credits {
             cast = Array(credits.cast.prefix(12))
@@ -453,4 +462,18 @@ final class MediaDetailViewModel {
     private func applyLocalState(seen: Bool, liked: Bool) {
         state = UserState(tmdbId: tmdbId, seen: seen, liked: liked, listIds: state?.listIds ?? [])
     }
+
+    private func formatMoney(_ amount: Int?) -> String? {
+        guard let amount, amount > 0 else { return nil }
+        return Self.moneyFormatter.string(from: NSNumber(value: amount))
+    }
+
+    private static let moneyFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
 }

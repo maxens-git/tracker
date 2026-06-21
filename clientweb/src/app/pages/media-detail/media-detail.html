@@ -10,7 +10,7 @@
 
   <div
     class="detail-page"
-    [style.background-image]="isMovie && m ? backdropStyle(m.backdrop_path) : (!isMovie && s ? backdropStyle(s.backdrop_path) : null)"
+    [style.--backdrop-image]="isMovie && m ? backdropStyle(m.backdrop_path) : (!isMovie && s ? backdropStyle(s.backdrop_path) : null)"
   >
     <button pButton type="button" class="back-btn" text severity="secondary" icon="pi pi-arrow-left" (click)="goBack()">
       Retour
@@ -128,7 +128,7 @@
             (click)="toggleSeen()"
           >
             <i [class]="currentSeen ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
-            <span>{{ currentSeen ? 'Vu' : 'Marquer vu' }}</span>
+            <span>{{ currentSeen ? 'Déjà vu' : 'Pas vu' }}</span>
           </button>
 
           <button
@@ -152,7 +152,7 @@
             (click)="toggleWatchlist()"
           >
             <i [class]="currentInWatchlist ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"></i>
-            <span>{{ currentInWatchlist ? 'Watchlist' : 'Watchlist' }}</span>
+            <span>{{ currentInWatchlist ? 'Dans la watchlist' : 'Hors watchlist' }}</span>
           </button>
 
           <button
