@@ -4,7 +4,7 @@
   <div class="status text-center py-5 px-4 error">{{ error() }}</div>
 } @else if (data(); as d) {
   @if (hero(d); as h) {
-    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'linear-gradient(to right, rgba(20,18,16,0.96) 0%, rgba(20,18,16,0.84) 48%, rgba(20,18,16,0.48) 100%), url(' + h.backdrop + ')' : null">
+    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'var(--hero-home-overlay), url(' + h.backdrop + ')' : null">
       <div class="hero-content">
         <span class="eyebrow">À l'affiche</span>
         <h1>{{ h.title }}</h1>

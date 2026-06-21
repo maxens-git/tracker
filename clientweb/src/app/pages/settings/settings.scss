@@ -60,6 +60,45 @@
   gap: 0.65rem;
 }
 
+.theme-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: min(100%, 420px);
+}
+
+.theme-option {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  i {
+    font-size: 0.95rem;
+  }
+
+  &:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  &.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+}
+
 .save-btn,
 .test-btn,
 .copy-btn {
@@ -96,13 +135,19 @@
 .save-btn.confirmed,
 .test-btn.confirmed,
 .copy-btn.confirmed {
-  border-color: rgba(130, 199, 154, 0.4) !important;
-  background: rgba(130, 199, 154, 0.12) !important;
+  border-color: rgba(var(--success-rgb), 0.4) !important;
+  background: rgba(var(--success-rgb), 0.12) !important;
   color: var(--success) !important;
 }
 
 @keyframes pi-spin {
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 460px) {
+  .theme-switcher {
+    grid-template-columns: 1fr;
   }
 }

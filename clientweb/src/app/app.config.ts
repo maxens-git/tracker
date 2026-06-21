@@ -25,6 +25,28 @@ const TrackerPreset = definePreset(Aura, {
       950: '#1a1109',
     },
     colorScheme: {
+      light: {
+        primary: {
+          color: '#b87524',
+          contrastColor: '#fffaf2',
+          hoverColor: '#9d621d',
+          activeColor: '#74451d',
+        },
+        surface: {
+          0: '#ffffff',
+          50: '#fbf7ef',
+          100: '#f2eadc',
+          200: '#e4d7c4',
+          300: '#cbbda8',
+          400: '#a59782',
+          500: '#766b5f',
+          600: '#5d544a',
+          700: '#473f38',
+          800: '#302a24',
+          900: '#1f1a16',
+          950: '#120f0c',
+        },
+      },
       dark: {
         primary: {
           color: '#e7b766',
@@ -73,7 +95,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: TrackerPreset,
         options: {
-          darkModeSelector: ':root',
+          darkModeSelector: '[data-theme="dark"]',
           cssLayer: false,
         },
       },

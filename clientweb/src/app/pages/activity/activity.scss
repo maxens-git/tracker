@@ -93,13 +93,13 @@
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
-  color: #fff;
+  color: var(--inverse-text);
   background: var(--faint);
 }
 
 .tone-seen   { background: var(--accent); color: var(--accent-contrast); }
 .tone-like   { background: var(--like); }
-.tone-add    { background: var(--watch); color: #1a1300; }
+.tone-add    { background: var(--watch); color: var(--accent-contrast); }
 .tone-remove { background: var(--danger); }
 .tone-muted  { background: var(--faint); }
 

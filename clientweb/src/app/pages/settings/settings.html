@@ -6,6 +6,30 @@
   @if (loading()) {
     <app-spinner />
   } @else {
+    <section class="settings-panel theme-panel">
+      <div class="toggle-row">
+        <span>
+          <strong>Apparence</strong>
+          <small>Choisir un thème ou suivre automatiquement le réglage du système.</small>
+        </span>
+      </div>
+
+      <div class="theme-switcher" role="group" aria-label="Thème de l'application">
+        @for (option of themeOptions; track option.value) {
+          <button
+            type="button"
+            class="theme-option"
+            [class.active]="theme.mode() === option.value"
+            [attr.aria-pressed]="theme.mode() === option.value"
+            (click)="setTheme(option.value)"
+          >
+            <i [class]="option.icon"></i>
+            <span>{{ option.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
     <form class="settings-panel" (ngSubmit)="save()">
       <div class="toggle-row">
         <span>

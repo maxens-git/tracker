@@ -117,7 +117,7 @@
   height: 9px;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--progress-track);
 }
 
 .genre-fill {
@@ -198,8 +198,8 @@
   bottom: calc(100% - 1.25rem);
   left: 50%;
   transform: translateX(-50%) translateY(4px);
-  background: #111920;
-  border: 1px solid #2e3d4a;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-strong);
   border-radius: 7px;
   padding: 0.55rem 0.75rem;
   white-space: nowrap;
@@ -230,7 +230,7 @@
   font-size: 0.7rem;
   color: var(--muted);
   margin-top: 0.25rem;
-  border-top: 1px solid #2e3d4a;
+  border-top: 1px solid var(--border);
   padding-top: 0.25rem;
 }
 
@@ -240,7 +240,7 @@
   border-radius: 2px;
   flex-shrink: 0;
   &.movies { background: var(--accent); }
-  &.episodes  { background: #0080ff; }
+  &.episodes  { background: var(--chart-blue); }
 }
 
 // ── Bars ─────────────────────────────────────────────────────────────────────
@@ -258,7 +258,7 @@
 
 .bar-segment {
   &.movies { background: var(--accent); }
-  &.episodes  { background: #0080ff; }
+  &.episodes  { background: var(--chart-blue); }
 }
 
 .bar-label {
@@ -288,7 +288,7 @@
   border-radius: 2px;
   flex-shrink: 0;
   &.movies { background: var(--accent); }
-  &.episodes  { background: #0080ff; }
+  &.episodes  { background: var(--chart-blue); }
 }
 
 .legend-text {

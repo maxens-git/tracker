@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { ThemeMode, ThemeService } from '../../../shared/services/theme';
 
 @Component({
   selector: 'app-settings',
@@ -18,6 +19,7 @@ import { Spinner } from '../../../shared/components/spinner/spinner';
 export class SettingsPage implements OnInit {
   private api = inject(Api);
   private messages = inject(MessageService);
+  readonly theme = inject(ThemeService);
 
   loading = signal(true);
   saving = signal(false);
@@ -27,6 +29,11 @@ export class SettingsPage implements OnInit {
   calendarSubscribeLoading = signal(false);
   calendarCopying = signal(false);
   calendarCopied = signal(false);
+  readonly themeOptions: { label: string; icon: string; value: ThemeMode }[] = [
+    { label: 'Clair', icon: 'pi pi-sun', value: 'light' },
+    { label: 'Sombre', icon: 'pi pi-moon', value: 'dark' },
+    { label: 'Auto', icon: 'pi pi-desktop', value: 'system' },
+  ];
 
   form: Omit<Settings, 'updatedAt'> = {
     ntfyEnabled: false,
@@ -142,6 +149,10 @@ export class SettingsPage implements OnInit {
         this.showError('Impossible de récupérer le lien du calendrier.');
       },
     });
+  }
+
+  setTheme(mode: ThemeMode) {
+    this.theme.setMode(mode);
   }
 
   get notificationTime(): string {

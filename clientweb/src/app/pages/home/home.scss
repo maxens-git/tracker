@@ -81,7 +81,7 @@
     background: var(--accent-hover);
   }
 
-  &:active { background: #d39a4a; }
+  &:active { background: var(--accent-hover); }
 }
 
 @media (max-width: 860px) {

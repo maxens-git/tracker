@@ -24,7 +24,7 @@
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: #1f2d38;
+  background: var(--surface-2);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -63,20 +63,20 @@
 
 .list-meta {
   font-size: 0.78rem;
-  color: #6b7884;
+  color: var(--faint);
 }
 
 .search-bar input {
   padding: 1rem 1.2rem;
   background: var(--surface);
-  border: 1px solid #2a3540;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #fff;
+  color: var(--text);
   font-size: 1rem;
   font-family: inherit;
   transition: border-color 0.15s ease;
 
-  &::placeholder { color: #6b7884; }
+  &::placeholder { color: var(--faint); }
   &:focus { outline: none; border-color: var(--accent); }
 }
 
@@ -121,8 +121,8 @@
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
-  &:hover:not(:disabled) { background: #202830; color: var(--text); }
-  &.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  &:hover:not(:disabled) { background: var(--surface-hover); color: var(--text); }
+  &.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 600; }
   &.nav { font-size: 1rem; line-height: 1; }
   &:disabled { opacity: 0.4; cursor: default; }
 }

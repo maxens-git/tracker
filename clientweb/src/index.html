@@ -1,12 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <title>Tracker</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#07090d" />
+    <meta name="theme-color" content="#f8f3ea" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      (() => {
+        try {
+          const key = 'tracker.theme';
+          const stored = localStorage.getItem(key);
+          const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+          const theme = mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : mode === 'system' ? 'light' : mode;
+          const root = document.documentElement;
+          root.dataset.theme = theme;
+          root.dataset.themeMode = mode;
+          root.style.colorScheme = theme;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#141210' : '#f8f3ea');
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>

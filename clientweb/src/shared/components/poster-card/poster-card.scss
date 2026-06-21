@@ -44,14 +44,14 @@
       font-family: var(--font-display);
       font-size: 0.86rem;
       font-weight: 750;
-      color: var(--text);
+      color: var(--inverse-text);
       line-height: 1.25;
     }
 
     .meta {
       gap: 0.5rem;
       font-size: 0.72rem;
-      color: var(--muted);
+      color: rgba(255, 250, 242, 0.72);
 
       .rating { color: var(--accent); font-weight: 600; }
     }
@@ -64,10 +64,10 @@
     display: inline-flex;
     align-items: center;
     gap: 0.15rem;
-    background: rgba(14, 12, 10, 0.74);
+    background: var(--rating-bg);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    color: #f0d9a8;
+    color: var(--rating-text);
     font-size: 0.64rem;
     font-weight: 700;
     padding: 0.2rem 0.42rem;
