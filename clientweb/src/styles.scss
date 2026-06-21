@@ -283,7 +283,7 @@ img { display: block; }
 :where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .stats-page) {
   width: min(100%, 1200px);
   margin-inline: auto;
-  padding: 1rem clamp(0.75rem, 2vw, 1.5rem) 2rem;
+  padding: clamp(1.75rem, 4vh, 2.75rem) clamp(0.75rem, 2vw, 1.5rem) 2rem;
 }
 
 .page-title {
