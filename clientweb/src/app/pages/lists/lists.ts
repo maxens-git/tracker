@@ -1,6 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 import { Api } from '../../../shared/services/api';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -11,7 +15,7 @@ import { SLUG_BY_SYSTEM_LIST } from '../../../shared/constants';
 @Component({
   selector: 'app-lists',
   standalone: true,
-  imports: [RouterLink, FormsModule, Spinner, Autofocus],
+  imports: [RouterLink, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule, Spinner, Autofocus],
   templateUrl: './lists.html',
   styleUrl: './lists.scss',
 })

@@ -42,36 +42,48 @@
   }
 </div>
 
-@if (editorOpen()) {
-  <div class="modal-backdrop" (click)="closeEditor()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <h2 class="modal-title">{{ editing() ? 'Modifier la liste' : 'Nouvelle liste' }}</h2>
+<p-dialog
+  [header]="editing() ? 'Modifier la liste' : 'Nouvelle liste'"
+  styleClass="list-editor-dialog"
+  [visible]="editorOpen()"
+  (visibleChange)="$event ? editorOpen.set(true) : closeEditor()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [blockScroll]="true"
+  [style]="{ width: 'min(94vw, 440px)' }"
+>
+  <form class="editor-form" (ngSubmit)="save()">
+    <label class="field">
+      <span>Nom</span>
+      <input pInputText name="name" type="text" [(ngModel)]="formName" placeholder="Ma liste" maxlength="100" appAutofocus />
+    </label>
 
-      <label class="field">
-        <span>Nom</span>
-        <input type="text" [(ngModel)]="formName" placeholder="Ma liste" maxlength="100" appAutofocus />
-      </label>
+    <label class="field">
+      <span>Icône (emoji)</span>
+      <input pInputText name="icon" type="text" [(ngModel)]="formIcon" placeholder="📋" maxlength="4" />
+    </label>
 
-      <label class="field">
-        <span>Icône (emoji)</span>
-        <input type="text" [(ngModel)]="formIcon" placeholder="📋" maxlength="4" />
-      </label>
+    <label class="field">
+      <span>Description</span>
+      <textarea pTextarea name="description" [(ngModel)]="formDescription" rows="3" placeholder="Optionnelle" maxlength="500"></textarea>
+    </label>
 
-      <label class="field">
-        <span>Description</span>
-        <textarea [(ngModel)]="formDescription" rows="2" placeholder="Optionnelle" maxlength="500"></textarea>
-      </label>
+    @if (formError()) {
+      <p class="form-error">{{ formError() }}</p>
+    }
 
-      @if (formError()) {
-        <p class="form-error">{{ formError() }}</p>
-      }
-
-      <div class="modal-actions">
-        <button class="btn-cancel" (click)="closeEditor()" [disabled]="saving()">Annuler</button>
-        <button class="btn-save" (click)="save()" [disabled]="!formName.trim() || saving()">
-          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
-        </button>
-      </div>
+    <div class="dialog-actions">
+      <button pButton type="button" severity="secondary" outlined label="Annuler" (click)="closeEditor()" [disabled]="saving()"></button>
+      <button
+        pButton
+        type="submit"
+        icon="pi pi-save"
+        [label]="saving() ? 'Enregistrement…' : 'Enregistrer'"
+        [loading]="saving()"
+        [disabled]="!formName.trim() || saving()"
+      ></button>
     </div>
-  </div>
-}
+  </form>
+</p-dialog>
