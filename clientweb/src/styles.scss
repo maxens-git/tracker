@@ -350,6 +350,16 @@ img { display: block; }
   border-color: transparent !important;
   background: var(--accent) !important;
   color: var(--accent-contrast) !important;
+  transition: background 0.15s ease, filter 0.15s ease, transform 0.05s ease;
+}
+
+.p-button:not(.p-button-outlined):not(.p-button-text):hover {
+  background: var(--accent-hover) !important;
+}
+
+.p-button:not(.p-button-outlined):not(.p-button-text):active {
+  background: var(--accent-hover) !important;
+  transform: scale(0.97);
 }
 
 .p-drawer,

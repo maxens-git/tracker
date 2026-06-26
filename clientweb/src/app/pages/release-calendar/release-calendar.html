@@ -6,10 +6,10 @@
     </div>
     <div class="head-actions">
       <div class="view-toggle" role="group" aria-label="Mode d'affichage">
-        <button type="button" [class.active]="view() === 'list'" (click)="setView('list')">Liste</button>
-        <button type="button" [class.active]="view() === 'calendar'" (click)="setView('calendar')">Calendrier</button>
+        <button pRipple type="button" [class.active]="view() === 'list'" (click)="setView('list')">Liste</button>
+        <button pRipple type="button" [class.active]="view() === 'calendar'" (click)="setView('calendar')">Calendrier</button>
       </div>
-      <a routerLink="/settings" class="settings-link">Réglages</a>
+      <a pButton pRipple routerLink="/settings" severity="secondary" outlined icon="pi pi-cog" label="Réglages"></a>
     </div>
   </div>
 
@@ -46,7 +46,7 @@
               <strong>{{ item.title }}</strong>
               <span>{{ item.subtitle }}</span>
             </div>
-            <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+            <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
           </a>
         }
       </div>
@@ -71,7 +71,7 @@
                 <strong>{{ item.title }}</strong>
                 <span>{{ item.subtitle }}</span>
               </div>
-              <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+              <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
             </a>
           }
         </div>
@@ -111,7 +111,7 @@
                   <strong>{{ item.title }}</strong>
                   <span>{{ item.subtitle }}</span>
                 </div>
-                <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+                <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
               </a>
             }
           </div>
@@ -139,7 +139,7 @@
                 <strong>{{ item.title }}</strong>
                 <span>{{ item.subtitle }}</span>
               </div>
-              <button class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
+              <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
             </a>
           }
         </div>

@@ -39,7 +39,7 @@
 
     @if (hasMore) {
       <div class="load-more">
-        <button (click)="loadMore()" [disabled]="loading()">
+        <button pRipple (click)="loadMore()" [disabled]="loading()">
           {{ loading() ? 'Chargement…' : 'Voir plus' }}
         </button>
       </div>

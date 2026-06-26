@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { RouterLink } from '@angular/router';
 import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
@@ -64,7 +65,7 @@ interface ActivityRow {
 @Component({
   selector: 'app-activity',
   standalone: true,
-  imports: [RouterLink, Spinner],
+  imports: [Ripple, RouterLink, Spinner],
   templateUrl: './activity.html',
   styleUrl: './activity.scss',
 })

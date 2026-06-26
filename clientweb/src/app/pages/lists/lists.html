@@ -1,7 +1,7 @@
 <div class="lists-page">
   <div class="page-header">
     <h1 class="page-title">Mes listes</h1>
-    <button class="btn-new" (click)="openCreate()">+ Nouvelle liste</button>
+    <button pButton pRipple type="button" icon="pi pi-plus" label="Nouvelle liste" rounded (click)="openCreate()"></button>
   </div>
 
   @if (loading()) {
@@ -32,8 +32,8 @@
 
           @if (!list.isSystem) {
             <div class="list-actions">
-              <button class="action-btn" title="Modifier" (click)="openEdit(list, $event)">✎</button>
-              <button class="action-btn danger" title="Supprimer" (click)="remove(list, $event)">🗑</button>
+              <button pButton pRipple type="button" icon="pi pi-pencil" title="Modifier" rounded text size="small" class="action-btn" (click)="openEdit(list, $event)"></button>
+              <button pButton pRipple type="button" icon="pi pi-trash" title="Supprimer" severity="danger" rounded text size="small" class="action-btn" (click)="remove(list, $event)"></button>
             </div>
           }
         </div>
@@ -75,9 +75,9 @@
     }
 
     <div class="dialog-actions">
-      <button pButton type="button" severity="secondary" outlined label="Annuler" (click)="closeEditor()" [disabled]="saving()"></button>
+      <button pButton pRipple type="button" severity="secondary" outlined label="Annuler" (click)="closeEditor()" [disabled]="saving()"></button>
       <button
-        pButton
+        pButton pRipple
         type="submit"
         icon="pi pi-save"
         [label]="saving() ? 'Enregistrement…' : 'Enregistrer'"

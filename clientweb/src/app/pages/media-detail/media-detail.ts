@@ -1,13 +1,14 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, HostListener, inject, signal } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
-import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload } from '../../../shared/services/api';
+import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload, withUserStates } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
-import { MediaRow } from '../../../shared/components/media-row/media-row';
+import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import {
   TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
   TmdbEpisode, TmdbSeasonSummary, MediaItem, UserState, TmdbCrewMember
@@ -37,7 +38,7 @@ interface MediaDetailData {
   data: TmdbMovie | TmdbShow;
   credits: TmdbCredits | null;
   videos: TmdbVideos | null;
-  similar: { results: MediaItem[] } | null;
+  similar: MediaItem[];
   state: UserState[];
   lists: MediaListSummary[];
   tracked: boolean;
@@ -47,7 +48,7 @@ interface MediaDetailData {
 @Component({
   selector: 'app-media-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, Spinner, MediaRow, ButtonModule, DialogModule, InputTextModule, TextareaModule],
+  imports: [Ripple, CommonModule, FormsModule, RouterLink, Spinner, PosterCard, ButtonModule, DialogModule, InputTextModule, TextareaModule],
   templateUrl: './media-detail.html',
   styleUrl: './media-detail.scss',
 })
@@ -133,7 +134,7 @@ export class MediaDetail implements OnInit {
       data: this.tmdb.movie(tmdbId),
       credits: this.tmdb.movieCredits(tmdbId).pipe(catchError(() => of(null))),
       videos: this.tmdb.movieVideos(tmdbId).pipe(catchError(() => of(null))),
-      similar: this.tmdb.similarMovies(tmdbId).pipe(catchError(() => of(null))),
+      similar: this.similarWithStates$(this.tmdb.similarMovies(tmdbId)),
       state: this.userState$(tmdbId),
       lists: this.lists$(),
       tracked: this.trackedState$(tmdbId),
@@ -146,7 +147,7 @@ export class MediaDetail implements OnInit {
       data: this.tmdb.show(tmdbId),
       credits: this.tmdb.showCredits(tmdbId).pipe(catchError(() => of(null))),
       videos: this.tmdb.showVideos(tmdbId).pipe(catchError(() => of(null))),
-      similar: this.tmdb.similarShows(tmdbId).pipe(catchError(() => of(null))),
+      similar: this.similarWithStates$(this.tmdb.similarShows(tmdbId)),
       state: this.userState$(tmdbId),
       lists: this.lists$(),
       tracked: this.trackedState$(tmdbId),
@@ -156,6 +157,19 @@ export class MediaDetail implements OnInit {
 
   private userState$(tmdbId: number): Observable<UserState[]> {
     return this.api.states([tmdbId], this.mediaType()).pipe(catchError(() => of([])));
+  }
+
+  /** Récupère les similaires TMDB puis y recopie les états utilisateur (badge « VU », etc.). */
+  private similarWithStates$(source$: Observable<{ results: MediaItem[] }>): Observable<MediaItem[]> {
+    return source$.pipe(
+      switchMap(res => {
+        const items = res?.results ?? [];
+        return items.length
+          ? this.api.statesByTmdbId(items).pipe(map(states => withUserStates(items, states)))
+          : of<MediaItem[]>([]);
+      }),
+      catchError(() => of<MediaItem[]>([])),
+    );
   }
 
   private lists$(): Observable<MediaListSummary[]> {
@@ -175,7 +189,7 @@ export class MediaDetail implements OnInit {
     this.userState.set(state[0] ?? { tmdbId: data.id, seen: false, liked: false, listIds: [] });
     this.credits.set(credits);
     this.videos.set(videos);
-    this.similar.set(similar?.results ?? []);
+    this.similar.set(similar);
     this.lists.set(lists);
     this.releaseTracked.set(result.tracked);
 
@@ -702,6 +716,21 @@ export class MediaDetail implements OnInit {
   }
 
   poster(path?: string | null): string | null { return posterUrl(path, 'w500'); }
+
+  /** Poster affiché en plein écran (lightbox) ; null = fermé. */
+  posterFullscreen = signal<string | null>(null);
+
+  /** Ouvre le poster courant en plein écran, en pleine résolution. */
+  openPosterFullscreen() {
+    const path = this.mediaType() === 'movie' ? this.movie()?.poster_path : this.show()?.poster_path;
+    const url = posterUrl(path, 'original');
+    if (url) this.posterFullscreen.set(url);
+  }
+
+  closePosterFullscreen() { this.posterFullscreen.set(null); }
+
+  @HostListener('document:keydown.escape')
+  onEscape() { if (this.posterFullscreen()) this.closePosterFullscreen(); }
 
   profileUrl(path?: string | null): string | null { return profileUrl(path); }
 

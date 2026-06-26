@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -14,7 +15,7 @@ import { profileUrl } from '../../../shared/services/tmdb-image';
 @Component({
   selector: 'app-person',
   standalone: true,
-  imports: [CommonModule, PosterCard, Spinner],
+  imports: [Ripple, CommonModule, PosterCard, Spinner],
   templateUrl: './person.html',
   styleUrl: './person.scss',
 })

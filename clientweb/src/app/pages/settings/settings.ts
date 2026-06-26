@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { FormsModule } from '@angular/forms';
 import { Api, Settings } from '../../../shared/services/api';
 import { switchMap } from 'rxjs/operators';
@@ -12,7 +13,7 @@ import { ThemeMode, ThemeService } from '../../../shared/services/theme';
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner],
+  imports: [Ripple, FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })

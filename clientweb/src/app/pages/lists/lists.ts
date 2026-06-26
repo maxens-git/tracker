@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -15,7 +16,7 @@ import { SLUG_BY_SYSTEM_LIST } from '../../../shared/constants';
 @Component({
   selector: 'app-lists',
   standalone: true,
-  imports: [RouterLink, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule, Spinner, Autofocus],
+  imports: [Ripple, RouterLink, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule, Spinner, Autofocus],
   templateUrl: './lists.html',
   styleUrl: './lists.scss',
 })

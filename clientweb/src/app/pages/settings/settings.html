@@ -65,13 +65,13 @@
       </label>
 
       <div class="form-actions">
-        <button pButton class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
+        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
           <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
           <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
         </button>
 
         <button
-          pButton
+          pButton pRipple
           class="test-btn"
           type="button"
           severity="secondary"
@@ -94,13 +94,13 @@
       </div>
 
       <div class="form-actions">
-        <button pButton class="save-btn" type="button" [disabled]="calendarSubscribeLoading()" (click)="subscribeToCalendar()">
+        <button pButton pRipple class="save-btn" type="button" [disabled]="calendarSubscribeLoading()" (click)="subscribeToCalendar()">
           <i [class]="calendarSubscribeLoading() ? 'pi pi-spinner pi-spin' : 'pi pi-calendar-plus'"></i>
           <span>{{ calendarSubscribeLoading() ? 'Ouverture…' : "S'abonner" }}</span>
         </button>
 
         <button
-          pButton
+          pButton pRipple
           class="copy-btn"
           type="button"
           severity="secondary"

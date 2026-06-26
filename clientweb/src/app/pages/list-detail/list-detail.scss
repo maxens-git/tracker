@@ -110,6 +110,8 @@
 }
 
 .page-btn {
+  position: relative;
+  overflow: hidden;
   min-width: 2.1rem;
   padding: 0.35rem 0.6rem;
   background: var(--surface);

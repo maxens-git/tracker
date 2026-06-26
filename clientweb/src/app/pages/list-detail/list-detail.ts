@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +17,7 @@ type SystemListSlug = keyof typeof SYSTEM_LIST_BY_SLUG;
 @Component({
   selector: 'app-list-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PosterCard, Spinner],
+  imports: [Ripple, CommonModule, FormsModule, RouterLink, PosterCard, Spinner],
   templateUrl: './list-detail.html',
   styleUrl: './list-detail.scss',
 })

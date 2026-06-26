@@ -1,4 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Ripple } from 'primeng/ripple';
+import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -28,7 +30,7 @@ interface ReleaseCalendarItem {
 @Component({
   selector: 'app-release-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DatePickerModule, Spinner],
+  imports: [Ripple, ButtonModule, CommonModule, FormsModule, RouterLink, DatePickerModule, Spinner],
   templateUrl: './release-calendar.html',
   styleUrl: './release-calendar.scss',
 })

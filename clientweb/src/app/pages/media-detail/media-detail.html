@@ -12,7 +12,7 @@
     class="detail-page"
     [style.--backdrop-image]="isMovie && m ? backdropStyle(m.backdrop_path) : (!isMovie && s ? backdropStyle(s.backdrop_path) : null)"
   >
-    <button pButton type="button" class="back-btn" text severity="secondary" icon="pi pi-arrow-left" (click)="goBack()">
+    <button pButton pRipple type="button" class="back-btn" text severity="secondary" icon="pi pi-arrow-left" (click)="goBack()">
       Retour
     </button>
 
@@ -21,13 +21,13 @@
         <div class="poster-wrap">
           @if (isMovie && m) {
             @if (poster(m.poster_path); as p) {
-              <img class="poster-img" [src]="p" [alt]="m.title" />
+              <img class="poster-img zoomable" [src]="p" [alt]="m.title" (click)="openPosterFullscreen()" />
             } @else {
               <div class="poster-placeholder">{{ m.title }}</div>
             }
           } @else if (!isMovie && s) {
             @if (poster(s.poster_path); as p) {
-              <img class="poster-img" [src]="p" [alt]="s.name" />
+              <img class="poster-img zoomable" [src]="p" [alt]="s.name" (click)="openPosterFullscreen()" />
             } @else {
               <div class="poster-placeholder">{{ s.name }}</div>
             }
@@ -120,7 +120,7 @@
 
         <div class="actions">
           <button
-            pButton
+            pButton pRipple
             type="button"
             class="btn-action btn-seen"
             [class.active]="currentSeen"
@@ -132,7 +132,7 @@
           </button>
 
           <button
-            pButton
+            pButton pRipple
             type="button"
             class="btn-action btn-liked"
             [class.active]="currentLiked"
@@ -144,7 +144,7 @@
           </button>
 
           <button
-            pButton
+            pButton pRipple
             type="button"
             class="btn-action btn-watchlist"
             [class.active]="currentInWatchlist"
@@ -156,7 +156,7 @@
           </button>
 
           <button
-            pButton
+            pButton pRipple
             type="button"
             class="btn-action btn-release"
             [class.active]="releaseTracked()"
@@ -168,7 +168,7 @@
           </button>
 
           <button
-            pButton
+            pButton pRipple
             type="button"
             class="btn-action btn-lists"
             [class.active]="inAnyCustomList"
@@ -257,7 +257,7 @@
 
                       <div class="season-actions">
                         <button
-                          pButton
+                          pButton pRipple
                           type="button"
                           class="btn-season-seen"
                           [class.active]="seasonSeen"
@@ -288,7 +288,7 @@
                                 </span>
                               </div>
                               <button
-                                pButton
+                                pButton pRipple
                                 type="button"
                                 class="btn-ep-seen"
                                 [class.seen]="ep.seen"
@@ -432,11 +432,17 @@
     </div>
 
     @if (similar().length) {
-      <app-media-row
-        class="similar-row"
-        [title]="isMovie ? 'Films similaires' : 'Séries similaires'"
-        [items]="similar()"
-      />
+      <section class="content-section similar-section">
+        <div class="section-heading">
+          <h2>{{ isMovie ? 'Films similaires' : 'Séries similaires' }}</h2>
+          <span>{{ similar().length }}</span>
+        </div>
+        <div class="similar-list">
+          @for (item of similar(); track item.id) {
+            <app-poster-card [item]="item" />
+          }
+        </div>
+      </section>
     }
   </div>
 
@@ -464,7 +470,7 @@
             @for (list of customLists; track list.id) {
               <button
                 type="button"
-                class="list-dialog-row"
+                pRipple class="list-dialog-row"
                 [class.in-list]="isInList(list.id)"
                 [disabled]="listPending() === list.id || creatingList()"
                 (click)="toggleList(list.id)"
@@ -520,11 +526,18 @@
             <p class="dialog-error">{{ listCreateError() }}</p>
           }
 
-          <button pButton type="submit" class="dialog-create-btn" icon="pi pi-plus" [disabled]="!newListName.trim() || creatingList()" [loading]="creatingList()">
+          <button pButton pRipple type="submit" class="dialog-create-btn" icon="pi pi-plus" [disabled]="!newListName.trim() || creatingList()" [loading]="creatingList()">
             Créer et ajouter
           </button>
         </form>
       </section>
     </div>
   </p-dialog>
+}
+
+@if (posterFullscreen(); as src) {
+  <div class="poster-lightbox" (click)="closePosterFullscreen()" role="dialog" aria-modal="true" aria-label="Affiche en plein écran">
+    <button pButton pRipple type="button" class="poster-lightbox-close" text rounded icon="pi pi-times" aria-label="Fermer" (click)="closePosterFullscreen()"></button>
+    <img class="poster-lightbox-img" [src]="src" alt="" (click)="$event.stopPropagation()" />
+  </div>
 }

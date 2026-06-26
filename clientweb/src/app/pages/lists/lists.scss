@@ -80,22 +80,6 @@
   color: var(--faint);
 }
 
-/* ── Bouton « Nouvelle liste » ───────────────────────────────────────────── */
-.btn-new {
-  background: var(--accent-grad, var(--accent));
-  color: var(--accent-contrast);
-  border: none;
-  border-radius: var(--r-pill, 999px);
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: filter 0.15s ease, transform 0.05s ease;
-
-  &:hover { filter: brightness(1.08); }
-  &:active { transform: scale(0.97); }
-}
-
 /* ── Carte + actions (modifier / supprimer) ──────────────────────────────── */
 .list-card-wrap {
   position: relative;
@@ -113,24 +97,16 @@
   transition: opacity 0.15s ease;
 }
 
-.action-btn {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
+:host ::ng-deep .action-btn.p-button {
+  width: 32px;
+  height: 32px;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  color: var(--text);
   border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
 
   &:hover { border-color: var(--accent); }
-  &.danger:hover { border-color: var(--danger); color: var(--danger); }
 }
 
 /* Sur tactile (pas de survol), garder les actions visibles. */

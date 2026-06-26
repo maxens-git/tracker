@@ -56,15 +56,15 @@
 
       @if (totalPages() > 1 && !query.trim()) {
         <div class="pagination">
-          <button class="page-btn nav" [disabled]="page() === 1" (click)="loadPage(page() - 1)" title="Précédent">‹</button>
+          <button pRipple class="page-btn nav" [disabled]="page() === 1" (click)="loadPage(page() - 1)" title="Précédent">‹</button>
           @for (p of pageList(); track $index) {
             @if (p === 0) {
               <span class="page-ellipsis">…</span>
             } @else {
-              <button class="page-btn" [class.active]="p === page()" (click)="loadPage(p)">{{ p }}</button>
+              <button pRipple class="page-btn" [class.active]="p === page()" (click)="loadPage(p)">{{ p }}</button>
             }
           }
-          <button class="page-btn nav" [disabled]="page() === totalPages()" (click)="loadPage(page() + 1)" title="Suivant">›</button>
+          <button pRipple class="page-btn nav" [disabled]="page() === totalPages()" (click)="loadPage(page() + 1)" title="Suivant">›</button>
         </div>
         <div class="pagination-info">Page {{ page() }} / {{ totalPages() }}</div>
       }
