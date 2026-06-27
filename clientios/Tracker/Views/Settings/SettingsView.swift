@@ -30,6 +30,18 @@ struct SettingsView: View {
         return "\(version) (\(build))"
     }
 
+    /// Date de build déduite de la date de modification de l'exécutable de l'app.
+    private var buildDate: String {
+        guard let url = Bundle.main.executableURL,
+              let date = try? FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date else {
+            return "—"
+        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.dateFormat = "dd/MM/yyyy HH:mm"
+        return formatter.string(from: date)
+    }
+
     var body: some View {
         Form {
             Section("Apparence") {
@@ -114,6 +126,7 @@ struct SettingsView: View {
 
             Section("À propos") {
                 LabeledContent("Version", value: appVersion)
+                LabeledContent("Date de build", value: buildDate)
             }
         }
         .navigationTitle("Réglages")

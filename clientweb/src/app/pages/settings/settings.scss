@@ -31,6 +31,21 @@
   }
 }
 
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  span {
+    color: var(--muted);
+  }
+
+  strong {
+    color: var(--text);
+  }
+}
+
 .field {
   display: grid;
   gap: 0.35rem;

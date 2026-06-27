@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Fichier d horodatage généré au build
+src/environments/build-info.ts

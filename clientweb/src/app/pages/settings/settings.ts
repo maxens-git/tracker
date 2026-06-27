@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { ThemeMode, ThemeService } from '../../../shared/services/theme';
+import { buildInfo } from '../../../environments/build-info';
 
 @Component({
   selector: 'app-settings',
@@ -154,6 +155,20 @@ export class SettingsPage implements OnInit {
 
   setTheme(mode: ThemeMode) {
     this.theme.setMode(mode);
+  }
+
+  get buildDate(): string {
+    const date = new Date(buildInfo.timestamp);
+    if (Number.isNaN(date.getTime()) || date.getFullYear() < 2000) {
+      return 'Inconnue (build local)';
+    }
+    return date.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   get notificationTime(): string {
