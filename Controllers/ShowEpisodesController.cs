@@ -24,6 +24,46 @@ public class ShowEpisodesController(
         return episodes.Select(e => new EpisodeSeenDto(e)).ToList();
     }
 
+    /// <summary>Séries « en cours » : au moins un épisode vu, mais série non marquée entièrement vue.</summary>
+    [HttpGet("in-progress")]
+    public async Task<ActionResult<List<InProgressShowDto>>> GetInProgress()
+    {
+        List<int> fullySeenShowIds = await context.UserMedia
+            .Where(m => m.MediaType == MediaType.Show && m.Seen)
+            .Select(m => m.TmdbId)
+            .ToListAsync();
+
+        List<UserEpisode> seenEpisodes = await context.UserEpisodes
+            .Where(e => e.Seen && !fullySeenShowIds.Contains(e.ShowTmdbId))
+            .ToListAsync();
+
+        Dictionary<int, string?> posters = await context.UserMedia
+            .Where(m => m.MediaType == MediaType.Show)
+            .ToDictionaryAsync(m => m.TmdbId, m => m.PosterPath);
+
+        return seenEpisodes
+            .GroupBy(e => e.ShowTmdbId)
+            .Select(g =>
+            {
+                UserEpisode last = g
+                    .OrderByDescending(e => e.SeasonNumber)
+                    .ThenByDescending(e => e.EpisodeNumber)
+                    .First();
+                return new InProgressShowDto
+                {
+                    ShowTmdbId = g.Key,
+                    PosterPath = posters.GetValueOrDefault(g.Key),
+                    SeenEpisodeCount = g.Count(),
+                    LastSeasonNumber = last.SeasonNumber,
+                    LastEpisodeNumber = last.EpisodeNumber,
+                    // Le plus récemment coché en premier (AddedAt = date du marquage initial).
+                    LastWatchedAt = g.Max(e => e.AddedAt),
+                };
+            })
+            .OrderByDescending(s => s.LastWatchedAt)
+            .ToList();
+    }
+
     [HttpPost("{showTmdbId}/seen")]
     public async Task<IActionResult> MarkShowSeen(int showTmdbId, [FromBody] MarkShowSeenDto dto)
     {

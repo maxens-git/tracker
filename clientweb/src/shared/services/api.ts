@@ -67,6 +67,15 @@ export interface TrackedMediaState {
   tracked: boolean;
 }
 
+export interface InProgressShow {
+  showTmdbId: number;
+  posterPath?: string | null;
+  seenEpisodeCount: number;
+  lastSeasonNumber: number;
+  lastEpisodeNumber: number;
+  lastWatchedAt: string;
+}
+
 export interface CalendarInfo {
   webcalUrl: string;
   httpsUrl: string;
@@ -139,6 +148,11 @@ export class Api {
 
   markSeasonSeen(showTmdbId: number, seasonNumber: number, payload: MarkSeasonSeenPayload): Observable<unknown> {
     return this.http.post(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/seen`, payload);
+  }
+
+  /** Séries « en cours » : au moins un épisode vu, série non terminée. */
+  inProgressShows(): Observable<InProgressShow[]> {
+    return this.http.get<InProgressShow[]>(`${API}/Shows/in-progress`);
   }
 
   markEpisodeSeen(showTmdbId: number, seasonNumber: number, episodeNumber: number, seen: boolean): Observable<unknown> {

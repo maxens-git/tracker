@@ -19,6 +19,9 @@
   }
 
   <main class="rows mx-auto pb-5 pt-4 px-4">
+    @if (d.continueWatching.length) {
+      <app-continue-row title="Reprendre" [items]="d.continueWatching" />
+    }
     <app-media-row title="Tendances de la semaine" [items]="d.trendingWeek" />
     <app-media-row title="Films populaires" [items]="d.popularMovies" />
     <app-media-row title="Séries populaires" [items]="d.popularShows" />

@@ -1,0 +1,24 @@
+<section class="continue-row">
+  <h2>{{ title }}</h2>
+  <div class="track">
+    @for (entry of items; track entry.item.id) {
+      @let c = card(entry);
+      <a class="card" [routerLink]="c.link">
+        @if (c.image) {
+          <img [src]="c.image" [alt]="c.title" loading="lazy" decoding="async" />
+        } @else {
+          <div class="placeholder d-flex align-items-center justify-content-center text-center">{{ c.title }}</div>
+        }
+        <span class="badge">{{ c.progress }}</span>
+        <div class="overlay">
+          <h3>{{ c.title }}</h3>
+        </div>
+        @if (c.percent !== null) {
+          <div class="progress-bar" [attr.aria-label]="c.percent + '% vu'">
+            <span [style.width.%]="c.percent"></span>
+          </div>
+        }
+      </a>
+    }
+  </div>
+</section>

@@ -151,6 +151,7 @@ export interface MediaItem {
   release_date?: string | null;
   first_air_date?: string | null;
   genre_ids?: number[];
+  number_of_episodes?: number | null;
   vote_average: number;
   vote_count: number;
   popularity: number;

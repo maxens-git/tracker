@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MediaItem } from '../../interfaces/media';
@@ -10,6 +10,7 @@ import { posterUrl, displayTitle, displayYear } from '../../services/tmdb-image'
   imports: [CommonModule, RouterLink],
   templateUrl: './poster-card.html',
   styleUrl: './poster-card.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PosterCard {
   @Input({ required: true }) item!: MediaItem;

@@ -1,6 +1,6 @@
 <a class="poster" [class.seen]="item.seen" [routerLink]="detailLink">
   @if (poster) {
-    <img [src]="poster" [alt]="title" loading="lazy" />
+    <img [src]="poster" [alt]="title" loading="lazy" decoding="async" />
   } @else {
     <div class="placeholder d-flex align-items-center justify-content-center text-center">{{ title }}</div>
   }

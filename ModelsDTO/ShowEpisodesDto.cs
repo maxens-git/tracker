@@ -35,3 +35,14 @@ public class SeasonEpisodesDto
     public int SeasonNumber { get; set; }
     public List<int> EpisodeNumbers { get; set; } = new();
 }
+
+/// <summary>Série dont au moins un épisode est vu mais qui n'est pas terminée (« En cours »).</summary>
+public class InProgressShowDto
+{
+    public int ShowTmdbId { get; set; }
+    public string? PosterPath { get; set; }
+    public int SeenEpisodeCount { get; set; }
+    public int LastSeasonNumber { get; set; }
+    public int LastEpisodeNumber { get; set; }
+    public DateTime LastWatchedAt { get; set; }
+}

@@ -1,16 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
+import { forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, withUserStates } from '../../../shared/services/api';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
+import { ContinueRow, ContinueItem } from '../../../shared/components/continue-row/continue-row';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { backdropUrl, displayTitle, displayYear } from '../../../shared/services/tmdb-image';
 
 interface HomeData {
   featuredItem?: MediaItem;
+  continueWatching: ContinueItem[];
   trendingWeek: MediaItem[];
   popularMovies: MediaItem[];
   popularShows: MediaItem[];
@@ -20,7 +23,7 @@ interface HomeData {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, MediaRow, Spinner],
+  imports: [CommonModule, RouterLink, MediaRow, ContinueRow, Spinner],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -38,23 +41,45 @@ export class Home implements OnInit {
       popularMovies: this.tmdb.popularMovies(),
       popularShows: this.tmdb.popularShows(),
       topRated: this.tmdb.topRated('movie'),
+      // Séries en cours : une erreur réseau ne doit pas casser l'accueil.
+      inProgress: this.api.inProgressShows().pipe(catchError(() => of([]))),
     }).pipe(
-      // Une fois les rangées TMDB chargées, on récupère les états utilisateur de tous les items.
+      // On récupère les fiches TMDB des séries en cours (titre + poster à jour).
       switchMap(rows => {
+        const continueRequests = rows.inProgress.map(s => ({ tmdbId: s.showTmdbId, mediaType: 'tv' }));
+        return this.tmdb.fetchMany(continueRequests).pipe(
+          map(continueItems => ({ rows, continueItems })),
+        );
+      }),
+      // Puis les états utilisateur (vu / aimé / listes) de tous les items affichés.
+      switchMap(({ rows, continueItems }) => {
         const allItems = [
+          ...continueItems,
           ...rows.trending.results,
           ...rows.popularMovies.results,
           ...rows.popularShows.results,
           ...rows.topRated.results,
         ];
         return this.api.statesByTmdbId(allItems).pipe(
-          map(states => ({ rows, states })),
+          map(states => ({ rows, continueItems, states })),
         );
       }),
     ).subscribe({
-      next: ({ rows, states }) => {
+      next: ({ rows, continueItems, states }) => {
+        const continueWithStates = withUserStates(continueItems, states);
+        // On rattache à chaque fiche TMDB la progression renvoyée par le backend.
+        const continueWatching: ContinueItem[] = continueWithStates.map(item => {
+          const progress = rows.inProgress.find(s => s.showTmdbId === item.id);
+          return {
+            item,
+            lastSeasonNumber: progress?.lastSeasonNumber ?? 1,
+            lastEpisodeNumber: progress?.lastEpisodeNumber ?? 1,
+            seenEpisodeCount: progress?.seenEpisodeCount ?? 0,
+          };
+        });
         this.data.set({
           featuredItem: rows.trending.results[0],
+          continueWatching,
           trendingWeek: withUserStates(rows.trending.results.slice(0, 20), states),
           popularMovies: withUserStates(rows.popularMovies.results.slice(0, 20), states),
           popularShows: withUserStates(rows.popularShows.results.slice(0, 20), states),
@@ -76,7 +101,7 @@ export class Home implements OnInit {
       title: displayTitle(item),
       year: displayYear(item),
       overview: item.overview,
-      backdrop: backdropUrl(item.backdrop_path, 'original'),
+      backdrop: backdropUrl(item.backdrop_path, 'w1280'),
       link: ['/' + item.media_type, item.id],
     };
   }
