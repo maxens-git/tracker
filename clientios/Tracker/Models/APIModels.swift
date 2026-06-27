@@ -88,6 +88,17 @@ struct EpisodeSeen: Decodable, Hashable {
     let seen: Bool
 }
 
+/// Série « en cours » : au moins un épisode vu, série non terminée (section « Reprendre »).
+struct InProgressShow: Decodable, Identifiable {
+    let showTmdbId: Int
+    let posterPath: String?
+    let seenEpisodeCount: Int
+    let lastSeasonNumber: Int
+    let lastEpisodeNumber: Int
+
+    var id: Int { showTmdbId }
+}
+
 // ── Réglages & sorties ───────────────────────────────────────────────────
 
 struct AppSettingsDTO: Codable {

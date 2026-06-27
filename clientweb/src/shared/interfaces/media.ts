@@ -152,6 +152,7 @@ export interface MediaItem {
   first_air_date?: string | null;
   genre_ids?: number[];
   number_of_episodes?: number | null;
+  seasons?: TmdbSeasonSummary[];
   vote_average: number;
   vote_count: number;
   popularity: number;

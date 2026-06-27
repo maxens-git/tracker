@@ -20,6 +20,7 @@ struct HomeView: View {
                     if let featured = viewModel.featured, !(hideSeenItems && viewModel.isSeen(featured)) {
                         HeroView(item: featured)
                     }
+                    continueSection(viewModel.continueWatching)
                     section("Tendances de la semaine", items: visible(viewModel.trending))
                     section("Films populaires", items: visible(viewModel.popularMovies))
                     section("Séries populaires", items: visible(viewModel.popularShows))
@@ -43,6 +44,31 @@ struct HomeView: View {
     private func visible(_ items: [TMDBSearchResult]) -> [TMDBSearchResult] {
         guard hideSeenItems else { return items }
         return items.filter { !viewModel.isSeen($0) }
+    }
+
+    /// Rangée « Reprendre » : séries en cours, en cartes paysage.
+    @ViewBuilder
+    private func continueSection(_ items: [ContinueWatchingItem]) -> some View {
+        if !items.isEmpty {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Reprendre")
+                    .font(.display(20))
+                    .padding(.horizontal)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 14) {
+                        ForEach(items) { item in
+                            NavigationLink(value: MediaRoute(tmdbId: item.id, type: .tv)) {
+                                ContinueCard(item: item)
+                                    .frame(width: 240)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+        }
     }
 
     @ViewBuilder

@@ -1,6 +1,11 @@
 .stats-page {
   display: grid;
   gap: 1rem;
+
+  // Couleurs des séries du graphe, alignées sur le widget « Genres préférés »
+  // (orange chaud du thème + bleu doux), pour rester dans la même palette.
+  --c-movies: var(--accent);
+  --c-episodes: #8ba7ea;
 }
 
 .status {
@@ -132,7 +137,7 @@
 .charts-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-  gap: 0.75rem;
+  gap: 1rem;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -140,39 +145,36 @@
 }
 
 .section-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.45rem;
-  margin-bottom: 0.85rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-bottom: 1.25rem;
 }
 
 .chart-block {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.1rem;
   min-width: 0;
 }
 
 .bar-chart {
   display: flex;
   align-items: flex-end;
-  gap: 0.4rem;
-  height: 135px;
-  padding-bottom: 1.25rem;
+  gap: 0.55rem;
+  height: 150px;
+  padding-bottom: 1.4rem;
   position: relative;
 
   // Dim siblings when one bar is hovered
   &:has(.bar-group:hover) .bar-group:not(:hover) .bar-stack {
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }
 
-.year-chart { gap: 0.65rem; }
+.year-chart { gap: 0.8rem; }
 
 .bar-group {
   flex: 1;
@@ -235,36 +237,38 @@
 }
 
 .dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
   flex-shrink: 0;
-  &.movies { background: var(--accent); }
-  &.episodes  { background: var(--chart-blue); }
+  &.movies { background: var(--c-movies); }
+  &.episodes  { background: var(--c-episodes); }
 }
 
 // ── Bars ─────────────────────────────────────────────────────────────────────
 
 .bar-stack {
   width: 100%;
-  max-width: 44px;
+  max-width: 38px;
   display: flex;
   flex-direction: column-reverse;
-  border-radius: 5px 5px 0 0;
+  border-radius: 7px;
   overflow: hidden;
-  min-height: 3px;
+  min-height: 4px;
   transition: height 0.4s ease, opacity 0.2s ease;
 }
 
 .bar-segment {
-  &.movies { background: var(--accent); }
-  &.episodes  { background: var(--chart-blue); }
+  &.movies { background: var(--c-movies); }
+  &.episodes  { background: var(--c-episodes); }
 }
 
 .bar-label {
   position: absolute;
-  bottom: -1.25rem;
-  font-size: 0.7rem;
+  bottom: -1.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
   white-space: nowrap;
   transition: color 0.15s ease;
@@ -285,14 +289,15 @@
 .legend-dot {
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: 3px;
   flex-shrink: 0;
-  &.movies { background: var(--accent); }
-  &.episodes  { background: var(--chart-blue); }
+  &.movies { background: var(--c-movies); }
+  &.episodes  { background: var(--c-episodes); }
 }
 
 .legend-text {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--muted);
   margin-right: 1rem;
 }

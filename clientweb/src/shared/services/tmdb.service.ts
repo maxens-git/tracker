@@ -164,6 +164,7 @@ export function toMediaItem(r: TmdbMovie | TmdbShow, mediaType: 'movie' | 'tv'):
       backdrop_path: s.backdrop_path,
       first_air_date: s.first_air_date,
       number_of_episodes: s.number_of_episodes,
+      seasons: s.seasons,
       vote_average: s.vote_average,
       vote_count: s.vote_count,
       popularity: s.popularity,

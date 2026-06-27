@@ -158,6 +158,11 @@ struct APIService {
         try await request("/Shows/\(showTmdbId)/episodes", forceRefresh: forceRefresh)
     }
 
+    /// Séries « en cours » : au moins un épisode vu, série non terminée.
+    func inProgressShows(forceRefresh: Bool = false) async throws -> [InProgressShow] {
+        try await request("/Shows/in-progress", forceRefresh: forceRefresh)
+    }
+
     func markEpisodeSeen(showTmdbId: Int, season: Int, episode: Int, seen: Bool) async throws {
         let body = try encoder.encode(seen)
         try await rawRequest("/Shows/\(showTmdbId)/seasons/\(season)/episodes/\(episode)/seen",
