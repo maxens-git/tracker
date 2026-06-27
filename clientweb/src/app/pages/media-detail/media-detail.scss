@@ -12,23 +12,22 @@
   overflow: clip;
   background-color: var(--bg);
 
-  &::before {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    content: "";
-    background-image: var(--backdrop-image);
-    background-position: center top;
-    background-size: cover;
-  }
-
+  &::before,
   &::after {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
     content: "";
+  }
+
+  &::before {
+    background-image: var(--backdrop-image);
+    background-position: center top;
+    background-size: cover;
+  }
+
+  &::after {
     background: var(--detail-overlay);
   }
 
@@ -198,9 +197,7 @@
 
   &.btn-watchlist {
     min-width: 154px;
-    --state-color: var(--accent);
     --state-border: rgba(var(--accent-rgb), 0.42);
-    --state-contrast: var(--accent-contrast);
   }
 
   &.btn-liked {
