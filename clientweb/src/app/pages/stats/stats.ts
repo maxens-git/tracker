@@ -1,9 +1,10 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { Api } from '../../../shared/services/api';
-import { Stats, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
+import { Stats, StatsGenreBucket, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const MONTHS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+const GENRE_COLLAPSED_COUNT = 7;
 
 @Component({
   selector: 'app-stats',
@@ -18,6 +19,25 @@ export class StatsPage implements OnInit {
   stats = signal<Stats | null>(null);
   loading = signal(true);
   error = signal(false);
+  showAllGenres = signal(false);
+  // 'titles' = % de titres ayant ce genre (somme > 100%) ; 'tags' = part de chaque genre (somme = 100%)
+  genreMode = signal<'titles' | 'tags'>('titles');
+
+  /** Tous les genres avec le % recalculé selon le mode choisi. */
+  private scoredGenres = computed<StatsGenreBucket[]>(() => {
+    const genres = this.stats()?.favoriteGenres ?? [];
+    if (this.genreMode() === 'titles') return genres;
+    const totalTags = genres.reduce((sum, g) => sum + g.count, 0);
+    if (totalTags === 0) return genres;
+    return genres.map(g => ({ ...g, percentage: Math.round((g.count * 100) / totalTags) }));
+  });
+
+  visibleGenres = computed<StatsGenreBucket[]>(() => {
+    const genres = this.scoredGenres();
+    return this.showAllGenres() ? genres : genres.slice(0, GENRE_COLLAPSED_COUNT);
+  });
+
+  hasMoreGenres = computed(() => (this.stats()?.favoriteGenres.length ?? 0) > GENRE_COLLAPSED_COUNT);
 
   byYear = computed<CombinedYearBucket[]>(() => {
     const s = this.stats();
@@ -53,7 +73,7 @@ export class StatsPage implements OnInit {
 
   maxYear = computed(() => Math.max(...this.byYear().map(b => b.total), 1));
   maxMonth = computed(() => Math.max(...this.byMonth().map(b => b.total), 1));
-  maxGenre = computed(() => Math.max(...(this.stats()?.favoriteGenres ?? []).map(g => g.percentage), 1));
+  maxGenre = computed(() => Math.max(...this.scoredGenres().map(g => g.percentage), 1));
 
   ngOnInit() {
     this.api.stats().subscribe({

@@ -62,7 +62,7 @@ public class StatsService(ApiDbContext context)
         return counts
             .OrderByDescending(kv => kv.Value)
             .ThenBy(kv => labels[kv.Key])
-            .Take(7)
+            // .Take(7) // troncature désactivée temporairement
             .Select(kv => new StatsGenreBucket
             {
                 Name = labels[kv.Key],

@@ -33,9 +33,27 @@
     <!-- Genres préférés -->
     @if (s.favoriteGenres.length > 0) {
       <div class="genre-block">
-        <div class="genre-title">Genres préférés</div>
+        <div class="genre-header">
+          <div class="genre-title">Genres préférés</div>
+          <div class="genre-mode" role="group" aria-label="Mode de calcul">
+            <button
+              type="button"
+              class="genre-mode-btn"
+              [class.active]="genreMode() === 'titles'"
+              (click)="genreMode.set('titles')">
+              Par titre
+            </button>
+            <button
+              type="button"
+              class="genre-mode-btn"
+              [class.active]="genreMode() === 'tags'"
+              (click)="genreMode.set('tags')">
+              Répartition
+            </button>
+          </div>
+        </div>
         <div class="genre-list">
-          @for (genre of s.favoriteGenres; track genre.name; let i = $index) {
+          @for (genre of visibleGenres(); track genre.name; let i = $index) {
             <div class="genre-row">
               <div class="genre-heading">
                 <span class="genre-name">{{ genre.name }}</span>
@@ -51,6 +69,11 @@
             </div>
           }
         </div>
+        @if (hasMoreGenres()) {
+          <button type="button" class="genre-toggle" (click)="showAllGenres.set(!showAllGenres())">
+            {{ showAllGenres() ? 'Voir moins' : 'Voir plus' }}
+          </button>
+        }
       </div>
     }
 

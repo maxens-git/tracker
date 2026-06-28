@@ -83,6 +83,9 @@ struct StatsView: View {
 private struct GenrePreferenceCard: View {
     let genres: [StatsGenreBucket]
 
+    private static let collapsedCount = 7
+    @State private var showAll = false
+
     private let colors: [Color] = [
         Color(hex: 0xE89A63),
         Color(hex: 0x8BA7EA),
@@ -97,15 +100,39 @@ private struct GenrePreferenceCard: View {
         max(genres.map(\.percentage).max() ?? 1, 1)
     }
 
+    private var visibleGenres: [StatsGenreBucket] {
+        showAll ? genres : Array(genres.prefix(Self.collapsedCount))
+    }
+
+    private var hasMore: Bool {
+        genres.count > Self.collapsedCount
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Genres préférés")
                 .font(.display(22))
 
             VStack(spacing: 20) {
-                ForEach(Array(genres.enumerated()), id: \.element.id) { index, genre in
+                ForEach(Array(visibleGenres.enumerated()), id: \.element.id) { index, genre in
                     genreRow(genre, color: colors[index % colors.count])
                 }
+            }
+
+            if hasMore {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { showAll.toggle() }
+                } label: {
+                    Text(showAll ? "Voir moins" : "Voir plus")
+                        .font(.display(15, .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
