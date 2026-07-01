@@ -16,6 +16,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
@@ -41,6 +42,10 @@ builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
 builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<SystemLogService>();
+builder.Services.AddSingleton<SystemLogQueue>();
+builder.Services.AddSingleton<ILoggerProvider, DatabaseLoggerProvider>();
+builder.Services.AddHostedService<SystemLogWriterService>();
 builder.Services.AddHttpClient<SeenMediaMetadataBackfillService>();
 builder.Services.AddScoped<IcsCalendarService>();
 builder.Services.AddMemoryCache();
@@ -65,6 +70,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAngular");
+app.UseMiddleware<RequestLogMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

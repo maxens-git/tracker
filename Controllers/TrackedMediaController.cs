@@ -8,7 +8,7 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TrackedMediaController(ApiDbContext context) : ControllerBase
+public class TrackedMediaController(ApiDbContext context, ILogger<TrackedMediaController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<TrackedMediaDto>>> GetAll()
@@ -42,12 +42,16 @@ public class TrackedMediaController(ApiDbContext context) : ControllerBase
             existing.Title = title;
             existing.PosterPath = dto.PosterPath.NullIfBlank();
             await context.SaveChangesAsync();
+            logger.LogInformation("Média suivi mis à jour: {Title} ({Type} {TmdbId}).",
+                existing.Title, existing.MediaType, existing.TmdbId);
             return ToDto(existing);
         }
 
         TrackedMediaRelease item = new(dto.TmdbId, mediaType, title, dto.PosterPath.NullIfBlank());
         context.TrackedMediaReleases.Add(item);
         await context.SaveChangesAsync();
+        logger.LogInformation("Média ajouté au suivi des sorties: {Title} ({Type} {TmdbId}).",
+            item.Title, item.MediaType, item.TmdbId);
 
         // Pas d'endpoint GET par ressource unique : les clients consomment le corps
         // renvoyé, on évite donc un header Location trompeur et on reste cohérent
@@ -66,6 +70,8 @@ public class TrackedMediaController(ApiDbContext context) : ControllerBase
 
         context.TrackedMediaReleases.Remove(item);
         await context.SaveChangesAsync();
+        logger.LogInformation("Média retiré du suivi des sorties: {Title} ({Type} {TmdbId}).",
+            item.Title, item.MediaType, item.TmdbId);
         return NoContent();
     }
 

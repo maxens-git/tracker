@@ -38,12 +38,15 @@ public class ReleaseNotificationWorker(
             if (!ShouldRunNow(settings, today))
                 return;
 
+            logger.LogInformation("Cycle de notifications de sorties démarré pour {Date}.", today);
+
             TmdbReleaseService tmdb = scope.ServiceProvider.GetRequiredService<TmdbReleaseService>();
             NtfyService ntfy = scope.ServiceProvider.GetRequiredService<NtfyService>();
             await NotifyUpcoming(context, tmdb, ntfy, settings!, today, cancellationToken);
             await DetectNewSeasons(context, tmdb, ntfy, settings!, today, cancellationToken);
 
             lastRunDate = today;
+            logger.LogInformation("Cycle de notifications de sorties terminé pour {Date}.", today);
         }
         catch (OperationCanceledException)
         {
@@ -81,10 +84,18 @@ public class ReleaseNotificationWorker(
     {
         List<TrackedMediaRelease> tracked = await context.TrackedMediaReleases.ToListAsync(cancellationToken);
         int daysAhead = Math.Clamp(settings.NotifyDaysAhead, 0, 30);
+        logger.LogInformation("Vérification des sorties à venir: {Count} médias suivis, fenêtre {DaysAhead} jours.",
+            tracked.Count, daysAhead);
 
         foreach (TrackedMediaRelease media in tracked)
         {
             List<ReleaseCandidate> releases = await tmdb.GetUpcomingReleases(media, today, daysAhead, cancellationToken);
+            if (releases.Count > 0)
+            {
+                logger.LogInformation("{Count} sortie(s) détectée(s) pour {Title} ({Type} {TmdbId}).",
+                    releases.Count, media.Title, media.MediaType, media.TmdbId);
+            }
+
             foreach (ReleaseCandidate release in releases)
             {
                 bool alreadySent = await context.ReleaseNotifications.AnyAsync(n =>
@@ -102,6 +113,8 @@ public class ReleaseNotificationWorker(
                     await ntfy.SendReleaseNotification(settings, release, cancellationToken);
                     context.ReleaseNotifications.Add(new ReleaseNotification(release.TmdbId, release.MediaType, release.ReleaseKey));
                     await context.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation("Notification de sortie enregistrée comme envoyée: {ReleaseTitle} ({ReleaseKey}).",
+                        release.ReleaseTitle, release.ReleaseKey);
                 }
                 catch (OperationCanceledException)
                 {
@@ -133,6 +146,7 @@ public class ReleaseNotificationWorker(
         List<TrackedMediaRelease> shows = await context.TrackedMediaReleases
             .Where(m => m.MediaType == MediaType.Show)
             .ToListAsync(cancellationToken);
+        logger.LogInformation("Vérification des nouvelles saisons: {Count} série(s) suivie(s).", shows.Count);
 
         foreach (TrackedMediaRelease media in shows)
         {
@@ -146,6 +160,11 @@ public class ReleaseNotificationWorker(
 
             // Aucune saison mémorisée = première rencontre : on sème sans notifier.
             bool seeding = known.Count == 0;
+            if (seeding)
+            {
+                logger.LogInformation("Initialisation des saisons connues pour {Title} ({TmdbId}): {Count} saison(s).",
+                    media.Title, media.TmdbId, seasons.Count);
+            }
 
             foreach (SeasonInfo season in seasons)
             {
@@ -165,8 +184,12 @@ public class ReleaseNotificationWorker(
 
                 try
                 {
+                    logger.LogInformation("Nouvelle saison à notifier: {Title} S{Season} (air date: {AirDate}).",
+                        media.Title, season.SeasonNumber, season.AirDate ?? "à confirmer");
                     await ntfy.SendSeasonAnnouncedNotification(
                         settings, media.Title, $"{media.Title} — saison {season.SeasonNumber}", season.AirDate, cancellationToken);
+                    logger.LogInformation("Notification de nouvelle saison envoyée pour {Title} S{Season}.",
+                        media.Title, season.SeasonNumber);
                 }
                 catch (OperationCanceledException)
                 {

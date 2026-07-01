@@ -88,6 +88,21 @@ export interface AddTrackedMediaPayload {
   posterPath?: string | null;
 }
 
+export interface SystemLog {
+  id: number;
+  createdAt: string;
+  level: 'Trace' | 'Debug' | 'Information' | 'Warning' | 'Error' | 'Critical' | string;
+  category: string;
+  message: string;
+  exception?: string | null;
+  eventId: number;
+  traceId?: string | null;
+  method?: string | null;
+  path?: string | null;
+  statusCode?: number | null;
+  elapsedMs?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Api {
   private http = inject(HttpClient);
@@ -205,6 +220,18 @@ export class Api {
 
   activity(page = 1): Observable<PaginatedResult<Activity>> {
     return this.http.get<PaginatedResult<Activity>>(`${API}/Activity`, { params: { page } });
+  }
+
+  // ── Logs système ────────────────────────────────────────────────────────
+
+  logs(page = 1, level = 'all', search = ''): Observable<PaginatedResult<SystemLog>> {
+    return this.http.get<PaginatedResult<SystemLog>>(`${API}/Logs`, {
+      params: { page, level, search }
+    });
+  }
+
+  clearLogs(): Observable<unknown> {
+    return this.http.delete(`${API}/Logs`);
   }
 
   // ── Réglages & sorties ─────────────────────────────────────────────────

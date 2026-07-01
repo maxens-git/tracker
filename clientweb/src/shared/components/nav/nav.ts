@@ -27,6 +27,7 @@ export class Nav {
     { label: 'Mes listes', path: '/lists', icon: 'pi pi-th-large' },
     { label: 'Sorties', path: '/releases', icon: 'pi pi-calendar' },
     { label: 'Activité', path: '/activity', icon: 'pi pi-clock' },
+    { label: 'Logs', path: '/logs', icon: 'pi pi-list-check' },
     { label: 'Statistiques', path: '/stats', icon: 'pi pi-chart-bar' },
     { label: 'Réglages', path: '/settings', icon: 'pi pi-cog' },
   ];

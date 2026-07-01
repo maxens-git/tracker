@@ -18,6 +18,7 @@ public class ApiDbContext : DbContext
     public DbSet<TrackedMediaRelease> TrackedMediaReleases { get; set; } = null!;
     public DbSet<ReleaseNotification> ReleaseNotifications { get; set; } = null!;
     public DbSet<KnownSeason> KnownSeasons { get; set; } = null!;
+    public DbSet<SystemLogEntry> SystemLogEntries { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,5 +60,11 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<KnownSeason>()
             .HasIndex(s => new { s.TmdbId, s.SeasonNumber })
             .IsUnique();
+
+        modelBuilder.Entity<SystemLogEntry>()
+            .HasIndex(log => log.CreatedAt);
+
+        modelBuilder.Entity<SystemLogEntry>()
+            .HasIndex(log => log.Level);
     }
 }

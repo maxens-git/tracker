@@ -5,19 +5,23 @@ using Tracker.Models;
 
 namespace Tracker.Services;
 
-public class NtfyService(HttpClient http)
+public class NtfyService(HttpClient http, ILogger<NtfyService> logger)
 {
     public async Task SendReleaseNotification(AppSettings settings, ReleaseCandidate release, CancellationToken cancellationToken)
     {
         if (!settings.NtfyEnabled || string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
+        {
+            logger.LogInformation("Notification ntfy ignorée pour {Type} {TmdbId}: configuration incomplète ou désactivée.",
+                release.MediaType, release.TmdbId);
             return;
+        }
 
         string date = release.ReleaseDate.ToString("dd/MM/yyyy");
         string body = $"{release.ReleaseTitle} sort le {date}.";
         string title = $"Sortie Tracker: {release.MediaTitle}";
         string tags = release.MediaType == MediaType.Movie ? "movie_camera" : "tv";
 
-        await Send(settings, title, body, tags, cancellationToken);
+        await Send(settings, title, body, tags, "release", cancellationToken);
     }
 
     /// <summary>
@@ -32,14 +36,18 @@ public class NtfyService(HttpClient http)
         CancellationToken cancellationToken)
     {
         if (!settings.NtfyEnabled || string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
+        {
+            logger.LogInformation("Notification ntfy de nouvelle saison ignorée pour {ShowTitle}: configuration incomplète ou désactivée.",
+                showTitle);
             return Task.CompletedTask;
+        }
 
         string body = TryFormatDate(airDate, out string formatted)
             ? $"{seasonLabel} a été annoncée pour le {formatted}."
             : $"{seasonLabel} a été annoncée (date à confirmer).";
         string title = $"Nouvelle saison: {showTitle}";
 
-        return Send(settings, title, body, "tv", cancellationToken);
+        return Send(settings, title, body, "tv", "season-announced", cancellationToken);
     }
 
     public Task SendTestNotification(AppSettings settings, CancellationToken cancellationToken) =>
@@ -48,9 +56,16 @@ public class NtfyService(HttpClient http)
             "Test Tracker",
             $"Notification de test envoyée le {DateTime.Now:dd/MM/yyyy à HH:mm}.",
             "test_tube",
+            "test",
             cancellationToken);
 
-    private async Task Send(AppSettings settings, string title, string body, string tags, CancellationToken cancellationToken)
+    private async Task Send(
+        AppSettings settings,
+        string title,
+        string body,
+        string tags,
+        string kind,
+        CancellationToken cancellationToken)
     {
         Uri endpoint = BuildEndpoint(settings.NtfyUrl!, settings.NtfyTopic!);
         using HttpRequestMessage request = new(HttpMethod.Post, endpoint)
@@ -63,8 +78,26 @@ public class NtfyService(HttpClient http)
         if (!string.IsNullOrWhiteSpace(settings.NtfyToken))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.NtfyToken);
 
-        using HttpResponseMessage response = await http.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        logger.LogInformation("Envoi notification ntfy ({Kind}) vers {EndpointHost}/{Topic}: {Title}",
+            kind, endpoint.Host, settings.NtfyTopic, title);
+
+        try
+        {
+            using HttpResponseMessage response = await http.SendAsync(request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            logger.LogInformation("Notification ntfy envoyée ({Kind}) avec statut {StatusCode}: {Title}",
+                kind, (int)response.StatusCode, title);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Envoi notification ntfy échoué ({Kind}) vers {EndpointHost}/{Topic}: {Title}",
+                kind, endpoint.Host, settings.NtfyTopic, title);
+            throw;
+        }
     }
 
     /// <summary>

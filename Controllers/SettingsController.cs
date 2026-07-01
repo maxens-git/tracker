@@ -9,7 +9,10 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SettingsController(ApiDbContext context, NtfyService ntfy) : ControllerBase
+public class SettingsController(
+    ApiDbContext context,
+    NtfyService ntfy,
+    ILogger<SettingsController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<SettingsDto>> Get()
@@ -32,6 +35,12 @@ public class SettingsController(ApiDbContext context, NtfyService ntfy) : Contro
         settings.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
+        logger.LogInformation(
+            "Réglages enregistrés: ntfy {Enabled}, fenêtre {DaysAhead} jours, envoi à {Hour:D2}:{Minute:D2}.",
+            settings.NtfyEnabled ? "activé" : "désactivé",
+            settings.NotifyDaysAhead,
+            settings.NotificationHour,
+            settings.NotificationMinute);
         return ToDto(settings);
     }
 
@@ -40,11 +49,18 @@ public class SettingsController(ApiDbContext context, NtfyService ntfy) : Contro
     {
         AppSettings settings = await EnsureSettings();
         if (!settings.NtfyEnabled)
+        {
+            logger.LogWarning("Notification ntfy de test refusée: ntfy désactivé.");
             return BadRequest("Les notifications ntfy sont désactivées.");
+        }
 
         if (string.IsNullOrWhiteSpace(settings.NtfyUrl) || string.IsNullOrWhiteSpace(settings.NtfyTopic))
+        {
+            logger.LogWarning("Notification ntfy de test refusée: URL ou topic manquant.");
             return BadRequest("L'URL ntfy et le topic sont requis.");
+        }
 
+        logger.LogInformation("Notification ntfy de test demandée.");
         await ntfy.SendTestNotification(settings, cancellationToken);
         return NoContent();
     }
