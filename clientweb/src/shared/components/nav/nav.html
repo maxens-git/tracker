@@ -33,7 +33,11 @@
         [routerLinkActiveOptions]="item.path === '/home' ? { exact: true } : { exact: false }"
         class="nav-link"
       >
-        <i [class]="item.icon"></i>
+        @if (pendingPath() === item.path) {
+          <i class="pi pi-spin pi-spinner"></i>
+        } @else {
+          <i [class]="item.icon"></i>
+        }
         <span>{{ item.label }}</span>
         @if (item.badge) {
           <span class="nav-badge">{{ item.badge }}</span>

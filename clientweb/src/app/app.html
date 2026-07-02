@@ -1,4 +1,7 @@
 <app-nav />
+@if (navigating()) {
+  <div class="route-progress" role="progressbar" aria-label="Chargement de la page en cours"></div>
+}
 <p-toast position="top-right" />
 <main class="page-content">
   <router-outlet />

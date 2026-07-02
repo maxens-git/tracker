@@ -1,5 +1,14 @@
-import { Component, signal, HostListener } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, signal, HostListener, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  RouterLink,
+  RouterLinkActive,
+  Router,
+  NavigationStart,
+  NavigationEnd,
+  NavigationCancel,
+  NavigationError,
+} from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { Ripple } from 'primeng/ripple';
@@ -19,7 +28,28 @@ type NavItem = {
   styleUrl: './nav.scss',
 })
 export class Nav {
+  private readonly router = inject(Router);
+
   open = signal(false);
+
+  // Chemin de la page vers laquelle on navigue actuellement (null au repos).
+  // Permet d'afficher un spinner sur le lien cliqué le temps du chargement,
+  // pour un retour immédiat même quand le chunk lazy met du temps à arriver.
+  readonly pendingPath = signal<string | null>(null);
+
+  constructor() {
+    this.router.events.pipe(takeUntilDestroyed()).subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.pendingPath.set(event.url.split('?')[0]);
+      } else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.pendingPath.set(null);
+      }
+    });
+  }
 
   readonly items: NavItem[] = [
     { label: 'Accueil', path: '/home', icon: 'pi pi-home' },
