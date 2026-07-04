@@ -307,6 +307,37 @@ struct APIService {
     func calendarInfo(forceRefresh: Bool = false) async throws -> CalendarInfo {
         try await request("/calendar/info", forceRefresh: forceRefresh)
     }
+
+    // ── Torrents & débridage ──────────────────────────────────────────────
+
+    func torrentIndexers() async throws -> [Indexer] {
+        try await request("/torrents/indexers")
+    }
+
+    func torrentCategories() async throws -> [TorrentCategory] {
+        try await request("/torrents/categories")
+    }
+
+    /// Recherche Prowlarr. `indexerIds` vide = tous ; `categoryId` nil = toutes.
+    func searchTorrents(query: String, indexerIds: [Int], categoryId: Int?) async throws -> [TorrentResult] {
+        var items = [URLQueryItem(name: "query", value: query)]
+        // Répété (indexerIds=1&indexerIds=2) pour le binding `int[]` d'ASP.NET.
+        items += indexerIds.map { URLQueryItem(name: "indexerIds", value: String($0)) }
+        if let categoryId { items.append(URLQueryItem(name: "categoryId", value: String(categoryId))) }
+        return try await request("/torrents/search", query: items)
+    }
+
+    /// Débride un magnet : renvoie la liste des fichiers (liens encore verrouillés).
+    func debridMagnet(_ magnet: String) async throws -> DebridResult {
+        let body = try encoder.encode(["magnet": magnet])
+        return try await request("/torrents/debrid", method: "POST", body: body)
+    }
+
+    /// Résout un lien AllDebrid verrouillé en lien de téléchargement direct.
+    func unlockLink(_ link: String) async throws -> UnlockResult {
+        let body = try encoder.encode(["link": link])
+        return try await request("/torrents/unlock", method: "POST", body: body)
+    }
 }
 
 // MARK: - Helpers d'encodage JSON hétérogène

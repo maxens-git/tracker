@@ -130,7 +130,6 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Réglages")
-        .navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden)
         .background(Color.appBackground.ignoresSafeArea())
         .onAppear { cacheSize = CacheManager.diskUsage }

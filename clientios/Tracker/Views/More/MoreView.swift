@@ -14,6 +14,9 @@ struct MoreView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
+                row(icon: "arrow.down.circle", title: "Torrents",
+                    subtitle: "Recherche & débridage") { TorrentsView() }
+
                 row(icon: "clock.arrow.circlepath", title: "Activité",
                     subtitle: "Vos dernières actions") { ActivityView() }
 
