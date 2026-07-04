@@ -246,6 +246,12 @@ export class MediaDetail implements OnInit {
   goBack() { this.location.back(); }
 
   get isMovie() { return this.mediaType() === 'movie'; }
+
+  /** Titre affiché du média (titre du film ou nom de la série). */
+  get mediaTitle(): string {
+    return (this.isMovie ? this.movie()?.title : this.show()?.name) ?? '';
+  }
+
   get currentSeen() { return this.userState().seen; }
   get currentLiked() { return this.userState().liked; }
   get currentListIds() { return this.userState().listIds; }

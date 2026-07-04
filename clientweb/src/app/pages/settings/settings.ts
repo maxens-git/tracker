@@ -45,6 +45,9 @@ export class SettingsPage implements OnInit {
     notifyDaysAhead: 1,
     notificationHour: 9,
     notificationMinute: 0,
+    prowlarrUrl: '',
+    prowlarrApiKey: '',
+    allDebridApiKey: '',
   };
 
   ngOnInit() {
@@ -58,6 +61,9 @@ export class SettingsPage implements OnInit {
           notifyDaysAhead: settings.notifyDaysAhead,
           notificationHour: settings.notificationHour,
           notificationMinute: settings.notificationMinute,
+          prowlarrUrl: settings.prowlarrUrl ?? '',
+          prowlarrApiKey: settings.prowlarrApiKey ?? '',
+          allDebridApiKey: settings.allDebridApiKey ?? '',
         };
         this.loading.set(false);
       },

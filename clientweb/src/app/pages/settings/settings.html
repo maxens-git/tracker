@@ -85,6 +85,37 @@
       </div>
     </form>
 
+    <form class="settings-panel" (ngSubmit)="save()">
+      <div class="toggle-row">
+        <span>
+          <strong>Recherche &amp; débridage</strong>
+          <small>Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid.</small>
+        </span>
+      </div>
+
+      <label class="field">
+        <span>URL Prowlarr</span>
+        <input pInputText name="prowlarrUrl" type="url" [(ngModel)]="form.prowlarrUrl" placeholder="http://localhost:9696" />
+      </label>
+
+      <label class="field">
+        <span>Clé API Prowlarr</span>
+        <input pInputText name="prowlarrApiKey" type="password" [(ngModel)]="form.prowlarrApiKey" autocomplete="new-password" />
+      </label>
+
+      <label class="field">
+        <span>Clé API AllDebrid</span>
+        <input pInputText name="allDebridApiKey" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
+      </label>
+
+      <div class="form-actions">
+        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
+          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
+          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
+        </button>
+      </div>
+    </form>
+
     <section class="settings-panel calendar-panel">
       <div class="toggle-row">
         <span>

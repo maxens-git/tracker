@@ -44,16 +44,29 @@
           }
         </div>
 
-        @if (isMovie && m) {
-          <h1>{{ m.title }}</h1>
-          @if (m.original_title && m.original_title !== m.title) {
-            <p class="original-title">{{ m.original_title }}</p>
+        <div class="title-row">
+          @if (isMovie && m) {
+            <h1>{{ m.title }}</h1>
+          } @else if (!isMovie && s) {
+            <h1>{{ s.name }}</h1>
           }
-        } @else if (!isMovie && s) {
-          <h1>{{ s.name }}</h1>
-          @if (s.original_name && s.original_name !== s.name) {
-            <p class="original-title">{{ s.original_name }}</p>
-          }
+          <a
+            pButton pRipple
+            class="title-torrents-btn"
+            rounded text
+            routerLink="/torrents"
+            [queryParams]="{ q: mediaTitle }"
+            title="Rechercher dans les torrents"
+            aria-label="Rechercher dans les torrents"
+          >
+            <i class="pi pi-download"></i>
+          </a>
+        </div>
+
+        @if (isMovie && m && m.original_title && m.original_title !== m.title) {
+          <p class="original-title">{{ m.original_title }}</p>
+        } @else if (!isMovie && s && s.original_name && s.original_name !== s.name) {
+          <p class="original-title">{{ s.original_name }}</p>
         }
 
         @if (isMovie && m?.tagline) {

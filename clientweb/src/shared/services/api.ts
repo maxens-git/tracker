@@ -49,7 +49,43 @@ export interface Settings {
   notifyDaysAhead: number;
   notificationHour: number;
   notificationMinute: number;
+  prowlarrUrl?: string | null;
+  prowlarrApiKey?: string | null;
+  allDebridApiKey?: string | null;
   updatedAt: string;
+}
+
+export interface Indexer {
+  id: number;
+  name: string;
+}
+
+export interface TorrentCategory {
+  id: number;
+  name: string;
+}
+
+export interface TorrentResult {
+  title: string;
+  size: number;
+  seeders: number;
+  leechers: number;
+  indexer: string;
+  magnetUrl: string;
+}
+
+export interface DebridFile {
+  filename: string;
+  size: number;
+  link: string;
+}
+
+export interface DebridResult {
+  files: DebridFile[];
+}
+
+export interface UnlockResult {
+  directLink: string;
 }
 
 export interface TrackedMedia {
@@ -246,6 +282,31 @@ export class Api {
 
   sendTestNotification(): Observable<unknown> {
     return this.http.post(`${API}/Settings/test`, null);
+  }
+
+  // ── Recherche torrents & débridage ─────────────────────────────────────
+
+  torrentIndexers(): Observable<Indexer[]> {
+    return this.http.get<Indexer[]>(`${API}/torrents/indexers`);
+  }
+
+  torrentCategories(): Observable<TorrentCategory[]> {
+    return this.http.get<TorrentCategory[]>(`${API}/torrents/categories`);
+  }
+
+  searchTorrents(query: string, indexerIds?: number[] | null, categoryId?: number | null): Observable<TorrentResult[]> {
+    const params: Record<string, string | string[]> = { query };
+    if (indexerIds?.length) params['indexerIds'] = indexerIds.map(String);
+    if (categoryId != null) params['categoryId'] = String(categoryId);
+    return this.http.get<TorrentResult[]>(`${API}/torrents/search`, { params });
+  }
+
+  debridMagnet(magnet: string): Observable<DebridResult> {
+    return this.http.post<DebridResult>(`${API}/torrents/debrid`, { magnet });
+  }
+
+  unlockLink(link: string): Observable<UnlockResult> {
+    return this.http.post<UnlockResult>(`${API}/torrents/unlock`, { link });
   }
 
   trackedMedia(): Observable<TrackedMedia[]> {

@@ -84,6 +84,16 @@
     text-transform: uppercase;
   }
 
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+
+    h1 {
+      min-width: 0;
+    }
+  }
+
   h1 {
     margin: 0;
     color: var(--text);
@@ -91,6 +101,25 @@
     font-weight: 950;
     letter-spacing: 0;
     line-height: 0.98;
+  }
+
+  .title-torrents-btn {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+
+    i {
+      font-size: 1.1rem;
+    }
+
+    &:hover {
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+    }
   }
 
   .original-title {

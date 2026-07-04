@@ -51,6 +51,8 @@ builder.Services.AddScoped<IcsCalendarService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<TmdbReleaseService>();
 builder.Services.AddHttpClient<NtfyService>();
+builder.Services.AddHttpClient<ProwlarrService>();
+builder.Services.AddHttpClient<AllDebridService>();
 builder.Services.AddHostedService<ReleaseNotificationWorker>();
 
 var app = builder.Build();

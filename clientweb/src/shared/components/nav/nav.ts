@@ -54,6 +54,7 @@ export class Nav {
   readonly items: NavItem[] = [
     { label: 'Accueil', path: '/home', icon: 'pi pi-home' },
     { label: 'Recherche', path: '/search', icon: 'pi pi-search' },
+    { label: 'Torrents', path: '/torrents', icon: 'pi pi-download' },
     { label: 'Mes listes', path: '/lists', icon: 'pi pi-th-large' },
     { label: 'Sorties', path: '/releases', icon: 'pi pi-calendar' },
     { label: 'Activité', path: '/activity', icon: 'pi pi-clock' },

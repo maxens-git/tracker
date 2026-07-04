@@ -26,5 +26,15 @@ public class AppSettings
 
     public int NotificationMinute { get; set; } = 0;
 
+    // Recherche de torrents (Prowlarr) + débridage (AllDebrid).
+    [MaxLength(500)]
+    public string? ProwlarrUrl { get; set; }
+
+    [MaxLength(200)]
+    public string? ProwlarrApiKey { get; set; }
+
+    [MaxLength(200)]
+    public string? AllDebridApiKey { get; set; }
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

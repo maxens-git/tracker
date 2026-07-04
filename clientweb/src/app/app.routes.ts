@@ -6,6 +6,7 @@ export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
     { path: 'home', loadComponent: () => import('./pages/home/home').then(m => m.Home) },
     { path: 'search', loadComponent: () => import('./pages/search/search').then(m => m.Search) },
+    { path: 'torrents', loadComponent: () => import('./pages/torrents/torrents').then(m => m.Torrents) },
     { path: 'lists', loadComponent: () => import('./pages/lists/lists').then(m => m.Lists) },
     { path: 'lists/:id', loadComponent: () => import('./pages/list-detail/list-detail').then(m => m.ListDetail) },
     { path: 'stats', loadComponent: () => import('./pages/stats/stats').then(m => m.StatsPage) },

@@ -32,6 +32,9 @@ public class SettingsController(
         settings.NotifyDaysAhead = Math.Clamp(dto.NotifyDaysAhead, 0, 30);
         settings.NotificationHour = Math.Clamp(dto.NotificationHour, 0, 23);
         settings.NotificationMinute = Math.Clamp(dto.NotificationMinute, 0, 59);
+        settings.ProwlarrUrl = dto.ProwlarrUrl.NullIfBlank();
+        settings.ProwlarrApiKey = dto.ProwlarrApiKey.NullIfBlank();
+        settings.AllDebridApiKey = dto.AllDebridApiKey.NullIfBlank();
         settings.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
@@ -85,5 +88,8 @@ public class SettingsController(
             settings.NotifyDaysAhead,
             settings.NotificationHour,
             settings.NotificationMinute,
+            settings.ProwlarrUrl,
+            settings.ProwlarrApiKey,
+            settings.AllDebridApiKey,
             settings.UpdatedAt);
 }
