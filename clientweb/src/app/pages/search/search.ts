@@ -7,6 +7,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, withUserStates } from '../../../shared/services/api';
+import { SearchHistoryService } from '../../../shared/services/search-history';
 import { MediaItem, TmdbGenre } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -30,6 +31,7 @@ export class Search implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private query$ = new Subject<string>();
+  readonly history = inject(SearchHistoryService);
 
   query = '';
   allResults = signal<MediaItem[]>([]);
@@ -117,6 +119,8 @@ export class Search implements OnInit {
     ).subscribe({
       next: results => {
         if (results) this.allResults.set(results);
+        // La recherche a abouti : on l'ajoute à l'historique récent.
+        if (results && results.length > 0) this.history.record(this.query);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -126,6 +130,19 @@ export class Search implements OnInit {
   }
 
   onInput() { this.query$.next(this.query); }
+
+  /** Relance une recherche depuis l'historique. */
+  useRecent(q: string) {
+    this.query = q;
+    this.query$.next(q);
+  }
+
+  removeRecent(entry: string, event: MouseEvent) {
+    event.stopPropagation();
+    this.history.remove(entry);
+  }
+
+  clearHistory() { this.history.clear(); }
 
   setFilter(f: 'all' | 'movie' | 'tv') {
     this.filter.set(f);

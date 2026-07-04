@@ -76,6 +76,9 @@ final class SearchViewModel {
     /// Clés ("movie-123" / "tv-123") des médias déjà vus, pour le badge sur l'affiche.
     private(set) var seenKeys: Set<String> = []
 
+    /// Historique des recherches récentes (local, persisté).
+    let history = SearchHistoryStore()
+
     private let tmdb = TMDBService.shared
     private let api = APIService.shared
     private var searchTask: Task<Void, Never>?
@@ -145,6 +148,8 @@ final class SearchViewModel {
             allResults = response.results.filter {
                 $0.mediaTypeRaw == nil || $0.mediaTypeRaw == "movie" || $0.mediaTypeRaw == "tv"
             }
+            // La recherche a abouti : on l'ajoute à l'historique récent.
+            if !allResults.isEmpty { history.record(text) }
             seenKeys = await api.seenStateKeys(for: allResults)
         } catch {
             if !error.isCancellation { errorMessage = error.localizedDescription }

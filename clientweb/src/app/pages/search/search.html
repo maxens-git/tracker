@@ -76,6 +76,24 @@
         <app-poster-card [item]="item" />
       }
     </div>
+  } @else if (history.recent().length > 0) {
+    <div class="recent">
+      <div class="recent-head">
+        <span class="recent-title">Recherches récentes</span>
+        <button type="button" class="recent-clear" (click)="clearHistory()">Tout effacer</button>
+      </div>
+      <ul class="recent-list">
+        @for (entry of history.recent(); track entry) {
+          <li class="recent-item" (click)="useRecent(entry)">
+            <i class="pi pi-history"></i>
+            <span class="recent-label">{{ entry }}</span>
+            <button type="button" class="recent-remove" (click)="removeRecent(entry, $event)" [attr.aria-label]="'Retirer ' + entry">
+              <i class="pi pi-times"></i>
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
   } @else {
     <div class="status text-center py-5 hint">Tapez pour rechercher</div>
   }

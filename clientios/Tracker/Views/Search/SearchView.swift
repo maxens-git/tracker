@@ -82,9 +82,13 @@ struct SearchView: View {
     private var emptyState: some View {
         let trimmed = viewModel.query.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
-            ContentUnavailableView("Rechercher", systemImage: "magnifyingglass",
-                                   description: Text("Trouvez un film ou une série à suivre."))
-                .padding(.top, 60)
+            if viewModel.history.entries.isEmpty {
+                ContentUnavailableView("Rechercher", systemImage: "magnifyingglass",
+                                       description: Text("Trouvez un film ou une série à suivre."))
+                    .padding(.top, 60)
+            } else {
+                recentSearches
+            }
         } else if !viewModel.allResults.isEmpty {
             // Des résultats existent mais les filtres genre ne laissent rien passer.
             ContentUnavailableView("Aucun résultat", systemImage: "line.3.horizontal.decrease.circle",
@@ -94,6 +98,61 @@ struct SearchView: View {
             ContentUnavailableView.search(text: trimmed)
                 .padding(.top, 60)
         }
+    }
+
+    /// Liste des recherches récentes (affichée quand le champ est vide).
+    private var recentSearches: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionHeader("Recherches récentes")
+                Spacer()
+                Button("Tout effacer") {
+                    viewModel.history.clear()
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+
+            VStack(spacing: 0) {
+                ForEach(Array(viewModel.history.entries.enumerated()), id: \.element) { index, entry in
+                    HStack(spacing: 12) {
+                        Button {
+                            viewModel.query = entry
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                Text(entry)
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                Spacer(minLength: 0)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            viewModel.history.remove(entry)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Retirer « \(entry) »")
+                    }
+                    .padding(.vertical, 12)
+
+                    if index < viewModel.history.entries.count - 1 {
+                        Divider().padding(.leading, 28)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .cinemaCard()
+        }
+        .padding()
     }
 }
 
