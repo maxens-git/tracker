@@ -114,12 +114,55 @@
 }
 
 .debrid-subtitle {
-  margin: 0 0 1rem;
-  color: var(--muted);
-  font-size: 0.9rem;
+  margin: 0 0 0.6rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.debrid-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--r-pill);
+    background: var(--bg-elevated);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.seeders {
+      color: var(--success);
+    }
+  }
+}
+
+.debrid-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+
+  .bulk-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
 }
 
 .debrid-file {
@@ -145,6 +188,19 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text);
+  }
+
+  .file-ext {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: var(--r-sm, 4px);
+    background: var(--accent-soft, var(--bg-elevated));
+    color: var(--accent, var(--text));
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
   }
 
   .file-size {

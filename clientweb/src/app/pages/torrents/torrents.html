@@ -101,12 +101,53 @@
     styleClass="debrid-dialog"
     [style]="{ width: '32rem', maxWidth: '92vw' }"
   >
-    <p class="debrid-subtitle" [title]="debridTitle()">{{ debridTitle() }}</p>
+    @if (debridTorrent(); as t) {
+      <p class="debrid-subtitle" [title]="t.title">{{ t.title }}</p>
+      <div class="debrid-meta">
+        <span class="meta-chip"><i class="pi pi-server"></i> {{ t.indexer }}</span>
+        <span class="meta-chip seeders"><i class="pi pi-arrow-up"></i> {{ t.seeders }} seeders</span>
+        <span class="meta-chip"><i class="pi pi-database"></i> {{ formatSize(totalDebridSize() || t.size) }}</span>
+        <span class="meta-chip"><i class="pi pi-file"></i> {{ debridFiles().length }} fichier{{ debridFiles().length > 1 ? 's' : '' }}</span>
+      </div>
+    }
+
+    @if (debridFiles().length > 1) {
+      <div class="debrid-bulk">
+        @if (hasUnresolved()) {
+          <button
+            pButton pRipple
+            type="button"
+            class="bulk-btn"
+            [disabled]="unlockingLink() !== null"
+            (click)="resolveAll()"
+          >
+            <i [class]="resolvingAll() ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
+            <span>{{ resolvingAll() ? 'Obtention… (' + resolvedCount() + '/' + debridFiles().length + ')' : 'Obtenir tous les liens' }}</span>
+          </button>
+        }
+        @if (resolvedCount() > 0) {
+          <button
+            pButton pRipple
+            type="button"
+            class="bulk-btn"
+            severity="secondary"
+            [disabled]="resolvingAll()"
+            (click)="copyAll()"
+          >
+            <i class="pi pi-copy"></i>
+            <span>Copier tous les liens</span>
+          </button>
+        }
+      </div>
+    }
 
     @for (file of debridFiles(); track file.link) {
       <div class="debrid-file">
         <div class="file-info">
-          <span class="file-name" [title]="file.filename">{{ file.filename || 'Fichier' }}</span>
+          <span class="file-name" [title]="file.filename">
+            @if (fileExt(file.filename); as ext) { <span class="file-ext">{{ ext }}</span> }
+            {{ file.filename || 'Fichier' }}
+          </span>
           <span class="file-size">{{ formatSize(file.size) }}</span>
         </div>
         <div class="file-actions">

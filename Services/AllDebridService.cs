@@ -17,7 +17,7 @@ public class AllDebridService(HttpClient http, ApiDbContext context, ILogger<All
     private const string BaseUrl = "https://api.alldebrid.com/v4";
 
     /// <summary>Levée quand le torrent n'est pas en cache : rien à débrider.</summary>
-    public class NotCachedException() : Exception("Ce torrent n'est pas en cache sur AllDebrid.");
+    public class NotCachedException() : Exception("Ce torrent n'est pas en cache.");
 
     public async Task<DebridResultDto> Debrid(string magnet, CancellationToken cancellationToken)
     {

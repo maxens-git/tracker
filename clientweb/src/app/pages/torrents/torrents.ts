@@ -1,9 +1,9 @@
-import { Component, inject, signal, OnInit, WritableSignal } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, from, of, concatMap, tap, catchError, finalize } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
@@ -44,15 +44,24 @@ export class Torrents implements OnInit {
 
   // Magnet en cours de débridage (pour le spinner de la ligne).
   debriding = signal<string | null>(null);
-  // Popup des liens débridés : visibilité, titre du torrent, fichiers.
+  // Popup des liens débridés : visibilité, torrent source, fichiers.
   dialogVisible = signal(false);
-  debridTitle = signal('');
+  debridTorrent = signal<TorrentResult | null>(null);
   debridFiles = signal<DebridFile[]>([]);
+
+  // Taille totale des fichiers débridés (somme des tailles connues).
+  totalDebridSize = computed(() => this.debridFiles().reduce((sum, f) => sum + (f.size || 0), 0));
 
   // Unlock à la demande : lien AllDebrid verrouillé en cours de résolution,
   // et liens directs déjà résolus (clé = lien verrouillé du fichier).
   unlockingLink = signal<string | null>(null);
+  resolvingAll = signal(false);
   private resolved = signal<Record<string, string>>({});
+
+  // Reste-t-il des fichiers dont le lien n'a pas encore été obtenu ?
+  hasUnresolved = computed(() => this.debridFiles().some(f => !this.resolved()[f.link]));
+  // Nombre de fichiers déjà résolus (pour la progression du bouton « tout obtenir »).
+  resolvedCount = computed(() => this.debridFiles().filter(f => this.resolved()[f.link]).length);
 
   ngOnInit() {
     // Silencieux en cas d'échec : on peut toujours chercher sur « tous / toutes ».
@@ -135,7 +144,7 @@ export class Torrents implements OnInit {
           this.showError('Aucun fichier débridable dans ce torrent.');
           return;
         }
-        this.debridTitle.set(torrent.title);
+        this.debridTorrent.set(torrent);
         this.debridFiles.set(result.files);
         this.resolved.set({});
         this.unlockingLink.set(null);
@@ -171,6 +180,46 @@ export class Torrents implements OnInit {
     });
   }
 
+  // Obtient le lien direct de tous les fichiers restants, séquentiellement
+  // (un appel AllDebrid après l'autre, pour ne pas saturer l'API).
+  resolveAll() {
+    if (this.unlockingLink() || this.resolvingAll()) return;
+
+    const pending = this.debridFiles().filter(f => !this.resolvedLink(f));
+    if (pending.length === 0) return;
+
+    this.resolvingAll.set(true);
+    from(pending).pipe(
+      concatMap(file => {
+        this.unlockingLink.set(file.link);
+        return this.api.unlockLink(file.link).pipe(
+          tap(({ directLink }) => this.resolved.update(map => ({ ...map, [file.link]: directLink }))),
+          catchError(() => of(null)),
+        );
+      }),
+      finalize(() => {
+        this.unlockingLink.set(null);
+        this.resolvingAll.set(false);
+        if (this.hasUnresolved()) this.showError('Certains liens n’ont pas pu être obtenus.');
+      }),
+    ).subscribe();
+  }
+
+  // Copie tous les liens directs déjà obtenus, un par ligne.
+  async copyAll() {
+    const links = this.debridFiles()
+      .map(f => this.resolvedLink(f))
+      .filter((l): l is string => !!l);
+    if (links.length === 0) return;
+
+    try {
+      await navigator.clipboard?.writeText(links.join('\n'));
+      this.messages.add({ severity: 'success', summary: 'Torrents', detail: `${links.length} lien(s) copié(s).`, life: 2500 });
+    } catch {
+      this.showError('Impossible de copier les liens.');
+    }
+  }
+
   async copyLink(link: string) {
     try {
       await navigator.clipboard?.writeText(link);
@@ -178,6 +227,12 @@ export class Torrents implements OnInit {
     } catch {
       this.showError('Impossible de copier le lien.');
     }
+  }
+
+  // Extension de fichier en majuscules (ex. « MKV »), vide si aucune.
+  fileExt(filename: string): string {
+    const dot = filename.lastIndexOf('.');
+    return dot > 0 && dot < filename.length - 1 ? filename.slice(dot + 1).toUpperCase() : '';
   }
 
   formatSize(bytes: number): string {
