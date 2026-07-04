@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Ripple } from 'primeng/ripple';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { of, map, switchMap } from 'rxjs';
@@ -25,6 +25,7 @@ export class ListDetail implements OnInit {
   private api = inject(Api);
   private tmdb = inject(TmdbService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   listId: number | SystemListSlug = 0;
   list = signal<MediaListSummary | null>(null);
@@ -59,7 +60,9 @@ export class ListDetail implements OnInit {
       });
     }
 
-    this.loadPage(1);
+    // Restaure la page depuis l'URL (partage/rechargement), 1 par défaut.
+    const initialPage = Number(this.route.snapshot.queryParamMap.get('page')) || 1;
+    this.loadPage(initialPage);
   }
 
   loadPage(p: number) {
@@ -71,6 +74,7 @@ export class ListDetail implements OnInit {
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
         this.totalCount.set(result.totalCount);
+        this.syncPageParam(result.page);
 
         if (result.items.length === 0) return of([] as MediaItem[]);
 
@@ -91,6 +95,16 @@ export class ListDetail implements OnInit {
         if (items.length > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  // Reflète la page courante dans l'URL (page 1 → param retiré), sans empiler d'historique.
+  private syncPageParam(p: number) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: p > 1 ? p : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
 
