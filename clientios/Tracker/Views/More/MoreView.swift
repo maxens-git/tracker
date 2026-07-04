@@ -59,7 +59,7 @@ private struct MoreRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(.body, design: .rounded).weight(.semibold))
+                    .font(.body.weight(.semibold))
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)

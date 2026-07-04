@@ -23,17 +23,17 @@ struct ContinueCard: View {
             )
 
             Text(item.title)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 12)
                 .padding(.bottom, 12)
         }
         .aspectRatio(16.0 / 9.0, contentMode: .fit)
         .overlay(alignment: .topTrailing) { badge }
         .overlay(alignment: .bottom) { progressBar }
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
     }
 
     private var backdrop: some View {
@@ -59,11 +59,12 @@ struct ContinueCard: View {
     /// Badge du prochain épisode (ex. « S2 · E5 »).
     private var badge: some View {
         Text(item.nextLabel)
-            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(.white)
-            .padding(.horizontal, 7)
+            .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(.black.opacity(0.65), in: Capsule())
+            .background(.ultraThinMaterial, in: Capsule())
+            .environment(\.colorScheme, .dark)
             .padding(8)
     }
 
@@ -74,7 +75,7 @@ struct ContinueCard: View {
                 ZStack(alignment: .leading) {
                     Rectangle().fill(.black.opacity(0.45))
                     Rectangle()
-                        .fill(Color(red: 0.13, green: 0.77, blue: 0.37))
+                        .fill(Color.appGreen)
                         .frame(width: geo.size.width * CGFloat(progress))
                 }
             }

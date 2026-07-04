@@ -209,7 +209,7 @@ struct ReleaseCalendarView: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.tint)
                 Text(item.title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                 Text(item.subtitle)
                     .font(.caption)

@@ -44,7 +44,7 @@ struct MonthCalendarView: View {
             }
             Spacer()
             Text(monthTitle)
-                .font(.system(.headline, design: .rounded))
+                .font(.display(18))
             Spacer()
             Button { shiftMonth(1) } label: {
                 Image(systemName: "chevron.right").font(.body.weight(.semibold))

@@ -40,45 +40,46 @@ struct HeroView: View {
     }
 
     private var gradient: some View {
+        // Ramp progressif (plusieurs paliers) plutôt qu'une coupure nette :
+        // l'image se fond en douceur vers le bas où repose le texte.
         LinearGradient(
-            colors: [.clear, .black.opacity(0.35), .black.opacity(0.9)],
+            colors: [.clear, .black.opacity(0.2), .black.opacity(0.55), .black.opacity(0.85)],
             startPoint: .top,
             endPoint: .bottom
         )
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(item.displayTitle)
                 .font(.display(34))
                 .foregroundStyle(.white)
                 .lineLimit(2)
-                .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.35), radius: 10, x: 0, y: 2)
 
             if let year = item.year {
                 Text(year)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .font(.footnote.weight(.semibold))
+                    .tracking(0.5)
+                    .foregroundStyle(.white.opacity(0.8))
             }
 
             if let overview = item.overview, !overview.isEmpty {
                 Text(overview)
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.85))
-                    .lineLimit(3)
+                    .foregroundStyle(.white.opacity(0.82))
+                    .lineLimit(2)
             }
 
             NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
-                Label("Voir la fiche", systemImage: "info.circle.fill")
-                    .font(.system(.headline, design: .rounded))
-                    .padding(.horizontal, 20)
+                Text("Voir la fiche")
+                    .font(.system(size: 15, weight: .semibold))
+                    .padding(.horizontal, 22)
                     .padding(.vertical, 12)
-                    .background(Color.appGoldGradient)
+                    .background(Color.appGold, in: Capsule())
                     .foregroundStyle(.black)
-                    .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)
             }
-            .padding(.top, 6)
+            .padding(.top, 4)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)

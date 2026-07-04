@@ -21,11 +21,11 @@ struct MediaCard: View {
                 .overlay(alignment: .topTrailing) {
                     if seen { seenBadge }
                 }
-                // Ombre douce pour donner du relief aux affiches.
-                .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
+                // Ombre discrète : suggère le relief de l'affiche sans l'alourdir.
+                .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
 
             Text(title)
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
@@ -42,14 +42,15 @@ struct MediaCard: View {
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
-    /// Pastille « VU » (accent) posée en haut à droite de l'affiche.
+    /// Pastille « vu » posée en haut à droite de l'affiche : simple coche verte
+    /// (couleur sémantique « vu / terminé » de l'app), plus discrète qu'un badge texte.
     private var seenBadge: some View {
-        Text("VU")
-            .font(.system(size: 10, weight: .heavy))
+        Image(systemName: "checkmark")
+            .font(.system(size: 10, weight: .bold))
             .foregroundStyle(.white)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(Capsule().fill(Color.accentColor))
+            .padding(5)
+            .background(Circle().fill(Color.appGreen))
+            .overlay(Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1))
             .padding(6)
     }
 }

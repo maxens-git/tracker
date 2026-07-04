@@ -106,7 +106,7 @@ struct ListsView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
-                    .font(.system(.body, design: .rounded).weight(.semibold))
+                    .font(.body.weight(.semibold))
                 Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
                     .font(.caption)
                     .foregroundStyle(.secondary)

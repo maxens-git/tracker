@@ -51,8 +51,7 @@ struct HomeView: View {
     private func continueSection(_ items: [ContinueWatchingItem]) -> some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Reprendre")
-                    .font(.display(20))
+                SectionHeader("Reprendre")
                     .padding(.horizontal)
 
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -75,8 +74,7 @@ struct HomeView: View {
     private func section(_ title: String, items: [TMDBSearchResult]) -> some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
-                Text(title)
-                    .font(.display(20))
+                SectionHeader(title)
                     .padding(.horizontal)
 
                 ScrollView(.horizontal, showsIndicators: false) {

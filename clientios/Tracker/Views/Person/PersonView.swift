@@ -20,7 +20,7 @@ struct PersonView: View {
                 header
                 if let bio = viewModel.biography, !bio.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Biographie").font(.display(20))
+                        SectionHeader("Biographie")
                         Text(bio).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal)
@@ -103,8 +103,7 @@ struct PersonView: View {
 
     private var filmographySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Filmographie")
-                .font(.display(20))
+            SectionHeader("Filmographie")
                 .padding(.horizontal)
 
             MediaGrid {

@@ -69,7 +69,7 @@ struct MediaDetailView: View {
 
     private func synopsisSection(_ overview: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Synopsis").font(.display(20))
+            SectionHeader("Synopsis")
             ExpandableText(text: overview)
         }
         .padding(.horizontal)
@@ -312,8 +312,7 @@ struct MediaDetailView: View {
 
     private var seasonsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Saisons")
-                .font(.display(20))
+            SectionHeader("Saisons")
                 .padding(.horizontal)
 
             VStack(spacing: 10) {
@@ -443,8 +442,7 @@ struct MediaDetailView: View {
 
     private var trailersSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Bandes-annonces")
-                .font(.display(20))
+            SectionHeader("Bandes-annonces")
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -493,8 +491,7 @@ struct MediaDetailView: View {
 
     private var castSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Distribution")
-                .font(.display(20))
+            SectionHeader("Distribution")
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -516,8 +513,7 @@ struct MediaDetailView: View {
 
     private var crewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Équipe technique")
-                .font(.display(20))
+            SectionHeader("Équipe technique")
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -564,8 +560,7 @@ struct MediaDetailView: View {
 
     private var similarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Similaires")
-                .font(.display(20))
+            SectionHeader("Similaires")
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {

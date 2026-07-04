@@ -110,8 +110,7 @@ private struct GenrePreferenceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("Genres préférés")
-                .font(.display(22))
+            SectionHeader("Genres préférés")
 
             VStack(spacing: 20) {
                 ForEach(Array(visibleGenres.enumerated()), id: \.element.id) { index, genre in
@@ -195,7 +194,7 @@ private struct ActivityChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-                Text(title).font(.display(20))
+                SectionHeader(title)
                 Spacer()
                 if let bar = selectedBar {
                     Text("\(bar.label) · \(bar.total)")
