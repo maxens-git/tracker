@@ -22,7 +22,14 @@ struct MediaCard: View {
                     if seen { seenBadge }
                 }
                 // Ombre discrète : suggère le relief de l'affiche sans l'alourdir.
-                .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
+                // Posée sur une forme opaque en arrière-plan (et non sur le contenu
+                // composité) pour que SwiftUI n'ait pas à rasteriser l'affiche
+                // hors-écran à chaque frame de défilement.
+                .background {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
+                }
 
             Text(title)
                 .font(.subheadline.weight(.semibold))

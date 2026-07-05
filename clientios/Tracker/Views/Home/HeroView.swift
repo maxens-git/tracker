@@ -30,10 +30,8 @@ struct HeroView: View {
             .frame(maxWidth: .infinity)
             .frame(height: height)
             .overlay {
-                AsyncImage(url: TMDBService.backdropURL(item.backdropPath, size: "w1280")) { phase in
-                    if let image = phase.image {
-                        image.resizable().scaledToFill()
-                    }
+                RemoteImage(url: TMDBService.backdropURL(item.backdropPath, size: "w1280")) {
+                    Color.clear
                 }
             }
             .clipped()

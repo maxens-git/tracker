@@ -20,20 +20,7 @@ struct PosterImage: View {
         Color(.secondarySystemBackground)
             .aspectRatio(2.0 / 3.0, contentMode: .fit)
             .overlay {
-                if let url = TMDBService.posterURL(path, size: size) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().scaledToFill()
-                        case .failure:
-                            placeholderIcon
-                        case .empty:
-                            ProgressView()
-                        @unknown default:
-                            placeholderIcon
-                        }
-                    }
-                } else {
+                RemoteImage(url: TMDBService.posterURL(path, size: size)) {
                     placeholderIcon
                 }
             }

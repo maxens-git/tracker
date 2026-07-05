@@ -10,7 +10,8 @@ import Foundation
 /// Cache disque/mémoire partagé par toute l'app via `URLCache.shared`.
 ///
 /// Il stocke, indexées par URL, les réponses déjà téléchargées : affiches TMDB
-/// (chargées par `AsyncImage` sur `URLSession.shared`), fiches films/séries
+/// (octets JPEG chargés par `RemoteImage`/`ImageLoader` sur `URLSession.shared`,
+/// dont l'image décodée est ensuite gardée par `ImageCache`), fiches films/séries
 /// (`TMDBService`) et appels backend. Comme l'URL d'une affiche contient son
 /// chemin et celle d'une fiche contient le `tmdbId`, un média déjà vu est
 /// réaffiché depuis le cache sans nouvel appel réseau.

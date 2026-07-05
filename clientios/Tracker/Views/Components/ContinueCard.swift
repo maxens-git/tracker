@@ -33,23 +33,20 @@ struct ContinueCard: View {
         .overlay(alignment: .topTrailing) { badge }
         .overlay(alignment: .bottom) { progressBar }
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
+        // Ombre posée sur une forme opaque en arrière-plan (et non sur le contenu
+        // composité) pour éviter une rasterisation hors-écran par frame de scroll.
+        .background {
+            RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
+        }
     }
 
     private var backdrop: some View {
         Color(.secondarySystemBackground)
             .overlay {
-                if let url = TMDBService.backdropURL(item.backdropPath, size: "w780")
-                    ?? TMDBService.posterURL(item.posterPath, size: "w500") {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image): image.resizable().scaledToFill()
-                        case .failure: placeholderIcon
-                        case .empty: ProgressView()
-                        @unknown default: placeholderIcon
-                        }
-                    }
-                } else {
+                RemoteImage(url: TMDBService.backdropURL(item.backdropPath, size: "w780")
+                    ?? TMDBService.posterURL(item.posterPath, size: "w500")) {
                     placeholderIcon
                 }
             }

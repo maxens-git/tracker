@@ -62,15 +62,21 @@ private struct CinemaCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding ?? 0)
-            .background(Color.appSurface,
-                        in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            // Fond + ombre portés par une même forme opaque : SwiftUI calcule
+            // l'ombre à partir de la forme (analytique, gratuit) au lieu de
+            // rasteriser tout le contenu de la carte hors-écran à chaque frame
+            // de défilement — c'était la principale cause des saccades.
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.appSurface)
+                    // Ombre volontairement très discrète : la carte tient par son
+                    // filet, pas par un relief marqué (rendu plus « posé »).
+                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
+            }
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(Color.appStroke, lineWidth: 1)
             )
-            // Ombre volontairement très discrète : la carte tient par son filet,
-            // pas par un relief marqué (rendu plus « posé », moins tape-à-l'œil).
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
 }
 

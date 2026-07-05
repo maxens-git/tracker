@@ -39,7 +39,6 @@ struct ListDetailView: View {
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(title)
         .errorToast($viewModel.errorMessage)
-        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $viewModel.query, prompt: "Rechercher dans la liste")
         .overlay {
             if viewModel.filteredItems.isEmpty && !viewModel.isLoading {
