@@ -74,6 +74,6 @@ export class ThemeService {
 
     this.document
       .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-      ?.setAttribute('content', theme === 'dark' ? '#141210' : '#f8f3ea');
+      ?.setAttribute('content', theme === 'dark' ? '#0d0d0f' : '#e7e3da');
   }
 }

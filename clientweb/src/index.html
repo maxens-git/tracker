@@ -5,7 +5,7 @@
     <title>Tracker</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f8f3ea" />
+    <meta name="theme-color" content="#e7e3da" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <script>
       (() => {
@@ -18,7 +18,7 @@
           root.dataset.theme = theme;
           root.dataset.themeMode = mode;
           root.style.colorScheme = theme;
-          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#141210' : '#f8f3ea');
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0d0d0f' : '#e7e3da');
         } catch {
           document.documentElement.dataset.theme = 'light';
         }
