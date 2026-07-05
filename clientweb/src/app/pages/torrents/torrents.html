@@ -72,7 +72,12 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-torrent>
-        <tr>
+        <tr
+          class="torrent-row"
+          [class.is-debriding]="debriding() === torrent.magnetUrl"
+          [class.is-disabled]="debriding() !== null"
+          (click)="debriding() === null && debrid(torrent)"
+        >
           <td class="col-title"><span [title]="torrent.title">{{ torrent.title }}</span></td>
           <td class="col-indexer">{{ torrent.indexer }}</td>
           <td class="col-cat">{{ torrent.category || '—' }}</td>
@@ -81,16 +86,7 @@
           <td class="col-num seeders">{{ torrent.seeders }}</td>
           <td class="col-num leechers">{{ torrent.leechers }}</td>
           <td class="col-action">
-            <button
-              pButton pRipple
-              type="button"
-              class="debrid-btn"
-              [disabled]="debriding() !== null"
-              (click)="debrid(torrent)"
-            >
-              <i [class]="debriding() === torrent.magnetUrl ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
-              <span>Débrider</span>
-            </button>
+            <i [class]="debriding() === torrent.magnetUrl ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
           </td>
         </tr>
       </ng-template>
@@ -105,7 +101,7 @@
     [draggable]="false"
     [resizable]="false"
     styleClass="debrid-dialog"
-    [style]="{ width: '32rem', maxWidth: '92vw' }"
+    [style]="{ width: '46rem', maxWidth: '94vw' }"
   >
     @if (debridTorrent(); as t) {
       <p class="debrid-subtitle" [title]="t.title">{{ t.title }}</p>

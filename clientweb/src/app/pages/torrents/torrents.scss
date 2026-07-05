@@ -125,12 +125,32 @@
 
   .col-action {
     text-align: right;
+    color: var(--muted);
   }
 
-  .debrid-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+  .torrent-row {
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: var(--bg-elevated);
+
+      .col-action {
+        color: var(--accent, var(--text));
+      }
+    }
+
+    &.is-debriding .col-action {
+      color: var(--accent, var(--text));
+    }
+
+    &.is-disabled {
+      cursor: default;
+
+      &:hover {
+        background: transparent;
+      }
+    }
   }
 }
 
@@ -191,11 +211,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--border);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--r-md, 8px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
 
-  &:first-of-type {
-    border-top: none;
+  & + & {
+    margin-top: 0.5rem;
   }
 
   .file-check {
