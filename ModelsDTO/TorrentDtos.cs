@@ -13,7 +13,9 @@ public record TorrentResultDto(
     int Seeders,
     int Leechers,
     string Indexer,
-    string MagnetUrl);
+    string MagnetUrl,
+    string? Category,
+    DateTimeOffset? PublishDate);
 
 /// <summary>Requête de débridage : le magnet choisi par l'utilisateur.</summary>
 public record DebridRequestDto(string Magnet);

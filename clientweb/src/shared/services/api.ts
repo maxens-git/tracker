@@ -72,6 +72,8 @@ export interface TorrentResult {
   leechers: number;
   indexer: string;
   magnetUrl: string;
+  category: string | null;
+  publishDate: string | null;
 }
 
 export interface DebridFile {

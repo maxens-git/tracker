@@ -28,7 +28,8 @@
       placeholder="Tous les indexeurs"
       selectedItemsLabel="{0} indexeurs"
       [maxSelectedLabels]="2"
-      [showToggleAll]="true"
+      [showToggleAll]="false"
+      [filter]="false"
       appendTo="body"
     />
 
@@ -56,11 +57,14 @@
   } @else if (searched() && results().length === 0) {
     <p class="empty">Aucun torrent trouvé.</p>
   } @else if (results().length > 0) {
+    <p class="results-count">{{ results().length }} résultat{{ results().length > 1 ? 's' : '' }}</p>
     <p-table [value]="results()" styleClass="results-table" [scrollable]="true">
       <ng-template pTemplate="header">
         <tr>
           <th class="col-title">Titre</th>
           <th class="col-indexer">Indexeur</th>
+          <th class="col-cat">Catégorie</th>
+          <th class="col-age">Âge</th>
           <th class="col-num">Taille</th>
           <th class="col-num"><i class="pi pi-arrow-up"></i></th>
           <th class="col-num"><i class="pi pi-arrow-down"></i></th>
@@ -71,9 +75,11 @@
         <tr>
           <td class="col-title"><span [title]="torrent.title">{{ torrent.title }}</span></td>
           <td class="col-indexer">{{ torrent.indexer }}</td>
+          <td class="col-cat">{{ torrent.category || '—' }}</td>
+          <td class="col-age">{{ formatAge(torrent.publishDate) }}</td>
           <td class="col-num">{{ formatSize(torrent.size) }}</td>
           <td class="col-num seeders">{{ torrent.seeders }}</td>
-          <td class="col-num">{{ torrent.leechers }}</td>
+          <td class="col-num leechers">{{ torrent.leechers }}</td>
           <td class="col-action">
             <button
               pButton pRipple
@@ -122,7 +128,7 @@
             (click)="resolveAll()"
           >
             <i [class]="resolvingAll() ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
-            <span>{{ resolvingAll() ? 'Obtention… (' + resolvedCount() + '/' + debridFiles().length + ')' : 'Obtenir tous les liens' }}</span>
+            <span>{{ resolvingAll() ? 'Obtention… (' + resolvedCount() + '/' + selectedCount() + ')' : 'Obtenir les liens sélectionnés' }}</span>
           </button>
         }
         @if (resolvedCount() > 0) {
@@ -143,6 +149,15 @@
 
     @for (file of debridFiles(); track file.link) {
       <div class="debrid-file">
+        @if (debridFiles().length > 1) {
+          <p-checkbox
+            class="file-check"
+            [binary]="true"
+            [ngModel]="isSelected(file)"
+            (ngModelChange)="toggleSelection(file, $event)"
+            [disabled]="resolvingAll()"
+          />
+        }
         <div class="file-info">
           <span class="file-name" [title]="file.filename">
             @if (fileExt(file.filename); as ext) { <span class="file-ext">{{ ext }}</span> }

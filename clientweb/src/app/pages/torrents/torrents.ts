@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -19,7 +20,7 @@ import { Spinner } from '../../../shared/components/spinner/spinner';
 @Component({
   selector: 'app-torrents',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, TableModule, DialogModule, MultiSelectModule, InputTextModule, IconFieldModule, InputIconModule, Ripple, Spinner],
+  imports: [CommonModule, FormsModule, ButtonModule, TableModule, DialogModule, MultiSelectModule, CheckboxModule, InputTextModule, IconFieldModule, InputIconModule, Ripple, Spinner],
   templateUrl: './torrents.html',
   styleUrl: './torrents.scss',
 })
@@ -48,6 +49,8 @@ export class Torrents implements OnInit {
   dialogVisible = signal(false);
   debridTorrent = signal<TorrentResult | null>(null);
   debridFiles = signal<DebridFile[]>([]);
+  // Fichiers cochés (clé = lien verrouillé) sur lesquels portent les actions groupées.
+  selectedFiles = signal<Set<string>>(new Set());
 
   // Taille totale des fichiers débridés (somme des tailles connues).
   totalDebridSize = computed(() => this.debridFiles().reduce((sum, f) => sum + (f.size || 0), 0));
@@ -58,10 +61,14 @@ export class Torrents implements OnInit {
   resolvingAll = signal(false);
   private resolved = signal<Record<string, string>>({});
 
-  // Reste-t-il des fichiers dont le lien n'a pas encore été obtenu ?
-  hasUnresolved = computed(() => this.debridFiles().some(f => !this.resolved()[f.link]));
-  // Nombre de fichiers déjà résolus (pour la progression du bouton « tout obtenir »).
-  resolvedCount = computed(() => this.debridFiles().filter(f => this.resolved()[f.link]).length);
+  // Nombre de fichiers cochés (dénominateur de la progression « tout obtenir »).
+  selectedCount = computed(() => this.debridFiles().filter(f => this.selectedFiles().has(f.link)).length);
+  // Reste-t-il un fichier coché dont le lien n'a pas encore été obtenu ?
+  hasUnresolved = computed(() =>
+    this.debridFiles().some(f => this.selectedFiles().has(f.link) && !this.resolved()[f.link]));
+  // Nombre de fichiers cochés déjà résolus (pour la progression du bouton « tout obtenir »).
+  resolvedCount = computed(() =>
+    this.debridFiles().filter(f => this.selectedFiles().has(f.link) && this.resolved()[f.link]).length);
 
   ngOnInit() {
     // Silencieux en cas d'échec : on peut toujours chercher sur « tous / toutes ».
@@ -146,6 +153,9 @@ export class Torrents implements OnInit {
         }
         this.debridTorrent.set(torrent);
         this.debridFiles.set(result.files);
+        // Pré-sélection : tous les fichiers sauf les .nfo (métadonnées inutiles au téléchargement).
+        this.selectedFiles.set(new Set(
+          result.files.filter(f => this.fileExt(f.filename) !== 'NFO').map(f => f.link)));
         this.resolved.set({});
         this.unlockingLink.set(null);
         this.dialogVisible.set(true);
@@ -155,6 +165,19 @@ export class Torrents implements OnInit {
         // Le backend renvoie un message explicite (ex. 409 « non caché »), sinon message générique.
         this.showError(this.messageFor(err, 'Débridage impossible.'));
       },
+    });
+  }
+
+  // ── Sélection des fichiers (checkbox) ──────────────────────────────────
+  isSelected(file: DebridFile): boolean {
+    return this.selectedFiles().has(file.link);
+  }
+
+  toggleSelection(file: DebridFile, checked: boolean) {
+    this.selectedFiles.update(set => {
+      const next = new Set(set);
+      if (checked) next.add(file.link); else next.delete(file.link);
+      return next;
     });
   }
 
@@ -185,7 +208,7 @@ export class Torrents implements OnInit {
   resolveAll() {
     if (this.unlockingLink() || this.resolvingAll()) return;
 
-    const pending = this.debridFiles().filter(f => !this.resolvedLink(f));
+    const pending = this.debridFiles().filter(f => this.isSelected(f) && !this.resolvedLink(f));
     if (pending.length === 0) return;
 
     this.resolvingAll.set(true);
@@ -208,6 +231,7 @@ export class Torrents implements OnInit {
   // Copie tous les liens directs déjà obtenus, un par ligne.
   async copyAll() {
     const links = this.debridFiles()
+      .filter(f => this.isSelected(f))
       .map(f => this.resolvedLink(f))
       .filter((l): l is string => !!l);
     if (links.length === 0) return;
@@ -245,6 +269,24 @@ export class Torrents implements OnInit {
       unit++;
     }
     return `${value.toFixed(value >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
+  }
+
+  // Âge lisible et compact d'un torrent depuis sa date de publication (ex. « 3 j », « 5 mois »).
+  formatAge(publishDate: string | null): string {
+    if (!publishDate) return '—';
+    const published = new Date(publishDate).getTime();
+    if (Number.isNaN(published)) return '—';
+
+    const hours = Math.floor((Date.now() - published) / 3_600_000);
+    if (hours < 1) return '< 1 h';
+    if (hours < 24) return `${hours} h`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} j`;
+    if (days < 365) return `${Math.floor(days / 30)} mois`;
+
+    const years = Math.floor(days / 365);
+    return `${years} an${years > 1 ? 's' : ''}`;
   }
 
   private messageFor(err: HttpErrorResponse, fallback: string): string {

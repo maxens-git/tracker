@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -96,7 +97,9 @@ public class ProwlarrService(HttpClient http, ApiDbContext context, ILogger<Prow
                 Seeders: ReadInt(item, "seeders"),
                 Leechers: ReadInt(item, "leechers"),
                 Indexer: ReadString(item, "indexer") ?? "?",
-                MagnetUrl: magnet));
+                MagnetUrl: magnet,
+                Category: ReadFirstCategory(item),
+                PublishDate: ReadDate(item, "publishDate")));
         }
 
         results.Sort((a, b) => b.Seeders.CompareTo(a.Seeders));
@@ -174,4 +177,27 @@ public class ProwlarrService(HttpClient http, ApiDbContext context, ILogger<Prow
         element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.Number
             ? value.GetInt64()
             : 0;
+
+    private static DateTimeOffset? ReadDate(JsonElement element, string name) =>
+        element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String &&
+        DateTimeOffset.TryParse(value.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset date)
+            ? date
+            : null;
+
+    /// <summary>
+    /// Nom de la première catégorie Torznab exploitable du résultat (ex. « Movies », « TV/HD »).
+    /// Prowlarr expose une liste <c>categories</c> d'objets <c>{ id, name }</c> par release.
+    /// </summary>
+    private static string? ReadFirstCategory(JsonElement element)
+    {
+        if (!element.TryGetProperty("categories", out JsonElement cats) || cats.ValueKind != JsonValueKind.Array)
+            return null;
+
+        foreach (JsonElement cat in cats.EnumerateArray())
+        {
+            string? name = ReadString(cat, "name");
+            if (!string.IsNullOrWhiteSpace(name)) return name;
+        }
+        return null;
+    }
 }

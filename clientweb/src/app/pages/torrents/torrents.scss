@@ -60,6 +60,12 @@
   padding: 2.5rem 0;
 }
 
+.results-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.6rem;
+}
+
 
 :host ::ng-deep .results-table {
   border: 1px solid var(--border);
@@ -88,6 +94,16 @@
     color: var(--muted);
   }
 
+  .col-cat,
+  .col-age {
+    color: var(--muted);
+  }
+
+  .col-age {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
   .col-num {
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -99,6 +115,11 @@
 
   td.col-num.seeders {
     color: var(--success);
+    font-weight: 700;
+  }
+
+  td.col-num.leechers {
+    color: var(--danger);
     font-weight: 700;
   }
 
@@ -175,6 +196,11 @@
 
   &:first-of-type {
     border-top: none;
+  }
+
+  .file-check {
+    flex-shrink: 0;
+    display: inline-flex;
   }
 
   .file-info {
