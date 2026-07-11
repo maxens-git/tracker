@@ -166,7 +166,10 @@
             <button pButton pRipple type="button" class="link-btn" severity="secondary" (click)="copyLink(direct)">
               <i class="pi pi-copy"></i><span>Copier</span>
             </button>
-            <a pButton pRipple class="link-btn" [href]="direct" target="_blank" rel="noopener">
+            <a pButton pRipple class="link-btn vlc-btn" [href]="'vlc://' + direct">
+              <i class="pi pi-play"></i><span>VLC</span>
+            </a>
+            <a pButton pRipple class="link-btn" severity="secondary" [href]="direct" target="_blank" rel="noopener">
               <i class="pi pi-download"></i><span>Télécharger</span>
             </a>
           } @else {
