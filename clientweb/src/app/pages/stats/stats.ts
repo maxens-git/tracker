@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Api } from '../../../shared/services/api';
 import { Stats, StatsGenreBucket, StatsListGenres, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -87,7 +88,11 @@ export class StatsPage implements OnInit {
   maxGenre = computed(() => Math.max(...this.scoredGenres().map(g => g.percentage), 1));
 
   ngOnInit() {
-    forkJoin([this.api.stats(), this.api.genresByList()]).subscribe({
+    // Les genres par liste sont secondaires : une erreur ne doit pas masquer le reste des stats.
+    forkJoin([
+      this.api.stats(),
+      this.api.genresByList().pipe(catchError(() => of([] as StatsListGenres[]))),
+    ]).subscribe({
       next: ([stats, listGenres]) => {
         this.stats.set(stats);
         this.listGenres.set(listGenres);

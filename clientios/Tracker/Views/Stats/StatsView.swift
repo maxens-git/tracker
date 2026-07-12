@@ -19,8 +19,10 @@ struct StatsView: View {
                 VStack(spacing: 24) {
                     summaryGrid(stats)
 
-                    if !stats.favoriteGenres.isEmpty {
-                        GenrePreferenceCard(genres: stats.favoriteGenres)
+                    if !viewModel.genreLists.isEmpty {
+                        GenrePreferenceCard(lists: viewModel.genreLists,
+                                            selectedListId: $viewModel.selectedListId,
+                                            genres: viewModel.selectedGenres)
                     }
 
                     if !viewModel.byYear.isEmpty {
@@ -80,11 +82,21 @@ struct StatsView: View {
 
 // MARK: - Genres préférés
 
+/// Mode de calcul des pourcentages de genres.
+/// `.titles` = % de titres ayant ce genre (somme > 100 %) ;
+/// `.tags` = part de chaque genre (somme = 100 %).
+private enum GenreMode: Hashable {
+    case titles, tags
+}
+
 private struct GenrePreferenceCard: View {
+    let lists: [StatsListGenres]
+    @Binding var selectedListId: Int?
     let genres: [StatsGenreBucket]
 
     private static let collapsedCount = 7
     @State private var showAll = false
+    @State private var mode: GenreMode = .titles
 
     private let colors: [Color] = [
         Color(hex: 0xE89A63),
@@ -96,21 +108,46 @@ private struct GenrePreferenceCard: View {
         Color(hex: 0xDD83AE),
     ]
 
+    /// Genres avec le % recalculé selon le mode choisi.
+    private var scoredGenres: [StatsGenreBucket] {
+        guard mode == .tags else { return genres }
+        let total = genres.reduce(0) { $0 + $1.count }
+        guard total > 0 else { return genres }
+        return genres.map {
+            StatsGenreBucket(name: $0.name, count: $0.count,
+                             percentage: Int((Double($0.count) * 100 / Double(total)).rounded()))
+        }
+    }
+
+    private var selectedList: StatsListGenres? {
+        lists.first { $0.listId == selectedListId }
+    }
+
     private var maxPercentage: Int {
-        max(genres.map(\.percentage).max() ?? 1, 1)
+        max(scoredGenres.map(\.percentage).max() ?? 1, 1)
     }
 
     private var visibleGenres: [StatsGenreBucket] {
-        showAll ? genres : Array(genres.prefix(Self.collapsedCount))
+        showAll ? scoredGenres : Array(scoredGenres.prefix(Self.collapsedCount))
     }
 
     private var hasMore: Bool {
-        genres.count > Self.collapsedCount
+        scoredGenres.count > Self.collapsedCount
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 20) {
             SectionHeader("Genres préférés")
+
+            if lists.count > 1 {
+                listDropdown
+            }
+
+            Picker("Mode", selection: $mode) {
+                Text("Par titre").tag(GenreMode.titles)
+                Text("Répartition").tag(GenreMode.tags)
+            }
+            .pickerStyle(.segmented)
 
             VStack(spacing: 20) {
                 ForEach(Array(visibleGenres.enumerated()), id: \.element.id) { index, genre in
@@ -137,6 +174,40 @@ private struct GenrePreferenceCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .cinemaCard()
+        .onChange(of: selectedListId) { showAll = false }
+    }
+
+    /// Dropdown de sélection de liste (menu natif iOS).
+    private var listDropdown: some View {
+        Menu {
+            Picker("Liste", selection: $selectedListId) {
+                ForEach(lists) { list in
+                    Text(menuLabel(list)).tag(list.listId as Int?)
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                if let icon = selectedList?.icon, !icon.isEmpty {
+                    Text(icon)
+                }
+                Text(selectedList?.name ?? "Liste")
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+            }
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color.appSurface, in: Capsule())
+            .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
+        }
+    }
+
+    /// Libellé d'un élément du menu : icône + nom.
+    private func menuLabel(_ list: StatsListGenres) -> String {
+        if let icon = list.icon, !icon.isEmpty { return "\(icon) \(list.name)" }
+        return list.name
     }
 
     private func genreRow(_ genre: StatsGenreBucket, color: Color) -> some View {

@@ -27,6 +27,8 @@ struct CombinedMonthBucket: Identifiable, Hashable {
 @MainActor
 final class StatsViewModel {
     private(set) var stats: Stats?
+    private(set) var listGenres: [StatsListGenres] = []
+    var selectedListId: Int?
     private(set) var isLoading = false
     var errorMessage: String?
 
@@ -39,11 +41,41 @@ final class StatsViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            stats = try await api.stats()
+            async let statsResult = api.stats()
+            async let genresResult = api.genresByList()
+            let loadedStats = try await statsResult
+            stats = loadedStats
+            // Les genres par liste sont secondaires : si l'endpoint est indisponible
+            // (backend pas à jour), on retombe sur les genres « Vu » (favoriteGenres)
+            // pour que la carte reste affichée comme avant.
+            var loadedGenres = (try? await genresResult) ?? []
+            if loadedGenres.isEmpty, !loadedStats.favoriteGenres.isEmpty {
+                loadedGenres = [StatsListGenres(listId: -1, name: "Vu", icon: nil,
+                                                isSystem: true, genres: loadedStats.favoriteGenres)]
+            }
+            listGenres = loadedGenres
+            selectedListId = Self.defaultListId(loadedGenres)
         } catch {
             if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isLoading = false
+    }
+
+    /// Listes proposées dans le sélecteur (celles ayant au moins un genre).
+    var genreLists: [StatsListGenres] {
+        listGenres.filter { !$0.genres.isEmpty }
+    }
+
+    /// Genres de la liste sélectionnée.
+    var selectedGenres: [StatsGenreBucket] {
+        listGenres.first { $0.listId == selectedListId }?.genres ?? []
+    }
+
+    /// Liste par défaut : « Vu » si elle a des genres, sinon la première non vide.
+    private static func defaultListId(_ lists: [StatsListGenres]) -> Int? {
+        let withGenres = lists.filter { !$0.genres.isEmpty }
+        let seen = withGenres.first { $0.isSystem && $0.name == "Seen" }
+        return (seen ?? withGenres.first)?.listId
     }
 
     /// Activité par année (films + épisodes fusionnés), triée par année croissante.

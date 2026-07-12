@@ -199,3 +199,13 @@ struct StatsGenreBucket: Decodable, Identifiable, Hashable {
     let percentage: Int
     var id: String { name }
 }
+
+/// Répartition des genres d'une liste (Vu, J'aime, Watchlist, listes custom).
+struct StatsListGenres: Decodable, Identifiable, Hashable {
+    let listId: Int
+    let name: String
+    let icon: String?
+    let isSystem: Bool
+    let genres: [StatsGenreBucket]
+    var id: Int { listId }
+}

@@ -232,12 +232,13 @@ struct APIService {
         try await rawRequest("/MediaLists/\(id)", method: "DELETE")
     }
 
-    func addItemToList(listId: Int, tmdbId: Int, type: MediaType, posterPath: String?) async throws {
+    func addItemToList(listId: Int, tmdbId: Int, type: MediaType, posterPath: String?, genres: [TMDBGenre] = []) async throws {
         var payload: [String: AnyEncodable] = [
             "tmdbId": AnyEncodable(tmdbId),
             "mediaType": AnyEncodable(type.rawValue),
         ]
         if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
+        if !genres.isEmpty { payload["genres"] = AnyEncodable(genres) }
         let body = try encoder.encode(payload)
         try await rawRequest("/MediaLists/\(listId)/items", method: "POST", body: body)
     }
@@ -251,6 +252,10 @@ struct APIService {
 
     func stats() async throws -> Stats {
         try await request("/Stats")
+    }
+
+    func genresByList() async throws -> [StatsListGenres] {
+        try await request("/Stats/genres-by-list")
     }
 
     // ── Activité ────────────────────────────────────────────────────────────

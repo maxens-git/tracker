@@ -303,7 +303,7 @@ final class MediaDetailViewModel {
         setListMembership(listId, member: adding)
         do {
             if adding {
-                try await api.addItemToList(listId: listId, tmdbId: tmdbId, type: type, posterPath: posterPath)
+                try await api.addItemToList(listId: listId, tmdbId: tmdbId, type: type, posterPath: posterPath, genres: genres)
             } else {
                 try await api.removeItemFromList(listId: listId, tmdbId: tmdbId, type: type)
             }
