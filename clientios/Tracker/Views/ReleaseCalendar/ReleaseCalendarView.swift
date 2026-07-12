@@ -144,7 +144,7 @@ struct ReleaseCalendarView: View {
                     .padding(.horizontal, 4)
 
                 ForEach(viewModel.pendingItems) { item in
-                    releaseNavigationRow(item)
+                    calendarReleaseRow(item)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,7 +170,7 @@ struct ReleaseCalendarView: View {
                     .padding(.horizontal, 4)
             } else {
                 ForEach(dayItems) { item in
-                    releaseNavigationRow(item)
+                    calendarReleaseRow(item)
                 }
             }
         }
@@ -185,6 +185,8 @@ struct ReleaseCalendarView: View {
         if let date = DateOnlyFormatter.date(from: first.date) { visibleMonth = date }
     }
 
+    /// Ligne cliquable dans une `List` : l'astuce ZStack + lien invisible évite le
+    /// double chevron ajouté automatiquement par `List` autour d'un `NavigationLink`.
     private func releaseNavigationRow(_ item: ReleaseCalendarItem) -> some View {
         ZStack {
             releaseRow(item)
@@ -197,6 +199,15 @@ struct ReleaseCalendarView: View {
             .buttonStyle(.plain)
         }
         .contentShape(Rectangle())
+    }
+
+    /// Ligne cliquable hors `List` (vue calendrier) : le `NavigationLink` enveloppe
+    /// directement la carte, sinon le lien invisible en `opacity(0)` ne reçoit pas les taps.
+    private func calendarReleaseRow(_ item: ReleaseCalendarItem) -> some View {
+        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+            releaseRow(item)
+        }
+        .buttonStyle(.plain)
     }
 
     private func releaseRow(_ item: ReleaseCalendarItem) -> some View {
