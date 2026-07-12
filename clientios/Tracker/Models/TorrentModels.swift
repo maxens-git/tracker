@@ -28,6 +28,30 @@ struct TorrentResult: Codable, Hashable {
     let leechers: Int
     let indexer: String
     let magnetUrl: String
+    // Métadonnées optionnelles renvoyées par la recherche, préservées lors d'un
+    // marque-page (chaîne brute pour la date, round-trip exact vers le backend).
+    var category: String? = nil
+    var publishDate: String? = nil
+}
+
+/// Un torrent mis de côté (marque-page). Étend un résultat de recherche avec un `id`
+/// (pour la suppression). Miroir de `TorrentBookmarkDto` côté backend.
+struct TorrentBookmark: Codable, Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let size: Int64
+    let seeders: Int
+    let leechers: Int
+    let indexer: String
+    let magnetUrl: String
+    let category: String?
+    let publishDate: String?
+
+    /// Vue « résultat de recherche » pour réutiliser l'affichage et le débridage.
+    var asResult: TorrentResult {
+        TorrentResult(title: title, size: size, seeders: seeders, leechers: leechers,
+                      indexer: indexer, magnetUrl: magnetUrl, category: category, publishDate: publishDate)
+    }
 }
 
 /// Un fichier d'un torrent débridé. `link` est le lien AllDebrid « verrouillé »,

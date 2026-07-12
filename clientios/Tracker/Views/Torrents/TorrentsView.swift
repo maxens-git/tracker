@@ -15,15 +15,21 @@ struct TorrentsView: View {
     var body: some View {
         VStack(spacing: 14) {
             searchBar
-            filters
-            resultsArea
+            tabPicker
+            if viewModel.tab == .results {
+                filters
+            }
+            contentArea
         }
         .padding(.top, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Torrents")
         .errorToast($viewModel.errorMessage)
-        .task { await viewModel.loadFilters() }
+        .task {
+            await viewModel.loadFilters()
+            await viewModel.loadBookmarks()
+        }
         .sheet(isPresented: $showingIndexerPicker, onDismiss: { Task { await viewModel.onFilterChange() } }) {
             indexerPicker
         }
@@ -104,6 +110,46 @@ struct TorrentsView: View {
         .frame(maxWidth: .infinity)
         .background(Color.appSurface, in: Capsule())
         .overlay(Capsule().strokeBorder(active ? Color.appGold.opacity(0.4) : Color.appStroke, lineWidth: 1))
+    }
+
+    // ── Onglet Résultats / Marque-pages ──────────────────────────────────────
+
+    private var tabPicker: some View {
+        Picker("Affichage", selection: $viewModel.tab) {
+            Text("Résultats").tag(TorrentsTab.results)
+            Text("Marque-pages").tag(TorrentsTab.bookmarks)
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private var contentArea: some View {
+        switch viewModel.tab {
+        case .results:   resultsArea
+        case .bookmarks: bookmarksArea
+        }
+    }
+
+    @ViewBuilder
+    private var bookmarksArea: some View {
+        if viewModel.bookmarks.isEmpty {
+            Spacer()
+            ContentUnavailableView("Aucun marque-page", systemImage: "bookmark",
+                                   description: Text("Mettez un torrent de côté depuis les résultats."))
+            Spacer()
+        } else {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.bookmarks) { bookmark in
+                        TorrentRow(torrent: bookmark.asResult, viewModel: viewModel)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
+            }
+            .refreshable { await viewModel.loadBookmarks() }
+        }
     }
 
     // ── Résultats ────────────────────────────────────────────────────────────
@@ -209,7 +255,10 @@ private struct TorrentRow: View {
             .font(.caption)
             .lineLimit(1)
 
-            debridButton
+            HStack(spacing: 10) {
+                debridButton
+                bookmarkButton
+            }
         }
         .cinemaCard(padding: 14)
     }
@@ -241,5 +290,35 @@ private struct TorrentRow: View {
         .buttonStyle(.plain)
         .disabled(viewModel.debridingMagnet != nil)
         .opacity(viewModel.debridingMagnet != nil && !isDebriding ? 0.5 : 1)
+    }
+
+    /// Bouton « mettre de côté » : ajoute / retire le torrent des marque-pages.
+    private var bookmarkButton: some View {
+        let bookmarked = viewModel.isBookmarked(torrent.magnetUrl)
+        let busy = viewModel.isBookmarking(torrent.magnetUrl)
+
+        return Button {
+            Task { await viewModel.toggleBookmark(torrent) }
+        } label: {
+            Group {
+                if busy {
+                    ProgressView()
+                } else {
+                    Image(systemName: bookmarked ? "bookmark.fill" : "bookmark")
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(bookmarked ? Color.appGold : .primary)
+            .frame(width: 48)
+            .padding(.vertical, 10)
+            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                    .strokeBorder(bookmarked ? Color.appGold.opacity(0.4) : Color.appStroke, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(busy)
+        .accessibilityLabel(bookmarked ? "Retirer des marque-pages" : "Mettre de côté")
     }
 }

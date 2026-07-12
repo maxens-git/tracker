@@ -209,3 +209,21 @@ struct StatsListGenres: Decodable, Identifiable, Hashable {
     let genres: [StatsGenreBucket]
     var id: Int { listId }
 }
+
+// ── Logs système ──────────────────────────────────────────────────────────
+
+/// Une entrée du journal système (miroir de `SystemLogDto` côté backend).
+struct SystemLog: Decodable, Identifiable, Hashable {
+    let id: Int
+    let createdAt: Date?
+    let level: String
+    let category: String
+    let message: String
+    let exception: String?
+    let eventId: Int
+    let traceId: String?
+    let method: String?
+    let path: String?
+    let statusCode: Int?
+    let elapsedMs: Double?
+}

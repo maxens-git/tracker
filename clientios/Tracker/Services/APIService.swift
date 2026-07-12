@@ -264,6 +264,21 @@ struct APIService {
         try await request("/Activity", query: [URLQueryItem(name: "page", value: String(page))])
     }
 
+    // ── Logs système ──────────────────────────────────────────────────────
+
+    /// Journal système paginé. `level` = "all" (aucun filtre) ou "Information"/"Warning"/"Error"/"Critical".
+    func logs(page: Int = 1, level: String = "all", search: String = "") async throws -> PaginatedResult<SystemLog> {
+        var query = [URLQueryItem(name: "page", value: String(page))]
+        if level != "all" { query.append(URLQueryItem(name: "level", value: level)) }
+        let trimmed = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { query.append(URLQueryItem(name: "search", value: trimmed)) }
+        return try await request("/Logs", query: query)
+    }
+
+    func clearLogs() async throws {
+        try await rawRequest("/Logs", method: "DELETE")
+    }
+
     // ── Réglages & sorties ────────────────────────────────────────────────
 
     func settings(forceRefresh: Bool = false) async throws -> AppSettingsDTO {
@@ -342,6 +357,33 @@ struct APIService {
     func unlockLink(_ link: String) async throws -> UnlockResult {
         let body = try encoder.encode(["link": link])
         return try await request("/torrents/unlock", method: "POST", body: body)
+    }
+
+    // ── Marque-pages torrents ──────────────────────────────────────────────
+
+    func torrentBookmarks() async throws -> [TorrentBookmark] {
+        try await request("/torrent-bookmarks")
+    }
+
+    /// Met un torrent de côté. Idempotent côté backend (même infohash → même entrée).
+    @discardableResult
+    func addTorrentBookmark(_ torrent: TorrentResult) async throws -> TorrentBookmark {
+        var payload: [String: AnyEncodable] = [
+            "title": AnyEncodable(torrent.title),
+            "size": AnyEncodable(torrent.size),
+            "seeders": AnyEncodable(torrent.seeders),
+            "leechers": AnyEncodable(torrent.leechers),
+            "indexer": AnyEncodable(torrent.indexer),
+            "magnetUrl": AnyEncodable(torrent.magnetUrl),
+        ]
+        if let category = torrent.category { payload["category"] = AnyEncodable(category) }
+        if let publishDate = torrent.publishDate { payload["publishDate"] = AnyEncodable(publishDate) }
+        let body = try encoder.encode(payload)
+        return try await request("/torrent-bookmarks", method: "POST", body: body)
+    }
+
+    func removeTorrentBookmark(id: Int) async throws {
+        try await rawRequest("/torrent-bookmarks/\(id)", method: "DELETE")
     }
 }
 

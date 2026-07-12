@@ -25,6 +25,9 @@ struct MoreView: View {
 
                 row(icon: "gearshape", title: "Réglages",
                     subtitle: "Thème, accueil, notifications") { SettingsView() }
+
+                row(icon: "doc.text.magnifyingglass", title: "Logs",
+                    subtitle: "Journal système") { LogsView() }
             }
             .padding(.horizontal)
             .padding(.vertical, 8)

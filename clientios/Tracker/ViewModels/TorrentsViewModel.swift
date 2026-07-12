@@ -9,6 +9,9 @@
 import Foundation
 import UIKit
 
+/// Onglet de la page torrents : résultats de recherche ou marque-pages.
+enum TorrentsTab: Hashable { case results, bookmarks }
+
 @Observable
 @MainActor
 final class TorrentsViewModel {
@@ -38,6 +41,13 @@ final class TorrentsViewModel {
     private(set) var unlockingLink: String?
     private(set) var resolvingAll = false
     private(set) var resolved: [String: String] = [:]
+
+    // ── Marque-pages ─────────────────────────────────────────────────────────
+    /// Onglet courant (résultats / marque-pages).
+    var tab: TorrentsTab = .results
+    private(set) var bookmarks: [TorrentBookmark] = []
+    /// Magnet du marque-page en cours d'ajout/suppression (spinner de la ligne).
+    private(set) var bookmarkingMagnet: String?
 
     private let api = APIService.shared
 
@@ -178,5 +188,54 @@ final class TorrentsViewModel {
         guard !links.isEmpty else { return }
         UIPasteboard.general.string = links.joined(separator: "\n")
         Haptics.success()
+    }
+
+    // ── Marque-pages ───────────────────────────────────────────────────────
+
+    /// Silencieux en cas d'échec : les marque-pages sont secondaires, la recherche reste utilisable.
+    func loadBookmarks() async {
+        if let list = try? await api.torrentBookmarks() { bookmarks = list }
+    }
+
+    func isBookmarked(_ magnetUrl: String) -> Bool {
+        bookmarks.contains { $0.magnetUrl == magnetUrl }
+    }
+
+    func isBookmarking(_ magnetUrl: String) -> Bool {
+        bookmarkingMagnet == magnetUrl
+    }
+
+    private func bookmark(for magnetUrl: String) -> TorrentBookmark? {
+        bookmarks.first { $0.magnetUrl == magnetUrl }
+    }
+
+    /// Ajoute ou retire un torrent des marque-pages (mise à jour optimiste avec rollback).
+    func toggleBookmark(_ torrent: TorrentResult) async {
+        guard bookmarkingMagnet == nil else { return }
+        bookmarkingMagnet = torrent.magnetUrl
+        defer { bookmarkingMagnet = nil }
+
+        if let existing = bookmark(for: torrent.magnetUrl) {
+            bookmarks.removeAll { $0.id == existing.id }
+            do {
+                try await api.removeTorrentBookmark(id: existing.id)
+                Haptics.success()
+            } catch {
+                bookmarks.insert(existing, at: 0)   // rollback
+                errorMessage = error.localizedDescription
+                Haptics.error()
+            }
+        } else {
+            do {
+                let created = try await api.addTorrentBookmark(torrent)
+                if !bookmarks.contains(where: { $0.id == created.id }) {
+                    bookmarks.insert(created, at: 0)
+                }
+                Haptics.success()
+            } catch {
+                errorMessage = error.localizedDescription
+                Haptics.error()
+            }
+        }
     }
 }
