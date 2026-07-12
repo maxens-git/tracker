@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig, RouteReuseStrategy } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { ReloadRouteReuseStrategy } from '../shared/reload-route-reuse-strategy';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
@@ -76,7 +77,8 @@ const TrackerPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload' })),
+    { provide: RouteReuseStrategy, useClass: ReloadRouteReuseStrategy },
     provideHttpClient(),
     provideAnimationsAsync(),
     MessageService,
