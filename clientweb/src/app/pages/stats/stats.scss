@@ -115,6 +115,44 @@
   }
 }
 
+.genre-lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.genre-list-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted, #9aa0a6);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--accent, #8ba7ea);
+  }
+
+  &.active {
+    background: var(--accent, #8ba7ea);
+    border-color: var(--accent, #8ba7ea);
+    color: #fff;
+  }
+}
+
+.genre-list-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 .genre-list {
   display: grid;
   gap: 1rem;

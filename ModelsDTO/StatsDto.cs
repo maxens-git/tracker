@@ -39,3 +39,12 @@ public class StatsGenreBucket
     public int Count { get; set; }
     public int Percentage { get; set; }
 }
+
+public class StatsListGenresDto
+{
+    public int ListId { get; set; }
+    public string Name { get; set; } = "";
+    public string? Icon { get; set; }
+    public bool IsSystem { get; set; }
+    public List<StatsGenreBucket> Genres { get; set; } = new();
+}

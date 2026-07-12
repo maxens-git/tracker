@@ -105,7 +105,7 @@ public class MediaListsController(
         if (alreadyIn)
             return BadRequest("Déjà dans la liste");
 
-        UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath);
+        UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath, genres: dto.Genres);
 
         context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath));
 

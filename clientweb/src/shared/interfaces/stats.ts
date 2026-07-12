@@ -15,6 +15,14 @@ export interface StatsGenreBucket {
   percentage: number;
 }
 
+export interface StatsListGenres {
+  listId: number;
+  name: string;
+  icon?: string;
+  isSystem: boolean;
+  genres: StatsGenreBucket[];
+}
+
 export interface Stats {
   moviesSeenCount: number;
   showsSeenCount: number;

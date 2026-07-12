@@ -6,19 +6,20 @@ using Tracker.Models;
 
 namespace Tracker.Services;
 
-public sealed record BackfillSeenMediaMetadataOptions(bool DryRun, bool Force, int? Limit)
+public sealed record BackfillSeenMediaMetadataOptions(bool DryRun, bool Force, int? Limit, bool All)
 {
     public static BackfillSeenMediaMetadataOptions FromArgs(string[] args)
     {
         bool dryRun = args.Contains("--dry-run");
         bool force = args.Contains("--force");
+        bool all = args.Contains("--all");
         int? limit = null;
 
         int limitIndex = Array.IndexOf(args, "--limit");
         if (limitIndex >= 0 && limitIndex + 1 < args.Length && int.TryParse(args[limitIndex + 1], out int parsedLimit))
             limit = parsedLimit;
 
-        return new BackfillSeenMediaMetadataOptions(dryRun, force, limit);
+        return new BackfillSeenMediaMetadataOptions(dryRun, force, limit, all);
     }
 }
 
@@ -97,8 +98,14 @@ public class SeenMediaMetadataBackfillService(
 
     private IQueryable<UserMedia> SeenMediaQuery(BackfillSeenMediaMetadataOptions options)
     {
-        IQueryable<UserMedia> query = context.UserMedia
-            .Where(m => m.Seen)
+        // Par défaut, on ne backfill que les médias vus. --all étend à tous les UserMedia,
+        // y compris ceux référencés uniquement par des listes (AddItem crée toujours une ligne).
+        IQueryable<UserMedia> query = context.UserMedia;
+
+        if (!options.All)
+            query = query.Where(m => m.Seen);
+
+        query = query
             .OrderBy(m => m.MediaType)
             .ThenBy(m => m.TmdbId);
 

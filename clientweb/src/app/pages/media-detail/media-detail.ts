@@ -319,6 +319,11 @@ export class MediaDetail implements OnInit {
     return this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path;
   }
 
+  /** Genres du média courant, pour persister GenreNamesJson dès l'ajout à une liste. */
+  private currentGenres() {
+    return this.isMovie ? (this.movie()?.genres ?? []) : (this.show()?.genres ?? []);
+  }
+
   /** Applique un changement optimiste, lance la requête et l'annule en cas d'erreur. */
   private runOptimistic(apply: () => void, revert: () => void, request: Observable<unknown>, done: () => void): void {
     apply();
@@ -456,6 +461,7 @@ export class MediaDetail implements OnInit {
           tmdbId: this.userState().tmdbId,
           mediaType: this.mediaType(),
           posterPath: this.currentPosterPath(),
+          genres: this.currentGenres(),
         }).pipe(map(() => list))
       )
     ).subscribe({
@@ -483,7 +489,7 @@ export class MediaDetail implements OnInit {
 
     const request = inList
       ? this.api.removeItemFromList(listId, tmdbId, type)
-      : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath() });
+      : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath(), genres: this.currentGenres() });
 
     this.runOptimistic(
       () => { this.setListMembership(listId, !inList); this.bumpListItemCount(listId, delta); },

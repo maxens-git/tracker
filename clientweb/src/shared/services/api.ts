@@ -4,7 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { MediaItem, TmdbGenre, UserState } from '../interfaces/media';
 import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/list';
-import { Stats } from '../interfaces/stats';
+import { Stats, StatsListGenres } from '../interfaces/stats';
 import { EpisodeSeenDto } from '../interfaces/episode';
 import { Activity } from '../interfaces/activity';
 
@@ -14,6 +14,7 @@ export interface AddListItemPayload {
   tmdbId: number;
   mediaType: string;
   posterPath?: string | null;
+  genres?: TmdbGenre[] | null;
 }
 
 export interface AddToWatchlistPayload {
@@ -257,6 +258,10 @@ export class Api {
 
   stats(): Observable<Stats> {
     return this.http.get<Stats>(`${API}/Stats`);
+  }
+
+  genresByList(): Observable<StatsListGenres[]> {
+    return this.http.get<StatsListGenres[]>(`${API}/Stats/genres-by-list`);
   }
 
   // ── Activité ─────────────────────────────────────────────────────────────

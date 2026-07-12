@@ -26,4 +26,5 @@ public class AddListItemDto
     public int TmdbId { get; set; }
     public string MediaType { get; set; } = "movie";
     public string? PosterPath { get; set; }
+    public List<MediaGenreDto>? Genres { get; set; }
 }

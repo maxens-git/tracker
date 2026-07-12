@@ -31,7 +31,7 @@
     </div>
 
     <!-- Genres préférés -->
-    @if (s.favoriteGenres.length > 0) {
+    @if (genreLists().length > 0) {
       <div class="genre-block">
         <div class="genre-header">
           <div class="genre-title">Genres préférés</div>
@@ -51,6 +51,18 @@
               Répartition
             </button>
           </div>
+        </div>
+        <div class="genre-lists" role="group" aria-label="Liste">
+          @for (list of genreLists(); track list.listId) {
+            <button
+              type="button"
+              class="genre-list-btn"
+              [class.active]="selectedListId() === list.listId"
+              (click)="selectList(list.listId)">
+              @if (list.icon) { <span class="genre-list-icon">{{ list.icon }}</span> }
+              {{ list.name }}
+            </button>
+          }
         </div>
         <div class="genre-list">
           @for (genre of visibleGenres(); track genre.name; let i = $index) {

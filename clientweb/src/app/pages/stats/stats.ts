@@ -1,7 +1,9 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { Api } from '../../../shared/services/api';
-import { Stats, StatsGenreBucket, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
+import { Stats, StatsGenreBucket, StatsListGenres, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { SYSTEM_LIST } from '../../../shared/constants';
 
 const MONTHS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const GENRE_COLLAPSED_COUNT = 7;
@@ -17,15 +19,21 @@ export class StatsPage implements OnInit {
   private api = inject(Api);
 
   stats = signal<Stats | null>(null);
+  listGenres = signal<StatsListGenres[]>([]);
+  selectedListId = signal<number | null>(null);
   loading = signal(true);
   error = signal(false);
   showAllGenres = signal(false);
   // 'titles' = % de titres ayant ce genre (somme > 100%) ; 'tags' = part de chaque genre (somme = 100%)
   genreMode = signal<'titles' | 'tags'>('titles');
 
-  /** Tous les genres avec le % recalculé selon le mode choisi. */
+  /** Genres bruts de la liste sélectionnée. */
+  private selectedGenres = computed<StatsGenreBucket[]>(() =>
+    this.listGenres().find(l => l.listId === this.selectedListId())?.genres ?? []);
+
+  /** Genres de la liste sélectionnée avec le % recalculé selon le mode choisi. */
   private scoredGenres = computed<StatsGenreBucket[]>(() => {
-    const genres = this.stats()?.favoriteGenres ?? [];
+    const genres = this.selectedGenres();
     if (this.genreMode() === 'titles') return genres;
     const totalTags = genres.reduce((sum, g) => sum + g.count, 0);
     if (totalTags === 0) return genres;
@@ -37,7 +45,10 @@ export class StatsPage implements OnInit {
     return this.showAllGenres() ? genres : genres.slice(0, GENRE_COLLAPSED_COUNT);
   });
 
-  hasMoreGenres = computed(() => (this.stats()?.favoriteGenres.length ?? 0) > GENRE_COLLAPSED_COUNT);
+  hasMoreGenres = computed(() => this.selectedGenres().length > GENRE_COLLAPSED_COUNT);
+
+  /** Listes proposées dans le sélecteur (celles ayant au moins un genre). */
+  genreLists = computed<StatsListGenres[]>(() => this.listGenres().filter(l => l.genres.length > 0));
 
   byYear = computed<CombinedYearBucket[]>(() => {
     const s = this.stats();
@@ -76,10 +87,27 @@ export class StatsPage implements OnInit {
   maxGenre = computed(() => Math.max(...this.scoredGenres().map(g => g.percentage), 1));
 
   ngOnInit() {
-    this.api.stats().subscribe({
-      next: data => { this.stats.set(data); this.loading.set(false); },
+    forkJoin([this.api.stats(), this.api.genresByList()]).subscribe({
+      next: ([stats, listGenres]) => {
+        this.stats.set(stats);
+        this.listGenres.set(listGenres);
+        this.selectedListId.set(this.defaultListId(listGenres));
+        this.loading.set(false);
+      },
       error: () => { this.error.set(true); this.loading.set(false); },
     });
+  }
+
+  /** Liste sélectionnée par défaut : « Vu » si elle a des genres, sinon la première non vide. */
+  private defaultListId(lists: StatsListGenres[]): number | null {
+    const withGenres = lists.filter(l => l.genres.length > 0);
+    const seen = withGenres.find(l => l.isSystem && l.name === SYSTEM_LIST.seen);
+    return (seen ?? withGenres[0])?.listId ?? null;
+  }
+
+  selectList(id: number) {
+    this.selectedListId.set(id);
+    this.showAllGenres.set(false);
   }
 
   formatRuntime(minutes: number): string {

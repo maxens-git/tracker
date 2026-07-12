@@ -41,6 +41,63 @@ public class StatsService(ApiDbContext context)
             .Select(m => m.GenreNamesJson!)
             .ToListAsync();
 
+        return AggregateGenres(genrePayloads);
+    }
+
+    /// <summary>Répartition des genres pour chaque liste (Vu, J'aime, Watchlist, listes custom).</summary>
+    public async Task<List<StatsListGenresDto>> GenresByList()
+    {
+        List<MediaList> lists = await context.MediaLists.ToListAsync();
+
+        List<StatsListGenresDto> result = new();
+        foreach (MediaList list in lists)
+        {
+            List<string> payloads = await GenrePayloadsForList(list);
+            result.Add(new StatsListGenresDto
+            {
+                ListId = list.Id,
+                Name = list.Name,
+                Icon = list.Icon,
+                IsSystem = list.IsSystem,
+                Genres = AggregateGenres(payloads),
+            });
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Payloads de genres (<see cref="UserMedia.GenreNamesJson"/>) des médias d'une liste.
+    /// Réplique la logique de dispatch de <c>MediaListsController.GetAll</c> : les listes
+    /// système Vu/J'aime sont virtuelles (flags sur <see cref="UserMedia"/>), les autres
+    /// (Watchlist + custom) sont matérialisées via <see cref="MediaListItem"/>.
+    /// </summary>
+    private Task<List<string>> GenrePayloadsForList(MediaList list)
+    {
+        if (list.IsSystem && list.Name == SystemLists.Seen)
+            return context.UserMedia
+                .Where(m => m.Seen && m.GenreNamesJson != null && m.GenreNamesJson != "")
+                .Select(m => m.GenreNamesJson!)
+                .ToListAsync();
+
+        if (list.IsSystem && list.Name == SystemLists.Liked)
+            return context.UserMedia
+                .Where(m => m.Liked && m.GenreNamesJson != null && m.GenreNamesJson != "")
+                .Select(m => m.GenreNamesJson!)
+                .ToListAsync();
+
+        return (from item in context.MediaListItems
+                where item.MediaListId == list.Id
+                join um in context.UserMedia
+                    on new { item.TmdbId, item.MediaType } equals new { um.TmdbId, um.MediaType }
+                where um.GenreNamesJson != null && um.GenreNamesJson != ""
+                select um.GenreNamesJson!)
+            .ToListAsync();
+    }
+
+    /// <summary>Agrège des payloads JSON de noms de genres en buckets triés avec pourcentages.</summary>
+    private static List<StatsGenreBucket> AggregateGenres(List<string> genrePayloads)
+    {
         Dictionary<string, int> counts = new(StringComparer.OrdinalIgnoreCase);
         Dictionary<string, string> labels = new(StringComparer.OrdinalIgnoreCase);
 
@@ -62,7 +119,6 @@ public class StatsService(ApiDbContext context)
         return counts
             .OrderByDescending(kv => kv.Value)
             .ThenBy(kv => labels[kv.Key])
-            // .Take(7) // troncature désactivée temporairement
             .Select(kv => new StatsGenreBucket
             {
                 Name = labels[kv.Key],

@@ -10,4 +10,7 @@ public class StatsController(StatsService statsService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<StatsDto>> Get() => await statsService.GetStats();
+
+    [HttpGet("genres-by-list")]
+    public Task<List<StatsListGenresDto>> GenresByList() => statsService.GenresByList();
 }
