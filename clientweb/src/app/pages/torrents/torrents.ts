@@ -14,7 +14,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { Ripple } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
-import { Api, TorrentResult, DebridFile, Indexer, TorrentCategory } from '../../../shared/services/api';
+import { Api, TorrentResult, TorrentBookmark, DebridFile, Indexer, TorrentCategory } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
@@ -34,6 +34,17 @@ export class Torrents implements OnInit {
   results = signal<TorrentResult[]>([]);
   loading = signal(false);
   searched = signal(false);
+
+  // Vue courante : marque-pages mis de côté par défaut (affichés à l'ouverture),
+  // puis « résultats » dès qu'une recherche est lancée.
+  view = signal<'results' | 'bookmarks'>('bookmarks');
+  // Marque-pages persistés en base (les plus récents en tête).
+  bookmarks = signal<TorrentBookmark[]>([]);
+  // Marque-page en cours d'ajout/retrait (clé = magnetUrl) pour désactiver le bouton.
+  bookmarking = signal<string | null>(null);
+  // Torrents affichés dans le tableau selon la vue.
+  displayed = computed<TorrentResult[]>(() =>
+    this.view() === 'bookmarks' ? this.bookmarks() : this.results());
 
   // Indexeurs Prowlarr disponibles + ceux sélectionnés (vide = tous).
   indexers = signal<Indexer[]>([]);
@@ -74,6 +85,7 @@ export class Torrents implements OnInit {
     // Silencieux en cas d'échec : on peut toujours chercher sur « tous / toutes ».
     this.loadInto(this.api.torrentIndexers(), this.indexers);
     this.loadInto(this.api.torrentCategories(), this.categories);
+    this.loadInto(this.api.torrentBookmarks(), this.bookmarks);
 
     // Restaure l'état depuis l'URL (partage/rechargement) et relance la recherche.
     const params = this.route.snapshot.queryParamMap;
@@ -123,6 +135,7 @@ export class Torrents implements OnInit {
 
     this.loading.set(true);
     this.searched.set(true);
+    this.view.set('results');
     this.debridFiles.set([]);
     this.syncQueryParams(q);
 
@@ -164,6 +177,68 @@ export class Torrents implements OnInit {
         this.debriding.set(null);
         // Le backend renvoie un message explicite (ex. 409 « non caché »), sinon message générique.
         this.showError(this.messageFor(err, 'Débridage impossible.'));
+      },
+    });
+  }
+
+  // ── Marque-pages ───────────────────────────────────────────────────────
+  bookmarkFor(magnetUrl: string): TorrentBookmark | undefined {
+    return this.bookmarks().find(b => b.magnetUrl === magnetUrl);
+  }
+
+  isBookmarked(magnetUrl: string): boolean {
+    return this.bookmarks().some(b => b.magnetUrl === magnetUrl);
+  }
+
+  // Ajoute ou retire le torrent des marque-pages (mise à jour optimiste + rollback si échec).
+  toggleBookmark(torrent: TorrentResult) {
+    if (this.bookmarking()) return;
+    this.bookmarking.set(torrent.magnetUrl);
+
+    const existing = this.bookmarkFor(torrent.magnetUrl);
+    if (existing) {
+      this.bookmarks.update(list => list.filter(b => b.id !== existing.id));
+      this.api.removeTorrentBookmark(existing.id).subscribe({
+        next: () => this.bookmarking.set(null),
+        error: (err: HttpErrorResponse) => {
+          this.bookmarks.update(list => [existing, ...list]); // rollback
+          this.bookmarking.set(null);
+          this.showError(this.messageFor(err, 'Impossible de retirer le marque-page.'));
+        },
+      });
+    } else {
+      this.api.addTorrentBookmark(torrent).subscribe({
+        next: saved => {
+          // Dédup : le backend est idempotent, on n'ajoute pas deux fois le même.
+          this.bookmarks.update(list =>
+            list.some(b => b.id === saved.id) ? list : [saved, ...list]);
+          this.bookmarking.set(null);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bookmarking.set(null);
+          this.showError(this.messageFor(err, 'Impossible d’ajouter le marque-page.'));
+        },
+      });
+    }
+  }
+
+  // Retrait direct depuis la liste des marque-pages (sans passer par le dialog).
+  removeBookmark(bookmark: TorrentBookmark) {
+    if (this.bookmarking()) return;
+    this.bookmarking.set(bookmark.magnetUrl);
+
+    const index = this.bookmarks().findIndex(b => b.id === bookmark.id);
+    this.bookmarks.update(list => list.filter(b => b.id !== bookmark.id));
+    this.api.removeTorrentBookmark(bookmark.id).subscribe({
+      next: () => this.bookmarking.set(null),
+      error: (err: HttpErrorResponse) => {
+        this.bookmarks.update(list => {
+          const next = [...list];
+          next.splice(index < 0 ? next.length : index, 0, bookmark); // rollback à la position d'origine
+          return next;
+        });
+        this.bookmarking.set(null);
+        this.showError(this.messageFor(err, 'Impossible de retirer le marque-page.'));
       },
     });
   }

@@ -54,6 +54,37 @@
   }
 }
 
+.view-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+
+  .view-tab {
+    padding: 0.35rem 0.9rem;
+    border: 0;
+    border-radius: var(--r-sm, 6px);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      color: var(--text);
+    }
+
+    &.is-active {
+      background: var(--accent, var(--surface));
+      color: var(--accent-contrast, var(--text));
+    }
+  }
+}
+
 .empty {
   color: var(--muted);
   text-align: center;
@@ -128,6 +159,23 @@
     color: var(--muted);
   }
 
+  .row-remove {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.2rem;
+    transition: color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      color: var(--danger);
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
   .torrent-row {
     cursor: pointer;
     transition: background 0.15s ease;
@@ -151,6 +199,28 @@
         background: transparent;
       }
     }
+  }
+}
+
+.debrid-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+
+  .debrid-subtitle {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .bookmark-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
   }
 }
 
@@ -270,6 +340,14 @@
 }
 
 @media (max-width: 480px) {
+  .debrid-head {
+    flex-direction: column;
+
+    .bookmark-btn {
+      align-self: flex-start;
+    }
+  }
+
   .debrid-file {
     flex-direction: column;
     align-items: stretch;

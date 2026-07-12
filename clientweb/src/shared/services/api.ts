@@ -76,6 +76,11 @@ export interface TorrentResult {
   publishDate: string | null;
 }
 
+export interface TorrentBookmark extends TorrentResult {
+  id: number;
+  addedAt: string;
+}
+
 export interface DebridFile {
   filename: string;
   size: number;
@@ -309,6 +314,20 @@ export class Api {
 
   unlockLink(link: string): Observable<UnlockResult> {
     return this.http.post<UnlockResult>(`${API}/torrents/unlock`, { link });
+  }
+
+  // ── Marque-pages torrents (persistés en base) ──────────────────────────
+
+  torrentBookmarks(): Observable<TorrentBookmark[]> {
+    return this.http.get<TorrentBookmark[]>(`${API}/torrent-bookmarks`);
+  }
+
+  addTorrentBookmark(torrent: TorrentResult): Observable<TorrentBookmark> {
+    return this.http.post<TorrentBookmark>(`${API}/torrent-bookmarks`, torrent);
+  }
+
+  removeTorrentBookmark(id: number): Observable<void> {
+    return this.http.delete<void>(`${API}/torrent-bookmarks/${id}`);
   }
 
   trackedMedia(): Observable<TrackedMedia[]> {

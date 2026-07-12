@@ -19,6 +19,7 @@ public class ApiDbContext : DbContext
     public DbSet<ReleaseNotification> ReleaseNotifications { get; set; } = null!;
     public DbSet<KnownSeason> KnownSeasons { get; set; } = null!;
     public DbSet<SystemLogEntry> SystemLogEntries { get; set; } = null!;
+    public DbSet<TorrentBookmark> TorrentBookmarks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +67,9 @@ public class ApiDbContext : DbContext
 
         modelBuilder.Entity<SystemLogEntry>()
             .HasIndex(log => log.Level);
+
+        modelBuilder.Entity<TorrentBookmark>()
+            .HasIndex(b => b.InfoHash)
+            .IsUnique();
     }
 }
