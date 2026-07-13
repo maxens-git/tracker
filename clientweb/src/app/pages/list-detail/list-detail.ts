@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Ripple } from 'primeng/ripple';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
@@ -26,6 +26,7 @@ export class ListDetail implements OnInit {
   private tmdb = inject(TmdbService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
 
   listId: number | SystemListSlug = 0;
   list = signal<MediaListSummary | null>(null);
@@ -99,13 +100,17 @@ export class ListDetail implements OnInit {
   }
 
   // Reflète la page courante dans l'URL (page 1 → param retiré), sans empiler d'historique.
+  // On met à jour l'URL via Location.replaceState plutôt que router.navigate : une
+  // navigation relancerait le cycle du routeur, or ReloadRouteReuseStrategy
+  // (shouldReuseRoute=false) détruirait puis recréerait ce composant → nouvel ngOnInit
+  // → loadPage → syncPageParam → … boucle infinie d'appels API.
   private syncPageParam(p: number) {
-    this.router.navigate([], {
+    const urlTree = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: { page: p > 1 ? p : null },
       queryParamsHandling: 'merge',
-      replaceUrl: true,
     });
+    this.location.replaceState(this.router.serializeUrl(urlTree));
   }
 
   get filteredItems(): MediaItem[] {
