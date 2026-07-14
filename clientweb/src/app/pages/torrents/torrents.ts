@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit, WritableSignal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +29,7 @@ export class Torrents implements OnInit {
   private messages = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
 
   query = '';
   results = signal<TorrentResult[]>([]);
@@ -118,15 +119,20 @@ export class Torrents implements OnInit {
   }
 
   // Reflète la requête et les filtres dans l'URL (sans empiler d'entrée d'historique).
+  // On met à jour l'URL via Location.replaceState plutôt que router.navigate : une
+  // navigation relancerait le cycle du routeur, or ReloadRouteReuseStrategy
+  // (shouldReuseRoute=false) + onSameUrlNavigation:'reload' détruiraient puis recréeraient
+  // ce composant → nouvel ngOnInit → search → syncQueryParams → … boucle infinie d'appels API.
   private syncQueryParams(q: string) {
-    this.router.navigate([], {
+    const urlTree = this.router.createUrlTree([], {
+      relativeTo: this.route,
       queryParams: {
         q,
         indexer: this.selectedIndexers.length ? this.selectedIndexers.join(',') : null,
         category: this.selectedCategory ?? null,
       },
-      replaceUrl: true,
     });
+    this.location.replaceState(this.router.serializeUrl(urlTree));
   }
 
   search() {

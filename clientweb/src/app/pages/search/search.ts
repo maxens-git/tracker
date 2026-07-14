@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { Ripple } from 'primeng/ripple';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
@@ -30,6 +30,7 @@ export class Search implements OnInit {
   private api = inject(Api);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private query$ = new Subject<string>();
   readonly history = inject(SearchHistoryService);
 
@@ -100,7 +101,7 @@ export class Search implements OnInit {
           this.allResults.set([]);
           this.searched.set(false);
           this.loading.set(false);
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+          this.clearQueryParams();
           return of(null);
         }
         this.loading.set(true);
@@ -149,12 +150,22 @@ export class Search implements OnInit {
     if (this.query.trim()) this.syncQueryParams(this.query);
   }
 
+  // On met à jour l'URL via Location.replaceState plutôt que router.navigate : une
+  // navigation relancerait le cycle du routeur, or ReloadRouteReuseStrategy
+  // (shouldReuseRoute=false) + onSameUrlNavigation:'reload' détruiraient puis recréeraient
+  // ce composant → nouvel ngOnInit → query$.next → syncQueryParams → … boucle infinie.
   private syncQueryParams(q: string) {
     const type = this.filter();
-    this.router.navigate([], {
-      queryParams: type === 'all' ? { q } : { q, type },
-      replaceUrl: true,
-    });
+    this.replaceUrl(type === 'all' ? { q } : { q, type });
+  }
+
+  private clearQueryParams() {
+    this.replaceUrl({});
+  }
+
+  private replaceUrl(queryParams: Record<string, string>) {
+    const urlTree = this.router.createUrlTree([], { relativeTo: this.route, queryParams });
+    this.location.replaceState(this.router.serializeUrl(urlTree));
   }
 
   // ── Filtres genre + tri ────────────────────────────────────────────────────
