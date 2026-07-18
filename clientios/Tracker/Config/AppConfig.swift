@@ -55,6 +55,6 @@ enum AppConfig {
     //
     // En simulateur, localhost pointe vers la machine hôte → le port du backend ASP.NET.
     // Sur un appareil physique, remplacer par l'IP locale de la machine.
-    //static let apiBaseURL = "https://tracker.maxens.org/api"
-    static let apiBaseURL = "http://localhost:5050/api"
+    static let apiBaseURL = "https://tracker.maxens.org/api"
+    //static let apiBaseURL = "http://localhost:5050/api"
 }

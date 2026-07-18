@@ -236,28 +236,33 @@ private struct MovieCard: View {
     let showTheaterName: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            AllocinePoster(url: movie.poster)
-                .frame(width: 74, height: 111)
-                .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+        // En-tête (affiche + titre) séparé des séances : les horaires occupent
+        // ensuite toute la largeur de la carte plutôt que la colonne étroite à
+        // droite de l'affiche — moins de retours à la ligne, cartes bien plus courtes.
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                AllocinePoster(url: movie.poster)
+                    .frame(width: 56, height: 84)
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(movie.title)
-                    .font(.display(17))
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(movie.title)
+                        .font(.display(17))
+                        .fixedSize(horizontal: false, vertical: true)
 
-                if movie.runtime != nil || !movie.genres.isEmpty {
-                    Text([movie.runtime, movie.genres.joined(separator: ", ")]
-                        .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if movie.runtime != nil || !movie.genres.isEmpty {
+                        Text([movie.runtime, movie.genres.joined(separator: ", ")]
+                            .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-
-                ForEach(movie.byTheater) { group in
-                    theaterGroup(group)
-                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+
+            ForEach(movie.byTheater) { group in
+                theaterGroup(group)
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -278,7 +283,6 @@ private struct MovieCard: View {
                 }
             }
         }
-        .padding(.top, 2)
     }
 }
 
@@ -310,8 +314,8 @@ private struct ShowChip: View {
             }
         }
         .foregroundStyle(.primary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
         .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
             .strokeBorder(show.isPreview ? Color.appGold.opacity(0.5) : Color.appStroke,
