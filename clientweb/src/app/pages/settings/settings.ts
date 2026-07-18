@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { ThemeMode, ThemeService } from '../../../shared/services/theme';
+import { SettingsState } from '../../../shared/services/settings-state';
 import { buildInfo } from '../../../environments/build-info';
 
 @Component({
@@ -21,6 +22,7 @@ import { buildInfo } from '../../../environments/build-info';
 export class SettingsPage implements OnInit {
   private api = inject(Api);
   private messages = inject(MessageService);
+  private settingsState = inject(SettingsState);
   readonly theme = inject(ThemeService);
 
   loading = signal(true);
@@ -45,9 +47,13 @@ export class SettingsPage implements OnInit {
     notifyDaysAhead: 1,
     notificationHour: 9,
     notificationMinute: 0,
+    torrentsEnabled: true,
     prowlarrUrl: '',
     prowlarrApiKey: '',
     allDebridApiKey: '',
+    tmdbApiKey: '',
+    tmdbBaseUrl: '',
+    tmdbLanguage: '',
   };
 
   ngOnInit() {
@@ -61,10 +67,15 @@ export class SettingsPage implements OnInit {
           notifyDaysAhead: settings.notifyDaysAhead,
           notificationHour: settings.notificationHour,
           notificationMinute: settings.notificationMinute,
+          torrentsEnabled: settings.torrentsEnabled,
           prowlarrUrl: settings.prowlarrUrl ?? '',
           prowlarrApiKey: settings.prowlarrApiKey ?? '',
           allDebridApiKey: settings.allDebridApiKey ?? '',
+          tmdbApiKey: settings.tmdbApiKey ?? '',
+          tmdbBaseUrl: settings.tmdbBaseUrl ?? '',
+          tmdbLanguage: settings.tmdbLanguage ?? '',
         };
+        this.settingsState.apply(settings);
         this.loading.set(false);
       },
       error: () => {
@@ -208,6 +219,7 @@ export class SettingsPage implements OnInit {
     this.form.notifyDaysAhead = settings.notifyDaysAhead;
     this.form.notificationHour = settings.notificationHour;
     this.form.notificationMinute = settings.notificationMinute;
+    this.settingsState.apply(settings);
   }
 
   private showSuccess(detail: string) {

@@ -25,7 +25,7 @@
   </a>
 
   <div class="nav-links">
-    @for (item of items; track item.path) {
+    @for (item of visibleItems(); track item.path) {
       <a
         pRipple
         [routerLink]="item.path"
@@ -67,7 +67,7 @@
     </a>
 
     <div class="nav-links">
-      @for (item of items; track item.path) {
+      @for (item of visibleItems(); track item.path) {
         <a
           pRipple
           [routerLink]="item.path"

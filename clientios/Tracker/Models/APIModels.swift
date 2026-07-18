@@ -109,6 +109,14 @@ struct AppSettingsDTO: Codable {
     var notifyDaysAhead: Int
     var notificationHour: Int
     var notificationMinute: Int
+    // Recherche de torrents (Prowlarr) + débridage (AllDebrid).
+    var torrentsEnabled: Bool
+    var prowlarrUrl: String?
+    var prowlarrApiKey: String?
+    var allDebridApiKey: String?
+    var tmdbApiKey: String?
+    var tmdbBaseUrl: String?
+    var tmdbLanguage: String?
     var updatedAt: Date?
 }
 

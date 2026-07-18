@@ -27,6 +27,8 @@ public class AppSettings
     public int NotificationMinute { get; set; } = 0;
 
     // Recherche de torrents (Prowlarr) + débridage (AllDebrid).
+    public bool TorrentsEnabled { get; set; } = true;
+
     [MaxLength(500)]
     public string? ProwlarrUrl { get; set; }
 
@@ -35,6 +37,17 @@ public class AppSettings
 
     [MaxLength(200)]
     public string? AllDebridApiKey { get; set; }
+
+    // Configuration TMDB (appelée directement par les clients, et par le backend
+    // pour les sorties). Vide ⇒ repli sur les valeurs d'appsettings.json.
+    [MaxLength(200)]
+    public string? TmdbApiKey { get; set; }
+
+    [MaxLength(500)]
+    public string? TmdbBaseUrl { get; set; }
+
+    [MaxLength(20)]
+    public string? TmdbLanguage { get; set; }
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

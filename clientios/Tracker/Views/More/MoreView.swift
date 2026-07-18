@@ -11,14 +11,21 @@
 import SwiftUI
 
 struct MoreView: View {
+    // Piloté par les réglages : masque l'onglet Torrents quand la recherche
+    // & le débridage sont désactivés. Persisté pour éviter un clignotement au
+    // lancement, puis rafraîchi depuis le serveur à l'apparition de l'écran.
+    @AppStorage(AppStorageKeys.torrentsEnabled) private var torrentsEnabled = true
+
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
                 row(icon: "ticket", title: "Séances",
                     subtitle: "Cinémas & horaires") { ShowtimesView() }
 
-                row(icon: "arrow.down.circle", title: "Torrents",
-                    subtitle: "Recherche & débridage") { TorrentsView() }
+                if torrentsEnabled {
+                    row(icon: "arrow.down.circle", title: "Torrents",
+                        subtitle: "Recherche & débridage") { TorrentsView() }
+                }
 
                 row(icon: "clock.arrow.circlepath", title: "Activité",
                     subtitle: "Vos dernières actions") { ActivityView() }
@@ -37,6 +44,11 @@ struct MoreView: View {
         }
         .navigationTitle("Plus")
         .background(Color.appBackground.ignoresSafeArea())
+        .task {
+            if let settings = try? await APIService.shared.settings() {
+                torrentsEnabled = settings.torrentsEnabled
+            }
+        }
     }
 
     private func row<Destination: View>(

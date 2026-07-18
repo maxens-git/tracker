@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { torrentsEnabledGuard } from '../shared/guards/torrents-enabled.guard';
 
 // Pages chargées à la demande : chaque écran est un chunk lazy, ce qui sort les
 // dépendances lourdes (ex. primeng du calendrier des sorties) du bundle initial.
@@ -6,7 +7,7 @@ export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
     { path: 'home', loadComponent: () => import('./pages/home/home').then(m => m.Home) },
     { path: 'search', loadComponent: () => import('./pages/search/search').then(m => m.Search) },
-    { path: 'torrents', loadComponent: () => import('./pages/torrents/torrents').then(m => m.Torrents) },
+    { path: 'torrents', canMatch: [torrentsEnabledGuard], loadComponent: () => import('./pages/torrents/torrents').then(m => m.Torrents) },
     { path: 'showtimes', loadComponent: () => import('./pages/showtimes/showtimes').then(m => m.Showtimes) },
     { path: 'lists', loadComponent: () => import('./pages/lists/lists').then(m => m.Lists) },
     { path: 'lists/:id', loadComponent: () => import('./pages/list-detail/list-detail').then(m => m.ListDetail) },

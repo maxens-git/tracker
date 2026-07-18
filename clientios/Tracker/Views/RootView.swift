@@ -45,6 +45,16 @@ struct RootView: View {
                 }
             }
         }
+        // Applique au lancement la config TMDB éventuellement surchargée dans les
+        // réglages (clé / URL / langue), pour que l'accueil l'utilise directement.
+        .task {
+            if let settings = try? await APIService.shared.settings() {
+                AppConfig.setTmdbOverrides(
+                    apiKey: settings.tmdbApiKey,
+                    baseURL: settings.tmdbBaseUrl,
+                    language: settings.tmdbLanguage)
+            }
+        }
     }
 }
 

@@ -1,14 +1,34 @@
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Tracker.Data;
 using Tracker.Models;
 
 namespace Tracker.Services;
 
-public class TmdbReleaseService(HttpClient http, IConfiguration configuration, ILogger<TmdbReleaseService> logger)
+public class TmdbReleaseService(HttpClient http, ApiDbContext context, IConfiguration configuration, ILogger<TmdbReleaseService> logger)
 {
-    private readonly string? apiKey = configuration["TMDB:ApiKey"];
-    private readonly string baseUrl = configuration["TMDB:BaseUrl"] ?? "https://api.themoviedb.org/3";
-    private readonly string language = configuration["TMDB:Language"] ?? "fr-FR";
+    // Valeurs par défaut (appsettings.json) : utilisées si les réglages en base
+    // ne surchargent pas la configuration TMDB.
+    private readonly string? configApiKey = configuration["TMDB:ApiKey"];
+    private readonly string configBaseUrl = configuration["TMDB:BaseUrl"] ?? "https://api.themoviedb.org/3";
+    private readonly string configLanguage = configuration["TMDB:Language"] ?? "fr-FR";
+
+    /// <summary>
+    /// Configuration TMDB effective : les réglages en base (table Settings) ont
+    /// la priorité, avec repli sur appsettings.json quand un champ est vide.
+    /// </summary>
+    private async Task<(string apiKey, string baseUrl, string language)> ResolveConfig(CancellationToken cancellationToken)
+    {
+        AppSettings? settings = await context.Settings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1, cancellationToken);
+        string apiKey = Coalesce(settings?.TmdbApiKey, configApiKey);
+        string baseUrl = Coalesce(settings?.TmdbBaseUrl, configBaseUrl);
+        string language = Coalesce(settings?.TmdbLanguage, configLanguage);
+        return (apiKey, baseUrl, language);
+    }
+
+    private static string Coalesce(string? value, string? fallback) =>
+        string.IsNullOrWhiteSpace(value) ? (fallback ?? string.Empty) : value;
 
     public async Task<List<ReleaseCandidate>> GetUpcomingReleases(
         TrackedMediaRelease media,
@@ -16,6 +36,7 @@ public class TmdbReleaseService(HttpClient http, IConfiguration configuration, I
         int daysAhead,
         CancellationToken cancellationToken)
     {
+        (string apiKey, _, _) = await ResolveConfig(cancellationToken);
         if (string.IsNullOrWhiteSpace(apiKey))
             return [];
 
@@ -57,6 +78,7 @@ public class TmdbReleaseService(HttpClient http, IConfiguration configuration, I
     /// </summary>
     public async Task<List<SeasonInfo>> GetShowSeasons(int tmdbId, CancellationToken cancellationToken)
     {
+        (string apiKey, _, _) = await ResolveConfig(cancellationToken);
         if (string.IsNullOrWhiteSpace(apiKey))
             return [];
 
@@ -184,17 +206,18 @@ public class TmdbReleaseService(HttpClient http, IConfiguration configuration, I
 
     private async Task<JsonDocument> GetJson(string path, CancellationToken cancellationToken)
     {
-        Uri uri = BuildUri(path);
+        Uri uri = await BuildUri(path, cancellationToken);
         using HttpResponseMessage response = await http.GetAsync(uri, cancellationToken);
         response.EnsureSuccessStatusCode();
         await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         return await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
     }
 
-    private Uri BuildUri(string path)
+    private async Task<Uri> BuildUri(string path, CancellationToken cancellationToken)
     {
+        (string apiKey, string baseUrl, string language) = await ResolveConfig(cancellationToken);
         string separator = path.Contains('?') ? "&" : "?";
-        string url = $"{baseUrl.TrimEnd('/')}{path}{separator}api_key={Uri.EscapeDataString(apiKey!)}&language={Uri.EscapeDataString(language)}";
+        string url = $"{baseUrl.TrimEnd('/')}{path}{separator}api_key={Uri.EscapeDataString(apiKey)}&language={Uri.EscapeDataString(language)}";
         return new Uri(url);
     }
 

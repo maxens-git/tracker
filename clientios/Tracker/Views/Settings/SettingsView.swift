@@ -17,6 +17,13 @@ struct SettingsView: View {
     @State private var ntfyToken = ""
     @State private var notifyDaysAhead = 1
     @State private var notificationTime = Self.makeNotificationTime(hour: 9, minute: 0)
+    @AppStorage(AppStorageKeys.torrentsEnabled) private var torrentsEnabled = true
+    @State private var prowlarrUrl = ""
+    @State private var prowlarrApiKey = ""
+    @State private var allDebridApiKey = ""
+    @State private var tmdbApiKey = ""
+    @State private var tmdbBaseUrl = ""
+    @State private var tmdbLanguage = ""
     @State private var isLoadingSettings = false
     @State private var isSavingSettings = false
     @State private var isSubscribingCalendar = false
@@ -92,6 +99,57 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle("Activer la recherche & le débridage", isOn: $torrentsEnabled)
+                TextField("http://localhost:9696", text: $prowlarrUrl)
+                    .textContentType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                SecureField("Clé API Prowlarr", text: $prowlarrApiKey)
+                SecureField("Clé API AllDebrid", text: $allDebridApiKey)
+
+                Button {
+                    Task { await saveRemoteSettings() }
+                } label: {
+                    if isSavingSettings {
+                        ProgressView()
+                    } else {
+                        Text("Enregistrer")
+                    }
+                }
+                .disabled(isSavingSettings || isLoadingSettings)
+            } header: {
+                Text("Recherche & débridage")
+            } footer: {
+                Text("Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid. Désactivé, l’onglet Torrents est masqué.")
+            }
+
+            Section {
+                SecureField("Clé API TMDB", text: $tmdbApiKey)
+                TextField("https://api.themoviedb.org/3", text: $tmdbBaseUrl)
+                    .textContentType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                TextField("fr-FR", text: $tmdbLanguage)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+
+                Button {
+                    Task { await saveRemoteSettings() }
+                } label: {
+                    if isSavingSettings {
+                        ProgressView()
+                    } else {
+                        Text("Enregistrer")
+                    }
+                }
+                .disabled(isSavingSettings || isLoadingSettings)
+            } header: {
+                Text("TMDB")
+            } footer: {
+                Text("Clé, URL et langue utilisées pour interroger l’API TMDB. Laisser vide pour garder les valeurs par défaut.")
+            }
+
+            Section {
                 Button {
                     Task { await subscribeToCalendar() }
                 } label: {
@@ -151,6 +209,14 @@ struct SettingsView: View {
             ntfyToken = settings.ntfyToken ?? ""
             notifyDaysAhead = settings.notifyDaysAhead
             notificationTime = Self.makeNotificationTime(hour: settings.notificationHour, minute: settings.notificationMinute)
+            torrentsEnabled = settings.torrentsEnabled
+            prowlarrUrl = settings.prowlarrUrl ?? ""
+            prowlarrApiKey = settings.prowlarrApiKey ?? ""
+            allDebridApiKey = settings.allDebridApiKey ?? ""
+            tmdbApiKey = settings.tmdbApiKey ?? ""
+            tmdbBaseUrl = settings.tmdbBaseUrl ?? ""
+            tmdbLanguage = settings.tmdbLanguage ?? ""
+            AppConfig.setTmdbOverrides(apiKey: settings.tmdbApiKey, baseURL: settings.tmdbBaseUrl, language: settings.tmdbLanguage)
         } catch {
             if !error.isCancellation { statusMessage = error.localizedDescription }
         }
@@ -170,7 +236,15 @@ struct SettingsView: View {
                 notifyDaysAhead: notifyDaysAhead,
                 notificationHour: components.hour ?? 9,
                 notificationMinute: components.minute ?? 0,
+                torrentsEnabled: torrentsEnabled,
+                prowlarrUrl: prowlarrUrl.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
+                prowlarrApiKey: prowlarrApiKey.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
+                allDebridApiKey: allDebridApiKey.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
+                tmdbApiKey: tmdbApiKey.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
+                tmdbBaseUrl: tmdbBaseUrl.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
+                tmdbLanguage: tmdbLanguage.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
                 updatedAt: nil))
+            AppConfig.setTmdbOverrides(apiKey: tmdbApiKey, baseURL: tmdbBaseUrl, language: tmdbLanguage)
             statusMessage = "Réglages enregistrés."
             Haptics.success()
         } catch {

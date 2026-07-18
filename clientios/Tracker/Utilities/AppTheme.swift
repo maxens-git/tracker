@@ -13,6 +13,8 @@ enum AppStorageKeys {
     static let theme = "appTheme"
     /// Masquer les médias déjà vus sur la page d'accueil.
     static let hideSeenItems = "hideSeenItems"
+    /// Recherche & débridage activés : pilote la visibilité de l'onglet Torrents.
+    static let torrentsEnabled = "torrentsEnabled"
 }
 
 /// Préférence de thème choisie par l'utilisateur.

@@ -50,9 +50,13 @@ export interface Settings {
   notifyDaysAhead: number;
   notificationHour: number;
   notificationMinute: number;
+  torrentsEnabled: boolean;
   prowlarrUrl?: string | null;
   prowlarrApiKey?: string | null;
   allDebridApiKey?: string | null;
+  tmdbApiKey?: string | null;
+  tmdbBaseUrl?: string | null;
+  tmdbLanguage?: string | null;
   updatedAt: string;
 }
 

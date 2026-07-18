@@ -89,8 +89,9 @@
       <div class="toggle-row">
         <span>
           <strong>Recherche &amp; débridage</strong>
-          <small>Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid.</small>
+          <small>Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid. Désactivé, l’onglet Torrents est masqué.</small>
         </span>
+        <p-toggleswitch name="torrentsEnabled" [(ngModel)]="form.torrentsEnabled" ariaLabel="Recherche et débridage" />
       </div>
 
       <label class="field">
@@ -106,6 +107,37 @@
       <label class="field">
         <span>Clé API AllDebrid</span>
         <input pInputText name="allDebridApiKey" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
+      </label>
+
+      <div class="form-actions">
+        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
+          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
+          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
+        </button>
+      </div>
+    </form>
+
+    <form class="settings-panel" (ngSubmit)="save()">
+      <div class="toggle-row">
+        <span>
+          <strong>TMDB</strong>
+          <small>Clé, URL et langue utilisées pour interroger l’API TMDB. Laisser vide pour garder les valeurs par défaut.</small>
+        </span>
+      </div>
+
+      <label class="field">
+        <span>Clé API TMDB</span>
+        <input pInputText name="tmdbApiKey" type="password" [(ngModel)]="form.tmdbApiKey" autocomplete="new-password" />
+      </label>
+
+      <label class="field">
+        <span>URL de base</span>
+        <input pInputText name="tmdbBaseUrl" type="url" [(ngModel)]="form.tmdbBaseUrl" placeholder="https://api.themoviedb.org/3" />
+      </label>
+
+      <label class="field compact">
+        <span>Langue</span>
+        <input pInputText name="tmdbLanguage" [(ngModel)]="form.tmdbLanguage" placeholder="fr-FR" />
       </label>
 
       <div class="form-actions">
