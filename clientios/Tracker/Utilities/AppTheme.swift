@@ -15,6 +15,8 @@ enum AppStorageKeys {
     static let hideSeenItems = "hideSeenItems"
     /// Recherche & débridage activés : pilote la visibilité de l'onglet Torrents.
     static let torrentsEnabled = "torrentsEnabled"
+    /// Utiliser le backend de développement (localhost) au lieu du serveur de prod.
+    static let useDevServer = "useDevServer"
 }
 
 /// Préférence de thème choisie par l'utilisateur.

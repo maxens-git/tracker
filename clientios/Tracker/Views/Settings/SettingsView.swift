@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
     @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
+    @AppStorage(AppStorageKeys.useDevServer) private var useDevServer = false
     @State private var ntfyEnabled = false
     @State private var ntfyUrl = ""
     @State private var ntfyTopic = ""
@@ -58,6 +59,16 @@ struct SettingsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+            }
+
+            Section {
+                Picker("Serveur", selection: $useDevServer) {
+                    Text("Production").tag(false)
+                    Text("Dev (localhost)").tag(true)
+                }
+                .pickerStyle(.segmented)
+            } header: {
+                Text("Serveur")
             }
 
             Section {
@@ -192,6 +203,8 @@ struct SettingsView: View {
         .background(Color.appBackground.ignoresSafeArea())
         .onAppear { cacheSize = CacheManager.diskUsage }
         .task { await loadRemoteSettings() }
+        // Rechargement des réglages distants après une bascule de serveur.
+        .onChange(of: useDevServer) { Task { await loadRemoteSettings() } }
         // Réappliqué ici pour que le changement de thème soit visible
         // immédiatement dans cet écran, sans attendre un retour à la racine.
         .preferredColorScheme(theme.colorScheme)

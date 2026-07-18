@@ -53,8 +53,21 @@ enum AppConfig {
 
     // ── Backend Tracker (états utilisateur) ───────────────────────────────
     //
+    // Deux environnements, basculables depuis Réglages → Serveur (persisté dans
+    // UserDefaults). Le prod est la valeur par défaut. `apiBaseURL` étant lu à
+    // chaque requête, la bascule prend effet sans redémarrage.
+    //
     // En simulateur, localhost pointe vers la machine hôte → le port du backend ASP.NET.
     // Sur un appareil physique, remplacer par l'IP locale de la machine.
-    static let apiBaseURL = "https://tracker.maxens.org/api"
-    //static let apiBaseURL = "http://localhost:5050/api"
+    static let apiProdURL = "https://tracker.maxens.org/api"
+    static let apiDevURL = "http://localhost:5050/api"
+
+    /// Vrai si l'utilisateur a basculé sur le serveur de développement (localhost).
+    static var useDevServer: Bool {
+        get { UserDefaults.standard.bool(forKey: AppStorageKeys.useDevServer) }
+        set { UserDefaults.standard.set(newValue, forKey: AppStorageKeys.useDevServer) }
+    }
+
+    /// URL du backend selon l'environnement choisi dans les réglages.
+    static var apiBaseURL: String { useDevServer ? apiDevURL : apiProdURL }
 }
