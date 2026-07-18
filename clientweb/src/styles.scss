@@ -408,7 +408,7 @@ img { display: block; }
   letter-spacing: 0;
 }
 
-:where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .stats-page, .torrents-page) {
+:where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .showtimes-page, .stats-page, .torrents-page) {
   width: min(100%, 1200px);
   margin-inline: auto;
   padding: clamp(1.75rem, 4vh, 2.75rem) clamp(0.75rem, 2vw, 1.5rem) 2rem;

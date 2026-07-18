@@ -14,6 +14,9 @@ struct MoreView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
+                row(icon: "ticket", title: "Séances",
+                    subtitle: "Cinémas & horaires") { ShowtimesView() }
+
                 row(icon: "arrow.down.circle", title: "Torrents",
                     subtitle: "Recherche & débridage") { TorrentsView() }
 

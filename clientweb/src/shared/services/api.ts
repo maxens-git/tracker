@@ -96,6 +96,56 @@ export interface UnlockResult {
   directLink: string;
 }
 
+// ── Séances de cinéma (Allociné) ─────────────────────────────────────────
+export interface Showtime {
+  id: string;
+  iso: string;
+  date: string;
+  time: string;         // "09:45"
+  version: string | null; // "VO" / "VF"
+  formats: string[];    // IMAX, DOLBY_CINEMA, PLF, 3D...
+  isPreview: boolean;
+  ticketingUrl: string | null;
+}
+
+export interface ShowtimeMovie {
+  id: number | null;
+  title: string;
+  poster: string | null;
+  runtime: string | null; // déjà formaté, ex. "2h 53min"
+  genres: string[];
+  url: string | null;
+  shows: Showtime[];
+}
+
+export interface Theater {
+  code: string;
+  name: string | null;
+  address: string | null;
+  postalCode: string | null;
+  city: string | null;
+  image: string | null;
+}
+
+export interface TheaterShowtimes {
+  theater: Theater;
+  date: string;
+  nextDate: string | null;
+  movies: ShowtimeMovie[];
+}
+
+export interface TheaterListItem {
+  code: string;
+  position: number;
+}
+
+export interface TheaterList {
+  id: number;
+  name: string;
+  isDefault: boolean;
+  items: TheaterListItem[];
+}
+
 export interface TrackedMedia {
   id: number;
   tmdbId: number;
@@ -333,6 +383,44 @@ export class Api {
 
   removeTorrentBookmark(id: number): Observable<void> {
     return this.http.delete<void>(`${API}/torrent-bookmarks/${id}`);
+  }
+
+  // ── Séances de cinéma (Allociné) ───────────────────────────────────────
+
+  // Programme d'un cinéma pour une date (YYYY-MM-DD, défaut aujourd'hui côté serveur).
+  showtimes(theater: string, date?: string | null): Observable<TheaterShowtimes> {
+    const params: Record<string, string> = { theater };
+    if (date) params['date'] = date;
+    return this.http.get<TheaterShowtimes>(`${API}/showtimes`, { params });
+  }
+
+  // Programme de plusieurs cinémas pour une date. Une salle injoignable est simplement absente.
+  multiShowtimes(codes: string[], date?: string | null): Observable<TheaterShowtimes[]> {
+    const params: Record<string, string> = { theaters: codes.join(',') };
+    if (date) params['date'] = date;
+    return this.http.get<TheaterShowtimes[]>(`${API}/showtimes/multi`, { params });
+  }
+
+  // ── Listes de cinémas ───────────────────────────────────────────────────
+
+  theaterLists(): Observable<TheaterList[]> {
+    return this.http.get<TheaterList[]>(`${API}/theater-lists`);
+  }
+
+  createTheaterList(name: string, codes: string[]): Observable<TheaterList> {
+    return this.http.post<TheaterList>(`${API}/theater-lists`, { name, codes });
+  }
+
+  updateTheaterList(id: number, name: string, codes: string[]): Observable<TheaterList> {
+    return this.http.put<TheaterList>(`${API}/theater-lists/${id}`, { name, codes });
+  }
+
+  deleteTheaterList(id: number): Observable<unknown> {
+    return this.http.delete(`${API}/theater-lists/${id}`);
+  }
+
+  setDefaultTheaterList(id: number): Observable<unknown> {
+    return this.http.put(`${API}/theater-lists/${id}/default`, null);
   }
 
   trackedMedia(): Observable<TrackedMedia[]> {

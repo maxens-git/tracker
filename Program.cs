@@ -48,11 +48,20 @@ builder.Services.AddSingleton<ILoggerProvider, DatabaseLoggerProvider>();
 builder.Services.AddHostedService<SystemLogWriterService>();
 builder.Services.AddHttpClient<SeenMediaMetadataBackfillService>();
 builder.Services.AddScoped<IcsCalendarService>();
+builder.Services.AddScoped<TheaterListService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<TmdbReleaseService>();
 builder.Services.AddHttpClient<NtfyService>();
 builder.Services.AddHttpClient<ProwlarrService>();
 builder.Services.AddHttpClient<AllDebridService>();
+// Allociné rejette/limite les User-Agent non-navigateur : on se présente comme Chrome.
+builder.Services.AddHttpClient<AllocineService>(client =>
+{
+    client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");
+    client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "fr-FR,fr;q=0.9");
+});
 builder.Services.AddHostedService<ReleaseNotificationWorker>();
 
 var app = builder.Build();

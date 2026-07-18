@@ -33,6 +33,6 @@ TestResults/
 *~
 
 .DS_Store
-
+.claude/
 # Xcode
 xcuserdata/

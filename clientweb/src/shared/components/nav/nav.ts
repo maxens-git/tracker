@@ -57,6 +57,7 @@ export class Nav {
     { label: 'Torrents', path: '/torrents', icon: 'pi pi-download' },
     { label: 'Mes listes', path: '/lists', icon: 'pi pi-th-large' },
     { label: 'Sorties', path: '/releases', icon: 'pi pi-calendar' },
+    { label: 'Séances', path: '/showtimes', icon: 'pi pi-ticket' },
     { label: 'Activité', path: '/activity', icon: 'pi pi-clock' },
     { label: 'Logs', path: '/logs', icon: 'pi pi-list-check' },
     { label: 'Statistiques', path: '/stats', icon: 'pi pi-chart-bar' },

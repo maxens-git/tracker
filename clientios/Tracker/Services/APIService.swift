@@ -385,6 +385,44 @@ struct APIService {
     func removeTorrentBookmark(id: Int) async throws {
         try await rawRequest("/torrent-bookmarks/\(id)", method: "DELETE")
     }
+
+    // ── Séances de cinéma (Allociné) ──────────────────────────────────────
+
+    /// Programme de plusieurs cinémas pour une date (YYYY-MM-DD, défaut aujourd'hui côté serveur).
+    /// Une salle injoignable est simplement absente du résultat.
+    func multiShowtimes(codes: [String], date: String?) async throws -> [TheaterShowtimes] {
+        var query = [URLQueryItem(name: "theaters", value: codes.joined(separator: ","))]
+        if let date { query.append(URLQueryItem(name: "date", value: date)) }
+        return try await request("/showtimes/multi", query: query)
+    }
+
+    // ── Listes de cinémas ─────────────────────────────────────────────────
+
+    func theaterLists() async throws -> [TheaterList] {
+        try await request("/theater-lists")
+    }
+
+    @discardableResult
+    func createTheaterList(name: String, codes: [String]) async throws -> TheaterList {
+        let payload: [String: AnyEncodable] = ["name": AnyEncodable(name), "codes": AnyEncodable(codes)]
+        let body = try encoder.encode(payload)
+        return try await request("/theater-lists", method: "POST", body: body)
+    }
+
+    @discardableResult
+    func updateTheaterList(id: Int, name: String, codes: [String]) async throws -> TheaterList {
+        let payload: [String: AnyEncodable] = ["name": AnyEncodable(name), "codes": AnyEncodable(codes)]
+        let body = try encoder.encode(payload)
+        return try await request("/theater-lists/\(id)", method: "PUT", body: body)
+    }
+
+    func deleteTheaterList(id: Int) async throws {
+        try await rawRequest("/theater-lists/\(id)", method: "DELETE")
+    }
+
+    func setDefaultTheaterList(id: Int) async throws {
+        try await rawRequest("/theater-lists/\(id)/default", method: "PUT")
+    }
 }
 
 // MARK: - Helpers d'encodage JSON hétérogène
