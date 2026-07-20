@@ -3,54 +3,33 @@
     <div>
       <h1 class="page-title">Séances</h1>
       <p class="subtitle">
-        @if (isAdhoc()) {
-          Cinéma unique
-        } @else if (selectedList(); as list) {
-          {{ list.name }}
-          <span class="dot">·</span>
-          {{ theaterCount() }} cinéma{{ theaterCount() > 1 ? 's' : '' }}
-        }
+        Mes cinémas
+        <span class="dot">·</span>
+        {{ activeCount() }} coché{{ activeCount() > 1 ? 's' : '' }}
       </p>
     </div>
   </div>
 
   <div class="controls">
-    <div class="field list-field">
-      <label for="list-select">Liste</label>
-      <div class="list-row">
-        <p-select
-          inputId="list-select"
-          [options]="selectOptions()"
-          optionLabel="label"
-          optionValue="value"
-          [ngModel]="selectedId()"
-          (ngModelChange)="selectedId.set($event); onListChange()"
-          styleClass="list-select"
-          appendTo="body"
-        />
-        @if (!isAdhoc()) {
-          <button pButton pRipple type="button" icon="pi pi-pencil" severity="secondary" text
-            (click)="openEdit()" aria-label="Modifier la liste"></button>
-        }
-        <button pButton pRipple type="button" icon="pi pi-plus" severity="secondary" text
-          (click)="openCreate()" aria-label="Nouvelle liste"></button>
-      </div>
+    <div class="field cinemas-field">
+      <label for="cinemas-select">Cinémas</label>
+      <p-multiSelect
+        inputId="cinemas-select"
+        [options]="favoriteOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="activeIds()"
+        (onChange)="onActiveChange($event.value)"
+        display="chip"
+        placeholder="Aucun cinéma coché"
+        emptyMessage="Aucun cinéma enregistré"
+        [showToggleAll]="true"
+        selectedItemsLabel="{0} cinémas cochés"
+        [maxSelectedLabels]="2"
+        styleClass="cinemas-select"
+        appendTo="body"
+      />
     </div>
-
-    @if (isAdhoc()) {
-      <div class="field theater-field">
-        <label for="theater-code">Code cinéma</label>
-        <input
-          pInputText
-          id="theater-code"
-          [(ngModel)]="adhocTheater"
-          (keyup.enter)="onAdhocSubmit()"
-          placeholder="P0057"
-          spellcheck="false"
-          autocapitalize="characters"
-        />
-      </div>
-    }
 
     <div class="field date-field">
       <label>Date</label>
@@ -72,45 +51,29 @@
       </div>
     </div>
 
-    @if (isAdhoc()) {
-      <button pButton pRipple type="button" label="Voir" icon="pi pi-search" (click)="onAdhocSubmit()" [disabled]="loading()"></button>
-    }
+    <button pButton pRipple type="button" label="Ajouter un cinéma" icon="pi pi-plus"
+      severity="secondary" (click)="openManage()"></button>
   </div>
-
-  <!-- Cinémas d'une liste + action « par défaut ». -->
-  @if (selectedList(); as list) {
-    <div class="list-bar">
-      <div class="theater-chips">
-        @for (item of list.items; track item.code) {
-          <span class="theater-chip">{{ codeLabel(item.code) }}</span>
-        }
-      </div>
-      <div class="list-actions">
-        @if (list.isDefault) {
-          <span class="default-badge"><i class="pi pi-star-fill"></i> par défaut</span>
-        } @else {
-          <button pButton pRipple type="button" label="Définir par défaut" icon="pi pi-star" size="small"
-            severity="secondary" text (click)="setDefault()"></button>
-        }
-        <button pButton pRipple type="button" label="Supprimer" icon="pi pi-trash" size="small"
-          severity="danger" text (click)="remove()"></button>
-      </div>
-    </div>
-  }
 
   <p class="day-line">{{ dayLabel() }}@if (isToday()) { <span class="badge-today">aujourd'hui</span> }</p>
 
   @if (loading()) {
     <app-spinner />
+  } @else if (loaded() && favorites().length === 0) {
+    <div class="empty">
+      <h2>Aucun cinéma enregistré</h2>
+      <p>Ajoutez vos cinémas pour retrouver leurs séances ici.</p>
+      <button pButton pRipple type="button" label="Ajouter un cinéma" icon="pi pi-plus" (click)="openManage()"></button>
+    </div>
+  } @else if (loaded() && activeCount() === 0) {
+    <div class="empty">
+      <h2>Aucun cinéma coché</h2>
+      <p>Cochez au moins un cinéma ci-dessus pour afficher ses séances.</p>
+    </div>
   } @else if (loaded() && mergedMovies().length === 0) {
     <div class="empty">
       <h2>Aucune séance</h2>
-      <p>
-        Rien à l'affiche ce jour-là.
-        @if (isAdhoc()) {
-          Vérifiez le code cinéma (ex. <code>P0057</code>, <code>C0159</code>).
-        }
-      </p>
+      <p>Rien à l'affiche ce jour-là.</p>
     </div>
   } @else {
     <div class="movies">
@@ -140,9 +103,7 @@
             <!-- Séances groupées par cinéma : la salle de chaque créneau est visible d'un coup d'œil. -->
             @for (group of movie.byTheater; track group.theater.code) {
               <div class="theater-group">
-                @if (movie.byTheater.length > 1 || !isAdhoc()) {
-                  <span class="theater-name"><i class="pi pi-map-marker"></i> {{ theaterLabel(group.theater) }}</span>
-                }
+                <span class="theater-name"><i class="pi pi-map-marker"></i> {{ theaterLabel(group.theater) }}</span>
                 <div class="shows">
                   <!-- Sans billetterie, l'ancre reste sans href : non cliquable, style .disabled. -->
                   @for (show of group.shows; track show.id) {
@@ -170,11 +131,11 @@
   }
 </div>
 
-<!-- Éditeur de liste de cinémas ─────────────────────────────────────────── -->
+<!-- Ajout / gestion des cinémas enregistrés ───────────────────────────────── -->
 <p-dialog
-  [header]="editing() ? 'Modifier la liste' : 'Nouvelle liste'"
-  [visible]="editorOpen()"
-  (visibleChange)="$event ? editorOpen.set(true) : closeEditor()"
+  header="Mes cinémas"
+  [visible]="manageOpen()"
+  (visibleChange)="$event ? manageOpen.set(true) : closeManage()"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
@@ -183,53 +144,44 @@
   [style]="{ width: 'min(94vw, 460px)' }"
 >
   <div class="editor-form">
-    <label class="field">
-      <span>Nom</span>
-      <input pInputText type="text" [(ngModel)]="formName" placeholder="Mes cinémas" maxlength="100" appAutofocus />
-    </label>
-
     <div class="field">
-      <span>Cinémas (codes Allociné)</span>
+      <span>Ajouter un cinéma (code Allociné)</span>
       <div class="code-input">
         <input
           pInputText
           type="text"
           [(ngModel)]="codeInput"
-          (keyup.enter)="addCode()"
+          (keyup.enter)="addFavorite()"
           placeholder="P0057"
           spellcheck="false"
           autocapitalize="characters"
+          appAutofocus
         />
-        <button pButton pRipple type="button" icon="pi pi-plus" label="Ajouter" (click)="addCode()"></button>
+        <button pButton pRipple type="button" icon="pi pi-plus" label="Ajouter"
+          (click)="addFavorite()" [disabled]="!codeInput.trim() || adding()"></button>
       </div>
+    </div>
 
-      @if (editorCodes().length) {
+    <div class="field">
+      <span>Cinémas enregistrés</span>
+      @if (favorites().length) {
         <div class="editor-chips">
-          @for (code of editorCodes(); track code) {
+          @for (fav of favorites(); track fav.id) {
             <span class="theater-chip removable">
-              {{ codeLabel(code) }}
-              <button type="button" class="chip-x" (click)="removeCode(code)" aria-label="Retirer">
+              {{ codeLabel(fav.code) }}
+              <button type="button" class="chip-x" (click)="removeFavorite(fav)" aria-label="Retirer">
                 <i class="pi pi-times"></i>
               </button>
             </span>
           }
         </div>
       } @else {
-        <p class="hint">Ajoutez au moins un cinéma par son code (ex. <code>P0057</code>, <code>C0159</code>).</p>
+        <p class="hint">Ajoutez un cinéma par son code (ex. <code>P0057</code>, <code>C0159</code>).</p>
       }
     </div>
 
     <div class="dialog-actions">
-      <button pButton pRipple type="button" severity="secondary" outlined label="Annuler" (click)="closeEditor()" [disabled]="saving()"></button>
-      <button
-        pButton pRipple
-        type="button"
-        [disabled]="!formName.trim() || editorCodes().length === 0 || saving()"
-        (click)="save()"
-      >
-        <i [class]="saving() ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
-        <span>{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}</span>
-      </button>
+      <button pButton pRipple type="button" label="Fermer" (click)="closeManage()" [disabled]="adding()"></button>
     </div>
   </div>
 </p-dialog>

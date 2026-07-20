@@ -138,16 +138,11 @@ export interface TheaterShowtimes {
   movies: ShowtimeMovie[];
 }
 
-export interface TheaterListItem {
-  code: string;
-  position: number;
-}
-
-export interface TheaterList {
+export interface FavoriteTheater {
   id: number;
-  name: string;
-  isDefault: boolean;
-  items: TheaterListItem[];
+  code: string;
+  isActive: boolean; // coché : ses séances sont affichées (état mémorisé)
+  position: number;
 }
 
 export interface TrackedMedia {
@@ -405,26 +400,22 @@ export class Api {
     return this.http.get<TheaterShowtimes[]>(`${API}/showtimes/multi`, { params });
   }
 
-  // ── Listes de cinémas ───────────────────────────────────────────────────
+  // ── Cinémas favoris ─────────────────────────────────────────────────────
 
-  theaterLists(): Observable<TheaterList[]> {
-    return this.http.get<TheaterList[]>(`${API}/theater-lists`);
+  favoriteTheaters(): Observable<FavoriteTheater[]> {
+    return this.http.get<FavoriteTheater[]>(`${API}/favorite-theaters`);
   }
 
-  createTheaterList(name: string, codes: string[]): Observable<TheaterList> {
-    return this.http.post<TheaterList>(`${API}/theater-lists`, { name, codes });
+  addFavoriteTheater(code: string): Observable<FavoriteTheater> {
+    return this.http.post<FavoriteTheater>(`${API}/favorite-theaters`, { code });
   }
 
-  updateTheaterList(id: number, name: string, codes: string[]): Observable<TheaterList> {
-    return this.http.put<TheaterList>(`${API}/theater-lists/${id}`, { name, codes });
+  removeFavoriteTheater(id: number): Observable<void> {
+    return this.http.delete<void>(`${API}/favorite-theaters/${id}`);
   }
 
-  deleteTheaterList(id: number): Observable<unknown> {
-    return this.http.delete(`${API}/theater-lists/${id}`);
-  }
-
-  setDefaultTheaterList(id: number): Observable<unknown> {
-    return this.http.put(`${API}/theater-lists/${id}/default`, null);
+  setFavoriteTheaterActive(id: number, isActive: boolean): Observable<void> {
+    return this.http.put<void>(`${API}/favorite-theaters/${id}/active`, { isActive });
   }
 
   trackedMedia(): Observable<TrackedMedia[]> {

@@ -396,32 +396,27 @@ struct APIService {
         return try await request("/showtimes/multi", query: query)
     }
 
-    // ── Listes de cinémas ─────────────────────────────────────────────────
+    // ── Cinémas favoris ────────────────────────────────────────────────────
 
-    func theaterLists() async throws -> [TheaterList] {
-        try await request("/theater-lists")
+    func favoriteTheaters() async throws -> [FavoriteTheater] {
+        try await request("/favorite-theaters")
     }
 
     @discardableResult
-    func createTheaterList(name: String, codes: [String]) async throws -> TheaterList {
-        let payload: [String: AnyEncodable] = ["name": AnyEncodable(name), "codes": AnyEncodable(codes)]
+    func addFavoriteTheater(code: String) async throws -> FavoriteTheater {
+        let payload: [String: AnyEncodable] = ["code": AnyEncodable(code)]
         let body = try encoder.encode(payload)
-        return try await request("/theater-lists", method: "POST", body: body)
+        return try await request("/favorite-theaters", method: "POST", body: body)
     }
 
-    @discardableResult
-    func updateTheaterList(id: Int, name: String, codes: [String]) async throws -> TheaterList {
-        let payload: [String: AnyEncodable] = ["name": AnyEncodable(name), "codes": AnyEncodable(codes)]
+    func removeFavoriteTheater(id: Int) async throws {
+        try await rawRequest("/favorite-theaters/\(id)", method: "DELETE")
+    }
+
+    func setFavoriteTheaterActive(id: Int, isActive: Bool) async throws {
+        let payload: [String: AnyEncodable] = ["isActive": AnyEncodable(isActive)]
         let body = try encoder.encode(payload)
-        return try await request("/theater-lists/\(id)", method: "PUT", body: body)
-    }
-
-    func deleteTheaterList(id: Int) async throws {
-        try await rawRequest("/theater-lists/\(id)", method: "DELETE")
-    }
-
-    func setDefaultTheaterList(id: Int) async throws {
-        try await rawRequest("/theater-lists/\(id)/default", method: "PUT")
+        try await rawRequest("/favorite-theaters/\(id)/active", method: "PUT", body: body)
     }
 }
 

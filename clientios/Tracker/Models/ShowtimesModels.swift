@@ -2,8 +2,8 @@
 //  ShowtimesModels.swift
 //  Tracker
 //
-//  Séances de cinéma (Allociné, via le backend) et listes de cinémas sauvegardées.
-//  En miroir des DTO du client web / de l'API `/showtimes` et `/theater-lists`.
+//  Séances de cinéma (Allociné, via le backend) et cinémas favoris enregistrés.
+//  En miroir des DTO du client web / de l'API `/showtimes` et `/favorite-theaters`.
 //
 
 import Foundation
@@ -52,18 +52,11 @@ struct TheaterShowtimes: Decodable, Hashable {
     let movies: [ShowtimeMovie]
 }
 
-/// Un cinéma membre d'une liste (code Allociné + position).
-struct TheaterListItem: Decodable, Hashable {
-    let code: String
-    let position: Int
-}
-
-/// Une liste de cinémas consultés ensemble ; au plus une est « par défaut ».
-struct TheaterList: Decodable, Identifiable, Hashable {
+/// Un cinéma enregistré (code Allociné). Coché ou non (`isActive`) : état mémorisé qui
+/// détermine les salles affichées sur la page Séances. Liste plate, sans regroupement.
+struct FavoriteTheater: Decodable, Identifiable, Hashable {
     let id: Int
-    let name: String
-    let isDefault: Bool
-    let items: [TheaterListItem]
-
-    var codes: [String] { items.sorted { $0.position < $1.position }.map(\.code) }
+    let code: String
+    let isActive: Bool
+    let position: Int
 }

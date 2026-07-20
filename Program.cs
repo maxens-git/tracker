@@ -48,7 +48,7 @@ builder.Services.AddSingleton<ILoggerProvider, DatabaseLoggerProvider>();
 builder.Services.AddHostedService<SystemLogWriterService>();
 builder.Services.AddHttpClient<SeenMediaMetadataBackfillService>();
 builder.Services.AddScoped<IcsCalendarService>();
-builder.Services.AddScoped<TheaterListService>();
+builder.Services.AddScoped<FavoriteTheaterService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<TmdbReleaseService>();
 builder.Services.AddHttpClient<NtfyService>();

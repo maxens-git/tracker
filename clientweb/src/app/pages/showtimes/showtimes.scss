@@ -34,12 +34,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.list-row {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  :global(.list-select) { min-width: 12rem; }
+.cinemas-field {
+  :global(.cinemas-select) { min-width: 15rem; max-width: 22rem; }
 }
 
 .date-controls {
@@ -48,22 +44,7 @@
   gap: 0.25rem;
 }
 
-/* ── Barre de liste (cinémas membres + actions) ──────────────────────── */
-.list-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  margin-top: 0.75rem;
-}
-
-.theater-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
+/* ── Chips de cinémas dans l'éditeur (retirables) ─────────────────────── */
 .theater-chip {
   display: inline-flex;
   align-items: center;
@@ -91,23 +72,6 @@
 
     &:hover { color: var(--danger); }
   }
-}
-
-.list-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.default-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
-
-  .pi { font-size: 0.7rem; }
 }
 
 .day-line {

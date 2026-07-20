@@ -2,9 +2,10 @@
 //  ShowtimesViewModel.swift
 //  Tracker
 //
-//  Séances de cinéma : consultation d'une ou plusieurs salles pour une date,
-//  regroupées par film (chaque séance rattachée à sa salle), avec listes de
-//  cinémas sauvegardées et liste par défaut. En miroir de la page Séances web.
+//  Séances de cinéma : consultation des cinémas enregistrés pour une date,
+//  regroupées par film (chaque séance rattachée à sa salle). Chaque cinéma est
+//  coché ou non (état mémorisé) ; on peut en ajouter / retirer. Miroir de la
+//  page Séances web.
 //
 
 import Foundation
@@ -31,13 +32,8 @@ struct MergedMovie: Identifiable, Hashable {
 @Observable
 @MainActor
 final class ShowtimesViewModel {
-    // Cinéma affiché par défaut en mode « cinéma unique » (Pathé Toulouse Wilson).
-    static let defaultTheater = "P0057"
-
-    private(set) var lists: [TheaterList] = []
-    /// Liste sélectionnée ; `nil` = mode « cinéma unique » (ad hoc).
-    private(set) var selectedListId: Int?
-    var adhocTheater = defaultTheater
+    /// Cinémas enregistrés (liste plate) ; chacun coché ou non (état mémorisé côté serveur).
+    private(set) var favorites: [FavoriteTheater] = []
 
     var pickedDate = Date()
 
@@ -55,48 +51,39 @@ final class ShowtimesViewModel {
     /// Aujourd'hui à minuit : borne basse (pas de séance dans le passé).
     let today = Calendar.current.startOfDay(for: Date())
 
-    var selectedList: TheaterList? { lists.first { $0.id == selectedListId } }
-    var isAdhoc: Bool { selectedListId == nil }
     var canGoPrev: Bool { calendar.startOfDay(for: pickedDate) > today }
+
+    /// Nombre de cinémas cochés (pour le sous-titre).
+    var activeCount: Int { favorites.filter(\.isActive).count }
+
+    /// Codes des cinémas cochés : détermine les salles affichées.
+    private var activeCodes: Set<String> { Set(favorites.filter(\.isActive).map(\.code)) }
 
     // ── Cycle de vie ──────────────────────────────────────────────────────
 
     func start() async {
-        if lists.isEmpty && !loaded {
-            await reloadLists(select: nil, autoDefault: true)
+        if favorites.isEmpty && !loaded {
+            await reloadFavorites()
         }
         await load()
     }
 
-    /// Recharge les listes ; sélectionne `select` si fourni, sinon la liste par défaut
-    /// (au premier chargement seulement) puis « cinéma unique ».
-    private func reloadLists(select: Int?, autoDefault: Bool) async {
+    private func reloadFavorites() async {
         do {
-            let fetched = try await api.theaterLists()
-            lists = fetched
-            if let select, fetched.contains(where: { $0.id == select }) {
-                selectedListId = select
-            } else if autoDefault, let def = fetched.first(where: { $0.isDefault }) {
-                selectedListId = def.id
-            } else if select == nil && !fetched.contains(where: { $0.id == selectedListId }) {
-                selectedListId = nil
-            }
+            favorites = try await api.favoriteTheaters()
         } catch {
-            // Pas de listes chargées → on reste en mode « cinéma unique ».
+            // Pas de favoris chargés : la page proposera d'en ajouter.
         }
     }
 
     // ── Chargement des séances ────────────────────────────────────────────
 
-    private var activeCodes: [String] {
-        if let list = selectedList { return list.codes }
-        let code = adhocTheater.trimmingCharacters(in: .whitespaces).uppercased()
-        return code.isEmpty ? [] : [code]
-    }
-
+    /// On charge tous les cinémas enregistrés en une requête ; le filtrage coché/décoché
+    /// se fait à l'affichage, pour un basculement instantané sans rechargement.
     func load() async {
-        let codes = activeCodes
-        guard !codes.isEmpty, !isLoading else { return }
+        let codes = favorites.map(\.code)
+        guard !isLoading else { return }
+        guard !codes.isEmpty else { programs = []; loaded = true; return }
 
         isLoading = true
         errorMessage = nil
@@ -116,14 +103,6 @@ final class ShowtimesViewModel {
         isLoading = false
     }
 
-    func selectList(_ id: Int?) {
-        guard id != selectedListId else { return }
-        selectedListId = id
-        programs = []
-        loaded = false
-        Task { await load() }
-    }
-
     /// Décale d'un jour (borné à aujourd'hui). Le rechargement est déclenché par
     /// l'observation de `pickedDate` côté vue, qui couvre aussi le sélecteur de date.
     func shiftDay(_ delta: Int) {
@@ -132,9 +111,72 @@ final class ShowtimesViewModel {
         pickedDate = next
     }
 
+    // ── Cinémas : cocher / décocher, ajouter, retirer ─────────────────────
+
+    /// Coche / décoche un cinéma : affichage instantané, choix mémorisé côté serveur.
+    func toggleActive(_ favorite: FavoriteTheater) {
+        let next = !favorite.isActive
+        setActiveLocally(id: favorite.id, isActive: next)
+        Task {
+            do {
+                try await api.setFavoriteTheaterActive(id: favorite.id, isActive: next)
+            } catch {
+                setActiveLocally(id: favorite.id, isActive: !next) // rétablit en cas d'échec
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func setActiveLocally(id: Int, isActive: Bool) {
+        guard let idx = favorites.firstIndex(where: { $0.id == id }) else { return }
+        let f = favorites[idx]
+        favorites[idx] = FavoriteTheater(id: f.id, code: f.code, isActive: isActive, position: f.position)
+    }
+
+    /// Ajoute un cinéma aux favoris par son code, puis recharge les séances. Renvoie true si réussi.
+    @discardableResult
+    func addFavorite(code: String) async -> Bool {
+        let normalized = code.trimmingCharacters(in: .whitespaces).uppercased()
+        guard !normalized.isEmpty else { return false }
+        if favorites.contains(where: { $0.code == normalized }) {
+            errorMessage = "Ce cinéma est déjà enregistré."
+            return false
+        }
+        do {
+            let added = try await api.addFavoriteTheater(code: normalized)
+            if !favorites.contains(where: { $0.id == added.id }) { favorites.append(added) }
+            await load()
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    func removeFavorite(_ favorite: FavoriteTheater) async {
+        do {
+            try await api.removeFavoriteTheater(id: favorite.id)
+            favorites.removeAll { $0.id == favorite.id }
+            await load()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // ── Fusion par film ───────────────────────────────────────────────────
 
-    var mergedMovies: [MergedMovie] { Self.merge(programs) }
+    /// Films affichés : on ne garde que les salles cochées et les films qui en gardent au moins une.
+    var mergedMovies: [MergedMovie] {
+        let active = activeCodes
+        let all = Self.merge(programs)
+        return all.compactMap { movie in
+            let groups = movie.byTheater.filter { active.contains($0.theater.code) }
+            guard !groups.isEmpty else { return nil }
+            return MergedMovie(id: movie.id, movieId: movie.movieId, title: movie.title,
+                               poster: movie.poster, runtime: movie.runtime, genres: movie.genres,
+                               url: movie.url, byTheater: groups)
+        }
+    }
 
     /// Signature d'une séance indépendante de son id : deux séances de même horaire,
     /// version et format sont considérées identiques (Allociné duplique parfois).
@@ -193,52 +235,6 @@ final class ShowtimesViewModel {
         }
         .sorted { $0.1 < $1.1 }
         .map(\.0)
-    }
-
-    // ── Gestion des listes ────────────────────────────────────────────────
-
-    /// Crée (id nil) ou met à jour une liste, puis la sélectionne. Renvoie true si réussi.
-    func saveList(id: Int?, name: String, codes: [String]) async -> Bool {
-        do {
-            let saved: TheaterList
-            if let id {
-                saved = try await api.updateTheaterList(id: id, name: name, codes: codes)
-            } else {
-                saved = try await api.createTheaterList(name: name, codes: codes)
-            }
-            await reloadLists(select: saved.id, autoDefault: false)
-            programs = []
-            loaded = false
-            await load()
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    func deleteSelected() async {
-        guard let list = selectedList else { return }
-        do {
-            try await api.deleteTheaterList(id: list.id)
-            selectedListId = nil
-            await reloadLists(select: nil, autoDefault: false)
-            programs = []
-            loaded = false
-            await load()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func setDefaultSelected() async {
-        guard let list = selectedList, !list.isDefault else { return }
-        do {
-            try await api.setDefaultTheaterList(id: list.id)
-            await reloadLists(select: list.id, autoDefault: false)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
     }
 
     // ── Libellés ──────────────────────────────────────────────────────────

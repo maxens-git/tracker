@@ -5,23 +5,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
-import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 import { Ripple } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import {
-  Api, Showtime, Theater, TheaterShowtimes, TheaterList,
+  Api, Showtime, Theater, TheaterShowtimes, FavoriteTheater,
 } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { Autofocus } from '../../../shared/directives/autofocus';
 import { errorMessage } from '../../../shared/services/http-error';
-
-// Cinéma affiché par défaut en mode « cinéma unique » (Pathé Toulouse Wilson).
-const DEFAULT_THEATER = 'P0057';
-
-// Valeur du sélecteur pour le mode ad hoc (un seul cinéma saisi à la main).
-const ADHOC = -1;
 
 // Un code salle Allociné valide : une lettre suivie de 3 à 5 chiffres (ex. P0057).
 const THEATER_CODE = /^[A-Z][0-9]{3,5}$/;
@@ -69,7 +63,7 @@ interface MergedMovie {
   standalone: true,
   imports: [
     CommonModule, FormsModule, ButtonModule, InputTextModule, DatePickerModule,
-    SelectModule, DialogModule, Ripple, Spinner, Autofocus,
+    MultiSelectModule, DialogModule, Ripple, Spinner, Autofocus,
   ],
   templateUrl: './showtimes.html',
   styleUrl: './showtimes.scss',
@@ -87,83 +81,70 @@ export class Showtimes implements OnInit {
   // Aucune séance dans le passé : on borne la sélection à aujourd'hui (minuit).
   readonly today: Date = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
 
-  // Listes de cinémas sauvegardées + sélection courante (ADHOC = cinéma unique saisi à la main).
-  lists = signal<TheaterList[]>([]);
-  selectedId = signal<number>(ADHOC);
-  adhocTheater = DEFAULT_THEATER;
+  // Cinémas enregistrés (liste plate) ; chacun coché ou non (état mémorisé côté serveur).
+  favorites = signal<FavoriteTheater[]>([]);
 
   data = signal<TheaterShowtimes[]>([]);
   loading = signal(false);
   loaded = signal(false); // au moins une réponse reçue (distingue « vide » de « pas encore chargé »)
 
-  // Options du sélecteur : listes sauvegardées puis l'entrée « cinéma unique ».
-  selectOptions = computed(() => [
-    ...this.lists().map(l => ({ label: l.isDefault ? `★ ${l.name}` : l.name, value: l.id })),
-    { label: 'Cinéma unique…', value: ADHOC },
-  ]);
+  // Codes des cinémas cochés : détermine les salles affichées.
+  private activeCodes = computed(() =>
+    new Set(this.favorites().filter(f => f.isActive).map(f => f.code)));
 
-  // Liste actuellement sélectionnée (null en mode ad hoc).
-  selectedList = computed(() => this.lists().find(l => l.id === this.selectedId()) ?? null);
-  isAdhoc = computed(() => this.selectedId() === ADHOC);
+  // Ids des cinémas cochés (liés au multi-select).
+  activeIds = computed(() => this.favorites().filter(f => f.isActive).map(f => f.id));
+
+  // Options du multi-select : un cinéma enregistré par entrée (libellé = nom connu, sinon code).
+  favoriteOptions = computed(() =>
+    this.favorites().map(f => ({ label: this.codeLabel(f.code), value: f.id })));
 
   // Noms de salles connus (code → nom), alimentés par les programmes déjà chargés.
-  private theaterNames = new Map<string, string>();
+  // Signal pour que les libellés du multi-select se rafraîchissent après chargement.
+  private theaterNames = signal(new Map<string, string>());
 
-  // Films fusionnés sur toutes les salles, triés par première séance.
-  mergedMovies = computed<MergedMovie[]>(() => this.merge(this.data()));
+  // Films fusionnés sur toutes les salles chargées, triés par première séance.
+  private allMovies = computed<MergedMovie[]>(() => this.merge(this.data()));
 
-  // Nombre de salles ayant renvoyé un programme (pour le sous-titre).
-  theaterCount = computed(() => this.data().length);
+  // Films affichés : on ne garde que les salles cochées.
+  mergedMovies = computed<MergedMovie[]>(() => {
+    const active = this.activeCodes();
+    return this.allMovies()
+      .map(m => ({ ...m, byTheater: m.byTheater.filter(g => active.has(g.theater.code)) }))
+      .filter(m => m.byTheater.length > 0);
+  });
 
-  // ── Éditeur de liste (dialog) ────────────────────────────────────────────
-  editorOpen = signal(false);
-  editing = signal<TheaterList | null>(null); // null = création
-  saving = signal(false);
-  formName = '';
-  editorCodes = signal<string[]>([]);
+  // Nombre de cinémas cochés (pour le sous-titre).
+  activeCount = computed(() => this.favorites().filter(f => f.isActive).length);
+
+  // ── Ajout / gestion des cinémas (dialog) ─────────────────────────────────
+  manageOpen = signal(false);
+  adding = signal(false);
   codeInput = '';
 
   ngOnInit() {
-    const params = this.route.snapshot.queryParamMap;
-
-    const date = params.get('date');
+    const date = this.route.snapshot.queryParamMap.get('date');
     const parsed = date ? new Date(date + 'T00:00:00') : null;
     if (parsed && !Number.isNaN(parsed.getTime())) this.pickedDate = parsed;
 
-    // Un lien direct vers un cinéma force le mode ad hoc.
-    const theater = params.get('theater');
-    if (theater) this.adhocTheater = theater;
-    const listParam = Number(params.get('list'));
-
-    this.api.theaterLists().subscribe({
-      next: lists => {
-        this.lists.set(lists);
-        if (theater) {
-          this.selectedId.set(ADHOC);
-        } else if (listParam && lists.some(l => l.id === listParam)) {
-          this.selectedId.set(listParam);
-        } else {
-          const def = lists.find(l => l.isDefault);
-          this.selectedId.set(def ? def.id : ADHOC);
-        }
-        this.load();
-      },
-      error: () => this.load(), // pas de listes chargées → mode ad hoc par défaut
+    this.api.favoriteTheaters().subscribe({
+      next: favorites => { this.favorites.set(favorites); this.load(); },
+      error: () => { this.loaded.set(true); },
     });
   }
 
   // ── Chargement des séances ─────────────────────────────────────────────────
 
-  private activeCodes(): string[] {
-    const list = this.selectedList();
-    if (list) return list.items.map(i => i.code);
-    const code = this.adhocTheater.trim().toUpperCase();
-    return code ? [code] : [];
+  // On charge tous les cinémas enregistrés en une requête ; le filtrage coché/décoché
+  // se fait à l'affichage, pour un basculement instantané sans rechargement.
+  private codesToLoad(): string[] {
+    return this.favorites().map(f => f.code);
   }
 
   load() {
-    const codes = this.activeCodes();
-    if (codes.length === 0 || this.loading()) return;
+    const codes = this.codesToLoad();
+    if (this.loading()) return;
+    if (codes.length === 0) { this.data.set([]); this.loaded.set(true); return; }
 
     const date = this.isoDate(this.pickedDate);
     this.loading.set(true);
@@ -176,8 +157,10 @@ export class Showtimes implements OnInit {
       }))
       .subscribe({
         next: result => {
+          const names = new Map(this.theaterNames());
           for (const prog of result)
-            if (prog.theater.name) this.theaterNames.set(prog.theater.code, prog.theater.name);
+            if (prog.theater.name) names.set(prog.theater.code, prog.theater.name);
+          this.theaterNames.set(names);
           this.data.set(result);
         },
         error: err => {
@@ -185,16 +168,6 @@ export class Showtimes implements OnInit {
           this.showError(errorMessage(err, 'Impossible de récupérer les séances.'));
         },
       });
-  }
-
-  onListChange() {
-    this.data.set([]);
-    this.loaded.set(false);
-    this.load();
-  }
-
-  onAdhocSubmit() {
-    if (this.isAdhoc()) this.load();
   }
 
   shiftDay(delta: number) {
@@ -213,6 +186,75 @@ export class Showtimes implements OnInit {
 
   onDateChange() {
     this.load();
+  }
+
+  // ── Cinémas : cocher / décocher, ajouter, retirer ───────────────────────────
+
+  /** Applique la sélection du multi-select : persiste chaque cinéma dont l'état a changé. */
+  onActiveChange(ids: number[]) {
+    const selected = new Set(ids);
+    for (const fav of this.favorites()) {
+      const shouldBeActive = selected.has(fav.id);
+      if (shouldBeActive !== fav.isActive) this.setActive(fav, shouldBeActive);
+    }
+  }
+
+  /** Coche / décoche un cinéma : affichage instantané, choix mémorisé côté serveur. */
+  private setActive(fav: FavoriteTheater, active: boolean) {
+    this.favorites.update(fs => fs.map(f => f.id === fav.id ? { ...f, isActive: active } : f));
+    this.api.setFavoriteTheaterActive(fav.id, active).subscribe({
+      error: err => {
+        // Échec de persistance : on rétablit l'état précédent pour rester cohérent.
+        this.favorites.update(fs => fs.map(f => f.id === fav.id ? { ...f, isActive: !active } : f));
+        this.showError(errorMessage(err, 'Impossible d’enregistrer la sélection.'));
+      },
+    });
+  }
+
+  addFavorite() {
+    const code = this.codeInput.trim().toUpperCase();
+    if (!code || this.adding()) return;
+    if (!THEATER_CODE.test(code)) {
+      this.showError('Code cinéma invalide (ex. P0057).');
+      return;
+    }
+    if (this.favorites().some(f => f.code === code)) {
+      this.showError('Ce cinéma est déjà enregistré.');
+      this.codeInput = '';
+      return;
+    }
+
+    this.adding.set(true);
+    this.api.addFavoriteTheater(code)
+      .pipe(finalize(() => this.adding.set(false)))
+      .subscribe({
+        next: fav => {
+          this.favorites.update(fs => fs.some(f => f.id === fav.id) ? fs : [...fs, fav]);
+          this.codeInput = '';
+          this.load(); // recharge pour inclure les séances du nouveau cinéma
+        },
+        error: err => this.showError(errorMessage(err)),
+      });
+  }
+
+  removeFavorite(fav: FavoriteTheater) {
+    this.api.removeFavoriteTheater(fav.id).subscribe({
+      next: () => {
+        this.favorites.update(fs => fs.filter(f => f.id !== fav.id));
+        this.load();
+      },
+      error: err => this.showError(errorMessage(err)),
+    });
+  }
+
+  openManage() {
+    this.codeInput = '';
+    this.manageOpen.set(true);
+  }
+
+  closeManage() {
+    if (this.adding()) return;
+    this.manageOpen.set(false);
   }
 
   // ── Fusion par film ────────────────────────────────────────────────────────
@@ -273,7 +315,7 @@ export class Showtimes implements OnInit {
 
   /** Nom de salle connu pour un code (issu des programmes chargés), sinon le code lui-même. */
   codeLabel(code: string): string {
-    return this.theaterNames.get(code) ?? code;
+    return this.theaterNames().get(code) ?? code;
   }
 
   formatLabel(format: string): string {
@@ -295,124 +337,14 @@ export class Showtimes implements OnInit {
     return d.toLocaleDateString('en-CA');
   }
 
-  // Reflète la sélection (liste ou cinéma) + date dans l'URL sans empiler d'historique
-  // ni relancer le routeur (une navigation recréerait le composant → boucle).
+  // Reflète la date consultée dans l'URL sans empiler d'historique ni relancer le routeur
+  // (une navigation recréerait le composant → boucle).
   private syncQueryParams(date: string) {
-    const list = this.selectedList();
-    const queryParams = list ? { list: list.id, date } : { theater: this.adhocTheater.trim(), date };
-    const urlTree = this.router.createUrlTree([], { relativeTo: this.route, queryParams });
+    const urlTree = this.router.createUrlTree([], { relativeTo: this.route, queryParams: { date } });
     this.location.replaceState(this.router.serializeUrl(urlTree));
-  }
-
-  // ── Éditeur de liste ─────────────────────────────────────────────────────
-
-  openCreate() {
-    this.editing.set(null);
-    this.formName = '';
-    this.editorCodes.set([]);
-    this.codeInput = '';
-    this.editorOpen.set(true);
-  }
-
-  openEdit() {
-    const list = this.selectedList();
-    if (!list) return;
-    this.editing.set(list);
-    this.formName = list.name;
-    this.editorCodes.set(list.items.map(i => i.code));
-    this.codeInput = '';
-    this.editorOpen.set(true);
-  }
-
-  closeEditor() {
-    if (this.saving()) return;
-    this.editorOpen.set(false);
-  }
-
-  addCode() {
-    const code = this.codeInput.trim().toUpperCase();
-    if (!code) return;
-    if (!THEATER_CODE.test(code)) {
-      this.showError('Code cinéma invalide (ex. P0057).');
-      return;
-    }
-    if (!this.editorCodes().includes(code))
-      this.editorCodes.update(cs => [...cs, code]);
-    this.codeInput = '';
-  }
-
-  removeCode(code: string) {
-    this.editorCodes.update(cs => cs.filter(c => c !== code));
-  }
-
-  save() {
-    const name = this.formName.trim();
-    const codes = this.editorCodes();
-    if (!name || codes.length === 0 || this.saving()) return;
-
-    this.saving.set(true);
-    const editing = this.editing();
-    const request$ = editing
-      ? this.api.updateTheaterList(editing.id, name, codes)
-      : this.api.createTheaterList(name, codes);
-
-    request$.subscribe({
-      next: saved => {
-        this.saving.set(false);
-        this.editorOpen.set(false);
-        this.reloadLists(saved.id);
-      },
-      error: err => {
-        this.saving.set(false);
-        this.showError(errorMessage(err));
-      },
-    });
-  }
-
-  remove() {
-    const list = this.selectedList();
-    if (!list) return;
-    if (!confirm(`Supprimer la liste « ${list.name} » ?`)) return;
-
-    this.api.deleteTheaterList(list.id).subscribe({
-      next: () => {
-        this.selectedId.set(ADHOC);
-        this.reloadLists(ADHOC);
-      },
-      error: err => this.showError(errorMessage(err)),
-    });
-  }
-
-  setDefault() {
-    const list = this.selectedList();
-    if (!list || list.isDefault) return;
-
-    this.api.setDefaultTheaterList(list.id).subscribe({
-      next: () => {
-        this.showInfo(`« ${list.name} » définie par défaut.`);
-        this.reloadLists(list.id);
-      },
-      error: err => this.showError(errorMessage(err)),
-    });
-  }
-
-  // Recharge les listes puis sélectionne la liste voulue et recharge les séances.
-  private reloadLists(selectId: number) {
-    this.api.theaterLists().subscribe({
-      next: lists => {
-        this.lists.set(lists);
-        this.selectedId.set(lists.some(l => l.id === selectId) ? selectId : ADHOC);
-        this.onListChange();
-      },
-      error: () => this.onListChange(),
-    });
   }
 
   private showError(detail: string) {
     this.messages.add({ severity: 'error', summary: 'Séances', detail, life: 5000 });
-  }
-
-  private showInfo(detail: string) {
-    this.messages.add({ severity: 'success', summary: 'Séances', detail, life: 3000 });
   }
 }

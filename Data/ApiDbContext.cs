@@ -20,8 +20,7 @@ public class ApiDbContext : DbContext
     public DbSet<KnownSeason> KnownSeasons { get; set; } = null!;
     public DbSet<SystemLogEntry> SystemLogEntries { get; set; } = null!;
     public DbSet<TorrentBookmark> TorrentBookmarks { get; set; } = null!;
-    public DbSet<TheaterList> TheaterLists { get; set; } = null!;
-    public DbSet<TheaterListItem> TheaterListItems { get; set; } = null!;
+    public DbSet<FavoriteTheater> FavoriteTheaters { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,18 +73,8 @@ public class ApiDbContext : DbContext
             .HasIndex(b => b.InfoHash)
             .IsUnique();
 
-        modelBuilder.Entity<TheaterList>()
-            .HasIndex(tl => tl.Name)
+        modelBuilder.Entity<FavoriteTheater>()
+            .HasIndex(f => f.Code)
             .IsUnique();
-
-        modelBuilder.Entity<TheaterListItem>()
-            .HasIndex(i => new { i.TheaterListId, i.Code })
-            .IsUnique();
-
-        modelBuilder.Entity<TheaterListItem>()
-            .HasOne(i => i.TheaterList)
-            .WithMany(tl => tl.Items)
-            .HasForeignKey(i => i.TheaterListId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

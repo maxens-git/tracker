@@ -21,13 +21,12 @@ private func formatLabel(_ format: String) -> String {
 
 struct ShowtimesView: View {
     @State private var viewModel = ShowtimesViewModel()
-    @State private var editorConfig: ListEditorConfig?
+    @State private var editorOpen = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 controls
-                if let list = viewModel.selectedList { listBar(list) }
                 dayLine
                 content
             }
@@ -41,50 +40,24 @@ struct ShowtimesView: View {
         .errorToast($viewModel.errorMessage)
         .task { await viewModel.start() }
         .onChange(of: viewModel.pickedDate) { Task { await viewModel.load() } }
-        .sheet(item: $editorConfig) { config in
-            TheaterListEditor(config: config) { name, codes in
-                await viewModel.saveList(id: config.listId, name: name, codes: codes)
-            }
+        .sheet(isPresented: $editorOpen) {
+            FavoritesEditor(viewModel: viewModel)
         }
     }
 
-    // ── Contrôles (liste + date) ──────────────────────────────────────────
+    // ── Contrôles (cinémas + date) ────────────────────────────────────────
 
     private var controls: some View {
         VStack(spacing: 12) {
             HStack(spacing: 8) {
-                listPicker
+                cinemasMenu
                 Spacer(minLength: 0)
-                if !viewModel.isAdhoc {
-                    Button {
-                        editorConfig = ListEditorConfig(list: viewModel.selectedList)
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .accessibilityLabel("Modifier la liste")
-                }
                 Button {
-                    editorConfig = ListEditorConfig(list: nil)
+                    editorOpen = true
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("Nouvelle liste")
-            }
-
-            if viewModel.isAdhoc {
-                HStack(spacing: 8) {
-                    Image(systemName: "building.2").foregroundStyle(.secondary)
-                    TextField("Code cinéma (ex. P0057)", text: $viewModel.adhocTheater)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .submitLabel(.search)
-                        .onSubmit { Task { await viewModel.load() } }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                    .strokeBorder(Color.appStroke, lineWidth: 1))
+                .accessibilityLabel("Ajouter un cinéma")
             }
 
             dateControls
@@ -93,21 +66,31 @@ struct ShowtimesView: View {
         .cinemaCard()
     }
 
-    private var listPicker: some View {
+    // Dropdown des cinémas enregistrés : chacun cochable (affiché ou non).
+    private var cinemasMenu: some View {
         Menu {
-            Picker("Liste", selection: Binding(
-                get: { viewModel.selectedListId },
-                set: { viewModel.selectList($0) }
-            )) {
-                ForEach(viewModel.lists) { list in
-                    Text(list.isDefault ? "★ \(list.name)" : list.name).tag(Optional(list.id))
+            if viewModel.favorites.isEmpty {
+                Text("Aucun cinéma enregistré")
+            } else {
+                ForEach(viewModel.favorites) { fav in
+                    Toggle(isOn: Binding(
+                        get: { fav.isActive },
+                        set: { _ in viewModel.toggleActive(fav) }
+                    )) {
+                        Text(viewModel.codeLabel(fav.code))
+                    }
                 }
-                Text("Cinéma unique…").tag(Optional<Int>.none)
+            }
+            Divider()
+            Button {
+                editorOpen = true
+            } label: {
+                Label("Gérer les cinémas", systemImage: "slider.horizontal.3")
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: "list.bullet")
-                Text(viewModel.selectedList?.name ?? "Cinéma unique")
+                Image(systemName: "building.2")
+                Text(cinemasMenuLabel)
                     .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2)
@@ -118,6 +101,11 @@ struct ShowtimesView: View {
             .background(Color.appSurface, in: Capsule())
             .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
         }
+    }
+
+    private var cinemasMenuLabel: String {
+        if viewModel.favorites.isEmpty { return "Cinémas" }
+        return "\(viewModel.activeCount)/\(viewModel.favorites.count) cinémas"
     }
 
     private var dateControls: some View {
@@ -137,47 +125,6 @@ struct ShowtimesView: View {
             }
 
             Spacer(minLength: 0)
-        }
-    }
-
-    // ── Barre de liste (salles + actions) ─────────────────────────────────
-
-    private func listBar(_ list: TheaterList) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(list.items, id: \.code) { item in
-                        Text(viewModel.codeLabel(item.code))
-                            .font(.caption.weight(.medium))
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 6)
-                            .background(Color.appSurface, in: Capsule())
-                            .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
-                    }
-                }
-            }
-
-            HStack(spacing: 14) {
-                if list.isDefault {
-                    Label("par défaut", systemImage: "star.fill")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.appGold)
-                } else {
-                    Button {
-                        Task { await viewModel.setDefaultSelected() }
-                    } label: {
-                        Label("Définir par défaut", systemImage: "star")
-                            .font(.caption.weight(.medium))
-                    }
-                }
-                Spacer(minLength: 0)
-                Button(role: .destructive) {
-                    Task { await viewModel.deleteSelected() }
-                } label: {
-                    Label("Supprimer", systemImage: "trash")
-                        .font(.caption.weight(.medium))
-                }
-            }
         }
     }
 
@@ -210,19 +157,34 @@ struct ShowtimesView: View {
     private var content: some View {
         if viewModel.isLoading && viewModel.programs.isEmpty {
             ProgressView().frame(maxWidth: .infinity, minHeight: 240)
+        } else if viewModel.loaded && viewModel.favorites.isEmpty {
+            ContentUnavailableView {
+                Label("Aucun cinéma enregistré", systemImage: "building.2")
+            } description: {
+                Text("Ajoutez vos cinémas pour retrouver leurs séances ici.")
+            } actions: {
+                Button("Ajouter un cinéma") { editorOpen = true }
+                    .buttonStyle(.borderedProminent)
+            }
+            .frame(minHeight: 240)
+        } else if viewModel.loaded && viewModel.activeCount == 0 {
+            ContentUnavailableView(
+                "Aucun cinéma coché",
+                systemImage: "checklist",
+                description: Text("Cochez au moins un cinéma pour afficher ses séances.")
+            )
+            .frame(minHeight: 240)
         } else if viewModel.loaded && viewModel.mergedMovies.isEmpty {
             ContentUnavailableView(
                 "Aucune séance",
                 systemImage: "ticket",
-                description: Text(viewModel.isAdhoc
-                    ? "Rien à l'affiche ce jour-là. Vérifiez le code cinéma (ex. P0057)."
-                    : "Rien à l'affiche ce jour-là.")
+                description: Text("Rien à l'affiche ce jour-là.")
             )
             .frame(minHeight: 240)
         } else {
             LazyVStack(spacing: 12) {
                 ForEach(viewModel.mergedMovies) { movie in
-                    MovieCard(movie: movie, showTheaterName: !viewModel.isAdhoc || movie.byTheater.count > 1)
+                    MovieCard(movie: movie, showTheaterName: true)
                 }
             }
         }
@@ -348,53 +310,23 @@ private struct AllocinePoster: View {
     }
 }
 
-// MARK: - Éditeur de liste de cinémas
+// MARK: - Gestion des cinémas enregistrés (ajout / retrait)
 
-/// Contexte d'ouverture de l'éditeur (Identifiable pour `.sheet(item:)`).
-struct ListEditorConfig: Identifiable {
-    let id = UUID()
-    let listId: Int?
-    let name: String
-    let codes: [String]
-
-    init(list: TheaterList?) {
-        self.listId = list?.id
-        self.name = list?.name ?? ""
-        self.codes = list?.codes ?? []
-    }
-}
-
-private struct TheaterListEditor: View {
-    let config: ListEditorConfig
-    /// Retourne true si l'enregistrement a réussi (ferme alors la feuille).
-    let onSave: (_ name: String, _ codes: [String]) async -> Bool
+private struct FavoritesEditor: View {
+    let viewModel: ShowtimesViewModel
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name: String
-    @State private var codes: [String]
     @State private var codeInput = ""
-    @State private var saving = false
-    @State private var errorMessage: String?
+    @State private var adding = false
 
     // Un code salle Allociné valide : une lettre suivie de 3 à 5 chiffres (ex. P0057).
     private static let codePattern = try! NSRegularExpression(pattern: "^[A-Z][0-9]{3,5}$")
 
-    init(config: ListEditorConfig, onSave: @escaping (_ name: String, _ codes: [String]) async -> Bool) {
-        self.config = config
-        self.onSave = onSave
-        _name = State(initialValue: config.name)
-        _codes = State(initialValue: config.codes)
-    }
-
     var body: some View {
         NavigationStack {
             Form {
-                Section("Nom") {
-                    TextField("Mes cinémas", text: $name)
-                }
-
-                Section("Cinémas (codes Allociné)") {
+                Section("Ajouter un cinéma (code Allociné)") {
                     HStack {
                         TextField("P0057", text: $codeInput)
                             .textInputAutocapitalization(.characters)
@@ -402,38 +334,34 @@ private struct TheaterListEditor: View {
                             .submitLabel(.done)
                             .onSubmit(addCode)
                         Button("Ajouter", action: addCode)
-                            .disabled(codeInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                            .disabled(codeInput.trimmingCharacters(in: .whitespaces).isEmpty || adding)
+                    }
+                }
+
+                Section("Cinémas enregistrés") {
+                    ForEach(viewModel.favorites) { fav in
+                        Text(viewModel.codeLabel(fav.code))
+                    }
+                    .onDelete { offsets in
+                        let toRemove = offsets.map { viewModel.favorites[$0] }
+                        Task { for fav in toRemove { await viewModel.removeFavorite(fav) } }
                     }
 
-                    ForEach(codes, id: \.self) { code in
-                        Text(code)
-                    }
-                    .onDelete { codes.remove(atOffsets: $0) }
-
-                    if codes.isEmpty {
-                        Text("Ajoutez au moins un cinéma par son code (ex. P0057, C0159).")
+                    if viewModel.favorites.isEmpty {
+                        Text("Ajoutez un cinéma par son code (ex. P0057, C0159).")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
-            .navigationTitle(config.listId == nil ? "Nouvelle liste" : "Modifier la liste")
+            .navigationTitle("Mes cinémas")
             .navigationBarTitleDisplayMode(.inline)
-            .errorToast($errorMessage)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Annuler") { dismiss() }
-                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer", action: save)
-                        .disabled(!canSave || saving)
+                    Button("Fermer") { dismiss() }
                 }
             }
         }
-    }
-
-    private var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty && !codes.isEmpty
     }
 
     private func addCode() {
@@ -441,20 +369,14 @@ private struct TheaterListEditor: View {
         guard !code.isEmpty else { return }
         let range = NSRange(code.startIndex..., in: code)
         guard Self.codePattern.firstMatch(in: code, range: range) != nil else {
-            errorMessage = "Code cinéma invalide (ex. P0057)."
+            viewModel.errorMessage = "Code cinéma invalide (ex. P0057)."
             return
         }
-        if !codes.contains(code) { codes.append(code) }
-        codeInput = ""
-    }
-
-    private func save() {
-        guard canSave, !saving else { return }
-        saving = true
+        adding = true
         Task {
-            let ok = await onSave(name.trimmingCharacters(in: .whitespaces), codes)
-            saving = false
-            if ok { dismiss() }
+            let ok = await viewModel.addFavorite(code: code)
+            if ok { codeInput = "" }
+            adding = false
         }
     }
 }
