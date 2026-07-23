@@ -264,7 +264,7 @@ private struct ShowChip: View {
     private var chip: some View {
         HStack(spacing: 5) {
             Text(show.time)
-                .font(.subheadline.weight(.bold).monospacedDigit())
+                .font(.title3.weight(.bold).monospacedDigit())
             if let version = show.version {
                 tag(version, color: .secondary, bg: Color.appStroke)
             }
@@ -276,8 +276,8 @@ private struct ShowChip: View {
             }
         }
         .foregroundStyle(.primary)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 7)
         .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
             .strokeBorder(show.isPreview ? Color.appGold.opacity(0.5) : Color.appStroke,

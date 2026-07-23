@@ -72,7 +72,12 @@ final class ShowtimesViewModel {
         do {
             favorites = try await api.favoriteTheaters()
         } catch {
-            // Pas de favoris chargés : la page proposera d'en ajouter.
+            // Échec réseau : on remonte l'erreur plutôt que de la masquer, sinon la page
+            // affiche « Aucun cinéma enregistré » comme si la liste était vide alors que
+            // la requête a simplement planté (ex. serveur de dev éteint).
+            if !error.isCancellation {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
