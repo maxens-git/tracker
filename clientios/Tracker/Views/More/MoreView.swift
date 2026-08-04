@@ -34,7 +34,7 @@ struct MoreView: View {
                     subtitle: "Votre suivi en chiffres") { StatsView() }
 
                 row(icon: "gearshape", title: "Réglages",
-                    subtitle: "Thème, accueil, notifications") { SettingsView() }
+                    subtitle: "Serveur, accueil, notifications") { SettingsView() }
 
                 row(icon: "doc.text.magnifyingglass", title: "Logs",
                     subtitle: "Journal système") { LogsView() }
@@ -95,7 +95,7 @@ private struct MoreRow: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
         .contentShape(Rectangle())
-        .cinemaCard()
+        .glassPanel()
     }
 }
 

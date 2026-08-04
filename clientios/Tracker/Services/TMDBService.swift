@@ -173,6 +173,12 @@ struct TMDBService {
         return URL(string: "\(AppConfig.tmdbImageBaseURL)/\(size)\(path)")
     }
 
+    /// Photogramme d'un épisode (vignette de la liste des épisodes).
+    static func stillURL(_ path: String?, size: String = "w300") -> URL? {
+        guard let path, !path.isEmpty else { return nil }
+        return URL(string: "\(AppConfig.tmdbImageBaseURL)/\(size)\(path)")
+    }
+
     /// Photo de profil d'une personne (cast / crew).
     static func profileURL(_ path: String?, size: String = "w185") -> URL? {
         guard let path, !path.isEmpty else { return nil }

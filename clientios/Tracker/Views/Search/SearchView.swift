@@ -12,38 +12,7 @@ struct SearchView: View {
     var body: some View {
         ScrollView {
             if !viewModel.allResults.isEmpty {
-                VStack(spacing: 12) {
-                    Picker("Filtre", selection: $viewModel.filter) {
-                        Text("Tout (\(viewModel.allResults.count))").tag(MediaType?.none)
-                        Text("Films (\(viewModel.movieCount))").tag(MediaType?.some(.movie))
-                        Text("Séries (\(viewModel.showCount))").tag(MediaType?.some(.tv))
-                    }
-                    .pickerStyle(.segmented)
-
-                    Button {
-                        showingFilters = true
-                    } label: {
-                        HStack {
-                            Image(systemName: viewModel.hasActiveFilters
-                                  ? "line.3.horizontal.decrease.circle.fill"
-                                  : "line.3.horizontal.decrease.circle")
-                            Text("Filtres & tri")
-                            if viewModel.hasActiveFilters {
-                                Circle()
-                                    .fill(Color.accentColor)
-                                    .frame(width: 7, height: 7)
-                            }
-                            Spacer()
-                            Text(viewModel.sort.label)
-                                .foregroundStyle(.secondary)
-                                .font(.subheadline)
-                        }
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(viewModel.hasActiveFilters ? Color.accentColor : .primary)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding([.horizontal, .top])
+                filterBar
             }
 
             if viewModel.isLoading {
@@ -53,18 +22,7 @@ struct SearchView: View {
             } else if viewModel.results.isEmpty {
                 emptyState
             } else {
-                MediaGrid {
-                    ForEach(viewModel.results) { item in
-                        NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
-                            MediaCard(posterPath: item.posterPath,
-                                      title: item.displayTitle,
-                                      subtitle: item.year,
-                                      seen: viewModel.isSeen(item))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.vertical)
+                resultsList
             }
         }
         .background(Color.appBackground.ignoresSafeArea())
@@ -76,6 +34,118 @@ struct SearchView: View {
         .sheet(isPresented: $showingFilters) {
             SearchFiltersView(viewModel: viewModel)
         }
+    }
+
+    /// Rangée de chips de type (Tout / Films / Séries) + accès aux filtres & tri,
+    /// à la place du segmented control : même vocabulaire que le reste de l'app.
+    private var filterBar: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 9) {
+                    FilterChip(label: "Tout (\(viewModel.allResults.count))",
+                               isSelected: viewModel.filter == nil) {
+                        viewModel.filter = nil
+                    }
+                    FilterChip(label: "Films (\(viewModel.movieCount))",
+                               isSelected: viewModel.filter == .movie) {
+                        viewModel.filter = .movie
+                    }
+                    FilterChip(label: "Séries (\(viewModel.showCount))",
+                               isSelected: viewModel.filter == .tv) {
+                        viewModel.filter = .tv
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+
+            Button {
+                showingFilters = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: viewModel.hasActiveFilters
+                          ? "line.3.horizontal.decrease.circle.fill"
+                          : "line.3.horizontal.decrease.circle")
+                    Text("Filtres & tri")
+                    if viewModel.hasActiveFilters {
+                        Circle()
+                            .fill(Color.appAccent)
+                            .frame(width: 7, height: 7)
+                    }
+                    Spacer()
+                    Text(viewModel.sort.label)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(viewModel.hasActiveFilters ? Color.appAccent : .primary)
+                .padding(.horizontal, 20)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.top, 8)
+    }
+
+    /// Résultats en liste encastrée (affiche + titre + métadonnées), conformément
+    /// à la maquette : plus lisible qu'une grille quand les titres sont longs.
+    private var resultsList: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(viewModel.results.count) résultat\(viewModel.results.count > 1 ? "s" : "")")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 20)
+
+            GlassRowGroup {
+                ForEach(viewModel.results) { item in
+                    NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
+                        resultRow(item)
+                    }
+                    .buttonStyle(.plain)
+
+                    if item.id != viewModel.results.last?.id {
+                        GlassRowDivider(leadingInset: 15)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .padding(.top, 16)
+        // Le champ de recherche flotte au-dessus du contenu (iOS 26) : on
+        // dégage assez de place pour que la dernière ligne reste atteignable.
+        .padding(.bottom, 90)
+    }
+
+    private func resultRow(_ item: TMDBSearchResult) -> some View {
+        HStack(spacing: 14) {
+            PosterImage(path: item.posterPath, size: "w185")
+                .frame(width: 50, height: 74)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.displayTitle)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                Text([item.mediaType.label, item.year].compactMap { $0 }.joined(separator: " · "))
+                    .font(.system(size: 12.5, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            if viewModel.isSeen(item) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(Circle().fill(Color.appGreen))
+                    .accessibilityLabel("Déjà vu")
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.horizontal, 15)
+        .padding(.vertical, 11)
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder
@@ -150,7 +220,7 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, 14)
-            .cinemaCard()
+            .glassPanel()
         }
         .padding()
     }

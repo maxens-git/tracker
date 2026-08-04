@@ -17,14 +17,14 @@ struct PosterImage: View {
         // Color (greedy) + aspectRatio = boîte 2:3 stricte calée sur la largeur
         // proposée. L'image remplit cette boîte (scaledToFill) et le surplus est
         // découpé par le clipShape : toutes les affiches ont la même taille.
-        Color(.secondarySystemBackground)
+        Color.appSurface
             .aspectRatio(2.0 / 3.0, contentMode: .fit)
             .overlay {
                 RemoteImage(url: TMDBService.posterURL(path, size: size)) {
                     placeholderIcon
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
     }
 
     private var placeholderIcon: some View {

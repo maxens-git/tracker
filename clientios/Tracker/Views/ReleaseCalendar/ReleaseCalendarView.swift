@@ -240,7 +240,7 @@ struct ReleaseCalendarView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .contentShape(Rectangle())
-        .cinemaCard()
+        .glassPanel()
     }
 }
 

@@ -215,7 +215,7 @@ private struct LogRow: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cinemaCard()
+        .glassPanel()
     }
 
     private var httpLine: some View {

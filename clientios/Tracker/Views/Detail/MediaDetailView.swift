@@ -48,6 +48,17 @@ struct MediaDetailView: View {
             }
         }
         .toolbar {
+            // L'affiche n'apparaît plus dans l'en-tête (la bannière est pleine
+            // largeur) : elle reste accessible en plein écran depuis la barre.
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingPoster = true
+                } label: {
+                    Image(systemName: "photo")
+                }
+                .disabled(viewModel.posterPath == nil)
+                .accessibilityLabel("Voir l'affiche")
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task { await viewModel.load(forceRefresh: true) }
@@ -111,11 +122,7 @@ struct MediaDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)
         .padding(.vertical, 9)
-        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.appStroke, lineWidth: 1)
-        )
+        .glassPanel(cornerRadius: AppRadius.small)
     }
 
     private var loadingExtrasIndicator: some View {
@@ -129,126 +136,208 @@ struct MediaDetailView: View {
         .padding(.vertical, 20)
     }
 
-    // Dimensions de l'en-tête (fixes pour un chevauchement net et sans débordement).
-    // Hauteur calée sur le ratio 16:9 d'un backdrop à la largeur d'un iPhone (~220pt) :
-    // au-delà, `scaledToFill` rogne fort l'image et donne un effet « zoom ». Le backdrop
-    // démarre tout en haut de l'écran (cf. ignoresSafeArea), donc sa partie haute passe
-    // simplement derrière la barre de navigation, sans grossir l'image.
-    private let backdropHeight: CGFloat = 230
-    private let heroPosterWidth: CGFloat = 110
-    private let heroPosterHeight: CGFloat = 165
-    private let posterOverlap: CGFloat = 55   // remontée de l'affiche sur le backdrop
+    // L'image occupe tout le haut de l'écran et le texte repose dessus : pas
+    // d'affiche qui chevauche, la hiérarchie tient au dégradé et à la graisse
+    // du titre (maquette Liquid Glass 2b).
+    private let backdropHeight: CGFloat = 430
 
-    /// En-tête immersif type Infuse : grande image (backdrop) du média fondue par un
-    /// dégradé vers le fond de page, avec l'affiche qui chevauche le bas et le titre à côté.
+    /// En-tête immersif : backdrop pleine largeur fondu vers le fond de page,
+    /// surmonté du surtitre, du titre et de la ligne de métadonnées.
     private var hero: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ZStack(alignment: .bottomLeading) {
             backdropLayer
+            heroScrim
             heroInfo
-                .padding(.horizontal)
-                .padding(.top, -posterOverlap)
-        }
-    }
-
-    /// Image large TMDB cadrée en hauteur fixe, recouverte d'un dégradé qui se
-    /// fond progressivement dans `appBackground` (transition douce vers le contenu).
-    private var backdropLayer: some View {
-        AsyncImage(url: TMDBService.backdropURL(viewModel.backdropPath, size: "w780")) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            default:
-                Color(.secondarySystemBackground)
-            }
         }
         .frame(maxWidth: .infinity)
         .frame(height: backdropHeight)
         .clipped()
-        // Voile sombre en haut : lisibilité des boutons de la barre par-dessus l'image.
-        .overlay(alignment: .top) {
+    }
+
+    /// Image large TMDB cadrée en hauteur fixe.
+    ///
+    /// C'est le `Color` qui porte la taille et l'image qui est posée en overlay :
+    /// une image `scaledToFill` placée directement dans un `frame` impose sa
+    /// largeur intrinsèque au reste de la page (à 430 pt de haut, un backdrop
+    /// 16:9 fait ~760 pt de large et décentrait tout le contenu).
+    private var backdropLayer: some View {
+        Color.appSurface
+            .frame(maxWidth: .infinity)
+            .frame(height: backdropHeight)
+            .overlay {
+                // `original` : le hero est haut (430 pt) et pleine largeur, donc
+                // fortement agrandi ; une taille w780/w1280 ressort visiblement
+                // floue. L'image du hero est chargée une seule fois par fiche.
+                RemoteImage(url: TMDBService.backdropURL(viewModel.backdropPath, size: "original")) {
+                    Color.clear
+                }
+            }
+            .clipped()
+    }
+
+    /// Voile sombre en haut (lisibilité des boutons de la barre) et fondu vers
+    /// le fond de page en bas (transition douce vers le contenu).
+    private var heroScrim: some View {
+        // Deux couches : une vignette sombre (indépendante du thème) qui adosse le
+        // titre et la note — en mode clair, `appBackground` est un crème pâle sur
+        // lequel le texte blanc s'effacerait —, puis un fondu de page discret. La
+        // vignette est revenue à `clear` avant le fondu : pas de mélange boueux.
+        ZStack {
             LinearGradient(
-                colors: [.black.opacity(0.45), .clear],
+                stops: [
+                    .init(color: .black.opacity(0.4), location: 0),
+                    .init(color: .clear, location: 0.30),
+                    .init(color: .black.opacity(0.18), location: 0.58),
+                    .init(color: .black.opacity(0.52), location: 0.82),
+                    .init(color: .clear, location: 0.90)
+                ],
                 startPoint: .top, endPoint: .bottom
             )
-            .frame(height: 140)
-        }
-        // Fondu vers le fond de page en bas, pour une transition douce vers le contenu.
-        .overlay {
             LinearGradient(
-                colors: [.clear, .clear, Color.appBackground.opacity(0.7), Color.appBackground],
+                stops: [
+                    .init(color: .clear, location: 0.90),
+                    .init(color: Color.appBackground, location: 1)
+                ],
                 startPoint: .top, endPoint: .bottom
             )
         }
     }
 
-    /// Affiche (taille fixe + ombre portée) + titre / type / note, alignés en bas.
+    /// Surtitre + titre + métadonnées, calés en bas de l'image.
     private var heroInfo: some View {
-        HStack(alignment: .bottom, spacing: 14) {
-            PosterImage(path: viewModel.posterPath)
-                .frame(width: heroPosterWidth, height: heroPosterHeight)
-                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if viewModel.posterPath != nil { showingPoster = true }
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            Eyebrow(text: eyebrowText)
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(viewModel.title)
-                    .font(.display(24))
-                    .fixedSize(horizontal: false, vertical: true)
-                Label(viewModel.type.label, systemImage: viewModel.type.symbol)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                // Film : date de sortie. Série : statut terminé / en cours.
-                if let releaseDate = viewModel.releaseDateDisplay {
-                    Label(releaseDate, systemImage: "calendar")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                if let status = viewModel.showStatusLabel {
-                    Label(status, systemImage: viewModel.showIsEnded ? "checkmark.seal.fill" : "dot.radiowaves.up.forward")
-                        .font(.subheadline)
-                        .foregroundStyle(viewModel.showIsEnded ? .secondary : Color.appGreen)
-                }
-                if let rating = viewModel.rating, rating > 0 {
-                    Label(String(format: "%.1f", rating), systemImage: "star.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color.appGold)
-                }
-            }
-            .padding(.bottom, 6)
+            Text(viewModel.title)
+                .font(.display(32))
+                .foregroundStyle(.white)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 9)
+                .shadow(color: .black.opacity(0.45), radius: 16, x: 0, y: 3)
 
-            Spacer(minLength: 0)
+            metaRow
+                .padding(.top, 12)
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 22)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// « SÉRIE » / « FILM » — type du média seul. Le genre n'est pas repris ici :
+    /// il est déjà affiché en chips sous les boutons d'action.
+    private var eyebrowText: String {
+        viewModel.type.label
+    }
+
+    private var metaRow: some View {
+        let hasRating = (viewModel.rating ?? 0) > 0
+        return HStack(spacing: 9) {
+            if let rating = viewModel.rating, rating > 0 {
+                ratingPill(rating)
+            }
+            if let releaseDate = viewModel.releaseDateDisplay {
+                Text(releaseDate)
+            }
+            if let status = viewModel.showStatusLabel {
+                // Séparateur seulement entre deux textes (date • statut) : la
+                // pastille de note se suffit visuellement, pas de « • » après elle.
+                if viewModel.releaseDateDisplay != nil && !hasRating {
+                    Text("•").foregroundStyle(.white.opacity(0.35))
+                }
+                Text(status)
+                    .foregroundStyle(viewModel.showIsEnded ? .white.opacity(0.78) : Color.appGreen)
+            }
+        }
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(.white.opacity(0.78))
+    }
+
+    private func ratingPill(_ rating: Double) -> some View {
+        HStack(spacing: 3) {
+            Text("★").foregroundStyle(Color.appAccent)
+            Text(String(format: "%.1f", rating))
+                .foregroundStyle(.white)
+        }
+        .font(.system(size: 12.5, weight: .bold))
+        .padding(.horizontal, 9)
+        .padding(.vertical, 4)
+        .glassEffect(.regular, in: .capsule)
+    }
+
+    /// Rangée d'actions : un CTA rouge plein (« vu ») puis des bascules carrées
+    /// en verre, à la façon de la maquette.
     private var actions: some View {
-        HStack(spacing: 12) {
-            actionButton(title: "Vu", systemImage: viewModel.seen ? "checkmark.circle.fill" : "checkmark.circle",
-                         active: viewModel.seen) {
-                await viewModel.toggleSeen()
+        VStack(spacing: 10) {
+            Button {
+                Task { await viewModel.toggleSeen() }
+            } label: {
+                Group {
+                    if viewModel.seenPending {
+                        ProgressView()
+                            .tint(Color.appBackground)
+                    } else {
+                        Label(viewModel.seen ? "Vu" : "Marquer vu",
+                              systemImage: viewModel.seen ? "checkmark.circle.fill" : "checkmark.circle")
+                    }
+                }
+                .accentCTA()
             }
-            actionButton(title: "J'aime", systemImage: viewModel.liked ? "heart.fill" : "heart",
-                         active: viewModel.liked, tint: .red) {
-                await viewModel.toggleLiked()
-            }
-            actionButton(title: "À voir", systemImage: viewModel.inWatchlist ? "bookmark.fill" : "bookmark",
-                         active: viewModel.inWatchlist) {
-                await viewModel.toggleWatchlist()
-            }
-            actionButton(title: "Sortie", systemImage: viewModel.releaseTracked ? "bell.fill" : "bell",
-                         active: viewModel.releaseTracked, tint: .blue) {
-                await viewModel.toggleReleaseTracking()
-            }
-            if !viewModel.customLists.isEmpty {
-                actionButton(title: "Listes", systemImage: viewModel.isInAnyCustomList ? "text.badge.checkmark" : "text.badge.plus",
-                             active: viewModel.isInAnyCustomList) {
-                    showingListPicker = true
+            .buttonStyle(.plain)
+            .disabled(viewModel.seenPending)
+
+            // Les bascules secondaires occupent une seconde ligne, à parts
+            // égales : sur une seule ligne le CTA serait écrasé sur iPhone mini.
+            HStack(spacing: 10) {
+                glassToggle(title: "J'aime", systemImage: viewModel.liked ? "heart.fill" : "heart",
+                            active: viewModel.liked, tint: .appAccent, busy: viewModel.likedPending) {
+                    await viewModel.toggleLiked()
+                }
+                glassToggle(title: "À voir", systemImage: viewModel.inWatchlist ? "bookmark.fill" : "bookmark",
+                            active: viewModel.inWatchlist, tint: .appGreen, busy: viewModel.watchlistPending) {
+                    await viewModel.toggleWatchlist()
+                }
+                glassToggle(title: "Sortie", systemImage: viewModel.releaseTracked ? "bell.fill" : "bell",
+                            active: viewModel.releaseTracked, tint: .blue, busy: viewModel.releasePending) {
+                    await viewModel.toggleReleaseTracking()
+                }
+                if !viewModel.customLists.isEmpty {
+                    glassToggle(title: "Listes",
+                                systemImage: viewModel.isInAnyCustomList ? "text.badge.checkmark" : "text.badge.plus",
+                                active: viewModel.isInAnyCustomList, tint: .appGreen) {
+                        showingListPicker = true
+                    }
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 20)
         .sheet(isPresented: $showingListPicker) { listPickerSheet }
+    }
+
+    /// Bascule en verre : teintée quand l'état est actif, neutre sinon.
+    private func glassToggle(title: String, systemImage: String, active: Bool,
+                             tint: Color, busy: Bool = false,
+                             action: @escaping () async -> Void) -> some View {
+        Button {
+            Task { await action() }
+        } label: {
+            Group {
+                if busy {
+                    ProgressView()
+                        .tint(active ? tint : .primary)
+                } else {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(active ? tint : .primary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .glassEffect(active ? .regular.tint(tint.opacity(0.24)) : .regular,
+                         in: RoundedRectangle(cornerRadius: AppRadius.control, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(busy)
+        .accessibilityLabel(title)
     }
 
     /// Feuille de sélection : ajoute / retire le média de chaque liste personnalisée.
@@ -283,30 +372,6 @@ struct MediaDetailView: View {
         .presentationDetents([.medium, .large])
     }
 
-    private func actionButton(title: String, systemImage: String, active: Bool = false,
-                              tint: Color = .accentColor, action: @escaping () async -> Void) -> some View {
-        Button {
-            Task { await action() }
-        } label: {
-            VStack(spacing: 5) {
-                Image(systemName: systemImage).font(.title3)
-                Text(title).font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(active ? AnyShapeStyle(tint.opacity(0.15)) : AnyShapeStyle(.ultraThinMaterial))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(active ? tint.opacity(0.4) : Color.primary.opacity(0.06), lineWidth: 1)
-            }
-            .foregroundStyle(active ? tint : .primary)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
 
     // ── Saisons / épisodes ────────────────────────────────────────────────
 
@@ -373,7 +438,7 @@ struct MediaDetailView: View {
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(expanded ? 90 : 0))
             }
-            .cinemaCard(cornerRadius: 12, padding: 10)
+            .glassPanel(cornerRadius: AppRadius.medium, padding: 12)
             .contentShape(Rectangle())
             .onTapGesture {
                 Task { await viewModel.toggleSeason(number) }
@@ -392,38 +457,51 @@ struct MediaDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding()
         } else if let episodes = viewModel.seasonEpisodes[season], !episodes.isEmpty {
-            VStack(spacing: 0) {
+            // Un seul bloc de verre encastré pour toute la saison, lignes
+            // séparées par un filet (maquette Liquid Glass).
+            GlassRowGroup {
                 ForEach(episodes) { episode in
                     episodeRow(season: season, episode: episode)
                     if episode.id != episodes.last?.id {
-                        Divider().padding(.leading, 46)
+                        GlassRowDivider(leadingInset: 15)
                     }
                 }
             }
-            .padding(.top, 4)
+            .padding(.top, 6)
         }
     }
 
     private func episodeRow(season: Int, episode: TMDBEpisode) -> some View {
         let seen = viewModel.isEpisodeSeen(season: season, episode: episode.episodeNumber)
-        return HStack(spacing: 12) {
-            Text("\(episode.episodeNumber)")
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(width: 28, alignment: .center)
+        return HStack(spacing: 13) {
+            // Photogramme de l'épisode avec son numéro incrusté ; à défaut, une
+            // vignette neutre qui garde l'alignement de la liste.
+            Color.appSurface
+                .frame(width: 100, height: 58)
+                .overlay {
+                    RemoteImage(url: TMDBService.stillURL(episode.stillPath)) { Color.clear }
+                }
+                .overlay(alignment: .topLeading) {
+                    Text("É\(episode.episodeNumber)")
+                        .font(.system(size: 12, weight: .heavy))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.7), radius: 3, x: 0, y: 1)
+                        .padding(6)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(episode.name)
-                    .font(.subheadline)
+                    .font(.system(size: 14.5, weight: .semibold))
                     .lineLimit(1)
                 if let air = episode.airDate, !air.isEmpty {
                     Text(air + (episode.runtime.map { " · \($0) min" } ?? ""))
-                        .font(.caption2)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
             Button {
                 Task { await viewModel.toggleEpisodeSeen(season: season, episode: episode.episodeNumber) }
@@ -433,9 +511,10 @@ struct MediaDetailView: View {
                     .foregroundStyle(seen ? Color.appGreen : Color.secondary)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(seen ? "Marquer l'épisode non vu" : "Marquer l'épisode vu")
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 10)
+        .padding(.vertical, 13)
+        .padding(.horizontal, 15)
     }
 
     // ── Bandes-annonces ───────────────────────────────────────────────────

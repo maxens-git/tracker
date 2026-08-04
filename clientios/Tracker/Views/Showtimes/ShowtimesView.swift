@@ -63,7 +63,7 @@ struct ShowtimesView: View {
             dateControls
         }
         .padding(14)
-        .cinemaCard()
+        .glassPanel()
     }
 
     // Dropdown des cinémas enregistrés : chacun cochable (affiché ou non).
@@ -138,7 +138,7 @@ struct ShowtimesView: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(Color.appBackground)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(Color.appGold, in: Capsule())
+                    .background(Color.appAccent, in: Capsule())
             }
             Spacer(minLength: 0)
         }
@@ -228,29 +228,79 @@ private struct MovieCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cinemaCard()
+        .glassPanel()
     }
 
     private func theaterGroup(_ group: MovieTheaterShows) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             if showTheaterName {
                 Label(group.theater.label, systemImage: "mappin.and.ellipse")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
             }
-            FlowRow(spacing: 6) {
-                ForEach(group.shows) { show in
-                    ShowChip(show: show)
+            // Une ligne par type de séance (Normal, IMAX, Dolby…) : les horaires
+            // d'un même format se lisent d'un coup, en défilement horizontal,
+            // sans être mélangés aux autres formats.
+            ForEach(showLines(group.shows)) { line in
+                showtimeLine(line)
+            }
+        }
+    }
+
+    private func showtimeLine(_ line: ShowLine) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(line.label)
+                .font(.system(size: 10, weight: .bold))
+                .textCase(.uppercase)
+                .foregroundStyle(line.isPremium ? Color.appAccent : .secondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(line.shows) { show in
+                        TimeChip(show: show)
+                    }
                 }
             }
         }
     }
+
+    /// Regroupe les séances par type de format (Normal / IMAX / Dolby…), chaque
+    /// groupe trié par heure. « Normal » (sans format premium) toujours en tête.
+    private func showLines(_ shows: [Showtime]) -> [ShowLine] {
+        var order: [String] = []
+        var buckets: [String: [Showtime]] = [:]
+        for show in shows {
+            let key = show.formats.isEmpty
+                ? "" : show.formats.map(formatLabel).joined(separator: " ")
+            if buckets[key] == nil { order.append(key); buckets[key] = [] }
+            buckets[key]?.append(show)
+        }
+        return order
+            .map { key in
+                ShowLine(id: key.isEmpty ? "Normal" : key,
+                         label: key.isEmpty ? "Normal" : key,
+                         isPremium: !key.isEmpty,
+                         shows: (buckets[key] ?? []).sorted { $0.time < $1.time })
+            }
+            .sorted { a, b in
+                if a.isPremium != b.isPremium { return !a.isPremium }  // Normal d'abord
+                return a.label < b.label
+            }
+    }
+}
+
+/// Un type de séance (Normal / IMAX / Dolby…) et ses horaires pour un cinéma.
+private struct ShowLine: Identifiable {
+    let id: String
+    let label: String
+    let isPremium: Bool
+    let shows: [Showtime]
 }
 
 // MARK: - Chip séance
 
-private struct ShowChip: View {
+private struct TimeChip: View {
     let show: Showtime
 
     var body: some View {
@@ -268,9 +318,6 @@ private struct ShowChip: View {
             if let version = show.version {
                 tag(version, color: .secondary, bg: Color.appStroke)
             }
-            ForEach(show.formats, id: \.self) { fmt in
-                tag(formatLabel(fmt), color: Color.appGold, bg: Color.appGold.opacity(0.16))
-            }
             if show.isPreview {
                 tag("AP", color: .red, bg: Color.red.opacity(0.14))
             }
@@ -280,7 +327,7 @@ private struct ShowChip: View {
         .padding(.vertical, 7)
         .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .strokeBorder(show.isPreview ? Color.appGold.opacity(0.5) : Color.appStroke,
+            .strokeBorder(show.isPreview ? Color.appAccent.opacity(0.5) : Color.appStroke,
                           style: StrokeStyle(lineWidth: 1, dash: show.isPreview ? [3] : [])))
     }
 

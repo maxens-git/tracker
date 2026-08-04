@@ -63,7 +63,7 @@ struct ActivityView: View {
                 }
             }
         }
-        .cinemaCard()
+        .glassPanel()
         .padding(.horizontal)
     }
 

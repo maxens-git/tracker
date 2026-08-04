@@ -41,10 +41,15 @@ final class TorrentsViewModel {
     private(set) var unlockingLink: String?
     private(set) var resolvingAll = false
     private(set) var resolved: [String: String] = [:]
+    /// Fichiers cochés (par lien verrouillé) pour la copie groupée. Un lien
+    /// fraîchement résolu y est ajouté automatiquement ; l'utilisateur peut
+    /// ensuite décocher ce qu'il ne veut pas copier.
+    var selectedLinks: Set<String> = []
 
     // ── Marque-pages ─────────────────────────────────────────────────────────
-    /// Onglet courant (résultats / marque-pages).
-    var tab: TorrentsTab = .results
+    /// Onglet courant (résultats / marque-pages). On ouvre sur les marque-pages ;
+    /// une recherche bascule automatiquement vers les résultats (cf. `search()`).
+    var tab: TorrentsTab = .bookmarks
     private(set) var bookmarks: [TorrentBookmark] = []
     /// Magnet du marque-page en cours d'ajout/suppression (spinner de la ligne).
     private(set) var bookmarkingMagnet: String?
@@ -55,6 +60,17 @@ final class TorrentsViewModel {
     var totalDebridSize: Int64 { debridFiles.reduce(0) { $0 + $1.size } }
     var resolvedCount: Int { debridFiles.filter { resolved[$0.link] != nil }.count }
     var hasUnresolved: Bool { debridFiles.contains { resolved[$0.link] == nil } }
+
+    /// Liens verrouillés déjà résolus, dans l'ordre des fichiers.
+    private var resolvedFileKeys: [String] { debridFiles.map(\.link).filter { resolved[$0] != nil } }
+    /// Nombre de fichiers cochés.
+    var selectedCount: Int { selectedLinks.count }
+    /// Vrai quand tous les fichiers résolus sont cochés.
+    var allResolvedSelected: Bool {
+        let keys = resolvedFileKeys
+        return !keys.isEmpty && selectedLinks.isSuperset(of: keys)
+    }
+    func isSelected(_ file: DebridFile) -> Bool { selectedLinks.contains(file.link) }
 
     var selectedCategoryName: String {
         guard let id = selectedCategory,
@@ -89,6 +105,8 @@ final class TorrentsViewModel {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty, !isLoading else { return }
 
+        // Une recherche amène toujours sur l'onglet des résultats.
+        tab = .results
         isLoading = true
         hasSearched = true
         errorMessage = nil
@@ -128,6 +146,7 @@ final class TorrentsViewModel {
             debridTorrent = torrent
             debridFiles = result.files
             resolved = [:]
+            selectedLinks = []
             unlockingLink = nil
             showingDebrid = true
             Haptics.success()
@@ -146,6 +165,7 @@ final class TorrentsViewModel {
         do {
             let res = try await api.unlockLink(file.link)
             resolved[file.link] = res.directLink
+            selectedLinks.insert(file.link)   // coché par défaut, décochable ensuite
             Haptics.success()
         } catch {
             errorMessage = error.localizedDescription
@@ -164,6 +184,7 @@ final class TorrentsViewModel {
             unlockingLink = file.link
             if let res = try? await api.unlockLink(file.link) {
                 resolved[file.link] = res.directLink
+                selectedLinks.insert(file.link)   // coché par défaut, décochable ensuite
             }
         }
         unlockingLink = nil
@@ -183,8 +204,32 @@ final class TorrentsViewModel {
         Haptics.success()
     }
 
-    func copyAll() {
-        let links = debridFiles.compactMap { resolved[$0.link] }
+    // ── Sélection multiple ─────────────────────────────────────────────────
+
+    /// Coche / décoche un fichier (uniquement s'il est déjà résolu).
+    func toggleSelection(_ file: DebridFile) {
+        guard resolved[file.link] != nil else { return }
+        if selectedLinks.contains(file.link) {
+            selectedLinks.remove(file.link)
+        } else {
+            selectedLinks.insert(file.link)
+        }
+    }
+
+    /// Coche tout / décoche tout (parmi les fichiers résolus).
+    func toggleSelectAll() {
+        if allResolvedSelected {
+            selectedLinks.removeAll()
+        } else {
+            selectedLinks = Set(resolvedFileKeys)
+        }
+    }
+
+    /// Copie les liens directs des fichiers cochés, un par ligne.
+    func copySelected() {
+        let links = debridFiles
+            .filter { selectedLinks.contains($0.link) }
+            .compactMap { resolved[$0.link] }
         guard !links.isEmpty else { return }
         UIPasteboard.general.string = links.joined(separator: "\n")
         Haptics.success()

@@ -4,6 +4,10 @@
 //
 //  Conteneur principal : barre d'onglets (Accueil / Recherche / Listes / Stats).
 //
+//  La barre d'onglets est la capsule de verre native d'iOS 26 : elle flotte
+//  au-dessus du contenu et se réduit au défilement vers le bas pour laisser
+//  respirer les affiches (cf. maquette Liquid Glass).
+//
 
 import SwiftUI
 
@@ -45,6 +49,7 @@ struct RootView: View {
                 }
             }
         }
+        .tabBarMinimizeBehavior(.onScrollDown)
         // Applique au lancement la config TMDB éventuellement surchargée dans les
         // réglages (clé / URL / langue), pour que l'accueil l'utilise directement.
         .task {

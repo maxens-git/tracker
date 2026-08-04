@@ -104,20 +104,20 @@ struct TorrentsView: View {
             Text(label).font(.subheadline.weight(.medium)).lineLimit(1)
             Image(systemName: "chevron.down").font(.caption2)
         }
-        .foregroundStyle(active ? Color.appGold : .primary)
+        .foregroundStyle(active ? Color.appAccent : .primary)
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         .frame(maxWidth: .infinity)
         .background(Color.appSurface, in: Capsule())
-        .overlay(Capsule().strokeBorder(active ? Color.appGold.opacity(0.4) : Color.appStroke, lineWidth: 1))
+        .overlay(Capsule().strokeBorder(active ? Color.appAccent.opacity(0.4) : Color.appStroke, lineWidth: 1))
     }
 
     // ── Onglet Résultats / Marque-pages ──────────────────────────────────────
 
     private var tabPicker: some View {
         Picker("Affichage", selection: $viewModel.tab) {
-            Text("Résultats").tag(TorrentsTab.results)
             Text("Marque-pages").tag(TorrentsTab.bookmarks)
+            Text("Résultats").tag(TorrentsTab.results)
         }
         .pickerStyle(.segmented)
         .padding(.horizontal)
@@ -190,7 +190,7 @@ struct TorrentsView: View {
             List {
                 Section {
                     Button("Tous les indexeurs") { viewModel.selectedIndexers = [] }
-                        .foregroundStyle(viewModel.selectedIndexers.isEmpty ? Color.appGold : .primary)
+                        .foregroundStyle(viewModel.selectedIndexers.isEmpty ? Color.appAccent : .primary)
                 }
                 Section {
                     ForEach(viewModel.indexers) { indexer in
@@ -201,7 +201,7 @@ struct TorrentsView: View {
                                 Text(indexer.name).foregroundStyle(.primary)
                                 Spacer()
                                 if viewModel.selectedIndexers.contains(indexer.id) {
-                                    Image(systemName: "checkmark").foregroundStyle(Color.appGold)
+                                    Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
                                 }
                             }
                         }
@@ -260,7 +260,7 @@ private struct TorrentRow: View {
                 bookmarkButton
             }
         }
-        .cinemaCard(padding: 14)
+        .glassPanel(padding: 14)
     }
 
     private func meta(icon: String, text: String) -> some View {
@@ -285,7 +285,7 @@ private struct TorrentRow: View {
             .foregroundStyle(.black)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .background(Color.appGold, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(viewModel.debridingMagnet != nil)
@@ -308,13 +308,13 @@ private struct TorrentRow: View {
                 }
             }
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(bookmarked ? Color.appGold : .primary)
+            .foregroundStyle(bookmarked ? Color.appAccent : .primary)
             .frame(width: 48)
             .padding(.vertical, 10)
             .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                    .strokeBorder(bookmarked ? Color.appGold.opacity(0.4) : Color.appStroke, lineWidth: 1)
+                    .strokeBorder(bookmarked ? Color.appAccent.opacity(0.4) : Color.appStroke, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

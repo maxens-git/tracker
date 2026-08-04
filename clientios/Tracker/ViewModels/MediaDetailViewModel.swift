@@ -30,6 +30,10 @@ final class MediaDetailViewModel {
     private(set) var isLoading = false
     private(set) var releaseTracked = false
     private(set) var releasePending = false
+    /// Requêtes en cours pour les actions principales (spinner + anti double-tap).
+    private(set) var seenPending = false
+    private(set) var watchlistPending = false
+    private(set) var likedPending = false
     /// Chargement du contenu secondaire (distribution, équipe, bandes-annonces, similaires).
     private(set) var isLoadingExtras = false
     var errorMessage: String?
@@ -197,7 +201,10 @@ final class MediaDetailViewModel {
     // ── Actions (optimistes) ──────────────────────────────────────────────
 
     func toggleSeen() async {
+        guard !seenPending else { return }
         let newValue = !seen
+        seenPending = true
+        defer { seenPending = false }
 
         // Séries : marquer la série « vue » doit propager à toutes ses saisons/épisodes
         // (et inversement pour « non vue »), via l'endpoint dédié /Shows/{id}/seen.
@@ -255,7 +262,10 @@ final class MediaDetailViewModel {
     }
 
     func toggleLiked() async {
+        guard !likedPending else { return }
         let newValue = !liked
+        likedPending = true
+        defer { likedPending = false }
         applyLocalState(seen: seen, liked: newValue)
         do {
             try await api.markLiked(tmdbId: tmdbId, type: type, liked: newValue, posterPath: posterPath)
@@ -269,8 +279,11 @@ final class MediaDetailViewModel {
 
     /// Ajoute / retire le média de la watchlist (mise à jour optimiste).
     func toggleWatchlist() async {
+        guard !watchlistPending else { return }
         let adding = !inWatchlist
         let previous = state
+        watchlistPending = true
+        defer { watchlistPending = false }
         setWatchlistMembership(adding)
         do {
             if adding {

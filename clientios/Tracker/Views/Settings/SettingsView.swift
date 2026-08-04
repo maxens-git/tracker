@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.openURL) private var openURL
-    @AppStorage(AppStorageKeys.theme) private var theme: AppTheme = .system
     @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
     @AppStorage(AppStorageKeys.useDevServer) private var useDevServer = false
     @State private var ntfyEnabled = false
@@ -52,15 +51,6 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Apparence") {
-                Picker("Thème", selection: $theme) {
-                    ForEach(AppTheme.allCases) { option in
-                        Text(option.label).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
-
             Section {
                 Picker("Serveur", selection: $useDevServer) {
                     Text("Production").tag(false)
@@ -205,9 +195,6 @@ struct SettingsView: View {
         .task { await loadRemoteSettings() }
         // Rechargement des réglages distants après une bascule de serveur.
         .onChange(of: useDevServer) { Task { await loadRemoteSettings() } }
-        // Réappliqué ici pour que le changement de thème soit visible
-        // immédiatement dans cet écran, sans attendre un retour à la racine.
-        .preferredColorScheme(theme.colorScheme)
     }
 
     private func loadRemoteSettings() async {

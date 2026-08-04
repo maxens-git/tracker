@@ -10,7 +10,7 @@ struct StatsView: View {
     @State private var viewModel = StatsViewModel()
 
     // Couleurs des catégories (alignées avec la légende).
-    private let movieColor = Color.appGold
+    private let movieColor = Color.appAccent
     private let episodeColor = Color.appGreen
 
     var body: some View {
@@ -76,7 +76,7 @@ struct StatsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .cinemaCard()
+        .glassPanel()
     }
 }
 
@@ -97,6 +97,7 @@ private struct GenrePreferenceCard: View {
     private static let collapsedCount = 7
     @State private var showAll = false
     @State private var mode: GenreMode = .titles
+    @State private var showingModeInfo = false
 
     private let colors: [Color] = [
         Color(hex: 0xE89A63),
@@ -137,7 +138,20 @@ private struct GenrePreferenceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SectionHeader("Genres préférés")
+            HStack(spacing: 6) {
+                SectionHeader("Genres préférés")
+                Button {
+                    showingModeInfo = true
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Différence entre « Par titre » et « Répartition »")
+                .popover(isPresented: $showingModeInfo) { modeInfoPopover }
+                Spacer(minLength: 0)
+            }
 
             if lists.count > 1 {
                 listDropdown
@@ -173,8 +187,35 @@ private struct GenrePreferenceCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .cinemaCard()
+        .glassPanel()
         .onChange(of: selectedListId) { showAll = false }
+    }
+
+    /// Explication des deux modes de calcul des pourcentages de genres.
+    private var modeInfoPopover: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            modeInfoLine(
+                title: "Par titre",
+                text: "Pourcentage de vos titres classés dans ce genre. Un titre à plusieurs genres compte dans chacun, donc le total dépasse 100 %.")
+            modeInfoLine(
+                title: "Répartition",
+                text: "Part de ce genre parmi tous les genres cumulés. Le total fait 100 %.")
+        }
+        .padding(18)
+        .frame(width: 290)
+        .presentationCompactAdaptation(.popover)
+    }
+
+    private func modeInfoLine(title: String, text: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     /// Dropdown de sélection de liste (menu natif iOS).
@@ -280,7 +321,7 @@ private struct ActivityChart: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .cinemaCard()
+        .glassPanel()
     }
 
     private var chart: some View {

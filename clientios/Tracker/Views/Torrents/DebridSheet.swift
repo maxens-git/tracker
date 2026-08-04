@@ -67,7 +67,7 @@ struct DebridSheet: View {
     // ── Actions groupées ─────────────────────────────────────────────────────
 
     private var bulkActions: some View {
-        HStack(spacing: 10) {
+        VStack(spacing: 10) {
             if viewModel.hasUnresolved {
                 Button {
                     Task { await viewModel.resolveAll() }
@@ -85,26 +85,43 @@ struct DebridSheet: View {
                     .foregroundStyle(.black)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.appGold, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+                    .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .disabled(viewModel.unlockingLink != nil)
             }
 
             if viewModel.resolvedCount > 0 {
-                Button {
-                    viewModel.copyAll()
-                } label: {
-                    Label("Copier", systemImage: "doc.on.doc")
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                            .strokeBorder(Color.appStroke, lineWidth: 1))
+                HStack(spacing: 10) {
+                    Button {
+                        viewModel.toggleSelectAll()
+                    } label: {
+                        Label(viewModel.allResolvedSelected ? "Tout décocher" : "Tout cocher",
+                              systemImage: viewModel.allResolvedSelected ? "checklist.unchecked" : "checklist.checked")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                                .strokeBorder(Color.appStroke, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        viewModel.copySelected()
+                    } label: {
+                        Label(viewModel.selectedCount > 0 ? "Copier (\(viewModel.selectedCount))" : "Copier",
+                              systemImage: "doc.on.doc")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.selectedCount == 0 || viewModel.resolvingAll)
+                    .opacity(viewModel.selectedCount == 0 ? 0.5 : 1)
                 }
-                .buttonStyle(.plain)
-                .disabled(viewModel.resolvingAll)
             }
         }
     }
@@ -132,14 +149,27 @@ private struct DebridFileRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 8) {
+                // Case à cocher pour la copie groupée, une fois le lien résolu.
+                if directLink != nil {
+                    Button {
+                        viewModel.toggleSelection(file)
+                    } label: {
+                        Image(systemName: viewModel.isSelected(file) ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(viewModel.isSelected(file) ? Color.appAccent : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(viewModel.isSelected(file) ? "Décocher" : "Cocher")
+                }
+
                 let ext = file.filename.fileExtensionUppercased
                 if !ext.isEmpty {
                     Text(ext)
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(Color.appGold)
+                        .foregroundStyle(Color.appAccent)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
-                        .background(Color.appGold.opacity(0.12), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                        .background(Color.appAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(file.filename.isEmpty ? "Fichier" : file.filename)
@@ -155,7 +185,7 @@ private struct DebridFileRow: View {
 
             actions
         }
-        .cinemaCard(padding: 12)
+        .glassPanel(padding: 12)
     }
 
     @ViewBuilder
@@ -179,7 +209,7 @@ private struct DebridFileRow: View {
                         .foregroundStyle(.black)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
-                        .background(Color.appGold, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+                        .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
                 }
             }
             .font(.subheadline.weight(.semibold))

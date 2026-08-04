@@ -34,7 +34,7 @@ struct MonthCalendarView: View {
             daysGrid
         }
         .padding(12)
-        .cinemaCard()
+        .glassPanel()
     }
 
     private var header: some View {
