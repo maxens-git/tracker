@@ -106,7 +106,7 @@
     span {
       display: block;
       height: 100%;
-      background: #22c55e;
+      background: var(--success);
       border-radius: 0 2px 2px 0;
       transition: width 0.25s ease;
     }

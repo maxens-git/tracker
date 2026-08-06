@@ -1,224 +1,139 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'primeicons/primeicons.css';
 
-@font-face {
-  font-family: "Bricolage Grotesque";
-  font-style: normal;
-  font-weight: 500 800;
-  font-display: swap;
-  src: url("/fonts/bricolage-grotesque-latin.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: "Bricolage Grotesque";
-  font-style: normal;
-  font-weight: 500 800;
-  font-display: swap;
-  src: url("/fonts/bricolage-grotesque-latin-ext.woff2") format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: "Manrope";
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url("/fonts/manrope-latin.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: "Manrope";
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url("/fonts/manrope-latin-ext.woff2") format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
 /* ===========================================================================
-   Design system — "Tracker"
+   Design system — aligné sur le thème PrimeNG Aura par défaut.
+   Les variables reprennent les tokens Aura (emerald / slate / zinc) pour que
+   les composants PrimeNG et le CSS maison partagent exactement la même base.
    Thèmes clair/sombre pilotés par data-theme sur <html>.
    =========================================================================== */
 :root {
   color-scheme: light;
 
-  --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Bricolage Grotesque", var(--font-body);
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-body);
 
-  /* Fonds — papier / ticket */
-  --bg: #e7e3da;
-  --bg-elevated: #f1eee7;
-  --surface: #f5f2ec;
-  --surface-2: #e0dcd2;
-  --surface-3: #d4cfc3;
-  --surface-hover: rgba(20, 18, 14, 0.06);
-  --surface-glass: rgba(245, 242, 236, 0.82);
-  --surface-glass-strong: rgba(245, 242, 236, 0.96);
-  --surface-overlay: rgba(245, 242, 236, 0.97);
-  --scrim: rgba(15, 13, 11, 0.44);
+  /* Fonds — surface Aura (slate) */
+  --bg: #f8fafc;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --surface-hover: #f1f5f9;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --surface-glass-strong: rgba(255, 255, 255, 0.96);
+  --surface-overlay: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.4);
 
-  /* Bordures — encre franche */
-  --border: rgba(20, 18, 14, 0.18);
-  --border-strong: rgba(20, 18, 14, 0.5);
+  /* Bordures */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
 
   /* Texte */
-  --text: #15130d;
-  --muted: #54504a;
-  --faint: #8a8479;
+  --text: #334155;
+  --muted: #64748b;
+  --faint: #94a3b8;
 
-  /* Accent — or (couleur historique) */
-  --accent: #b87524;
-  --accent-rgb: 184, 117, 36;
-  --accent-hover: #9d621d;
-  --accent-contrast: #fffaf2;
+  /* Accent — doré de clientios (Color.appAccent #E7B766), assombri ici : la teinte
+     pleine sert souvent de couleur de texte, illisible sur fond clair. */
+  --accent: #9a6b18;
+  --accent-rgb: 154, 107, 24;
+  --accent-hover: #775213;
+  --accent-contrast: #ffffff;
   --accent-soft: rgba(var(--accent-rgb), 0.12);
   --accent-grad: var(--accent);
   --accent-glow: none;
 
   /* Couleurs sémantiques */
-  --like: #d5345f;
-  --like-rgb: 213, 52, 95;
-  --watch: #b87524;
-  --watch-rgb: 184, 117, 36;
-  --success: #338253;
-  --success-rgb: 51, 130, 83;
-  --success-contrast: #fffaf2;
-  --danger: #c93642;
-  --danger-rgb: 201, 54, 66;
-  --chart-blue: #2d75d4;
-  --chart-blue-rgb: 45, 117, 212;
-  --rating-bg: rgba(245, 242, 236, 0.85);
-  --rating-text: #74451d;
-  --inverse-text: #f5f2ec;
-  --progress-track: rgba(20, 18, 14, 0.12);
-  --hero-home-overlay: linear-gradient(to right, rgba(231, 227, 218, 0.98) 0%, rgba(231, 227, 218, 0.82) 45%, rgba(231, 227, 218, 0.16) 100%);
+  --like: #f43f5e;
+  --like-rgb: 244, 63, 94;
+  --watch: #f59e0b;
+  --watch-rgb: 245, 158, 11;
+  /* Vert « vu » aligné sur Color.appGreen de clientios (#82C79A). */
+  --success: #82c79a;
+  --success-rgb: 130, 199, 154;
+  --success-contrast: #052e16;
+  --danger: #ef4444;
+  --danger-rgb: 239, 68, 68;
+  --chart-blue: #3b82f6;
+  --chart-blue-rgb: 59, 130, 246;
+  --rating-bg: rgba(255, 255, 255, 0.9);
+  --rating-text: #b45309;
+  --inverse-text: #ffffff;
+  --progress-track: #e2e8f0;
+  --hero-home-overlay: linear-gradient(to right, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.82) 45%, rgba(248, 250, 252, 0.16) 100%);
   --detail-overlay:
-    linear-gradient(to right, rgba(231, 227, 218, 0.98) 0%, rgba(231, 227, 218, 0.86) 48%, rgba(231, 227, 218, 0.36) 100%),
-    linear-gradient(to top, rgba(231, 227, 218, 0.96) 0%, rgba(231, 227, 218, 0.1) 70%),
-    linear-gradient(to bottom, rgba(231, 227, 218, 0.2), var(--bg) 720px);
+    linear-gradient(to right, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.86) 48%, rgba(248, 250, 252, 0.36) 100%),
+    linear-gradient(to top, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.1) 70%),
+    linear-gradient(to bottom, rgba(248, 250, 252, 0.2), var(--bg) 720px);
 
-  /* Rayons — francs, presque carrés */
-  --r-sm: 2px;
-  --r-md: 3px;
-  --r-lg: 4px;
-  --r-pill: 3px;
+  /* Rayons — border-radius Aura */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-pill: 9999px;
 
-  /* Ombres — aplats, décalage franc (pas de flou) */
-  --shadow-1: none;
-  --shadow-2: 5px 5px 0 rgba(15, 13, 11, 0.16);
+  /* Ombres — douces, standard */
+  --shadow-1: 0 1px 2px rgba(18, 18, 23, 0.05);
+  --shadow-2: 0 4px 12px rgba(18, 18, 23, 0.1);
 
   /* Layout */
   --nav-h: 60px;
   --sidebar-w: 236px;
-
-  /* PrimeNG semantic tokens */
-  --p-primary-color: var(--accent);
-  --p-primary-hover-color: var(--accent-hover);
-  --p-primary-active-color: #74451d;
-  --p-primary-contrast-color: var(--accent-contrast);
-  --p-content-background: var(--surface);
-  --p-content-color: var(--text);
-  --p-content-border-color: var(--border);
-  --p-surface-0: #ffffff;
-  --p-surface-50: #f4f2ec;
-  --p-surface-100: #e7e4dc;
-  --p-surface-200: #d3cfc5;
-  --p-surface-300: #b5b1a7;
-  --p-surface-400: #928e86;
-  --p-surface-500: #6d6a63;
-  --p-surface-600: #55524c;
-  --p-surface-700: #3d3b36;
-  --p-surface-800: #292723;
-  --p-surface-900: #1a1815;
-  --p-surface-950: #0d0c0a;
-  --p-inputtext-background: var(--surface);
-  --p-inputtext-filled-background: var(--surface);
-  --p-inputtext-filled-hover-background: var(--surface-2);
-  --p-inputtext-filled-focus-background: var(--surface);
-  --p-inputtext-color: var(--text);
-  --p-inputtext-placeholder-color: var(--faint);
-  --p-inputtext-border-color: var(--border);
-  --p-inputtext-hover-border-color: var(--border-strong);
-  --p-inputtext-focus-border-color: var(--accent);
-  --p-button-primary-background: var(--accent);
-  --p-button-primary-hover-background: var(--accent-hover);
-  --p-button-primary-active-background: var(--accent-hover);
-  --p-button-primary-color: var(--accent-contrast);
-  --p-button-primary-border-color: transparent;
-  --p-button-outlined-secondary-color: var(--muted);
-  --p-button-outlined-secondary-border-color: var(--border);
-  --p-drawer-background: var(--bg-elevated);
-  --p-drawer-color: var(--text);
-  --p-drawer-border-color: var(--border);
-  --p-toggleswitch-checked-background: var(--accent);
-  --p-toggleswitch-checked-hover-background: var(--accent-hover);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0d0d0f;
-  --bg-elevated: #08080a;
-  --surface: #151519;
-  --surface-2: #1d1d22;
-  --surface-3: #26262c;
-  --surface-hover: rgba(255, 255, 255, 0.05);
-  --surface-glass: rgba(13, 13, 15, 0.62);
-  --surface-glass-strong: rgba(21, 21, 25, 0.94);
-  --surface-overlay: rgba(21, 21, 25, 0.97);
-  --scrim: rgba(0, 0, 0, 0.66);
+  /* Surface Aura sombre (zinc) */
+  --bg: #09090b;
+  --bg-elevated: #18181b;
+  --surface: #18181b;
+  --surface-2: #27272a;
+  --surface-3: #3f3f46;
+  --surface-hover: #27272a;
+  --surface-glass: rgba(9, 9, 11, 0.72);
+  --surface-glass-strong: rgba(24, 24, 27, 0.96);
+  --surface-overlay: #18181b;
+  --scrim: rgba(0, 0, 0, 0.6);
 
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.32);
+  --border: #3f3f46;
+  --border-strong: #52525b;
 
-  --text: #e9e5db;
-  --muted: #9a958a;
-  --faint: #67635b;
+  --text: #ffffff;
+  --muted: #a1a1aa;
+  --faint: #71717a;
 
+  /* Sur fond sombre, la teinte clientios pleine passe telle quelle. */
   --accent: #e7b766;
   --accent-rgb: 231, 183, 102;
-  --accent-hover: #f1c979;
-  --accent-contrast: #1c150b;
-  --accent-soft: rgba(var(--accent-rgb), 0.12);
+  --accent-hover: #eac17b;
+  --accent-contrast: #47310b;
+  --accent-soft: rgba(var(--accent-rgb), 0.16);
 
-  --like: #ff4d6d;
-  --like-rgb: 255, 77, 109;
-  --watch: #e7b766;
-  --watch-rgb: 231, 183, 102;
+  --like: #fb7185;
+  --like-rgb: 251, 113, 133;
+  --watch: #fbbf24;
+  --watch-rgb: 251, 191, 36;
   --success: #82c79a;
   --success-rgb: 130, 199, 154;
-  --success-contrast: #102016;
-  --danger: #ff5a5f;
-  --danger-rgb: 255, 90, 95;
-  --chart-blue: #0080ff;
-  --chart-blue-rgb: 0, 128, 255;
-  --rating-bg: rgba(8, 8, 10, 0.78);
-  --rating-text: #f0d9a8;
+  --success-contrast: #052e16;
+  --danger: #f87171;
+  --danger-rgb: 248, 113, 113;
+  --chart-blue: #60a5fa;
+  --chart-blue-rgb: 96, 165, 250;
+  --rating-bg: rgba(9, 9, 11, 0.78);
+  --rating-text: #fcd34d;
   --inverse-text: #ffffff;
-  --progress-track: rgba(255, 255, 255, 0.08);
-  --hero-home-overlay: linear-gradient(to right, rgba(13, 13, 15, 0.97) 0%, rgba(13, 13, 15, 0.86) 48%, rgba(13, 13, 15, 0.46) 100%);
+  --progress-track: #27272a;
+  --hero-home-overlay: linear-gradient(to right, rgba(9, 9, 11, 0.97) 0%, rgba(9, 9, 11, 0.86) 48%, rgba(9, 9, 11, 0.46) 100%);
   --detail-overlay:
-    linear-gradient(to right, rgba(13, 13, 15, 0.98) 0%, rgba(13, 13, 15, 0.86) 48%, rgba(13, 13, 15, 0.48) 100%),
-    linear-gradient(to top, rgba(13, 13, 15, 0.97) 0%, rgba(13, 13, 15, 0.14) 70%),
-    linear-gradient(to bottom, rgba(13, 13, 15, 0.2), var(--bg) 720px);
+    linear-gradient(to right, rgba(9, 9, 11, 0.98) 0%, rgba(9, 9, 11, 0.86) 48%, rgba(9, 9, 11, 0.48) 100%),
+    linear-gradient(to top, rgba(9, 9, 11, 0.97) 0%, rgba(9, 9, 11, 0.14) 70%),
+    linear-gradient(to bottom, rgba(9, 9, 11, 0.2), var(--bg) 720px);
 
-  --shadow-1: none;
-  --shadow-2: 6px 6px 0 rgba(0, 0, 0, 0.55);
-
-  --p-primary-active-color: #d39a4a;
-  --p-surface-50: #f2f0ec;
-  --p-surface-100: #dcdad5;
-  --p-surface-200: #bcbab4;
-  --p-surface-300: #97958f;
-  --p-surface-400: #757370;
-  --p-surface-500: #5c5a57;
-  --p-surface-600: #45433f;
-  --p-surface-700: #2e2c2a;
-  --p-surface-800: #1d1d22;
-  --p-surface-900: #151519;
-  --p-surface-950: #08080a;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 * { box-sizing: border-box; }
@@ -237,32 +152,6 @@ html, body {
 }
 
 body {
-  --p-primary-color: var(--accent);
-  --p-primary-hover-color: var(--accent-hover);
-  --p-primary-active-color: var(--accent-hover);
-  --p-primary-contrast-color: var(--accent-contrast);
-  --p-content-background: var(--surface);
-  --p-content-color: var(--text);
-  --p-content-border-color: var(--border);
-  --p-inputtext-background: var(--surface);
-  --p-inputtext-filled-background: var(--surface);
-  --p-inputtext-filled-hover-background: var(--surface-2);
-  --p-inputtext-filled-focus-background: var(--surface);
-  --p-inputtext-color: var(--text);
-  --p-inputtext-placeholder-color: var(--faint);
-  --p-inputtext-border-color: var(--border);
-  --p-inputtext-hover-border-color: var(--border-strong);
-  --p-inputtext-focus-border-color: var(--accent);
-  --p-button-primary-background: var(--accent);
-  --p-button-primary-hover-background: var(--accent-hover);
-  --p-button-primary-active-background: var(--accent-hover);
-  --p-button-primary-color: var(--accent-contrast);
-  --p-button-primary-border-color: transparent;
-  --p-drawer-background: var(--bg-elevated);
-  --p-drawer-color: var(--text);
-  --p-drawer-border-color: var(--border);
-  --p-toggleswitch-checked-background: var(--accent);
-  --p-toggleswitch-checked-hover-background: var(--accent-hover);
   background: var(--bg);
 }
 
@@ -291,121 +180,14 @@ img { display: block; }
 }
 *::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-.p-component,
-.p-inputtext,
-.p-button {
-  font-family: var(--font-body);
-}
-
+/* Les composants PrimeNG gardent le rendu Aura par défaut ; on se limite ici
+   aux ajustements de mise en page. */
 .p-inputtext {
   width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-  border-color: var(--border) !important;
-  background: var(--surface) !important;
-  color: var(--text) !important;
-}
-
-.p-inputtext::placeholder {
-  color: var(--faint) !important;
-}
-
-.p-inputtext:enabled:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.45) !important;
-}
-
-.p-button {
-  font-weight: 800;
-}
-
-.p-button:not(.p-button-text):not(.p-button-outlined) {
-  box-shadow: none;
-}
-
-.p-button.p-button-secondary.p-button-text {
-  color: var(--muted);
-}
-
-.p-button.p-button-secondary.p-button-text:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.p-button.p-button-outlined {
-  border-color: var(--border) !important;
-  color: var(--muted) !important;
-  background: var(--surface-glass) !important;
-}
-
-.p-button.p-button-outlined:hover {
-  border-color: var(--border-strong) !important;
-  color: var(--text) !important;
-  background: var(--surface-hover) !important;
-}
-
-.p-button:not(.p-button-outlined):not(.p-button-text) {
-  border-color: transparent !important;
-  background: var(--accent) !important;
-  color: var(--accent-contrast) !important;
-  transition: background 0.12s ease;
-}
-
-.p-button:not(.p-button-outlined):not(.p-button-text):hover {
-  background: var(--accent-hover) !important;
-}
-
-.p-button:not(.p-button-outlined):not(.p-button-text):active {
-  background: var(--accent-hover) !important;
-}
-
-.p-drawer,
-.p-drawer-content {
-  background: var(--bg-elevated) !important;
-  color: var(--text) !important;
-}
-
-.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
-  background: var(--accent) !important;
-}
-
-.p-progressspinner-circle {
-  stroke: var(--accent) !important;
 }
 
 .p-toast {
   max-width: min(26rem, calc(100vw - 2rem));
-}
-
-.p-toast-message {
-  border: 1px solid var(--border) !important;
-  border-radius: var(--r-md) !important;
-  background: var(--surface-overlay) !important;
-  color: var(--text) !important;
-  box-shadow: var(--shadow-2) !important;
-}
-
-.p-toast-summary {
-  color: var(--text);
-  font-weight: 850;
-}
-
-.p-toast-detail {
-  color: var(--muted);
-  font-weight: 650;
-}
-
-.p-toast-message-success {
-  border-color: rgba(var(--success-rgb), 0.34) !important;
-}
-
-.p-toast-message-error {
-  border-color: rgba(var(--danger-rgb), 0.38) !important;
-}
-
-:where(h1, h2, h3, h4, h5, h6, .page-title, .section-title, .brand, .title, .list-name, .modal-title, .genre-title, .kpi-value, .day-title, .pending-title) {
-  font-family: var(--font-display);
-  letter-spacing: 0;
 }
 
 :where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .showtimes-page, .stats-page, .torrents-page) {

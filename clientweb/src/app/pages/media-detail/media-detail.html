@@ -269,16 +269,22 @@
                       </div>
 
                       <div class="season-actions">
+                        @let seasonPending = isSeasonPending(season.season_number);
                         <button
                           pButton pRipple
                           type="button"
                           class="btn-season-seen"
                           [class.active]="seasonSeen"
-                          [disabled]="isSeasonPending(season.season_number)"
+                          [class.pending]="seasonPending"
+                          [disabled]="seasonPending"
                           (click)="toggleSeasonSeen(season, $event)"
                           [title]="seasonSeen ? 'Marquer non vu' : 'Tout marquer vu'"
                         >
-                          {{ seasonSeen ? 'Vu' : 'Tout vu' }}
+                          @if (seasonPending) {
+                            <i class="pi pi-spin pi-spinner" aria-label="Chargement"></i>
+                          } @else {
+                            {{ seasonSeen ? 'Vu' : 'Tout vu' }}
+                          }
                         </button>
                         <i class="pi pi-chevron-right chevron" [class.open]="isExpanded"></i>
                       </div>
@@ -291,6 +297,7 @@
                         <div class="episodes-list">
                           @for (ep of season.episodes; track ep.episode_number) {
                             @let epK = ep.season_number + '-' + ep.episode_number;
+                            @let epPending = isEpisodePending(epK);
                             <div class="episode-row" [class.seen]="ep.seen">
                               <span class="ep-num">{{ ep.episode_number }}</span>
                               <div class="ep-body">
@@ -305,11 +312,12 @@
                                 type="button"
                                 class="btn-ep-seen"
                                 [class.seen]="ep.seen"
-                                [disabled]="isEpisodePending(epK)"
+                                [class.pending]="epPending"
+                                [disabled]="epPending"
                                 (click)="toggleEpisodeSeen(ep, $event)"
                                 [title]="ep.seen ? 'Marquer non vu' : 'Marquer comme vu'"
                               >
-                                <i [class]="ep.seen ? 'pi pi-check' : 'pi pi-circle'"></i>
+                                <i [class]="epPending ? 'pi pi-spin pi-spinner' : (ep.seen ? 'pi pi-check' : 'pi pi-circle')"></i>
                               </button>
                             </div>
                           }
@@ -371,7 +379,7 @@
       <aside class="detail-aside">
         @if (!isMovie && s) {
           <section class="side-section progress-card">
-            <h2>Ta progression</h2>
+            <h2>Progression</h2>
             <div class="progress-score">
               <strong>{{ showSeenEpisodeCount }}</strong>
               <span>/ {{ showEpisodeCount }} épisodes</span>

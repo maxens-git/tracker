@@ -713,6 +713,12 @@
     opacity: 0.5;
     cursor: default;
   }
+
+  // Pendant l'appel réseau on garde le bouton lisible : seul le spinner signale l'attente.
+  &.pending:disabled {
+    opacity: 1;
+    color: var(--muted) !important;
+  }
 }
 
 .chevron {
@@ -798,6 +804,14 @@
     border-color: rgba(var(--success-rgb), 0.34) !important;
     background: rgba(var(--success-rgb), 0.14) !important;
     color: var(--success) !important;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.pending:disabled {
+    opacity: 1;
   }
 }
 
