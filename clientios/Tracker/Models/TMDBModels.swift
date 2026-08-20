@@ -13,10 +13,17 @@ struct TMDBSearchResult: Decodable, Identifiable, Hashable {
     let id: Int
     let title: String?          // films
     let name: String?           // séries
+    /// Titre en langue d'origine : une recherche « Spirited Away » doit trouver
+    /// « Le Voyage de Chihiro », dont le `title` localisé ne contient rien de tel.
+    let originalTitle: String?  // films
+    let originalName: String?   // séries
     let posterPath: String?
     let backdropPath: String?
     let overview: String?
     let voteAverage: Double?
+    /// Nombre de votes : sert à départager deux titres également pertinents, et
+    /// à repousser les fiches fantômes (0 vote, pas d'affiche).
+    let voteCount: Int?
     let popularity: Double?
     let releaseDate: String?    // films
     let firstAirDate: String?   // séries
@@ -27,9 +34,12 @@ struct TMDBSearchResult: Decodable, Identifiable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case id, title, name, overview, popularity
+        case originalTitle = "original_title"
+        case originalName = "original_name"
         case posterPath = "poster_path"
         case backdropPath = "backdrop_path"
         case voteAverage = "vote_average"
+        case voteCount = "vote_count"
         case releaseDate = "release_date"
         case firstAirDate = "first_air_date"
         case mediaTypeRaw = "media_type"
@@ -38,6 +48,15 @@ struct TMDBSearchResult: Decodable, Identifiable, Hashable {
 
     /// Titre affichable quel que soit le type.
     var displayTitle: String { title ?? name ?? "Sans titre" }
+
+    /// Titres à confronter à la requête : localisé + langue d'origine.
+    var searchableTitles: [String] {
+        [title, name, originalTitle, originalName].compactMap { $0 }
+    }
+
+    /// Clé d'unicité : deux pages TMDB peuvent renvoyer la même fiche, et un film
+    /// et une série peuvent partager le même id.
+    var uniqueKey: String { "\(mediaType.rawValue)-\(id)" }
 
     /// Date affichable (année).
     var year: String? {
@@ -144,13 +163,17 @@ struct TMDBSeasonSummary: Decodable, Identifiable, Hashable {
     }
 }
 
-struct TMDBGenre: Codable, Identifiable, Hashable {
+// Le projet isole tout sur `@MainActor` par défaut
+// (`SWIFT_DEFAULT_ACTOR_ISOLATION`). Ces deux DTO sont décodés hors du main
+// actor — `allGenres()` lance les deux requêtes en parallèle via `async let` —
+// donc leur conformance `Decodable` doit être `nonisolated` en mode Swift 6.
+nonisolated struct TMDBGenre: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
 }
 
 /// Réponse de /genre/{movie,tv}/list.
-struct TMDBGenreList: Decodable {
+nonisolated struct TMDBGenreList: Decodable {
     let genres: [TMDBGenre]
 }
 

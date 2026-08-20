@@ -2,227 +2,169 @@
 //  SearchView.swift
 //  Tracker
 //
+//  Recherche : une `List` standard (comme l'App Store ou Musique) — filtre de
+//  type en contrôle segmenté, résultats en lignes avec chevron, recherches
+//  récentes supprimables par balayage, tri et genres dans le menu de la barre.
+//
 
 import SwiftUI
 
 struct SearchView: View {
     @State private var viewModel = SearchViewModel()
     @State private var showingFilters = false
+    @Environment(\.zoomNamespace) private var zoomNamespace
+
+    /// Contrôle segmenté « Tout / Films / Séries » relié au filtre du modèle.
+    private var typeSelection: Binding<MediaType?> {
+        Binding(get: { viewModel.filter }, set: { viewModel.filter = $0 })
+    }
 
     var body: some View {
-        ScrollView {
+        List {
             if !viewModel.allResults.isEmpty {
-                filterBar
-            }
-
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 60)
-            } else if viewModel.results.isEmpty {
-                emptyState
-            } else {
-                resultsList
+                typePicker
+                resultsSection
+            } else if viewModel.query.trimmingCharacters(in: .whitespaces).isEmpty,
+                      !viewModel.history.entries.isEmpty {
+                recentSection
             }
         }
-        .background(Color.appBackground.ignoresSafeArea())
+        .listStyle(.plain)
         .navigationTitle("Recherche")
         .errorToast($viewModel.errorMessage)
         .searchable(text: $viewModel.query, prompt: "Films, séries…")
-        .onChange(of: viewModel.query) { viewModel.search() }
+        .onChange(of: viewModel.query) { _, newValue in viewModel.search(newValue) }
         .task { await viewModel.loadGenresIfNeeded() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Picker("Trier par", selection: $viewModel.sort) {
+                        ForEach(SearchSort.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                    if !viewModel.relevantGenres.isEmpty {
+                        Button {
+                            showingFilters = true
+                        } label: {
+                            Label("Genres…", systemImage: "theatermasks")
+                        }
+                    }
+                    if viewModel.hasActiveFilters {
+                        Button(role: .destructive) {
+                            viewModel.resetFilters()
+                        } label: {
+                            Label("Réinitialiser les filtres", systemImage: "arrow.counterclockwise")
+                        }
+                    }
+                } label: {
+                    Label("Filtres et tri",
+                          systemImage: viewModel.hasActiveFilters
+                          ? "line.3.horizontal.decrease.circle.fill"
+                          : "line.3.horizontal.decrease.circle")
+                }
+            }
+        }
         .sheet(isPresented: $showingFilters) {
             SearchFiltersView(viewModel: viewModel)
         }
+        .overlay { emptyState }
     }
 
-    /// Rangée de chips de type (Tout / Films / Séries) + accès aux filtres & tri,
-    /// à la place du segmented control : même vocabulaire que le reste de l'app.
-    private var filterBar: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 9) {
-                    FilterChip(label: "Tout (\(viewModel.allResults.count))",
-                               isSelected: viewModel.filter == nil) {
-                        viewModel.filter = nil
-                    }
-                    FilterChip(label: "Films (\(viewModel.movieCount))",
-                               isSelected: viewModel.filter == .movie) {
-                        viewModel.filter = .movie
-                    }
-                    FilterChip(label: "Séries (\(viewModel.showCount))",
-                               isSelected: viewModel.filter == .tv) {
-                        viewModel.filter = .tv
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
+    // ── Sections ──────────────────────────────────────────────────────────
 
-            Button {
-                showingFilters = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: viewModel.hasActiveFilters
-                          ? "line.3.horizontal.decrease.circle.fill"
-                          : "line.3.horizontal.decrease.circle")
-                    Text("Filtres & tri")
-                    if viewModel.hasActiveFilters {
-                        Circle()
-                            .fill(Color.appAccent)
-                            .frame(width: 7, height: 7)
-                    }
-                    Spacer()
-                    Text(viewModel.sort.label)
-                        .foregroundStyle(.secondary)
-                }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(viewModel.hasActiveFilters ? Color.appAccent : .primary)
-                .padding(.horizontal, 20)
-            }
-            .buttonStyle(.plain)
+    private var typePicker: some View {
+        Picker("Type", selection: typeSelection) {
+            Text("Tout (\(viewModel.allResults.count))").tag(MediaType?.none)
+            Text("Films (\(viewModel.movieCount))").tag(MediaType?.some(.movie))
+            Text("Séries (\(viewModel.showCount))").tag(MediaType?.some(.tv))
         }
-        .padding(.top, 8)
+        .pickerStyle(.segmented)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
 
-    /// Résultats en liste encastrée (affiche + titre + métadonnées), conformément
-    /// à la maquette : plus lisible qu'une grille quand les titres sont longs.
-    private var resultsList: some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private var resultsSection: some View {
+        Section {
+            ForEach(viewModel.results) { item in
+                let route = MediaRoute(tmdbId: item.id, type: item.mediaType)
+                NavigationLink(value: route) {
+                    resultRow(item)
+                        .zoomSource(route, in: zoomNamespace)
+                }
+            }
+        } header: {
             Text("\(viewModel.results.count) résultat\(viewModel.results.count > 1 ? "s" : "")")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 20)
-
-            GlassRowGroup {
-                ForEach(viewModel.results) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
-                        resultRow(item)
-                    }
-                    .buttonStyle(.plain)
-
-                    if item.id != viewModel.results.last?.id {
-                        GlassRowDivider(leadingInset: 15)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
         }
-        .padding(.top, 16)
-        // Le champ de recherche flotte au-dessus du contenu (iOS 26) : on
-        // dégage assez de place pour que la dernière ligne reste atteignable.
-        .padding(.bottom, 90)
     }
 
     private func resultRow(_ item: TMDBSearchResult) -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             PosterImage(path: item.posterPath, size: "w185")
-                .frame(width: 50, height: 74)
+                .frame(width: 44, height: 66)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.displayTitle)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.body)
                     .foregroundStyle(.primary)
                     .lineLimit(2)
                 Text([item.mediaType.label, item.year].compactMap { $0 }.joined(separator: " · "))
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
             Spacer(minLength: 0)
 
             if viewModel.isSeen(item) {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.appGreen))
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color.appGreen)
                     .accessibilityLabel("Déjà vu")
-            } else {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.tertiary)
             }
         }
-        .padding(.horizontal, 15)
-        .padding(.vertical, 11)
-        .contentShape(Rectangle())
+        .padding(.vertical, 4)
+    }
+
+    /// Recherches récentes : lignes supprimables par balayage, comme Safari.
+    private var recentSection: some View {
+        Section {
+            ForEach(viewModel.history.entries, id: \.self) { entry in
+                Button {
+                    viewModel.query = entry
+                } label: {
+                    Label(entry, systemImage: "clock.arrow.circlepath")
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+            }
+            .onDelete { offsets in
+                offsets.map { viewModel.history.entries[$0] }.forEach(viewModel.history.remove)
+            }
+        } header: {
+            HStack {
+                Text("Recherches récentes")
+                Spacer()
+                Button("Tout effacer") { viewModel.history.clear() }
+                    .font(.footnote)
+                    .textCase(nil)
+            }
+        }
     }
 
     @ViewBuilder
     private var emptyState: some View {
         let trimmed = viewModel.query.trimmingCharacters(in: .whitespaces)
-        if trimmed.isEmpty {
-            if viewModel.history.entries.isEmpty {
-                ContentUnavailableView("Rechercher", systemImage: "magnifyingglass",
-                                       description: Text("Trouvez un film ou une série à suivre."))
-                    .padding(.top, 60)
-            } else {
-                recentSearches
-            }
-        } else if !viewModel.allResults.isEmpty {
+        if viewModel.isLoading {
+            ProgressView()
+        } else if !viewModel.allResults.isEmpty && viewModel.results.isEmpty {
             // Des résultats existent mais les filtres genre ne laissent rien passer.
             ContentUnavailableView("Aucun résultat", systemImage: "line.3.horizontal.decrease.circle",
                                    description: Text("Aucun média ne correspond aux filtres choisis."))
-                .padding(.top, 60)
-        } else {
+        } else if trimmed.isEmpty && viewModel.history.entries.isEmpty {
+            ContentUnavailableView("Rechercher", systemImage: "magnifyingglass",
+                                   description: Text("Trouvez un film ou une série à suivre."))
+        } else if !trimmed.isEmpty && viewModel.allResults.isEmpty {
             ContentUnavailableView.search(text: trimmed)
-                .padding(.top, 60)
         }
-    }
-
-    /// Liste des recherches récentes (affichée quand le champ est vide).
-    private var recentSearches: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                SectionHeader("Recherches récentes")
-                Spacer()
-                Button("Tout effacer") {
-                    viewModel.history.clear()
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 0) {
-                ForEach(Array(viewModel.history.entries.enumerated()), id: \.element) { index, entry in
-                    HStack(spacing: 12) {
-                        Button {
-                            viewModel.query = entry
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "clock.arrow.circlepath")
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                Text(entry)
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                                Spacer(minLength: 0)
-                            }
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-
-                        Button {
-                            viewModel.history.remove(entry)
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.tertiary)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Retirer « \(entry) »")
-                    }
-                    .padding(.vertical, 12)
-
-                    if index < viewModel.history.entries.count - 1 {
-                        Divider().padding(.leading, 28)
-                    }
-                }
-            }
-            .padding(.horizontal, 14)
-            .glassPanel()
-        }
-        .padding()
     }
 }
 
@@ -255,7 +197,7 @@ private struct SearchFiltersView: View {
                                     Spacer()
                                     if viewModel.selectedGenreIds.contains(genre.id) {
                                         Image(systemName: "checkmark")
-                                            .foregroundStyle(Color.accentColor)
+                                            .foregroundStyle(.tint)
                                     }
                                 }
                             }

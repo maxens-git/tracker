@@ -13,40 +13,28 @@ struct ListsView: View {
 
     var body: some View {
         List {
-            if !viewModel.lists.isEmpty {
-                Section {
-                    ForEach(viewModel.lists) { list in
-                        NavigationLink(value: ListRoute(listId: list.routeId, title: list.name)) {
-                            row(for: list)
+            ForEach(viewModel.lists) { list in
+                NavigationLink(value: ListRoute(listId: list.routeId, title: list.name)) {
+                    row(for: list)
+                }
+                // Modifier / supprimer : réservé aux listes non-système.
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if !list.isSystem {
+                        Button(role: .destructive) {
+                            Task { await viewModel.delete(list) }
+                        } label: {
+                            Label("Supprimer", systemImage: "trash")
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.appSurface)
-                                .padding(.vertical, 3)
-                        )
-                        // Modifier / supprimer : réservé aux listes non-système.
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            if !list.isSystem {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.delete(list) }
-                                } label: {
-                                    Label("Supprimer", systemImage: "trash")
-                                }
-                                Button {
-                                    edit(list)
-                                } label: {
-                                    Label("Modifier", systemImage: "pencil")
-                                }
-                                .tint(.accentColor)
-                            }
+                        Button {
+                            edit(list)
+                        } label: {
+                            Label("Modifier", systemImage: "pencil")
                         }
+                        .tint(.accentColor)
                     }
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("Listes")
         .errorToast($viewModel.errorMessage)
         .overlay {
@@ -65,7 +53,7 @@ struct ListsView: View {
                 Button {
                     create()
                 } label: {
-                    Image(systemName: "plus")
+                    Label("Nouvelle liste", systemImage: "plus")
                 }
             }
         }
@@ -95,18 +83,9 @@ struct ListsView: View {
     }
 
     private func row(for list: MediaListSummary) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.tint.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                Text(list.icon ?? String(list.name.prefix(1)))
-                    .font(.title3)
-            }
-
+        Label {
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
-                    .font(.body.weight(.semibold))
                 Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -117,9 +96,13 @@ struct ListsView: View {
                         .lineLimit(1)
                 }
             }
-            Spacer()
+        } icon: {
+            Text(list.icon ?? String(list.name.prefix(1)))
+                .font(.body)
+                .frame(width: 29, height: 29)
+                .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 }
 

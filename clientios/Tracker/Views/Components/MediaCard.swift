@@ -2,7 +2,9 @@
 //  MediaCard.swift
 //  Tracker
 //
-//  Vignette d'un média (affiche + titre) utilisée dans les grilles.
+//  Vignette d'un média (affiche + titre) utilisée dans les grilles et les
+//  rangées horizontales, dans l'esprit des collections de l'app TV : affiche
+//  aux coins arrondis, titre en `footnote`, complément en `caption` secondaire.
 //
 
 import SwiftUI
@@ -11,53 +13,48 @@ struct MediaCard: View {
     let posterPath: String?
     let title: String
     var subtitle: String?
-    /// Affiche un badge « VU » en haut de l'affiche quand le média est déjà vu.
+    /// Coche « vu » posée sur l'affiche quand le média est déjà vu.
     var seen: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             PosterImage(path: posterPath)
                 .aspectRatio(2.0 / 3.0, contentMode: .fit)
                 .overlay(alignment: .topTrailing) {
                     if seen { seenBadge }
                 }
-                // Ombre discrète : suggère le relief de l'affiche sans l'alourdir.
-                // Posée sur une forme opaque en arrière-plan (et non sur le contenu
-                // composité) pour que SwiftUI n'ait pas à rasteriser l'affiche
-                // hors-écran à chaque frame de défilement.
+                // Ombre posée sur une forme opaque en arrière-plan (et non sur
+                // le contenu composité) : le relief sans rasterisation par frame.
                 .background {
                     RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
                         .fill(Color.appSurface)
-                        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
+                        .shadow(color: .black.opacity(0.16), radius: 8, x: 0, y: 4)
                 }
 
             Text(title)
-                .font(.system(size: 12.5, weight: .semibold))
+                .font(.footnote)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
 
             Text(subtitle ?? " ")
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.secondary)
         }
         // La carte se cale en haut de sa cellule : l'affiche reste alignée d'une
-        // vignette à l'autre, et l'espace libre des titres courts passe en bas
-        // (plutôt qu'entre le titre et l'année).
+        // vignette à l'autre, et l'espace libre des titres courts passe en bas.
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
-    /// Pastille « vu » posée en haut à droite de l'affiche : simple coche verte
-    /// (couleur sémantique « vu / terminé » de l'app), plus discrète qu'un badge texte.
+    /// Pastille « vu » : coche blanche sur pastille verte, posée sur l'affiche.
     private var seenBadge: some View {
-        Image(systemName: "checkmark")
-            .font(.system(size: 10, weight: .bold))
-            .foregroundStyle(.white)
-            .padding(5)
-            .background(Circle().fill(Color.appGreen))
-            .overlay(Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+        Image(systemName: "checkmark.circle.fill")
+            .font(.body)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(.white, Color.appGreen)
+            .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
             .padding(6)
     }
 }
@@ -65,8 +62,7 @@ struct MediaCard: View {
 /// Grille adaptative réutilisée par Home / Recherche / Détail de liste.
 struct MediaGrid<Content: View>: View {
     let columns = [GridItem(.adaptive(minimum: 110), spacing: 16)]
-    /// Espacement vertical entre les rangées. Par défaut 20 ; réduit dans le
-    /// détail d'une liste où les vignettes sont plus denses.
+    /// Espacement vertical entre les rangées.
     var spacing: CGFloat = 20
     @ViewBuilder let content: () -> Content
 

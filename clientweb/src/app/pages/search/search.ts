@@ -8,6 +8,7 @@ import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, withUserStates } from '../../../shared/services/api';
 import { SearchHistoryService } from '../../../shared/services/search-history';
+import { rank, deduplicate } from '../../../shared/services/search-ranking';
 import { MediaItem, TmdbGenre } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -17,6 +18,14 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 
 type SortKey = 'relevance' | 'rating' | 'date_desc' | 'date_asc' | 'popularity';
+
+/**
+ * Nombre de pages TMDB récupérées par recherche (20 résultats chacune).
+ * Une seule page ne laissait presque rien aux filtres type/genre une fois les
+ * personnes retirées ; les pages suivantes partent en parallèle, donc sans coût
+ * de latence notable.
+ */
+const PAGES_PER_SEARCH = 3;
 
 @Component({
   selector: 'app-search',
@@ -107,12 +116,21 @@ export class Search implements OnInit {
         this.loading.set(true);
         this.searched.set(true);
         this.syncQueryParams(q);
-        return this.tmdb.search(q).pipe(catchError(() => of(null)));
+        return this.tmdb.searchPages(q, PAGES_PER_SEARCH).pipe(
+          // La requête est transportée avec sa réponse : le classement en a
+          // besoin, et un switchMap a pu changer `this.query` entre-temps.
+          map(results => ({ query: q, results })),
+          catchError(() => of(null)),
+        );
       }),
       // Pour chaque réponse TMDB, on enrichit les résultats avec les états utilisateur.
       switchMap(resp => {
         if (!resp) return of([] as MediaItem[]);
-        const results = resp.results.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
+        const media = resp.results.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
+        // Dédoublonnage (une même fiche peut revenir d'une page à l'autre) puis
+        // reclassement : l'ordre TMDB privilégie la popularité, pas la
+        // correspondance avec ce qui a été tapé.
+        const results = rank(deduplicate(media), resp.query);
         return this.api.statesByTmdbId(results).pipe(
           map(states => withUserStates(results, states))
         );

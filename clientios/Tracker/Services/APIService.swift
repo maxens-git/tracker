@@ -443,19 +443,28 @@ extension JSONDecoder.DateDecodingStrategy {
     }
 }
 
-enum TrackerDateParser {
-    private static let isoFractional: ISO8601DateFormatter = {
+/// `nonisolated` : le décodage JSON (et donc la stratégie de date ci-dessus)
+/// s'exécute hors du main actor, alors que le projet isole tout sur `@MainActor`
+/// par défaut.
+///
+/// Les formatters sont mis en cache — en construire un par date coûterait cher
+/// sur une liste — et marqués `nonisolated(unsafe)` : une fois configurés ils ne
+/// sont plus mutés, et la lecture (`date(from:)`) des formatters de Foundation
+/// est thread-safe, ce que le compilateur ne peut pas prouver seul.
+nonisolated enum TrackerDateParser {
+    nonisolated(unsafe) private static let isoFractional: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
-    private static let isoPlain: ISO8601DateFormatter = {
+    nonisolated(unsafe) private static let isoPlain: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
         return f
     }()
 
     /// Formats ASP.NET sans fuseau (interprétés comme UTC).
+    /// (`DateFormatter` est déjà `Sendable` : pas besoin de `nonisolated(unsafe)` ici.)
     private static let formatters: [DateFormatter] = {
         ["yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
          "yyyy-MM-dd'T'HH:mm:ss.SSS",

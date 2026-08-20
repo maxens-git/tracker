@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PersonView: View {
     @State private var viewModel: PersonViewModel
+    @Environment(\.zoomNamespace) private var zoomNamespace
 
     init(personId: Int) {
         _viewModel = State(initialValue: PersonViewModel(personId: personId))
@@ -29,7 +30,6 @@ struct PersonView: View {
             }
             .padding(.vertical)
         }
-        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(viewModel.name)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
@@ -51,15 +51,20 @@ struct PersonView: View {
                 image.resizable().scaledToFill()
             } placeholder: {
                 Rectangle()
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color.appPlaceholder)
                     .overlay(Image(systemName: "person.fill").font(.largeTitle).foregroundStyle(.secondary))
             }
             .frame(width: 120, height: 160)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+            .background {
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                    .fill(Color.appSurface)
+                    .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 5)
+            }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.name)
-                    .font(.display(24))
+                    .font(.title2.weight(.bold))
                 if let department = viewModel.department, !department.isEmpty {
                     Text(department)
                         .font(.subheadline)
@@ -92,10 +97,10 @@ struct PersonView: View {
     private func fact(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label)
-                .font(.caption2.weight(.semibold))
+                .font(.caption)
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.caption)
+                .font(.subheadline)
         }
     }
 
@@ -108,13 +113,15 @@ struct PersonView: View {
 
             MediaGrid {
                 ForEach(viewModel.filmography) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                    let route = MediaRoute(tmdbId: item.tmdbId, type: item.type)
+                    NavigationLink(value: route) {
                         MediaCard(posterPath: item.posterPath,
                                   title: item.title,
                                   subtitle: item.year,
                                   seen: item.seen)
+                            .zoomSource(route, in: zoomNamespace)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressableCard)
                 }
             }
         }

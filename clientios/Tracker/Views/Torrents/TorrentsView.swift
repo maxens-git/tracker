@@ -10,11 +10,9 @@ import SwiftUI
 struct TorrentsView: View {
     @State private var viewModel = TorrentsViewModel()
     @State private var showingIndexerPicker = false
-    @FocusState private var searchFocused: Bool
 
     var body: some View {
         VStack(spacing: 14) {
-            searchBar
             tabPicker
             if viewModel.tab == .results {
                 filters
@@ -23,8 +21,12 @@ struct TorrentsView: View {
         }
         .padding(.top, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(Color.appBackground)
         .navigationTitle("Torrents")
+        .searchable(text: $viewModel.query, prompt: "Rechercher un torrent…")
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .onSubmit(of: .search) { Task { await viewModel.search() } }
         .errorToast($viewModel.errorMessage)
         .task {
             await viewModel.loadFilters()
@@ -36,34 +38,6 @@ struct TorrentsView: View {
         .sheet(isPresented: $viewModel.showingDebrid) {
             DebridSheet(viewModel: viewModel)
         }
-    }
-
-    // ── Barre de recherche ─────────────────────────────────────────────────
-
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField("Rechercher un torrent…", text: $viewModel.query)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .submitLabel(.search)
-                .focused($searchFocused)
-                .onSubmit { Task { await viewModel.search() } }
-            if !viewModel.query.isEmpty {
-                Button {
-                    viewModel.query = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.appSurface, in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
-        .padding(.horizontal)
     }
 
     // ── Filtres (indexeurs + catégorie) ──────────────────────────────────────
@@ -86,6 +60,7 @@ struct TorrentsView: View {
                 filterChipLabel(icon: "square.grid.2x2", label: viewModel.selectedCategoryName,
                                 active: viewModel.selectedCategory != nil)
             }
+            .buttonStyle(.bordered)
             .onChange(of: viewModel.selectedCategory) { Task { await viewModel.onFilterChange() } }
         }
         .padding(.horizontal)
@@ -95,21 +70,18 @@ struct TorrentsView: View {
         Button(action: action) {
             filterChipLabel(icon: icon, label: label, active: active)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bordered)
     }
 
     private func filterChipLabel(icon: String, label: String, active: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon).font(.caption)
-            Text(label).font(.subheadline.weight(.medium)).lineLimit(1)
+            Text(label).lineLimit(1)
             Image(systemName: "chevron.down").font(.caption2)
         }
-        .foregroundStyle(active ? Color.appAccent : .primary)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 9)
+        .font(.subheadline)
+        .foregroundStyle(active ? Color.accentColor : .primary)
         .frame(maxWidth: .infinity)
-        .background(Color.appSurface, in: Capsule())
-        .overlay(Capsule().strokeBorder(active ? Color.appAccent.opacity(0.4) : Color.appStroke, lineWidth: 1))
     }
 
     // ── Onglet Résultats / Marque-pages ──────────────────────────────────────
@@ -190,7 +162,7 @@ struct TorrentsView: View {
             List {
                 Section {
                     Button("Tous les indexeurs") { viewModel.selectedIndexers = [] }
-                        .foregroundStyle(viewModel.selectedIndexers.isEmpty ? Color.appAccent : .primary)
+                        .foregroundStyle(viewModel.selectedIndexers.isEmpty ? Color.accentColor : .primary)
                 }
                 Section {
                     ForEach(viewModel.indexers) { indexer in
@@ -201,7 +173,7 @@ struct TorrentsView: View {
                                 Text(indexer.name).foregroundStyle(.primary)
                                 Spacer()
                                 if viewModel.selectedIndexers.contains(indexer.id) {
-                                    Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
+                                    Image(systemName: "checkmark").foregroundStyle(.tint)
                                 }
                             }
                         }
@@ -248,7 +220,7 @@ private struct TorrentRow: View {
                 meta(icon: "server.rack", text: torrent.indexer)
                 meta(icon: "internaldrive", text: ByteFormat.string(torrent.size))
                 Label("\(torrent.seeders)", systemImage: "arrow.up")
-                    .foregroundStyle(Color.appGreen)
+                    .foregroundStyle(Color.green)
                 Label("\(torrent.leechers)", systemImage: "arrow.down")
                     .foregroundStyle(.secondary)
             }
@@ -260,7 +232,7 @@ private struct TorrentRow: View {
                 bookmarkButton
             }
         }
-        .glassPanel(padding: 14)
+        .cardBackground(padding: 14)
     }
 
     private func meta(icon: String, text: String) -> some View {
@@ -275,21 +247,16 @@ private struct TorrentRow: View {
         } label: {
             HStack(spacing: 8) {
                 if isDebriding {
-                    ProgressView().tint(.black)
+                    ProgressView()
                 } else {
                     Image(systemName: "bolt.fill")
                 }
                 Text("Débrider")
             }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.black)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderedProminent)
         .disabled(viewModel.debridingMagnet != nil)
-        .opacity(viewModel.debridingMagnet != nil && !isDebriding ? 0.5 : 1)
     }
 
     /// Bouton « mettre de côté » : ajoute / retire le torrent des marque-pages.
@@ -307,17 +274,9 @@ private struct TorrentRow: View {
                     Image(systemName: bookmarked ? "bookmark.fill" : "bookmark")
                 }
             }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(bookmarked ? Color.appAccent : .primary)
-            .frame(width: 48)
-            .padding(.vertical, 10)
-            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                    .strokeBorder(bookmarked ? Color.appAccent.opacity(0.4) : Color.appStroke, lineWidth: 1)
-            )
+            .frame(width: 28)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bordered)
         .disabled(busy)
         .accessibilityLabel(bookmarked ? "Retirer des marque-pages" : "Mettre de côté")
     }

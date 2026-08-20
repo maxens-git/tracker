@@ -15,19 +15,20 @@ private struct ErrorToast: ViewModifier {
         content
             .overlay(alignment: .bottom) {
                 if let message {
-                    Text(message)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.white)
+                    // Bandeau translucide façon notification système : matériau
+                    // épais, coins continus et icône d'alerte tintée.
+                    Label(message, systemImage: "exclamationmark.triangle.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .symbolRenderingMode(.multicolor)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color.red.opacity(0.92))
-                        )
+                        .background(.regularMaterial,
+                                    in: RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                         .padding(.horizontal)
                         .padding(.bottom, 8)
-                        .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .task(id: message) {
                             try? await Task.sleep(for: .seconds(3.5))

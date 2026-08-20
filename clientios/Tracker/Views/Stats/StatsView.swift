@@ -10,8 +10,8 @@ struct StatsView: View {
     @State private var viewModel = StatsViewModel()
 
     // Couleurs des catégories (alignées avec la légende).
-    private let movieColor = Color.appAccent
-    private let episodeColor = Color.appGreen
+    private let movieColor = Color.accentColor
+    private let episodeColor = Color.green
 
     var body: some View {
         ScrollView {
@@ -46,7 +46,7 @@ struct StatsView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(Color.appBackground)
         .navigationTitle("Statistiques")
         .overlay {
             if let error = viewModel.errorMessage, viewModel.stats == nil {
@@ -71,12 +71,16 @@ struct StatsView: View {
             Image(systemName: systemImage)
                 .font(.title2)
                 .foregroundStyle(.tint)
-            Text(value).font(.display(28))
-            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(value)
+                .font(.title.weight(.semibold))
+                .monospacedDigit()
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .glassPanel()
+        .cardBackground()
     }
 }
 
@@ -99,15 +103,9 @@ private struct GenrePreferenceCard: View {
     @State private var mode: GenreMode = .titles
     @State private var showingModeInfo = false
 
-    private let colors: [Color] = [
-        Color(hex: 0xE89A63),
-        Color(hex: 0x8BA7EA),
-        Color(hex: 0x51B7D3),
-        Color(hex: 0xA7BA63),
-        Color(hex: 0x64BD8D),
-        Color(hex: 0xEA8E94),
-        Color(hex: 0xDD83AE),
-    ]
+    // Palette système : mêmes teintes que les graphiques des apps d'Apple,
+    // et adaptation automatique au mode clair / sombre.
+    private let colors: [Color] = [.blue, .orange, .green, .purple, .teal, .pink, .indigo]
 
     /// Genres avec le % recalculé selon le mode choisi.
     private var scoredGenres: [StatsGenreBucket] {
@@ -144,7 +142,7 @@ private struct GenrePreferenceCard: View {
                     showingModeInfo = true
                 } label: {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.body)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -174,20 +172,15 @@ private struct GenrePreferenceCard: View {
                     withAnimation(.easeInOut(duration: 0.2)) { showAll.toggle() }
                 } label: {
                     Text(showAll ? "Voir moins" : "Voir plus")
-                        .font(.display(15, .semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.primary.opacity(0.15), lineWidth: 1)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .glassPanel()
+        .cardBackground()
         .onChange(of: selectedListId) { showAll = false }
     }
 
@@ -237,12 +230,12 @@ private struct GenrePreferenceCard: View {
                 Image(systemName: "chevron.down")
                     .font(.caption2)
             }
-            .foregroundStyle(.primary)
+            .font(.subheadline)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(Color.appSurface, in: Capsule())
-            .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
+            .background(Color(.tertiarySystemFill), in: .capsule)
         }
+        .buttonStyle(.plain)
     }
 
     /// Libellé d'un élément du menu : icône + nom.
@@ -255,12 +248,12 @@ private struct GenrePreferenceCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 Text(genre.name)
-                    .font(.display(17, .semibold))
+                    .font(.body)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                 Spacer()
                 Text("\(genre.percentage)%")
-                    .font(.display(17, .semibold))
+                    .font(.body.weight(.medium))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
@@ -268,7 +261,7 @@ private struct GenrePreferenceCard: View {
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.primary.opacity(0.08))
+                        .fill(Color(.tertiarySystemFill))
                     Capsule()
                         .fill(color)
                         .frame(width: proxy.size.width * CGFloat(genre.percentage) / CGFloat(maxPercentage))
@@ -321,7 +314,7 @@ private struct ActivityChart: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .glassPanel()
+        .cardBackground()
     }
 
     private var chart: some View {

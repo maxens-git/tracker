@@ -144,6 +144,13 @@ final class MediaDetailViewModel {
                 // vue directement (bouton « Vu ») sans qu'aucun épisode soit enregistré.
                 // On fait confiance à l'état persisté (state.seen). syncShowSeen() ne doit
                 // tourner qu'après un toggle d'épisode/saison.
+
+                // Une seule saison est affichée à la fois : on ouvre celle où
+                // l'utilisateur en est, et on charge ses épisodes.
+                if expandedSeason == nil, let number = defaultSeasonNumber() {
+                    expandedSeason = number
+                }
+                if let number = expandedSeason { await loadSeasonIfNeeded(number) }
             }
         } catch {
             if !error.isCancellation { errorMessage = error.localizedDescription }
@@ -382,15 +389,20 @@ final class MediaDetailViewModel {
         episodeCount > 0 && seenCount(inSeason: season) >= episodeCount
     }
 
-    /// Déplie / replie une saison, en chargeant ses épisodes au besoin.
-    func toggleSeason(_ number: Int) async {
+    /// Sélectionne une saison dans le menu et charge ses épisodes au besoin.
+    func selectSeason(_ number: Int) async {
+        guard expandedSeason != number else { return }
         Haptics.selection()
-        if expandedSeason == number {
-            expandedSeason = nil
-            return
-        }
         expandedSeason = number
         await loadSeasonIfNeeded(number)
+    }
+
+    /// Saison ouverte par défaut : la première non terminée (là où on en est),
+    /// sinon la dernière — comme la reprise de lecture des apps vidéo.
+    private func defaultSeasonNumber() -> Int? {
+        let real = seasons.filter { ($0.episodeCount ?? 0) > 0 }
+        let current = real.first { !isSeasonFullySeen($0.seasonNumber, episodeCount: $0.episodeCount ?? 0) }
+        return (current ?? real.last ?? seasons.first)?.seasonNumber
     }
 
     private func loadSeasonIfNeeded(_ number: Int) async {

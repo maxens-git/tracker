@@ -2,12 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- L'app est verrouillée en mode sombre : force toute la collection de traits
-	     (SwiftUI + UIKit) en sombre, quel que soit le réglage système. Sans ça, en
-	     mode clair le texte des contrôles UIKit (listes, menus, feuilles) restait
-	     sombre sur nos fonds sombres. -->
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
 	<!-- Autorise les connexions HTTP en réseau local (backend Tracker sur localhost). -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

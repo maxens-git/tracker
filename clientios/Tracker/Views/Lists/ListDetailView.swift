@@ -8,6 +8,7 @@ import SwiftUI
 struct ListDetailView: View {
     @State private var viewModel: ListDetailViewModel
     private let title: String
+    @Environment(\.zoomNamespace) private var zoomNamespace
 
     init(listId: String, title: String) {
         _viewModel = State(initialValue: ListDetailViewModel(listId: listId))
@@ -16,18 +17,20 @@ struct ListDetailView: View {
 
     var body: some View {
         ScrollView {
-            MediaGrid(spacing: 12) {
+            MediaGrid(spacing: 16) {
                 ForEach(viewModel.filteredItems) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                    let route = MediaRoute(tmdbId: item.tmdbId, type: item.type)
+                    NavigationLink(value: route) {
                         MediaCard(posterPath: viewModel.posterPath(for: item),
                                   title: viewModel.title(for: item),
                                   subtitle: viewModel.year(for: item),
                                   seen: item.seen)
+                            .zoomSource(route, in: zoomNamespace)
                             .task {
                                 if item == viewModel.items.last { await viewModel.loadMore() }
                             }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressableCard)
                 }
             }
             .padding(.vertical)
@@ -36,7 +39,6 @@ struct ListDetailView: View {
                 ProgressView().padding()
             }
         }
-        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(title)
         .errorToast($viewModel.errorMessage)
         .searchable(text: $viewModel.query, prompt: "Rechercher dans la liste")

@@ -14,42 +14,26 @@ struct LogsView: View {
     var body: some View {
         // Toujours dans un ScrollView (même vide) pour que `.refreshable` reste actif.
         ScrollView {
-            filterBar
-
             if viewModel.logs.isEmpty {
                 statusView.frame(minHeight: 340)
             } else {
                 feed
             }
         }
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(Color.appBackground)
         .navigationTitle("Logs")
         .navigationBarTitleDisplayMode(.inline)
         .errorToast($viewModel.errorMessage)
+        .searchable(text: $viewModel.search, prompt: "Message, catégorie, route…")
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .onSubmit(of: .search) { Task { await viewModel.applyFilters() } }
+        .onChange(of: viewModel.search) { _, newValue in
+            if newValue.isEmpty { Task { await viewModel.applyFilters() } }
+        }
+        .onChange(of: viewModel.level) { Task { await viewModel.applyFilters() } }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(role: .destructive) {
-                    Task { await viewModel.clear() }
-                } label: {
-                    if viewModel.isClearing {
-                        ProgressView()
-                    } else {
-                        Image(systemName: "trash")
-                    }
-                }
-                .disabled(viewModel.isClearing || viewModel.isLoading)
-                .accessibilityLabel("Vider les logs")
-            }
-        }
-        .task { await viewModel.loadInitial() }
-        .refreshable { await viewModel.refresh() }
-    }
-
-    // ── Filtres ───────────────────────────────────────────────────────────────
-
-    private var filterBar: some View {
-        VStack(spacing: 10) {
-            HStack {
                 Menu {
                     Picker("Niveau", selection: $viewModel.level) {
                         ForEach(LogLevelFilter.allCases) { level in
@@ -57,62 +41,39 @@ struct LogsView: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                        Text(viewModel.level.label)
-                            .font(.subheadline.weight(.medium))
-                        Image(systemName: "chevron.down").font(.caption2)
-                    }
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Color.appSurface, in: Capsule())
-                    .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
-                }
-
-                Spacer()
-
-                if viewModel.totalCount > 0 {
-                    Text("\(viewModel.totalCount)")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                    Label("Niveau", systemImage: viewModel.level == .all
+                          ? "line.3.horizontal.decrease.circle"
+                          : "line.3.horizontal.decrease.circle.fill")
                 }
             }
-
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("Message, catégorie, route…", text: $viewModel.search)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.search)
-                    .onSubmit { Task { await viewModel.applyFilters() } }
-                if !viewModel.search.isEmpty {
-                    Button {
-                        viewModel.search = ""
-                        Task { await viewModel.applyFilters() }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary)
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    Task { await viewModel.clear() }
+                } label: {
+                    if viewModel.isClearing {
+                        ProgressView()
+                    } else {
+                        Label("Vider les logs", systemImage: "trash")
                     }
-                    .buttonStyle(.plain)
                 }
+                .disabled(viewModel.isClearing || viewModel.isLoading)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                    .strokeBorder(Color.appStroke, lineWidth: 1)
-            )
         }
-        .padding(.horizontal)
-        .padding(.top, 8)
-        .onChange(of: viewModel.level) { Task { await viewModel.applyFilters() } }
+        .task { await viewModel.loadInitial() }
+        .refreshable { await viewModel.refresh() }
     }
 
     // ── Liste ─────────────────────────────────────────────────────────────────
 
     private var feed: some View {
-        LazyVStack(spacing: 10) {
+        LazyVStack(alignment: .leading, spacing: 10) {
+            if viewModel.totalCount > 0 {
+                Text("\(viewModel.totalCount) entrée\(viewModel.totalCount > 1 ? "s" : "")")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             ForEach(viewModel.logs) { log in
                 LogRow(log: log)
                     .onAppear {
@@ -156,7 +117,7 @@ private struct LogRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(log.level.uppercased())
-                    .font(.caption2.weight(.bold))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
@@ -215,7 +176,7 @@ private struct LogRow: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassPanel()
+        .cardBackground()
     }
 
     private var httpLine: some View {

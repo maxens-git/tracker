@@ -34,7 +34,7 @@ struct MonthCalendarView: View {
             daysGrid
         }
         .padding(12)
-        .glassPanel()
+        .cardBackground()
     }
 
     private var header: some View {
@@ -44,7 +44,7 @@ struct MonthCalendarView: View {
             }
             Spacer()
             Text(monthTitle)
-                .font(.display(18))
+                .font(.headline)
             Spacer()
             Button { shiftMonth(1) } label: {
                 Image(systemName: "chevron.right").font(.body.weight(.semibold))
@@ -58,7 +58,7 @@ struct MonthCalendarView: View {
         HStack(spacing: 0) {
             ForEach(Self.weekdaySymbols, id: \.self) { symbol in
                 Text(symbol)
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
             }
@@ -98,9 +98,9 @@ struct MonthCalendarView: View {
             .frame(height: 40)
             .background {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.accentColor)
+                    Circle().fill(Color.accentColor)
                 } else if isToday {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(Color.appStroke, lineWidth: 1)
+                    Circle().strokeBorder(Color.appStroke, lineWidth: 1)
                 }
             }
         }

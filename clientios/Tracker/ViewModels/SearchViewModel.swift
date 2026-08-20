@@ -83,6 +83,12 @@ final class SearchViewModel {
     private let api = APIService.shared
     private var searchTask: Task<Void, Never>?
 
+    /// Nombre de pages TMDB récupérées par recherche (20 résultats chacune).
+    /// Une seule page ne laissait presque rien aux filtres type/genre une fois
+    /// les personnes retirées ; trois pages sont demandées en parallèle, donc
+    /// sans coût de latence notable.
+    private let pagesPerSearch = 3
+
     func isSeen(_ result: TMDBSearchResult) -> Bool {
         seenKeys.contains("\(result.mediaType.rawValue)-\(result.id)")
     }
@@ -120,10 +126,20 @@ final class SearchViewModel {
         result.releaseDate ?? result.firstAirDate ?? ""
     }
 
-    /// Lance une recherche debouncée (300 ms) sur la requête courante.
-    func search() {
+    /// Lance une recherche debouncée (300 ms).
+    ///
+    /// Le texte est passé explicitement plutôt que relu dans `query` : la valeur
+    /// notifiée par `onChange` est la seule dont on sait qu'elle correspond à la
+    /// frappe qui a déclenché l'appel.
+    ///
+    /// Depuis que l'onglet Recherche est un `Tab(role: .search)`, le champ est
+    /// hébergé par la barre d'onglets et non par cette vue : l'écriture du
+    /// binding et la notification `onChange` n'arrivent plus dans le même ordre,
+    /// et relire la propriété donnait la frappe précédente — « Dune » affiché à
+    /// l'écran, résultats de « dun ».
+    func search(_ text: String? = nil) {
         searchTask?.cancel()
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = (text ?? query).trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
             allResults = []
@@ -142,12 +158,16 @@ final class SearchViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            let response = try await tmdb.searchMulti(text)
+            let fetched = try await tmdb.searchMulti(text, pages: pagesPerSearch)
             guard !Task.isCancelled else { return }
             // On ne garde que films et séries (pas les personnes).
-            allResults = response.results.filter {
+            let media = fetched.filter {
                 $0.mediaTypeRaw == nil || $0.mediaTypeRaw == "movie" || $0.mediaTypeRaw == "tv"
             }
+            // Dédoublonnage (une même fiche peut revenir d'une page à l'autre)
+            // puis reclassement : l'ordre TMDB privilégie la popularité, pas la
+            // correspondance avec ce qui a été tapé.
+            allResults = SearchRanking.rank(SearchRanking.deduplicated(media), query: text)
             // La recherche a abouti : on l'ajoute à l'historique récent.
             if !allResults.isEmpty { history.record(text) }
             seenKeys = await api.seenStateKeys(for: allResults)

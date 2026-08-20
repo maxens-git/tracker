@@ -15,38 +15,26 @@ struct RootView: View {
     var body: some View {
         TabView {
             Tab("Accueil", systemImage: "house") {
-                NavigationStack {
-                    HomeView()
-                        .trackerNavigationDestinations()
-                }
-            }
-
-            Tab("Recherche", systemImage: "magnifyingglass") {
-                NavigationStack {
-                    SearchView()
-                        .trackerNavigationDestinations()
-                }
+                TabStack { HomeView() }
             }
 
             Tab("Listes", systemImage: "list.bullet") {
-                NavigationStack {
-                    ListsView()
-                        .trackerNavigationDestinations()
-                }
+                TabStack { ListsView() }
             }
 
             Tab("Sorties", systemImage: "calendar") {
-                NavigationStack {
-                    ReleaseCalendarView()
-                        .trackerNavigationDestinations()
-                }
+                TabStack { ReleaseCalendarView() }
             }
 
             Tab("Plus", systemImage: "ellipsis") {
-                NavigationStack {
-                    MoreView()
-                        .trackerNavigationDestinations()
-                }
+                TabStack { MoreView() }
+            }
+
+            // Déclaré en dernier, comme il est rendu : `role: .search` détache cet
+            // onglet des autres et lui donne l'affordance de recherche dédiée de
+            // la barre iOS 26, au lieu d'un cinquième onglet indifférencié.
+            Tab("Recherche", systemImage: "magnifyingglass", role: .search) {
+                TabStack { SearchView() }
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
@@ -60,6 +48,22 @@ struct RootView: View {
                     language: settings.tmdbLanguage)
             }
         }
+    }
+}
+
+/// Pile de navigation d'un onglet : porte le `Namespace` de la transition zoom
+/// (partagé via l'environnement entre les vignettes et leurs destinations) et
+/// branche les destinations communes.
+private struct TabStack<Content: View>: View {
+    @Namespace private var zoomNamespace
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        NavigationStack {
+            content()
+                .trackerNavigationDestinations(zoom: zoomNamespace)
+        }
+        .environment(\.zoomNamespace, zoomNamespace)
     }
 }
 

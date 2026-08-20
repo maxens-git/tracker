@@ -2,6 +2,10 @@
 //  ReleaseCalendarView.swift
 //  Tracker
 //
+//  Sorties suivies : soit une liste groupée standard, soit une grille mensuelle
+//  avec les sorties du jour sélectionné dessous. Le sélecteur d'affichage est un
+//  contrôle segmenté placé dans la barre de navigation, comme dans Calendrier.
+//
 
 import SwiftUI
 
@@ -19,26 +23,13 @@ struct ReleaseCalendarView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("Affichage", selection: $mode) {
-                Text("Liste").tag(Mode.list)
-                Text("Calendrier").tag(Mode.calendar)
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-
-            Group {
-                switch mode {
-                case .list: listView
-                case .calendar: calendarView
-                }
+        Group {
+            switch mode {
+            case .list: listView
+            case .calendar: calendarView
             }
         }
         .navigationTitle("Sorties")
-        .background(Color.appBackground.ignoresSafeArea())
-        // États vides / chargement en overlay : le fond chaud `appBackground`
-        // couvre tout l'écran quand il n'y a rien à afficher.
         .overlay {
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView()
@@ -52,11 +43,19 @@ struct ReleaseCalendarView: View {
         }
         .errorToast($viewModel.errorMessage)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Picker("Affichage", selection: $mode) {
+                    Text("Liste").tag(Mode.list)
+                    Text("Calendrier").tag(Mode.calendar)
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 240)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task { await viewModel.load(forceRefresh: true) }
                 } label: {
-                    Image(systemName: "arrow.clockwise")
+                    Label("Rafraîchir", systemImage: "arrow.clockwise")
                 }
                 .disabled(viewModel.isLoading)
             }
@@ -70,41 +69,33 @@ struct ReleaseCalendarView: View {
 
     private var listView: some View {
         List {
-            ForEach(viewModel.items) { item in
-                releaseLink(item)
+            if !viewModel.items.isEmpty {
+                Section {
+                    ForEach(viewModel.items) { item in
+                        releaseLink(item)
+                    }
+                }
             }
 
             if !viewModel.pendingItems.isEmpty {
-                // Lignes simples (et non une Section) pour garder un fond transparent :
-                // le header/footer d'une Section affiche un rectangle blanc collé aux bords.
-                Text("À venir · date à confirmer")
-                    .font(.headline)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 18, leading: 16, bottom: 2, trailing: 16))
-
-                ForEach(viewModel.pendingItems) { item in
-                    releaseLink(item)
+                Section {
+                    ForEach(viewModel.pendingItems) { item in
+                        releaseLink(item)
+                    }
+                } header: {
+                    Text("À venir · date à confirmer")
+                } footer: {
+                    Text("Annoncé sur TMDB sans date. Basculera dans le calendrier dès qu'une date sera publiée.")
                 }
-
-                Text("Annoncé sur TMDB sans date. Basculera dans le calendrier dès qu'une date sera publiée.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
             }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
         .refreshable { await viewModel.load(forceRefresh: true) }
     }
 
     private func releaseLink(_ item: ReleaseCalendarItem) -> some View {
-        releaseNavigationRow(item)
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+            releaseRow(item)
+        }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 Task { await viewModel.remove(item) }
@@ -118,7 +109,7 @@ struct ReleaseCalendarView: View {
 
     private var calendarView: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 MonthCalendarView(month: $visibleMonth,
                                   selectedDay: $selectedDay,
                                   daysWithReleases: Set(itemsByDay.keys))
@@ -128,9 +119,9 @@ struct ReleaseCalendarView: View {
 
                 pendingList
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 12)
         }
-        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
         .refreshable { await viewModel.load(forceRefresh: true) }
     }
 
@@ -138,39 +129,55 @@ struct ReleaseCalendarView: View {
     @ViewBuilder
     private var pendingList: some View {
         if !viewModel.pendingItems.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("À venir · date à confirmer")
-                    .font(.headline)
-                    .padding(.horizontal, 4)
-
-                ForEach(viewModel.pendingItems) { item in
-                    calendarReleaseRow(item)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal)
+            dayGroup(title: "À venir · date à confirmer", items: viewModel.pendingItems)
         }
     }
 
     @ViewBuilder
     private var selectedDayList: some View {
         let dayItems = selectedDay.flatMap { itemsByDay[$0] } ?? []
-        VStack(alignment: .leading, spacing: 10) {
-            if let selectedDay {
-                Text(DateOnlyFormatter.display(selectedDay))
-                    .font(.headline)
-                    .padding(.horizontal, 4)
-            }
+        if let selectedDay {
+            dayGroup(title: DateOnlyFormatter.display(selectedDay), items: dayItems)
+        }
+    }
 
-            if dayItems.isEmpty {
+    /// Un titre de section puis les sorties correspondantes, dans une carte
+    /// groupée (rendu d'une section de liste, hors `List`).
+    private func dayGroup(title: String, items: [ReleaseCalendarItem]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 16)
+
+            if items.isEmpty {
                 Text("Aucune sortie ce jour.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 4)
+                    .padding(16)
+                    .cardBackground()
             } else {
-                ForEach(dayItems) { item in
-                    calendarReleaseRow(item)
+                CardGroup {
+                    ForEach(items) { item in
+                        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                            HStack {
+                                releaseRow(item)
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        if item.id != items.last?.id {
+                            RowDivider(leadingInset: 70)
+                        }
+                    }
                 }
             }
         }
@@ -185,62 +192,31 @@ struct ReleaseCalendarView: View {
         if let date = DateOnlyFormatter.date(from: first.date) { visibleMonth = date }
     }
 
-    /// Ligne cliquable dans une `List` : l'astuce ZStack + lien invisible évite le
-    /// double chevron ajouté automatiquement par `List` autour d'un `NavigationLink`.
-    private func releaseNavigationRow(_ item: ReleaseCalendarItem) -> some View {
-        ZStack {
-            releaseRow(item)
-                .allowsHitTesting(false)
-
-            NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-                Color.clear
-            }
-            .opacity(0)
-            .buttonStyle(.plain)
-        }
-        .contentShape(Rectangle())
-    }
-
-    /// Ligne cliquable hors `List` (vue calendrier) : le `NavigationLink` enveloppe
-    /// directement la carte, sinon le lien invisible en `opacity(0)` ne reçoit pas les taps.
-    private func calendarReleaseRow(_ item: ReleaseCalendarItem) -> some View {
-        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
-            releaseRow(item)
-        }
-        .buttonStyle(.plain)
-    }
-
     private func releaseRow(_ item: ReleaseCalendarItem) -> some View {
         HStack(spacing: 12) {
             PosterImage(path: item.posterPath)
-                .frame(width: 46, height: 69)
+                .frame(width: 44, height: 66)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.kind.uppercased())
-                    .font(.caption2.weight(.bold))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(.tint)
                 Text(item.title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.body)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(item.subtitle)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Text(item.pending ? "À confirmer" : DateOnlyFormatter.display(item.date))
-                    .font(.caption2)
-                    .foregroundStyle(item.pending ? Color.accentColor : Color.secondary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Spacer(minLength: 0)
-
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
-        .glassPanel()
+        .padding(.vertical, 4)
     }
 }
 

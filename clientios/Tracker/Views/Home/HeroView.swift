@@ -2,137 +2,82 @@
 //  HeroView.swift
 //  Tracker
 //
-//  Bannière mise en avant en haut de l'accueil (média vedette des tendances).
-//  Direction Liquid Glass : image pleine largeur qui monte jusqu'au haut de
-//  l'écran, halo doré, puis fondu vers le fond de page ; le texte et les
-//  contrôles en verre flottent par-dessus, sans carte ni cadre.
+//  Carte « à la une » en tête de l'accueil : image large aux coins arrondis,
+//  encastrée dans les marges de l'écran (comme les cartes en vedette de l'App
+//  Store ou de l'app TV) plutôt qu'une bannière pleine page qui passe sous la
+//  barre d'état. Le titre repose sur un dégradé qui garantit le contraste.
 //
 
 import SwiftUI
 
 struct HeroView: View {
     let item: TMDBSearchResult
-    /// Action du bouton secondaire « + » (ajout à la watchlist), facultative.
-    var onAdd: (() -> Void)? = nil
+    @Environment(\.zoomNamespace) private var zoomNamespace
 
-    private let height: CGFloat = 540
+    private var route: MediaRoute { MediaRoute(tmdbId: item.id, type: item.mediaType) }
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            backdrop
-            scrim
-            content
+        NavigationLink(value: route) {
+            VStack(alignment: .leading, spacing: 0) {
+                backdrop
+                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                    .overlay(alignment: .bottomLeading) { caption }
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous))
+                    .background {
+                        RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous)
+                            .fill(Color.appSurface)
+                            .shadow(color: .black.opacity(0.22), radius: 14, x: 0, y: 8)
+                    }
+            }
+            .zoomSource(route, in: zoomNamespace)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: height)
-        .clipped()
+        .buttonStyle(.pressableCard)
+        .accessibilityLabel("\(item.displayTitle), sélection du jour")
     }
 
     private var backdrop: some View {
-        // Le conteneur (Color) porte la taille ; l'image est posée en overlay
-        // puis clippée, ce qui l'empêche d'imposer sa largeur intrinsèque.
-        Color.appSurface
-            .frame(maxWidth: .infinity)
-            .frame(height: height)
+        Color.appPlaceholder
             .overlay {
-                // `original` : la bannière fait 540 pt de haut en pleine largeur,
-                // donc le backdrop 16:9 est fortement agrandi ; w1280 ressort flou.
-                RemoteImage(url: TMDBService.backdropURL(item.backdropPath, size: "original")) {
-                    Color.clear
+                RemoteImage(url: TMDBService.backdropURL(item.backdropPath, size: "w780")
+                    ?? TMDBService.posterURL(item.posterPath, size: "w500")) {
+                    Image(systemName: "film")
+                        .font(.largeTitle)
+                        .foregroundStyle(.secondary)
                 }
             }
             .clipped()
     }
 
-    /// Trois couches : un halo doré diffus en haut à gauche (la « lumière » de la
-    /// maquette), un voile sombre qui adosse le texte, puis un fondu discret vers
-    /// le fond de page.
-    private var scrim: some View {
-        ZStack {
-            RadialGradient(
-                colors: [Color.appAccent.opacity(0.22), .clear],
-                center: .init(x: 0.3, y: 0.2),
-                startRadius: 0,
-                endRadius: height * 0.75
-            )
-            // Vignette sombre (indépendante du thème) qui adosse le texte blanc :
-            // en mode clair, `appBackground` est un crème pâle sur lequel le titre
-            // s'effacerait. Elle est posée sur l'image et revient entièrement à
-            // `clear` AVANT le fondu de page — sinon le noir résiduel mélangé au
-            // crème donnait une bavure grise sale en bas de la bannière.
-            LinearGradient(
-                stops: [
-                    .init(color: .black.opacity(0.42), location: 0),
-                    .init(color: .clear, location: 0.30),
-                    .init(color: .black.opacity(0.18), location: 0.58),
-                    .init(color: .black.opacity(0.52), location: 0.82),
-                    .init(color: .clear, location: 0.90)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            // Fondu de page : l'image se dissout dans le fond crème sur le dernier
-            // dixième, là où la vignette est déjà transparente — une transition
-            // image → crème propre, sans mélange avec le noir.
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0.90),
-                    .init(color: Color.appBackground, location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-    }
-
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: "Sélection du jour", color: .white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .glassEffect(.regular, in: .capsule)
+    /// Titre + métadonnées posés sur un dégradé sombre : le texte reste blanc
+    /// dans les deux thèmes, comme sur les visuels des apps média d'Apple.
+    private var caption: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("À la une")
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .kerning(0.8)
+                .foregroundStyle(.white.opacity(0.75))
+                .padding(.bottom, 2)
 
             Text(item.displayTitle)
-                .font(.display(36))
+                .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
                 .lineLimit(2)
-                .padding(.top, 14)
-                .shadow(color: .black.opacity(0.4), radius: 18, x: 0, y: 3)
 
             Text(metaLine)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.82))
-                .padding(.top, 10)
-
-            HStack(spacing: 11) {
-                NavigationLink(value: MediaRoute(tmdbId: item.id, type: item.mediaType)) {
-                    Label("Voir la fiche", systemImage: "play.fill")
-                        .accentCTA()
-                }
-                .buttonStyle(.plain)
-
-                if let onAdd {
-                    Button(action: onAdd) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 54, height: 52)
-                            .glassEffect(.regular,
-                                         in: RoundedRectangle(cornerRadius: AppRadius.control,
-                                                              style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Ajouter à ma liste")
-                }
-            }
-            .padding(.top, 20)
+                .font(.footnote)
+                .foregroundStyle(.white.opacity(0.85))
         }
-        .padding(.horizontal, 22)
-        .padding(.bottom, 28)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background {
+            LinearGradient(colors: [.clear, .black.opacity(0.75)],
+                           startPoint: .top, endPoint: .bottom)
+                .padding(.top, -80)
+        }
     }
 
-    /// Ligne de métadonnées façon maquette : « Film · 2024 ».
+    /// « Film · 2024 ».
     private var metaLine: String {
         [item.mediaType.label, item.year]
             .compactMap { $0 }

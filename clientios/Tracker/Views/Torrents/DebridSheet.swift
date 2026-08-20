@@ -26,7 +26,7 @@ struct DebridSheet: View {
                 }
                 .padding()
             }
-            .background(Color.appBackground.ignoresSafeArea())
+            .background(Color.appBackground)
             .navigationTitle("Liens débridés")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -48,7 +48,7 @@ struct DebridSheet: View {
 
             FlowRow(spacing: 8) {
                 chip(icon: "server.rack", text: torrent.indexer)
-                chip(icon: "arrow.up", text: "\(torrent.seeders) seeders", tint: .appGreen)
+                chip(icon: "arrow.up", text: "\(torrent.seeders) seeders", tint: .green)
                 chip(icon: "internaldrive", text: ByteFormat.string(viewModel.totalDebridSize > 0 ? viewModel.totalDebridSize : torrent.size))
                 chip(icon: "doc.on.doc", text: "\(viewModel.debridFiles.count) fichier\(viewModel.debridFiles.count > 1 ? "s" : "")")
             }
@@ -57,11 +57,11 @@ struct DebridSheet: View {
 
     private func chip(icon: String, text: String, tint: Color = .secondary) -> some View {
         Label(text, systemImage: icon)
-            .font(.caption.weight(.medium))
+            .font(.footnote)
             .foregroundStyle(tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
+            .background(Color(.tertiarySystemFill), in: .capsule)
     }
 
     // ── Actions groupées ─────────────────────────────────────────────────────
@@ -74,20 +74,17 @@ struct DebridSheet: View {
                 } label: {
                     HStack(spacing: 8) {
                         if viewModel.resolvingAll {
-                            ProgressView().tint(.black)
+                            ProgressView()
                             Text("Obtention… (\(viewModel.resolvedCount)/\(viewModel.debridFiles.count))")
                         } else {
                             Image(systemName: "bolt.fill")
                             Text("Obtenir tous les liens")
                         }
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.black)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .disabled(viewModel.unlockingLink != nil)
             }
 
@@ -98,29 +95,21 @@ struct DebridSheet: View {
                     } label: {
                         Label(viewModel.allResolvedSelected ? "Tout décocher" : "Tout cocher",
                               systemImage: viewModel.allResolvedSelected ? "checklist.unchecked" : "checklist.checked")
-                            .font(.subheadline.weight(.semibold))
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                                .strokeBorder(Color.appStroke, lineWidth: 1))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
 
                     Button {
                         viewModel.copySelected()
                     } label: {
                         Label(viewModel.selectedCount > 0 ? "Copier (\(viewModel.selectedCount))" : "Copier",
                               systemImage: "doc.on.doc")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.black)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                     .disabled(viewModel.selectedCount == 0 || viewModel.resolvingAll)
-                    .opacity(viewModel.selectedCount == 0 ? 0.5 : 1)
                 }
             }
         }
@@ -156,7 +145,7 @@ private struct DebridFileRow: View {
                     } label: {
                         Image(systemName: viewModel.isSelected(file) ? "checkmark.circle.fill" : "circle")
                             .font(.title3)
-                            .foregroundStyle(viewModel.isSelected(file) ? Color.appAccent : .secondary)
+                            .foregroundStyle(viewModel.isSelected(file) ? Color.accentColor : .secondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(viewModel.isSelected(file) ? "Décocher" : "Cocher")
@@ -165,11 +154,11 @@ private struct DebridFileRow: View {
                 let ext = file.filename.fileExtensionUppercased
                 if !ext.isEmpty {
                     Text(ext)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(Color.appAccent)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
-                        .background(Color.appAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(file.filename.isEmpty ? "Fichier" : file.filename)
@@ -185,7 +174,7 @@ private struct DebridFileRow: View {
 
             actions
         }
-        .glassPanel(padding: 12)
+        .cardBackground(padding: 12)
     }
 
     @ViewBuilder
@@ -197,22 +186,15 @@ private struct DebridFileRow: View {
                 } label: {
                     Label("Copier", systemImage: "doc.on.doc")
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                            .strokeBorder(Color.appStroke, lineWidth: 1))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
 
                 Link(destination: url) {
                     Label("Télécharger", systemImage: "arrow.down.circle")
-                        .foregroundStyle(.black)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(Color.appAccent, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
                 }
+                .buttonStyle(.borderedProminent)
             }
-            .font(.subheadline.weight(.semibold))
         } else {
             Button {
                 Task { await viewModel.resolve(file) }
@@ -225,14 +207,9 @@ private struct DebridFileRow: View {
                     }
                     Text("Obtenir le lien")
                 }
-                .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(Color.appSurface, in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                    .strokeBorder(Color.appStroke, lineWidth: 1))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.bordered)
             .disabled(viewModel.unlockingLink != nil)
         }
     }

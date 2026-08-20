@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
   TmdbMovie, TmdbShow, TmdbSeason, TmdbCredits, TmdbVideos,
@@ -78,6 +78,35 @@ export class TmdbService {
     return this.http.get<TmdbSearchResponse>(`${BASE}/search/multi`, {
       params: params({ query, page })
     });
+  }
+
+  /**
+   * Recherche sur plusieurs pages à la fois.
+   *
+   * Une page TMDB ne fait que 20 résultats, dont on retire encore les personnes :
+   * les filtres type/genre travaillaient sur une poignée d'éléments. On récupère
+   * donc les pages suivantes en parallèle (la latence reste celle d'une seule
+   * requête) et on les concatène dans l'ordre TMDB.
+   *
+   * La page 1 détermine le nombre réel de pages : inutile d'en demander 3 quand
+   * la recherche n'en a qu'une.
+   */
+  searchPages(query: string, pages: number): Observable<MediaItem[]> {
+    return this.search(query, 1).pipe(
+      switchMap(first => {
+        const extra = Math.min(pages, first.total_pages) - 1;
+        if (extra <= 0) return of(first.results);
+        const rest = Array.from({ length: extra }, (_, i) =>
+          this.search(query, i + 2).pipe(
+            // Une page en échec ne doit pas faire tomber toute la recherche.
+            map(r => r.results),
+            catchError(() => of([] as MediaItem[])),
+          ),
+        );
+        // forkJoin préserve l'ordre des sources, donc l'ordre des pages.
+        return forkJoin(rest).pipe(map(chunks => [...first.results, ...chunks.flat()]));
+      }),
+    );
   }
 
   /** Liste des genres (films + séries fusionnés, doublons retirés par id, triés par nom). */

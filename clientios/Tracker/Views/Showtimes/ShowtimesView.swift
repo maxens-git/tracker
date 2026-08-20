@@ -34,9 +34,8 @@ struct ShowtimesView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(Color.appBackground)
         .navigationTitle("Séances")
-        .navigationBarTitleDisplayMode(.inline)
         .errorToast($viewModel.errorMessage)
         .task { await viewModel.start() }
         .onChange(of: viewModel.pickedDate) { Task { await viewModel.load() } }
@@ -55,15 +54,16 @@ struct ShowtimesView: View {
                 Button {
                     editorOpen = true
                 } label: {
-                    Image(systemName: "plus")
+                    Label("Ajouter un cinéma", systemImage: "plus")
+                        .labelStyle(.iconOnly)
                 }
-                .accessibilityLabel("Ajouter un cinéma")
+                .buttonStyle(.bordered)
             }
 
             dateControls
         }
         .padding(14)
-        .glassPanel()
+        .cardBackground()
     }
 
     // Dropdown des cinémas enregistrés : chacun cochable (affiché ou non).
@@ -91,16 +91,12 @@ struct ShowtimesView: View {
             HStack(spacing: 6) {
                 Image(systemName: "building.2")
                 Text(cinemasMenuLabel)
-                    .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2)
             }
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(Color.appSurface, in: Capsule())
-            .overlay(Capsule().strokeBorder(Color.appStroke, lineWidth: 1))
+            .font(.subheadline)
         }
+        .buttonStyle(.bordered)
     }
 
     private var cinemasMenuLabel: String {
@@ -132,13 +128,13 @@ struct ShowtimesView: View {
 
     private var dayLine: some View {
         HStack(spacing: 8) {
-            Text(dayLabel).font(.display(18))
+            Text(dayLabel).font(.headline)
             if Calendar.current.isDateInToday(viewModel.pickedDate) {
                 Text("aujourd'hui")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color.appBackground)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(Color.appAccent, in: Capsule())
+                    .background(Color.accentColor, in: .capsule)
             }
             Spacer(minLength: 0)
         }
@@ -209,7 +205,7 @@ private struct MovieCard: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(movie.title)
-                        .font(.display(17))
+                        .font(.headline)
                         .fixedSize(horizontal: false, vertical: true)
 
                     if movie.runtime != nil || !movie.genres.isEmpty {
@@ -228,7 +224,7 @@ private struct MovieCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassPanel()
+        .cardBackground()
     }
 
     private func theaterGroup(_ group: MovieTheaterShows) -> some View {
@@ -251,9 +247,9 @@ private struct MovieCard: View {
     private func showtimeLine(_ line: ShowLine) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(line.label)
-                .font(.system(size: 10, weight: .bold))
+                .font(.caption2.weight(.semibold))
                 .textCase(.uppercase)
-                .foregroundStyle(line.isPremium ? Color.appAccent : .secondary)
+                .foregroundStyle(line.isPremium ? Color.accentColor : .secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
@@ -314,9 +310,9 @@ private struct TimeChip: View {
     private var chip: some View {
         HStack(spacing: 5) {
             Text(show.time)
-                .font(.title3.weight(.bold).monospacedDigit())
+                .font(.headline.monospacedDigit())
             if let version = show.version {
-                tag(version, color: .secondary, bg: Color.appStroke)
+                tag(version, color: .secondary, bg: Color(.quaternarySystemFill))
             }
             if show.isPreview {
                 tag("AP", color: .red, bg: Color.red.opacity(0.14))
@@ -325,15 +321,15 @@ private struct TimeChip: View {
         .foregroundStyle(.primary)
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
-        .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .strokeBorder(show.isPreview ? Color.appAccent.opacity(0.5) : Color.appStroke,
-                          style: StrokeStyle(lineWidth: 1, dash: show.isPreview ? [3] : [])))
+        .background(Color(.tertiarySystemFill),
+                    in: RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+            .strokeBorder(show.isPreview ? Color.accentColor.opacity(0.6) : .clear, lineWidth: 1))
     }
 
     private func tag(_ text: String, color: Color, bg: Color) -> some View {
         Text(text.uppercased())
-            .font(.system(size: 9.5, weight: .bold))
+            .font(.caption2.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(bg, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
@@ -346,7 +342,7 @@ private struct AllocinePoster: View {
     let url: String?
 
     var body: some View {
-        Color(.secondarySystemBackground)
+        Color.appPlaceholder
             .overlay {
                 RemoteImage(url: url.flatMap { URL(string: $0) }) {
                     Image(systemName: "film")

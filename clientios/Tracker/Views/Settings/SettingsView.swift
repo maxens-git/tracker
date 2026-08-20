@@ -189,8 +189,6 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Réglages")
-        .scrollContentBackground(.hidden)
-        .background(Color.appBackground.ignoresSafeArea())
         .onAppear { cacheSize = CacheManager.diskUsage }
         .task { await loadRemoteSettings() }
         // Rechargement des réglages distants après une bascule de serveur.

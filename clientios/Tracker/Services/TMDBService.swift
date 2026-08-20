@@ -106,6 +106,40 @@ struct TMDBService {
         try await get("/search/multi", query: ["query": query, "page": String(page)])
     }
 
+    /// Recherche sur plusieurs pages à la fois.
+    ///
+    /// Une page TMDB ne fait que 20 résultats, dont on retire encore les
+    /// personnes : les filtres type/genre travaillaient sur une poignée
+    /// d'éléments. On récupère donc les pages en parallèle (la latence reste
+    /// celle d'une seule requête) et on les concatène dans l'ordre TMDB.
+    ///
+    /// La page 1 détermine le nombre réel de pages : inutile d'en demander 3
+    /// quand la recherche n'en a qu'une.
+    func searchMulti(_ query: String, pages: Int) async throws -> [TMDBSearchResult] {
+        let first = try await searchMulti(query, page: 1)
+        let extra = min(pages, first.totalPages) - 1
+        guard extra > 0 else { return first.results }
+
+        // Une page en échec (TMDB qui tousse, quota) ne doit pas faire tomber la
+        // recherche entière : on garde ce qui est revenu. Sans ça l'écran
+        // conservait silencieusement les résultats de la frappe précédente.
+        let rest = await withTaskGroup(of: (Int, [TMDBSearchResult]).self) { group in
+            for page in 2...(extra + 1) {
+                group.addTask {
+                    let results = try? await self.searchMulti(query, page: page).results
+                    return (page, results ?? [])
+                }
+            }
+            var byPage: [Int: [TMDBSearchResult]] = [:]
+            for await (page, results) in group { byPage[page] = results }
+            return byPage
+        }
+
+        // Les tâches finissent dans le désordre : on réordonne par page pour que
+        // l'ordre de pertinence TMDB reste exploitable comme départage.
+        return first.results + (2...(extra + 1)).flatMap { rest[$0] ?? [] }
+    }
+
     /// Liste des genres (films + séries fusionnés, doublons retirés par id).
     /// Sert à proposer des filtres lisibles à partir des `genre_ids` des résultats.
     func allGenres() async throws -> [TMDBGenre] {
