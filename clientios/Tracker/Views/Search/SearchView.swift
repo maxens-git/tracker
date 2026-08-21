@@ -87,7 +87,7 @@ struct SearchView: View {
     private var resultsSection: some View {
         Section {
             ForEach(viewModel.results) { item in
-                let route = MediaRoute(tmdbId: item.id, type: item.mediaType)
+                let route = MediaRoute(tmdbId: item.id, type: item.mediaType, source: "search")
                 NavigationLink(value: route) {
                     resultRow(item)
                         .zoomSource(route, in: zoomNamespace)

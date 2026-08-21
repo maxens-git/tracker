@@ -15,6 +15,13 @@ import SwiftUI
 struct MediaRoute: Hashable {
     let tmdbId: Int
     let type: MediaType
+    /// Vignette d'origine, pour distinguer deux affiches du même média dans une
+    /// même pile (un film peut être à la fois « à la une » et dans une rangée
+    /// de l'accueil, ou dans deux sections de la liste des sorties). L'id de la
+    /// transition zoom étant la route elle-même, sans ce discriminant les
+    /// vignettes en double partagent le même id et l'animation part toujours de
+    /// la première. Ignoré à l'ouverture de la fiche.
+    var source: String = ""
 }
 
 /// Destination "détail d'une liste".

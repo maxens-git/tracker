@@ -14,7 +14,7 @@ struct HeroView: View {
     let item: TMDBSearchResult
     @Environment(\.zoomNamespace) private var zoomNamespace
 
-    private var route: MediaRoute { MediaRoute(tmdbId: item.id, type: item.mediaType) }
+    private var route: MediaRoute { MediaRoute(tmdbId: item.id, type: item.mediaType, source: "hero") }
 
     var body: some View {
         NavigationLink(value: route) {

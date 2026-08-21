@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage(AppStorageKeys.appearance) private var appearance = AppAppearance.system
     @AppStorage(AppStorageKeys.hideSeenItems) private var hideSeenItems = false
     @AppStorage(AppStorageKeys.useDevServer) private var useDevServer = false
     @State private var ntfyEnabled = false
@@ -49,6 +51,19 @@ struct SettingsView: View {
         return formatter.string(from: date)
     }
 
+    /// « Suivre le système » : en le désactivant on fige l'apparence actuelle,
+    /// pour que l'écran ne change pas de couleur sous les doigts.
+    private var followsSystem: Binding<Bool> {
+        Binding(get: { appearance == .system },
+                set: { appearance = $0 ? .system : (colorScheme == .dark ? .dark : .light) })
+    }
+
+    /// Choix clair / sombre quand l'apparence est forcée.
+    private var manualAppearance: Binding<AppAppearance> {
+        Binding(get: { appearance == .light ? .light : .dark },
+                set: { appearance = $0 })
+    }
+
     var body: some View {
         Form {
             Section {
@@ -59,6 +74,23 @@ struct SettingsView: View {
                 .pickerStyle(.segmented)
             } header: {
                 Text("Serveur")
+            }
+
+            Section {
+                Toggle("Suivre le système", isOn: followsSystem)
+                if appearance != .system {
+                    Picker("Thème", selection: manualAppearance) {
+                        Text(AppAppearance.light.label).tag(AppAppearance.light)
+                        Text(AppAppearance.dark.label).tag(AppAppearance.dark)
+                    }
+                    .pickerStyle(.segmented)
+                }
+            } header: {
+                Text("Apparence")
+            } footer: {
+                Text(appearance == .system
+                     ? "L'app suit le mode clair / sombre de l'iPhone."
+                     : "Thème forcé sur « \(appearance.label.lowercased()) », quel que soit le réglage de l'iPhone.")
             }
 
             Section {

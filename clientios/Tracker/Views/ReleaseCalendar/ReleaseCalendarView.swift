@@ -16,6 +16,7 @@ struct ReleaseCalendarView: View {
     @State private var mode: Mode = .list
     @State private var selectedDay: String?
     @State private var visibleMonth = Date()
+    @Environment(\.zoomNamespace) private var zoomNamespace
 
     /// Sorties regroupées par jour (`yyyy-MM-dd`), pour marquer les cases du calendrier.
     private var itemsByDay: [String: [ReleaseCalendarItem]] {
@@ -72,7 +73,7 @@ struct ReleaseCalendarView: View {
             if !viewModel.items.isEmpty {
                 Section {
                     ForEach(viewModel.items) { item in
-                        releaseLink(item)
+                        releaseLink(item, source: "dated")
                     }
                 }
             }
@@ -80,7 +81,7 @@ struct ReleaseCalendarView: View {
             if !viewModel.pendingItems.isEmpty {
                 Section {
                     ForEach(viewModel.pendingItems) { item in
-                        releaseLink(item)
+                        releaseLink(item, source: "pending")
                     }
                 } header: {
                     Text("À venir · date à confirmer")
@@ -92,9 +93,14 @@ struct ReleaseCalendarView: View {
         .refreshable { await viewModel.load(forceRefresh: true) }
     }
 
-    private func releaseLink(_ item: ReleaseCalendarItem) -> some View {
-        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+    /// `source` distingue les sections : un même média listé deux fois doit
+    /// avoir deux id de transition différents, sinon le zoom part toujours de
+    /// la première ligne.
+    private func releaseLink(_ item: ReleaseCalendarItem, source: String) -> some View {
+        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: source)
+        return NavigationLink(value: route) {
             releaseRow(item)
+                .zoomSource(route, in: zoomNamespace)
         }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
@@ -144,7 +150,8 @@ struct ReleaseCalendarView: View {
     /// Un titre de section puis les sorties correspondantes, dans une carte
     /// groupée (rendu d'une section de liste, hors `List`).
     private func dayGroup(title: String, items: [ReleaseCalendarItem]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let source = "day-\(title)"
+        return VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -161,7 +168,8 @@ struct ReleaseCalendarView: View {
             } else {
                 CardGroup {
                     ForEach(items) { item in
-                        NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type)) {
+                        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: source)
+                        NavigationLink(value: route) {
                             HStack {
                                 releaseRow(item)
                                 Image(systemName: "chevron.right")
@@ -171,6 +179,7 @@ struct ReleaseCalendarView: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
                             .contentShape(Rectangle())
+                            .zoomSource(route, in: zoomNamespace)
                         }
                         .buttonStyle(.plain)
 

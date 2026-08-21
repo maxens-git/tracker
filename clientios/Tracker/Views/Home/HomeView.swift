@@ -62,7 +62,7 @@ struct HomeView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 14) {
                         ForEach(items) { item in
-                            let route = MediaRoute(tmdbId: item.id, type: .tv)
+                            let route = MediaRoute(tmdbId: item.id, type: .tv, source: "continue")
                             NavigationLink(value: route) {
                                 ContinueCard(item: item)
                                     .frame(width: 228)
@@ -90,7 +90,7 @@ struct HomeView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top, spacing: 14) {
                         ForEach(items) { item in
-                            let route = MediaRoute(tmdbId: item.id, type: item.mediaType)
+                            let route = MediaRoute(tmdbId: item.id, type: item.mediaType, source: title)
                             NavigationLink(value: route) {
                                 MediaCard(posterPath: item.posterPath,
                                           title: item.displayTitle,

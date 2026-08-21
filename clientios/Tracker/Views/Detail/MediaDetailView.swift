@@ -749,7 +749,7 @@ struct MediaDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(viewModel.similar) { item in
-                        let route = MediaRoute(tmdbId: item.id, type: item.mediaType)
+                        let route = MediaRoute(tmdbId: item.id, type: item.mediaType, source: "similar-\(viewModel.tmdbId)")
                         NavigationLink(value: route) {
                             MediaCard(posterPath: item.posterPath,
                                       title: item.displayTitle,

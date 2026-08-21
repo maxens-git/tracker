@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct TrackerApp: App {
+    /// Apparence choisie dans les réglages ; `.system` laisse iOS décider.
+    @AppStorage(AppStorageKeys.appearance) private var appearance = AppAppearance.system
+
     init() {
         // Agrandit le cache réseau partagé (affiches + fiches TMDB) avant toute requête.
         CacheManager.configure()
@@ -16,9 +19,10 @@ struct TrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Ni thème forcé ni teinte imposée : l'app suit le mode clair /
-            // sombre du système et l'asset `AccentColor`, comme une app native.
+            // Aucune teinte imposée (asset `AccentColor`) et, par défaut, le
+            // mode clair / sombre du système — sauf si les réglages le forcent.
             RootView()
+                .preferredColorScheme(appearance.colorScheme)
         }
     }
 }

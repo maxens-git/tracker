@@ -113,7 +113,7 @@ struct PersonView: View {
 
             MediaGrid {
                 ForEach(viewModel.filmography) { item in
-                    let route = MediaRoute(tmdbId: item.tmdbId, type: item.type)
+                    let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "person-\(viewModel.personId)")
                     NavigationLink(value: route) {
                         MediaCard(posterPath: item.posterPath,
                                   title: item.title,
