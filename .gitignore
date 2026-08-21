@@ -36,3 +36,6 @@ TestResults/
 .claude/
 # Xcode
 xcuserdata/
+clientios/build/
+*.xcarchive
+*.ipa
