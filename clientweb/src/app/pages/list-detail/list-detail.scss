@@ -9,6 +9,11 @@
   margin-bottom: 1.5rem;
 }
 
+.header-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .page-title {
   display: flex;
   align-items: center;
