@@ -1,4 +1,4 @@
-<div class="activity-page">
+<div class="page">
   <div class="page-header">
     <div>
       <h1 class="page-title">Activité</h1>
@@ -7,27 +7,27 @@
   </div>
 
   @if (error() && rows().length === 0) {
-    <div class="status text-center py-5">Erreur lors du chargement.</div>
+    <p-message severity="error" styleClass="state-message" text="Erreur lors du chargement." />
   } @else if (rows().length === 0 && loading()) {
     <app-spinner />
   } @else if (rows().length === 0) {
-    <div class="status text-center py-5">Aucune activité pour le moment.</div>
+    <p-message severity="secondary" styleClass="state-message" text="Aucune activité pour le moment." />
   } @else {
     <ul class="feed">
       @for (a of rows(); track a.id) {
-        <li class="feed-item">
-          <a [routerLink]="a.link" class="poster" [class.empty]="!a.posterUrl">
+        <li class="app-card feed-item">
+          <a class="poster" [routerLink]="a.link">
             @if (a.posterUrl) {
               <img [src]="a.posterUrl" [alt]="a.title" loading="lazy" />
             } @else {
-              <span class="poster-fallback">🎬</span>
+              <i class="pi pi-video"></i>
             }
           </a>
 
           <div class="body">
-            <a [routerLink]="a.link" class="title">{{ a.title }}</a>
+            <a class="title" [routerLink]="a.link">{{ a.title }}</a>
             <div class="action">
-              <span class="badge" [class]="a.tone">{{ a.icon }}</span>
+              <p-tag [severity]="a.severity" [icon]="a.icon" />
               <span class="action-text">{{ a.label }}</span>
             </div>
           </div>
@@ -39,9 +39,8 @@
 
     @if (hasMore) {
       <div class="load-more">
-        <button pRipple (click)="loadMore()" [disabled]="loading()">
-          {{ loading() ? 'Chargement…' : 'Voir plus' }}
-        </button>
+        <button pButton type="button" severity="secondary" outlined label="Voir plus"
+          [loading]="loading()" [disabled]="loading()" (click)="loadMore()"></button>
       </div>
     } @else if (loading()) {
       <app-spinner />

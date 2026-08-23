@@ -1,17 +1,23 @@
-<a class="poster" [class.seen]="item.seen" [routerLink]="detailLink">
+<a class="poster" [routerLink]="detailLink">
   @if (poster) {
     <img [src]="poster" [alt]="title" loading="lazy" decoding="async" />
   } @else {
-    <div class="placeholder d-flex align-items-center justify-content-center text-center">{{ title }}</div>
+    <div class="placeholder">{{ title }}</div>
   }
 
   <div class="overlay">
     <h3>{{ title }}</h3>
-    <div class="meta d-flex">
-      @if (year) { <span>{{ year }}</span> }
-    </div>
+    @if (year) {
+      <span class="year">{{ year }}</span>
+    }
   </div>
 
-  @if (item.seen) { <span class="seen-badge">VU</span> }
-  @if (rating) { <span class="rating-badge">★ {{ rating }}</span> }
+  <div class="badges">
+    @if (item.seen) {
+      <p-tag severity="success" icon="pi pi-check" value="Vu" />
+    }
+    @if (rating) {
+      <p-tag severity="contrast" icon="pi pi-star-fill" [value]="rating" />
+    }
+  </div>
 </a>

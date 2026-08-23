@@ -1,359 +1,158 @@
 .search-form {
   display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-
-  :host ::ng-deep .search-bar {
-    flex: 1;
-    min-width: 220px;
-    width: 100%;
-
-    input {
-      width: 100%;
-    }
-  }
-
-  .search-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
 }
 
-.indexer-multiselect {
-  flex-shrink: 0;
-  min-width: 200px;
-  max-width: 240px;
-
-  :host ::ng-deep &.p-multiselect {
-    width: 100%;
-  }
+::ng-deep .search-bar {
+  flex: 1 1 20rem;
 }
 
-.filter-select {
-  flex-shrink: 0;
-  max-width: 220px;
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--bg-elevated);
-  color: var(--text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--border-strong);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
+::ng-deep .indexer-select,
+::ng-deep .category-select {
+  min-width: 12rem;
 }
 
-.view-tabs {
-  display: inline-flex;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  padding: 0.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--bg-elevated);
-
-  .view-tab {
-    padding: 0.35rem 0.9rem;
-    border: 0;
-    border-radius: var(--r-sm, 6px);
-    background: transparent;
-    color: var(--muted);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-
-    &:hover {
-      color: var(--text);
-    }
-
-    &.is-active {
-      background: var(--accent, var(--surface));
-      color: var(--accent-contrast, var(--text));
-    }
-  }
-}
-
-.empty {
-  color: var(--muted);
-  text-align: center;
-  padding: 2.5rem 0;
+::ng-deep .view-tabs {
+  display: block;
+  margin-bottom: 1.25rem;
 }
 
 .results-count {
-  color: var(--muted);
+  margin: 0 0 0.75rem;
+  color: var(--p-text-muted-color);
   font-size: 0.85rem;
-  margin: 0 0 0.6rem;
 }
 
+// ── Tableau des résultats ──────────────────────────────────────────────────
 
-:host ::ng-deep .results-table {
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  overflow: hidden;
-
-  th,
-  td {
+::ng-deep .results-table {
+  .col-num {
+    text-align: right;
     white-space: nowrap;
   }
 
-  .col-title {
-    width: 100%;
-    max-width: 0;
-
-    span {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-weight: 600;
-    }
-  }
-
-  .col-indexer {
-    color: var(--muted);
-  }
-
-  .col-cat,
-  .col-age {
-    color: var(--muted);
-  }
-
-  .col-age {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .col-num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  td.col-num {
-    color: var(--muted);
-  }
-
-  td.col-num.seeders {
-    color: var(--success);
-    font-weight: 700;
-  }
-
-  td.col-num.leechers {
-    color: var(--danger);
-    font-weight: 700;
+  .col-age,
+  .col-indexer,
+  .col-cat {
+    white-space: nowrap;
   }
 
   .col-action {
-    text-align: right;
-    color: var(--muted);
-  }
-
-  .row-remove {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 0.2rem;
-    transition: color 0.15s ease;
-
-    &:hover:not(:disabled) {
-      color: var(--danger);
-    }
-
-    &:disabled {
-      cursor: default;
-    }
-  }
-
-  .torrent-row {
-    cursor: pointer;
-    transition: background 0.15s ease;
-
-    &:hover {
-      background: var(--bg-elevated);
-
-      .col-action {
-        color: var(--accent, var(--text));
-      }
-    }
-
-    &.is-debriding .col-action {
-      color: var(--accent, var(--text));
-    }
-
-    &.is-disabled {
-      cursor: default;
-
-      &:hover {
-        background: transparent;
-      }
-    }
+    width: 3rem;
+    text-align: center;
   }
 }
+
+.col-title span {
+  display: block;
+  overflow: hidden;
+  max-width: 26rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Une ligne entière est cliquable (elle lance le débridage) ; pendant qu'un
+// débridage tourne, les autres lignes sont neutralisées.
+.torrent-row {
+  cursor: pointer;
+
+  &.is-debriding {
+    background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  }
+
+  &.is-disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+.seeders {
+  color: var(--app-success);
+}
+
+.leechers {
+  color: var(--p-text-muted-color);
+}
+
+// ── Dialogue de débridage ──────────────────────────────────────────────────
 
 .debrid-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.6rem;
-
-  .debrid-subtitle {
-    margin: 0;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .bookmark-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    white-space: nowrap;
-  }
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .debrid-subtitle {
-  margin: 0 0 0.6rem;
-  color: var(--text);
-  font-weight: 600;
-  font-size: 0.95rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.85rem;
+  overflow-wrap: break-word;
 }
 
 .debrid-meta {
   display: flex;
+  margin: 1rem 0;
+  gap: 0.4rem;
   flex-wrap: wrap;
-  gap: 0.4rem 0.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-
-  .meta-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.55rem;
-    border-radius: var(--r-pill);
-    background: var(--bg-elevated);
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 600;
-    white-space: nowrap;
-
-    &.seeders {
-      color: var(--success);
-    }
-  }
 }
 
 .debrid-bulk {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-
-  .bulk-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-  }
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .debrid-file {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: var(--r-md, 8px);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--p-content-border-color);
+  flex-wrap: wrap;
+}
 
-  & + & {
-    margin-top: 0.5rem;
-  }
+.file-info {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
 
-  .file-check {
-    flex-shrink: 0;
-    display: inline-flex;
-  }
+.file-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.88rem;
 
-  .file-info {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .file-name {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text);
-  }
-
-  .file-ext {
-    display: inline-block;
-    margin-right: 0.4rem;
-    padding: 0.05rem 0.35rem;
-    border-radius: var(--r-sm, 4px);
-    background: var(--accent-soft, var(--bg-elevated));
-    color: var(--accent, var(--text));
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    vertical-align: middle;
-  }
-
-  .file-size {
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-
-  .file-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .link-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+  // Le tag d'extension garde sa taille : seul le nom se replie.
+  p-tag {
+    flex: 0 0 auto;
   }
 }
 
-@media (max-width: 480px) {
-  .debrid-head {
-    flex-direction: column;
+// `break-word` (et non `anywhere`) : la coupure se fait d'abord sur les espaces
+// de largeur nulle insérés par breakable(), et seulement en dernier recours au
+// milieu d'un segment trop long pour la ligne.
+.file-name-text {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
 
-    .bookmark-btn {
-      align-self: flex-start;
-    }
-  }
+.file-size {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.78rem;
+}
 
-  .debrid-file {
-    flex-direction: column;
-    align-items: stretch;
-
-    .file-actions {
-      justify-content: flex-end;
-    }
-  }
+.file-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }

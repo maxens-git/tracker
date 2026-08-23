@@ -1,11 +1,12 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
+import { MessageModule } from 'primeng/message';
+import { TagModule } from 'primeng/tag';
 import { Api } from '../../../shared/services/api';
 import { MediaListSummary } from '../../../shared/interfaces/list';
 import { Spinner } from '../../../shared/components/spinner/spinner';
@@ -16,7 +17,7 @@ import { SLUG_BY_SYSTEM_LIST } from '../../../shared/constants';
 @Component({
   selector: 'app-lists',
   standalone: true,
-  imports: [Ripple, RouterLink, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule, Spinner, Autofocus],
+  imports: [RouterLink, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule, Spinner, Autofocus, MessageModule, TagModule],
   templateUrl: './lists.html',
   styleUrl: './lists.scss',
 })
@@ -34,7 +35,6 @@ export class Lists implements OnInit {
   saving = signal(false);
   formError = signal<string | null>(null);
   formName = '';
-  formIcon = '';
   formDescription = '';
 
   ngOnInit() {
@@ -47,11 +47,6 @@ export class Lists implements OnInit {
       next: data => { this.lists.set(data); this.loading.set(false); },
       error: () => { this.error.set(true); this.loading.set(false); },
     });
-  }
-
-  listIcon(list: MediaListSummary): string {
-    if (list.icon) return list.icon;
-    return list.name.charAt(0).toUpperCase();
   }
 
   /**
@@ -71,7 +66,6 @@ export class Lists implements OnInit {
   openCreate() {
     this.editing.set(null);
     this.formName = '';
-    this.formIcon = '';
     this.formDescription = '';
     this.formError.set(null);
     this.editorOpen.set(true);
@@ -82,7 +76,6 @@ export class Lists implements OnInit {
     event.stopPropagation();
     this.editing.set(list);
     this.formName = list.name;
-    this.formIcon = list.icon ?? '';
     this.formDescription = list.description ?? '';
     this.formError.set(null);
     this.editorOpen.set(true);
@@ -97,7 +90,7 @@ export class Lists implements OnInit {
     const name = this.formName.trim();
     if (!name || this.saving()) return;
 
-    const dto = { name, icon: this.formIcon.trim(), description: this.formDescription.trim() };
+    const dto = { name, description: this.formDescription.trim() };
     this.saving.set(true);
     this.formError.set(null);
 

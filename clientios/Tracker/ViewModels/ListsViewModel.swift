@@ -25,11 +25,10 @@ final class ListsViewModel {
         isLoading = false
     }
 
-    func createList(name: String, description: String = "", icon: String = "") async {
+    func createList(name: String, description: String = "") async {
         do {
             _ = try await api.createList(name: name,
-                                         description: description.isEmpty ? nil : description,
-                                         icon: icon.isEmpty ? nil : icon)
+                                         description: description.isEmpty ? nil : description)
             await load()
             Haptics.success()
         } catch {
@@ -38,10 +37,10 @@ final class ListsViewModel {
         }
     }
 
-    /// Modifie une liste personnalisée (nom / icône / description).
-    func update(_ list: MediaListSummary, name: String, description: String, icon: String) async {
+    /// Modifie une liste personnalisée (nom / description).
+    func update(_ list: MediaListSummary, name: String, description: String) async {
         do {
-            try await api.updateList(id: list.id, name: name, description: description, icon: icon)
+            try await api.updateList(id: list.id, name: name, description: description)
             await load()
             Haptics.success()
         } catch {

@@ -9,6 +9,9 @@ import { MediaItem } from '../../../shared/interfaces/media';
 import { MediaRow } from '../../../shared/components/media-row/media-row';
 import { ContinueRow, ContinueItem } from '../../../shared/components/continue-row/continue-row';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 import { backdropUrl, displayTitle, displayYear } from '../../../shared/services/tmdb-image';
 
 interface HomeData {
@@ -23,7 +26,7 @@ interface HomeData {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, MediaRow, ContinueRow, Spinner],
+  imports: [CommonModule, RouterLink, MediaRow, ContinueRow, Spinner, ButtonModule, TagModule, MessageModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

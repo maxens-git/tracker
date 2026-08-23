@@ -1,188 +1,217 @@
-@import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'primeicons/primeicons.css';
 
 /* ===========================================================================
-   Design system — aligné sur le thème PrimeNG Aura par défaut.
-   Les variables reprennent les tokens Aura (emerald / slate / zinc) pour que
-   les composants PrimeNG et le CSS maison partagent exactement la même base.
-   Thèmes clair/sombre pilotés par data-theme sur <html>.
+   Feuille de style globale.
+
+   Règle du projet : aucune couleur, aucun rayon, aucune valeur de thème n'est
+   écrite en dur ici ou dans les composants. Tout vient des variables CSS
+   émises par PrimeNG à partir du preset Aura (`--p-*`) :
+
+     --p-content-background / --p-content-border-color / --p-content-hover-background
+     --p-text-color / --p-text-muted-color
+     --p-primary-color / --p-primary-hover-color / --p-primary-contrast-color
+     --p-surface-0 … --p-surface-950     (slate en clair, zinc en sombre)
+     --p-border-radius-xs … --p-border-radius-xl
+     --p-mask-background
+     --p-{blue,green,red,amber,rose,…}-{50…950}   (primitives Aura)
+
+   Le bloc `--app-*` ci-dessous ne contient que ce qu'Aura ne fournit pas :
+   fond de page, remplissage « creusé », ombres, couleurs sémantiques hors
+   composants et mesures de gabarit. Le basculement clair/sombre se limite donc
+   à ces quelques lignes — tout le reste suit automatiquement le thème PrimeNG.
    =========================================================================== */
+
 :root {
-  color-scheme: light;
+  --app-bg: var(--p-surface-50);
+  --app-sunken: var(--p-surface-100);
+  --app-border-strong: var(--p-surface-300);
+  --app-text-faint: var(--p-surface-400);
 
-  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-body);
+  --app-success: var(--p-green-600);
+  --app-danger: var(--p-red-500);
+  --app-warn: var(--p-amber-500);
+  --app-like: var(--p-rose-500);
 
-  /* Fonds — surface Aura (slate) */
-  --bg: #f8fafc;
-  --bg-elevated: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
-  --surface-hover: #f1f5f9;
-  --surface-glass: rgba(255, 255, 255, 0.85);
-  --surface-glass-strong: rgba(255, 255, 255, 0.96);
-  --surface-overlay: #ffffff;
-  --scrim: rgba(0, 0, 0, 0.4);
+  --app-shadow-sm: 0 1px 2px rgb(0 0 0 / 6%);
+  --app-shadow-md: 0 4px 14px rgb(0 0 0 / 10%);
 
-  /* Bordures */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-
-  /* Texte */
-  --text: #334155;
-  --muted: #64748b;
-  --faint: #94a3b8;
-
-  /* Accent — doré de clientios (Color.appAccent #E7B766), assombri ici : la teinte
-     pleine sert souvent de couleur de texte, illisible sur fond clair. */
-  --accent: #9a6b18;
-  --accent-rgb: 154, 107, 24;
-  --accent-hover: #775213;
-  --accent-contrast: #ffffff;
-  --accent-soft: rgba(var(--accent-rgb), 0.12);
-  --accent-grad: var(--accent);
-  --accent-glow: none;
-
-  /* Couleurs sémantiques */
-  --like: #f43f5e;
-  --like-rgb: 244, 63, 94;
-  --watch: #f59e0b;
-  --watch-rgb: 245, 158, 11;
-  /* Vert « vu » aligné sur Color.appGreen de clientios (#82C79A). */
-  --success: #82c79a;
-  --success-rgb: 130, 199, 154;
-  --success-contrast: #052e16;
-  --danger: #ef4444;
-  --danger-rgb: 239, 68, 68;
-  --chart-blue: #3b82f6;
-  --chart-blue-rgb: 59, 130, 246;
-  --rating-bg: rgba(255, 255, 255, 0.9);
-  --rating-text: #b45309;
-  --inverse-text: #ffffff;
-  --progress-track: #e2e8f0;
-  --hero-home-overlay: linear-gradient(to right, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.82) 45%, rgba(248, 250, 252, 0.16) 100%);
-  --detail-overlay:
-    linear-gradient(to right, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.86) 48%, rgba(248, 250, 252, 0.36) 100%),
-    linear-gradient(to top, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.1) 70%),
-    linear-gradient(to bottom, rgba(248, 250, 252, 0.2), var(--bg) 720px);
-
-  /* Rayons — border-radius Aura */
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 8px;
-  --r-pill: 9999px;
-
-  /* Ombres — douces, standard */
-  --shadow-1: 0 1px 2px rgba(18, 18, 23, 0.05);
-  --shadow-2: 0 4px 12px rgba(18, 18, 23, 0.1);
-
-  /* Layout */
-  --nav-h: 60px;
-  --sidebar-w: 236px;
+  --app-sidebar-w: 240px;
+  --app-topbar-h: 56px;
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
+:root[data-theme='dark'] {
+  --app-bg: var(--p-surface-950);
+  --app-sunken: var(--p-surface-800);
+  --app-border-strong: var(--p-surface-600);
+  --app-text-faint: var(--p-surface-500);
 
-  /* Surface Aura sombre (zinc) */
-  --bg: #09090b;
-  --bg-elevated: #18181b;
-  --surface: #18181b;
-  --surface-2: #27272a;
-  --surface-3: #3f3f46;
-  --surface-hover: #27272a;
-  --surface-glass: rgba(9, 9, 11, 0.72);
-  --surface-glass-strong: rgba(24, 24, 27, 0.96);
-  --surface-overlay: #18181b;
-  --scrim: rgba(0, 0, 0, 0.6);
+  --app-success: var(--p-green-400);
+  --app-danger: var(--p-red-400);
+  --app-warn: var(--p-amber-400);
+  --app-like: var(--p-rose-400);
 
-  --border: #3f3f46;
-  --border-strong: #52525b;
-
-  --text: #ffffff;
-  --muted: #a1a1aa;
-  --faint: #71717a;
-
-  /* Sur fond sombre, la teinte clientios pleine passe telle quelle. */
-  --accent: #e7b766;
-  --accent-rgb: 231, 183, 102;
-  --accent-hover: #eac17b;
-  --accent-contrast: #47310b;
-  --accent-soft: rgba(var(--accent-rgb), 0.16);
-
-  --like: #fb7185;
-  --like-rgb: 251, 113, 133;
-  --watch: #fbbf24;
-  --watch-rgb: 251, 191, 36;
-  --success: #82c79a;
-  --success-rgb: 130, 199, 154;
-  --success-contrast: #052e16;
-  --danger: #f87171;
-  --danger-rgb: 248, 113, 113;
-  --chart-blue: #60a5fa;
-  --chart-blue-rgb: 96, 165, 250;
-  --rating-bg: rgba(9, 9, 11, 0.78);
-  --rating-text: #fcd34d;
-  --inverse-text: #ffffff;
-  --progress-track: #27272a;
-  --hero-home-overlay: linear-gradient(to right, rgba(9, 9, 11, 0.97) 0%, rgba(9, 9, 11, 0.86) 48%, rgba(9, 9, 11, 0.46) 100%);
-  --detail-overlay:
-    linear-gradient(to right, rgba(9, 9, 11, 0.98) 0%, rgba(9, 9, 11, 0.86) 48%, rgba(9, 9, 11, 0.48) 100%),
-    linear-gradient(to top, rgba(9, 9, 11, 0.97) 0%, rgba(9, 9, 11, 0.14) 70%),
-    linear-gradient(to bottom, rgba(9, 9, 11, 0.2), var(--bg) 720px);
-
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --app-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --app-shadow-md: 0 4px 14px rgb(0 0 0 / 50%);
 }
 
-* { box-sizing: border-box; }
+/* --- Base --------------------------------------------------------------- */
 
-html, body {
+* {
+  box-sizing: border-box;
+}
+
+/* La barre de défilement verticale est « réservée » en permanence : sans cela,
+   son apparition au moment où les données arrivent rétrécit la zone de contenu
+   et décale tout ce qui est centré (.page) ou fixe (barre latérale, topbar).
+   Comme `*::-webkit-scrollbar` force les barres classiques (elles prennent de
+   la place, même sur macOS où elles seraient sinon en superposition), ce
+   décalage se produisait sur quasiment toutes les pages entre l'état de
+   chargement et l'affichage. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html,
+body {
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  min-height: 100%;
-  color: var(--text);
-  font-family: var(--font-body);
+  color: var(--p-text-color);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
+/* Le fond ne va que sur <body> : si <html> en portait un aussi, celui de <body>
+   cesserait d'être propagé au canevas et masquerait les calques en z-index
+   négatif (le backdrop de la fiche détail). */
 body {
-  background: var(--bg);
+  background: var(--app-bg);
 }
 
-.page-content {
-  min-height: 100vh;
-  padding-left: var(--sidebar-w);
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-a { color: inherit; text-decoration: none; }
-
-img { display: block; }
+img {
+  display: block;
+}
 
 ::selection {
-  background: rgba(var(--accent-rgb), 0.28);
-  color: var(--inverse-text);
+  background: color-mix(in srgb, var(--p-primary-color) 28%, transparent);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-color: var(--app-border-strong) transparent;
 }
-*::-webkit-scrollbar { height: 8px; width: 8px; }
-*::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: var(--r-pill);
-}
-*::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-/* Les composants PrimeNG gardent le rendu Aura par défaut ; on se limite ici
-   aux ajustements de mise en page. */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--app-border-strong);
+}
+
+/* --- Gabarit ------------------------------------------------------------ */
+
+.page-content {
+  min-height: 100vh;
+  padding-left: var(--app-sidebar-w);
+}
+
+/* Conteneur commun à toutes les pages « document » (tout sauf home et la fiche
+   détail, qui sont pleine largeur avec un backdrop). */
+.page {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  padding: clamp(1.5rem, 4vh, 2.5rem) clamp(1rem, 2vw, 1.5rem) 3rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  color: var(--p-text-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+/* Titre de section (rangées de l'accueil, blocs de la fiche détail). */
+.section-title {
+  margin: 0 0 0.85rem;
+  color: var(--p-text-color);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Grille d'affiches, partagée par recherche, listes, personne et similaires. */
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+/* Équivalent d'un <p-card> quand la carte doit être elle-même un lien ou une
+   ligne cliquable : mêmes valeurs que le composant, mise en page libre. On vise
+   les tokens sémantiques dont Card dérive, et non les `--p-card-*` : ces
+   derniers ne sont émis que sur les pages où un <p-card> est monté, et à froid
+   (Mes listes, Activité) la carte se retrouvait sans fond ni rayon. */
+.app-card {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-border-radius-xl);
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+}
+
+/* Libellé + champ, empilés : le rendu du contrôle reste celui de PrimeNG. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  > span,
+  > label {
+    color: var(--p-text-muted-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+}
+
+/* --- Ajustements PrimeNG ------------------------------------------------
+   Volontairement minimal : les composants gardent le rendu Aura par défaut,
+   on ne corrige ici que des questions de largeur/gabarit. */
+
+/* Les champs texte occupent la largeur de leur conteneur ; les listes
+   déroulantes gardent leur largeur naturelle et sont dimensionnées au cas par
+   cas, sinon elles s'étalent sur toute la ligne. */
 .p-inputtext {
+  width: 100%;
+}
+
+.field > .p-select,
+.field > .p-multiselect {
   width: 100%;
 }
 
@@ -190,46 +219,55 @@ img { display: block; }
   max-width: min(26rem, calc(100vw - 2rem));
 }
 
-:where(.activity-page, .list-detail-page, .lists-page, .person-page, .release-page, .search-page, .settings-page, .showtimes-page, .stats-page, .torrents-page) {
-  width: min(100%, 1200px);
-  margin-inline: auto;
-  padding: clamp(1.75rem, 4vh, 2.75rem) clamp(0.75rem, 2vw, 1.5rem) 2rem;
+/* Aura sépare les cartes du fond par une ombre seule ; sur le fond très clair
+   de l'app le contour est plus lisible, et il fonctionne aussi en sombre. */
+.p-card {
+  border: 1px solid var(--p-content-border-color);
+  box-shadow: none;
 }
 
-.page-title {
-  margin: 0;
-  color: var(--text);
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1.15;
+/* Tables, paginators et accordéons sont livrés par Aura sans contour : ils sont
+   prévus pour être posés dans une Card. Utilisés directement sur la page, il
+   leur manque la limite qui les fait lire comme un bloc fini — on la leur donne
+   ici, avec les mêmes tokens que .p-card.
+
+   Le rayon reprend la primitive dont Card dérive (border.radius.xl) plutôt que
+   --p-card-border-radius : PrimeNG n'émet les tokens d'un composant que sur les
+   pages où ce composant est monté, donc sur une page sans Card (Logs, Torrents)
+   la variable était vide et le rayon retombait à 0. */
+.p-datatable,
+.p-paginator,
+.p-accordion {
+  overflow: hidden;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-border-radius-xl);
 }
 
-.page-header,
-.page-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+/* Ligne d'en-tête légèrement creusée, pour la détacher des lignes de données. */
+.p-datatable-header-cell {
+  background: var(--app-sunken);
 }
 
-.subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+/* Le trait bas du dernier panneau doublerait le contour de l'accordéon. */
+.p-accordionpanel:last-child {
+  border-bottom: 0;
+}
+
+/* Les messages d'état vide occupent la largeur du contenu et respirent. */
+.p-message.state-message {
+  margin-block: 2rem;
 }
 
 @media (max-width: 700px) {
-  .page-header,
-  .page-head {
-    align-items: stretch;
+  .page-header {
     flex-direction: column;
+    align-items: stretch;
   }
 }
 
 @media (max-width: 860px) {
   .page-content {
-    padding-top: var(--nav-h);
+    padding-top: var(--app-topbar-h);
     padding-left: 0;
   }
 }

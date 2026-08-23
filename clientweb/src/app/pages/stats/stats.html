@@ -1,108 +1,96 @@
-<div class="stats-page">
-  <h1 class="page-title">Statistiques</h1>
+<div class="page stats-page">
+  <div class="page-header">
+    <h1 class="page-title">Statistiques</h1>
+  </div>
 
   @if (loading()) {
     <app-spinner />
   } @else if (error()) {
-    <div class="status text-center py-5">Erreur lors du chargement.</div>
+    <p-message severity="error" styleClass="state-message" text="Erreur lors du chargement." />
   } @else if (stats(); as s) {
 
     <!-- Chiffres clés -->
     <div class="kpi-grid">
-      <div class="kpi-card">
+      <p-card>
         <div class="kpi-value">{{ s.moviesSeenCount }}</div>
         <div class="kpi-label">Films vus</div>
-      </div>
-      <div class="kpi-card">
+      </p-card>
+      <p-card>
         <div class="kpi-value">{{ s.showsSeenCount }}</div>
         <div class="kpi-label">Séries vues</div>
-      </div>
-      <div class="kpi-card">
+      </p-card>
+      <p-card>
         <div class="kpi-value">{{ s.episodesSeenCount }}</div>
         <div class="kpi-label">Épisodes vus</div>
-      </div>
-      <div class="kpi-card accent">
-        <div class="kpi-value runtime-value">
-          <span>{{ formatRuntime(s.totalRuntimeMinutes) }}</span>
+      </p-card>
+      <p-card styleClass="kpi-accent">
+        <div class="kpi-value">
+          {{ formatRuntime(s.totalRuntimeMinutes) }}
           <small>{{ formatRuntimeHours(s.totalRuntimeMinutes) }}</small>
         </div>
         <div class="kpi-label">Temps total</div>
-      </div>
+      </p-card>
     </div>
 
     <!-- Genres préférés -->
     @if (genreLists().length > 0) {
-      <div class="genre-block">
-        <div class="genre-header">
-          <div class="genre-title">Genres préférés</div>
-          <div class="genre-mode" role="group" aria-label="Mode de calcul">
-            <button
-              type="button"
-              class="genre-mode-btn"
-              [class.active]="genreMode() === 'titles'"
-              (click)="genreMode.set('titles')">
-              Par titre
-            </button>
-            <button
-              type="button"
-              class="genre-mode-btn"
-              [class.active]="genreMode() === 'tags'"
-              (click)="genreMode.set('tags')">
-              Répartition
-            </button>
-          </div>
+      <p-card header="Genres préférés">
+        <div class="genre-controls">
+          <p-selectbutton
+            [options]="genreLists()"
+            optionLabel="name"
+            optionValue="listId"
+            [allowEmpty]="false"
+            [ngModel]="selectedListId()"
+            (ngModelChange)="selectList($event)"
+            size="small"
+            ariaLabelledBy="Liste"
+          />
+
+          <p-selectbutton
+            [options]="genreModeOptions"
+            optionLabel="label"
+            optionValue="value"
+            [allowEmpty]="false"
+            [ngModel]="genreMode()"
+            (ngModelChange)="genreMode.set($event)"
+            size="small"
+            ariaLabelledBy="Mode de calcul"
+          />
         </div>
-        <div class="genre-lists" role="group" aria-label="Liste">
-          @for (list of genreLists(); track list.listId) {
-            <button
-              type="button"
-              class="genre-list-btn"
-              [class.active]="selectedListId() === list.listId"
-              (click)="selectList(list.listId)">
-              @if (list.icon) { <span class="genre-list-icon">{{ list.icon }}</span> }
-              {{ list.name }}
-            </button>
-          }
-        </div>
+
         <div class="genre-list">
           @for (genre of visibleGenres(); track genre.name; let i = $index) {
             <div class="genre-row">
               <div class="genre-heading">
-                <span class="genre-name">{{ genre.name }}</span>
+                <span>{{ genre.name }}</span>
                 <span class="genre-percent">{{ genre.percentage }}%</span>
               </div>
-              <div class="genre-track">
-                <div
-                  class="genre-fill"
-                  [style.width]="pct(genre.percentage, maxGenre())"
-                  [style.background]="genreColor(i)">
-                </div>
-              </div>
+              <p-progressbar
+                [value]="genre.percentage"
+                [showValue]="false"
+                [color]="genreColor(i)"
+                styleClass="genre-bar"
+              />
             </div>
           }
         </div>
+
         @if (hasMoreGenres()) {
-          <button type="button" class="genre-toggle" (click)="showAllGenres.set(!showAllGenres())">
-            {{ showAllGenres() ? 'Voir moins' : 'Voir plus' }}
-          </button>
+          <button pButton type="button" severity="secondary" text size="small"
+            [icon]="showAllGenres() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            [label]="showAllGenres() ? 'Voir moins' : 'Voir plus'"
+            (click)="showAllGenres.set(!showAllGenres())"></button>
         }
-      </div>
+      </p-card>
     }
 
     <div class="charts-grid">
-      <!-- Activité par année -->
       @if (byYear().length > 0) {
-        <div class="chart-block">
-          <div class="section-label">Activité par année</div>
-          <div class="bar-chart year-chart">
+        <p-card header="Activité par année">
+          <div class="bar-chart">
             @for (b of byYear(); track b.year) {
-              <div class="bar-group">
-                <div class="tooltip">
-                  <div class="tooltip-title">{{ b.year }}</div>
-                  @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
-                  @if (b.episodes > 0) { <div class="tooltip-row"><span class="dot episodes"></span>{{ b.episodes }} épisode{{ b.episodes > 1 ? 's' : '' }}</div> }
-                  <div class="tooltip-total">{{ b.total }} total</div>
-                </div>
+              <div class="bar-group" [attr.aria-label]="barTooltip(b, b.year)">
                 <div class="bar-stack" [style.height]="pct(b.total, maxYear())">
                   @if (b.movies > 0) {
                     <div class="bar-segment movies" [style.flex]="b.movies"></div>
@@ -115,26 +103,18 @@
               </div>
             }
           </div>
+
           <div class="legend">
-            <span class="legend-dot movies"></span><span class="legend-text">Films</span>
-            <span class="legend-dot episodes"></span><span class="legend-text">Épisodes</span>
+            <span class="legend-item"><span class="legend-dot movies"></span>Films</span>
+            <span class="legend-item"><span class="legend-dot episodes"></span>Épisodes</span>
           </div>
-        </div>
+        </p-card>
       }
 
-      <!-- Activité des 12 derniers mois -->
-      <div class="chart-block">
-        <div class="section-label">12 derniers mois</div>
-        <div class="bar-chart month-chart">
+      <p-card header="12 derniers mois">
+        <div class="bar-chart">
           @for (b of byMonth(); track b.label) {
-            <div class="bar-group">
-              <div class="tooltip">
-                <div class="tooltip-title">{{ b.label }}</div>
-                @if (b.movies > 0) { <div class="tooltip-row"><span class="dot movies"></span>{{ b.movies }} film{{ b.movies > 1 ? 's' : '' }}</div> }
-                @if (b.episodes > 0) { <div class="tooltip-row"><span class="dot episodes"></span>{{ b.episodes }} épisode{{ b.episodes > 1 ? 's' : '' }}</div> }
-                @if (b.total === 0) { <div class="tooltip-row" style="color: var(--muted)">Aucun</div> }
-                @if (b.total > 0) { <div class="tooltip-total">{{ b.total }} total</div> }
-              </div>
+            <div class="bar-group" [attr.aria-label]="barTooltip(b, b.label)">
               <div class="bar-stack" [style.height]="pct(b.total, maxMonth())">
                 @if (b.movies > 0) {
                   <div class="bar-segment movies" [style.flex]="b.movies"></div>
@@ -147,8 +127,12 @@
             </div>
           }
         </div>
-      </div>
-    </div>
 
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot movies"></span>Films</span>
+          <span class="legend-item"><span class="legend-dot episodes"></span>Épisodes</span>
+        </div>
+      </p-card>
+    </div>
   }
 </div>

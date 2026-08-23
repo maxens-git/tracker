@@ -1,284 +1,167 @@
-// Largeur, padding, en-tête (.page-header), titre (.page-title) et sous-titre (.subtitle)
-// viennent des styles globaux partagés (styles.scss) : la page reste uniforme avec les autres.
-.subtitle .dot { opacity: 0.5; margin: 0 0.15rem; }
-
-/* ── Contrôles cinéma / date ─────────────────────────────────────────── */
 .controls {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.75rem 1rem;
-  padding: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-
-  label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    font-weight: 700;
-  }
-}
-
-.theater-field input {
-  width: 8rem;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .cinemas-field {
-  :global(.cinemas-select) { min-width: 15rem; max-width: 22rem; }
+  min-width: 16rem;
+  flex: 1 1 20rem;
+}
+
+::ng-deep .date-field .p-datepicker {
+  width: auto;
 }
 
 .date-controls {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-}
-
-/* ── Chips de cinémas dans l'éditeur (retirables) ─────────────────────── */
-.theater-chip {
-  display: inline-flex;
-  align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.55rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-
-  &.removable { padding-right: 0.3rem; }
-
-  .chip-x {
-    display: inline-flex;
-    align-items: center;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 0.1rem;
-    line-height: 1;
-    font-size: 0.7rem;
-
-    &:hover { color: var(--danger); }
-  }
 }
 
 .day-line {
-  margin: 1rem 0 1.25rem;
-  color: var(--text);
+  display: flex;
+  align-items: center;
+  margin: 0 0 1.25rem;
+  gap: 0.5rem;
+  color: var(--p-text-color);
+  font-size: 0.95rem;
   font-weight: 600;
-  text-transform: capitalize;
-
-  .badge-today {
-    margin-left: 0.5rem;
-    text-transform: uppercase;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    font-weight: 800;
-    color: var(--accent-contrast);
-    background: var(--accent);
-    padding: 0.15rem 0.45rem;
-    border-radius: 999px;
-    vertical-align: middle;
-  }
 }
 
-/* ── Liste des films ─────────────────────────────────────────────────── */
 .movies {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.75rem;
 }
 
 .movie {
-  display: grid;
-  grid-template-columns: 84px 1fr;
+  display: flex;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
 }
 
 .poster {
-  width: 84px;
-  aspect-ratio: 2 / 3;
-  border-radius: 8px;
+  display: grid;
   overflow: hidden;
-  background: var(--surface-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 72px;
+  height: 108px;
+  flex: 0 0 auto;
+  border-radius: var(--p-border-radius-md);
+  background: var(--app-sunken);
+  color: var(--app-text-faint);
+  place-items: center;
 
-  img { width: 100%; height: 100%; object-fit: cover; }
-  &.empty span { font-size: 1.8rem; opacity: 0.5; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
-.movie-head { margin-bottom: 0.6rem; }
+.movie-body {
+  min-width: 0;
+  flex: 1;
+}
 
 .movie-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--text);
-  text-decoration: none;
-  line-height: 1.2;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.meta {
+.movie-meta {
   display: flex;
+  margin: 0.15rem 0 0.75rem;
+  gap: 0.75rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.82rem;
   flex-wrap: wrap;
-  gap: 0.15rem 0.6rem;
-  margin-top: 0.25rem;
-  color: var(--muted);
-  font-size: 0.85rem;
 }
 
-/* ── Groupe par cinéma dans une carte film ───────────────────────────── */
-.theater-group {
-  & + & { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--border); }
+.theater-group + .theater-group {
+  margin-top: 0.85rem;
 }
 
 .theater-name {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-bottom: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-
-  .pi { font-size: 0.72rem; opacity: 0.8; }
+  gap: 0.35rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
-/* ── Séances (chips) ─────────────────────────────────────────────────── */
 .shows {
   display: flex;
+  margin-top: 0.4rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
+// Une séance : horaire + étiquettes de version/format. Sans billetterie
+// (pas de href), l'élément est inerte et grisé.
 .show {
   display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-elevated, var(--surface-2));
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color 0.15s;
-
-  .time { font-weight: 700; font-variant-numeric: tabular-nums; }
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-border-radius-md);
+  background: var(--p-content-background);
+  transition: border-color 0.15s, background 0.15s;
 
   &:not(.disabled):hover {
-    border-color: var(--accent);
+    border-color: var(--p-primary-color);
+    background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
   }
-  &.disabled { opacity: 0.6; cursor: default; }
-  &.preview { border-style: dashed; }
+
+  &.disabled {
+    background: var(--app-sunken);
+    color: var(--p-text-muted-color);
+    cursor: default;
+  }
 }
 
-.tag {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  padding: 0.1rem 0.35rem;
-  border-radius: 5px;
+.show-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.show-tag {
+  color: var(--p-text-muted-color);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 
-  &.version { background: var(--surface-3, var(--surface-2)); color: var(--muted); }
-  &.fmt { background: var(--accent-soft); color: var(--accent); }
-  &.av { background: rgba(var(--danger-rgb), 0.14); color: var(--danger); }
-}
-
-/* ── État vide ───────────────────────────────────────────────────────── */
-.empty {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--muted);
-
-  h2 { font-family: var(--font-display); color: var(--text); margin: 0 0 0.5rem; }
-  code {
-    background: var(--surface-2);
-    padding: 0.1rem 0.35rem;
-    border-radius: 5px;
-    font-size: 0.85em;
+  &.preview {
+    color: var(--app-warn);
   }
 }
 
-/* ── Éditeur de liste (dialog) ───────────────────────────────────────── */
+// ── Dialogue « Mes cinémas » ───────────────────────────────────────────────
+
 .editor-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-
-    > span {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      font-weight: 700;
-    }
-  }
-
-  input { text-transform: uppercase; }
-  .field:first-child input { text-transform: none; }
+  display: grid;
+  gap: 1.25rem;
 }
 
 .code-input {
   display: flex;
   gap: 0.5rem;
-
-  input { flex: 1; font-variant-numeric: tabular-nums; }
 }
 
 .editor-chips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.editor-form .hint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--muted);
-
-  code {
-    background: var(--surface-2);
-    padding: 0.1rem 0.35rem;
-    border-radius: 5px;
-    font-size: 0.85em;
-  }
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 0.25rem;
+  flex-wrap: wrap;
 }
 
-@media (max-width: 560px) {
-  .movie { grid-template-columns: 64px 1fr; }
-  .poster { width: 64px; }
-  .controls { padding: 0.85rem; }
+@media (max-width: 620px) {
+  .movie {
+    flex-direction: column;
+  }
 }

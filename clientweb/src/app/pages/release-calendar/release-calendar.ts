@@ -1,5 +1,4 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +11,10 @@ import { TmdbService } from '../../../shared/services/tmdb.service';
 import { TmdbMovie, TmdbShow, TmdbSeasonSummary } from '../../../shared/interfaces/media';
 import { posterUrl } from '../../../shared/services/tmdb-image';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
+import { CardModule } from 'primeng/card';
 
 interface ReleaseCalendarItem {
   id: string;
@@ -30,7 +33,7 @@ interface ReleaseCalendarItem {
 @Component({
   selector: 'app-release-calendar',
   standalone: true,
-  imports: [Ripple, ButtonModule, CommonModule, FormsModule, RouterLink, DatePickerModule, Spinner],
+  imports: [ButtonModule, CommonModule, FormsModule, RouterLink, DatePickerModule, Spinner, SelectButtonModule, TagModule, MessageModule, CardModule],
   templateUrl: './release-calendar.html',
   styleUrl: './release-calendar.scss',
 })
@@ -46,6 +49,10 @@ export class ReleaseCalendar implements OnInit {
   error = signal(false);
 
   view = signal<'list' | 'calendar'>('list');
+  readonly viewOptions = [
+    { label: 'Liste', value: 'list' as const, icon: 'pi pi-list' },
+    { label: 'Calendrier', value: 'calendar' as const, icon: 'pi pi-calendar' },
+  ];
   /** Mois affiché + jour sélectionné dans le calendrier (lié au p-datepicker). */
   calendarDate: Date = new Date();
   selectedKey = signal<string>('');

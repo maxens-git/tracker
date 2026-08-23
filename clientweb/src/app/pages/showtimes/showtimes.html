@@ -1,19 +1,15 @@
-<div class="showtimes-page">
+<div class="page">
   <div class="page-header">
     <div>
       <h1 class="page-title">Séances</h1>
-      <p class="subtitle">
-        Mes cinémas
-        <span class="dot">·</span>
-        {{ activeCount() }} coché{{ activeCount() > 1 ? 's' : '' }}
-      </p>
+      <p class="subtitle">Mes cinémas · {{ activeCount() }} coché{{ activeCount() > 1 ? 's' : '' }}</p>
     </div>
   </div>
 
   <div class="controls">
     <div class="field cinemas-field">
       <label for="cinemas-select">Cinémas</label>
-      <p-multiSelect
+      <p-multiselect
         inputId="cinemas-select"
         [options]="favoriteOptions()"
         optionLabel="label"
@@ -26,17 +22,17 @@
         [showToggleAll]="true"
         selectedItemsLabel="{0} cinémas cochés"
         [maxSelectedLabels]="2"
-        styleClass="cinemas-select"
         appendTo="body"
       />
     </div>
 
     <div class="field date-field">
-      <label>Date</label>
+      <label for="showtimes-date">Date</label>
       <div class="date-controls">
-        <button pButton pRipple type="button" icon="pi pi-chevron-left" severity="secondary" text
+        <button pButton type="button" icon="pi pi-chevron-left" severity="secondary" outlined
           (click)="shiftDay(-1)" [disabled]="atMinDay()" aria-label="Jour précédent"></button>
         <p-datepicker
+          inputId="showtimes-date"
           [(ngModel)]="pickedDate"
           (onSelect)="onDateChange()"
           [minDate]="today"
@@ -44,61 +40,51 @@
           dateFormat="D d M"
           [showIcon]="true"
           appendTo="body"
-          styleClass="showtimes-datepicker"
         />
-        <button pButton pRipple type="button" icon="pi pi-chevron-right" severity="secondary" text
+        <button pButton type="button" icon="pi pi-chevron-right" severity="secondary" outlined
           (click)="shiftDay(1)" aria-label="Jour suivant"></button>
       </div>
     </div>
 
-    <button pButton pRipple type="button" label="Ajouter un cinéma" icon="pi pi-plus"
-      severity="secondary" (click)="openManage()"></button>
+    <button pButton type="button" label="Ajouter un cinéma" icon="pi pi-plus"
+      severity="secondary" outlined class="manage-btn" (click)="openManage()"></button>
   </div>
 
-  <p class="day-line">{{ dayLabel() }}@if (isToday()) { <span class="badge-today">aujourd'hui</span> }</p>
+  <p class="day-line">
+    {{ dayLabel() }}
+    @if (isToday()) {
+      <p-tag severity="info" value="aujourd'hui" />
+    }
+  </p>
 
   @if (loading()) {
     <app-spinner />
   } @else if (loaded() && favorites().length === 0) {
-    <div class="empty">
-      <h2>Aucun cinéma enregistré</h2>
-      <p>Ajoutez vos cinémas pour retrouver leurs séances ici.</p>
-      <button pButton pRipple type="button" label="Ajouter un cinéma" icon="pi pi-plus" (click)="openManage()"></button>
-    </div>
+    <p-message severity="secondary" styleClass="state-message"
+      text="Aucun cinéma enregistré. Ajoutez vos cinémas pour retrouver leurs séances ici." />
   } @else if (loaded() && activeCount() === 0) {
-    <div class="empty">
-      <h2>Aucun cinéma coché</h2>
-      <p>Cochez au moins un cinéma ci-dessus pour afficher ses séances.</p>
-    </div>
+    <p-message severity="secondary" styleClass="state-message"
+      text="Cochez au moins un cinéma ci-dessus pour afficher ses séances." />
   } @else if (loaded() && mergedMovies().length === 0) {
-    <div class="empty">
-      <h2>Aucune séance</h2>
-      <p>Rien à l'affiche ce jour-là.</p>
-    </div>
+    <p-message severity="secondary" styleClass="state-message" text="Rien à l'affiche ce jour-là." />
   } @else {
     <div class="movies">
       @for (movie of mergedMovies(); track movie.key) {
-        <article class="movie">
-          <div class="poster" [class.empty]="!movie.poster">
+        <article class="app-card movie">
+          <div class="poster">
             @if (movie.poster) {
               <img [src]="movie.poster" [alt]="movie.title" loading="lazy" />
             } @else {
-              <span>🎬</span>
+              <i class="pi pi-video"></i>
             }
           </div>
 
           <div class="movie-body">
-            <div class="movie-head">
-              @if (movie.url) {
-                <h1 class="movie-title" rel="noopener">{{ movie.title }}</h1>
-              } @else {
-                <span class="movie-title">{{ movie.title }}</span>
-              }
-              <div class="meta">
-                @if (movie.runtime) { <span>{{ movie.runtime }}</span> }
-                @if (movie.genres.length) { <span>{{ movie.genres.join(', ') }}</span> }
-              </div>
-            </div>
+            <h2 class="movie-title">{{ movie.title }}</h2>
+            <p class="movie-meta">
+              @if (movie.runtime) { <span>{{ movie.runtime }}</span> }
+              @if (movie.genres.length) { <span>{{ movie.genres.join(', ') }}</span> }
+            </p>
 
             <!-- Séances groupées par cinéma : la salle de chaque créneau est visible d'un coup d'œil. -->
             @for (group of movie.byTheater; track group.theater.code) {
@@ -113,12 +99,11 @@
                       [attr.target]="show.ticketingUrl ? '_blank' : null"
                       rel="noopener"
                       [class.disabled]="!show.ticketingUrl"
-                      [class.preview]="show.isPreview"
                     >
-                      <span class="time">{{ show.time }}</span>
-                      @if (show.version) { <span class="tag version">{{ show.version }}</span> }
-                      @for (fmt of show.formats; track fmt) { <span class="tag fmt">{{ formatLabel(fmt) }}</span> }
-                      @if (show.isPreview) { <span class="tag av">AP</span> }
+                      <span class="show-time">{{ show.time }}</span>
+                      @if (show.version) { <span class="show-tag">{{ show.version }}</span> }
+                      @for (fmt of show.formats; track fmt) { <span class="show-tag">{{ formatLabel(fmt) }}</span> }
+                      @if (show.isPreview) { <span class="show-tag preview">AP</span> }
                     </a>
                   }
                 </div>
@@ -157,8 +142,8 @@
           autocapitalize="characters"
           appAutofocus
         />
-        <button pButton pRipple type="button" icon="pi pi-plus" label="Ajouter"
-          (click)="addFavorite()" [disabled]="!codeInput.trim() || adding()"></button>
+        <button pButton type="button" icon="pi pi-plus" label="Ajouter"
+          (click)="addFavorite()" [disabled]="!codeInput.trim() || adding()" [loading]="adding()"></button>
       </div>
     </div>
 
@@ -167,21 +152,16 @@
       @if (favorites().length) {
         <div class="editor-chips">
           @for (fav of favorites(); track fav.id) {
-            <span class="theater-chip removable">
-              {{ codeLabel(fav.code) }}
-              <button type="button" class="chip-x" (click)="removeFavorite(fav)" aria-label="Retirer">
-                <i class="pi pi-times"></i>
-              </button>
-            </span>
+            <p-chip [label]="codeLabel(fav.code)" [removable]="true" (onRemove)="removeFavorite(fav)" />
           }
         </div>
       } @else {
-        <p class="hint">Ajoutez un cinéma par son code (ex. <code>P0057</code>, <code>C0159</code>).</p>
+        <p-message severity="secondary" size="small" text="Ajoutez un cinéma par son code (ex. P0057, C0159)." />
       }
     </div>
-
-    <div class="dialog-actions">
-      <button pButton pRipple type="button" label="Fermer" (click)="closeManage()" [disabled]="adding()"></button>
-    </div>
   </div>
+
+  <ng-template #footer>
+    <button pButton type="button" label="Fermer" (click)="closeManage()" [disabled]="adding()"></button>
+  </ng-template>
 </p-dialog>

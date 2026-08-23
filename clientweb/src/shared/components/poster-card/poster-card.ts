@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TagModule } from 'primeng/tag';
 import { MediaItem } from '../../interfaces/media';
 import { posterUrl, displayTitle, displayYear } from '../../services/tmdb-image';
 
 @Component({
   selector: 'app-poster-card',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TagModule],
   templateUrl: './poster-card.html',
   styleUrl: './poster-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

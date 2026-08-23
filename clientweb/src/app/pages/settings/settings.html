@@ -1,4 +1,4 @@
-<div class="settings-page">
+<div class="page">
   <div class="page-header">
     <h1 class="page-title">Réglages</h1>
   </div>
@@ -6,189 +6,150 @@
   @if (loading()) {
     <app-spinner />
   } @else {
-    <section class="settings-panel theme-panel">
-      <div class="toggle-row">
-        <span>
-          <strong>Apparence</strong>
-          <small>Choisir un thème ou suivre automatiquement le réglage du système.</small>
-        </span>
-      </div>
+    <p-card header="Apparence">
+      <p class="panel-hint">Choisir un thème ou suivre automatiquement le réglage du système.</p>
 
-      <div class="theme-switcher" role="group" aria-label="Thème de l'application">
-        @for (option of themeOptions; track option.value) {
-          <button
-            type="button"
-            class="theme-option"
-            [class.active]="theme.mode() === option.value"
-            [attr.aria-pressed]="theme.mode() === option.value"
-            (click)="setTheme(option.value)"
-          >
-            <i [class]="option.icon"></i>
-            <span>{{ option.label }}</span>
-          </button>
-        }
-      </div>
-    </section>
+      <p-selectbutton
+        [options]="themeOptions"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        [ngModel]="theme.mode()"
+        (ngModelChange)="setTheme($event)"
+        ariaLabelledBy="Thème de l'application"
+      >
+        <ng-template #item let-option>
+          <i [class]="option.icon"></i>
+          <span>{{ option.label }}</span>
+        </ng-template>
+      </p-selectbutton>
+    </p-card>
 
-    <form class="settings-panel" (ngSubmit)="save()">
-      <div class="toggle-row">
-        <span>
-          <strong>Notifications ntfy</strong>
-          <small>Envoyer une notification quand une sortie suivie approche.</small>
-        </span>
-        <p-toggleswitch name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" ariaLabel="Notifications ntfy" />
-      </div>
+    <p-card header="Notifications ntfy">
+      <form class="panel-form" (ngSubmit)="save()">
+        <div class="toggle-row">
+          <p class="panel-hint">Envoyer une notification quand une sortie suivie approche.</p>
+          <p-toggleswitch name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" ariaLabel="Notifications ntfy" />
+        </div>
 
-      <label class="field">
-        <span>URL ntfy</span>
-        <input pInputText name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
-      </label>
+        <label class="field">
+          <span>URL ntfy</span>
+          <input pInputText name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
+        </label>
 
-      <label class="field">
-        <span>Topic</span>
-        <input pInputText name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
-      </label>
+        <label class="field">
+          <span>Topic</span>
+          <input pInputText name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
+        </label>
 
-      <label class="field">
-        <span>Token</span>
-        <input pInputText name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
-      </label>
+        <label class="field">
+          <span>Token</span>
+          <input pInputText name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
+        </label>
 
-      <label class="field compact">
-        <span>Prévenir combien de jours avant</span>
-        <input pInputText name="notifyDaysAhead" type="number" min="0" max="30" [(ngModel)]="form.notifyDaysAhead" />
-      </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Prévenir combien de jours avant</span>
+            <input pInputText name="notifyDaysAhead" type="number" min="0" max="30" [(ngModel)]="form.notifyDaysAhead" />
+          </label>
 
-      <label class="field compact">
-        <span>Heure d’envoi</span>
-        <input pInputText name="notificationTime" type="time" [(ngModel)]="notificationTime" />
-      </label>
+          <label class="field">
+            <span>Heure d’envoi</span>
+            <input pInputText name="notificationTime" type="time" [(ngModel)]="notificationTime" />
+          </label>
+        </div>
 
-      <div class="form-actions">
-        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
-          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
-          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
-        </button>
+        <div class="form-actions">
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+            [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
 
-        <button
-          pButton pRipple
-          class="test-btn"
-          type="button"
-          severity="secondary"
-          [class.confirmed]="testSent()"
-          [disabled]="saving() || testing()"
-          (click)="sendTestNotification()"
-        >
-          <i [class]="testing() ? 'pi pi-spinner pi-spin' : (testSent() ? 'pi pi-check' : 'pi pi-send')"></i>
-          <span>{{ testSent() ? 'Envoyé' : 'Envoyer un test' }}</span>
-        </button>
-      </div>
-    </form>
+          <button pButton type="button" severity="secondary" outlined [loading]="testing()"
+            [disabled]="saving() || testing()" (click)="sendTestNotification()"
+            [icon]="testSent() ? 'pi pi-check' : 'pi pi-send'" [label]="testSent() ? 'Envoyé' : 'Envoyer un test'"></button>
+        </div>
+      </form>
+    </p-card>
 
-    <form class="settings-panel" (ngSubmit)="save()">
-      <div class="toggle-row">
-        <span>
-          <strong>Recherche &amp; débridage</strong>
-          <small>Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid. Désactivé, l’onglet Torrents est masqué.</small>
-        </span>
-        <p-toggleswitch name="torrentsEnabled" [(ngModel)]="form.torrentsEnabled" ariaLabel="Recherche et débridage" />
-      </div>
+    <p-card header="Recherche &amp; débridage">
+      <form class="panel-form" (ngSubmit)="save()">
+        <div class="toggle-row">
+          <p class="panel-hint">
+            Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid.
+            Désactivé, l’onglet Torrents est masqué.
+          </p>
+          <p-toggleswitch name="torrentsEnabled" [(ngModel)]="form.torrentsEnabled" ariaLabel="Recherche et débridage" />
+        </div>
 
-      <label class="field">
-        <span>URL Prowlarr</span>
-        <input pInputText name="prowlarrUrl" type="url" [(ngModel)]="form.prowlarrUrl" placeholder="http://localhost:9696" />
-      </label>
+        <label class="field">
+          <span>URL Prowlarr</span>
+          <input pInputText name="prowlarrUrl" type="url" [(ngModel)]="form.prowlarrUrl" placeholder="http://localhost:9696" />
+        </label>
 
-      <label class="field">
-        <span>Clé API Prowlarr</span>
-        <input pInputText name="prowlarrApiKey" type="password" [(ngModel)]="form.prowlarrApiKey" autocomplete="new-password" />
-      </label>
+        <label class="field">
+          <span>Clé API Prowlarr</span>
+          <input pInputText name="prowlarrApiKey" type="password" [(ngModel)]="form.prowlarrApiKey" autocomplete="new-password" />
+        </label>
 
-      <label class="field">
-        <span>Clé API AllDebrid</span>
-        <input pInputText name="allDebridApiKey" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
-      </label>
+        <label class="field">
+          <span>Clé API AllDebrid</span>
+          <input pInputText name="allDebridApiKey" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
+        </label>
 
-      <div class="form-actions">
-        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
-          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
-          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
-        </button>
-      </div>
-    </form>
+        <div class="form-actions">
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+            [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
+        </div>
+      </form>
+    </p-card>
 
-    <form class="settings-panel" (ngSubmit)="save()">
-      <div class="toggle-row">
-        <span>
-          <strong>TMDB</strong>
-          <small>Clé, URL et langue utilisées pour interroger l’API TMDB. Laisser vide pour garder les valeurs par défaut.</small>
-        </span>
-      </div>
+    <p-card header="TMDB">
+      <form class="panel-form" (ngSubmit)="save()">
+        <p class="panel-hint">
+          Clé, URL et langue utilisées pour interroger l’API TMDB.
+          Laisser vide pour garder les valeurs par défaut.
+        </p>
 
-      <label class="field">
-        <span>Clé API TMDB</span>
-        <input pInputText name="tmdbApiKey" type="password" [(ngModel)]="form.tmdbApiKey" autocomplete="new-password" />
-      </label>
+        <label class="field">
+          <span>Clé API TMDB</span>
+          <input pInputText name="tmdbApiKey" type="password" [(ngModel)]="form.tmdbApiKey" autocomplete="new-password" />
+        </label>
 
-      <label class="field">
-        <span>URL de base</span>
-        <input pInputText name="tmdbBaseUrl" type="url" [(ngModel)]="form.tmdbBaseUrl" placeholder="https://api.themoviedb.org/3" />
-      </label>
+        <label class="field">
+          <span>URL de base</span>
+          <input pInputText name="tmdbBaseUrl" type="url" [(ngModel)]="form.tmdbBaseUrl" placeholder="https://api.themoviedb.org/3" />
+        </label>
 
-      <label class="field compact">
-        <span>Langue</span>
-        <input pInputText name="tmdbLanguage" [(ngModel)]="form.tmdbLanguage" placeholder="fr-FR" />
-      </label>
+        <label class="field">
+          <span>Langue</span>
+          <input pInputText name="tmdbLanguage" [(ngModel)]="form.tmdbLanguage" placeholder="fr-FR" />
+        </label>
+
+        <div class="form-actions">
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+            [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
+        </div>
+      </form>
+    </p-card>
+
+    <p-card header="Calendrier des sorties">
 
       <div class="form-actions">
-        <button pButton pRipple class="save-btn" type="submit" [class.confirmed]="saved()" [disabled]="saving() || testing()">
-          <i [class]="saving() ? 'pi pi-spinner pi-spin' : (saved() ? 'pi pi-check' : 'pi pi-save')"></i>
-          <span>{{ saved() ? 'Enregistré' : 'Enregistrer' }}</span>
-        </button>
+        <button pButton type="button" icon="pi pi-calendar-plus" label="S'abonner"
+          [loading]="calendarSubscribeLoading()" [disabled]="calendarSubscribeLoading()"
+          (click)="subscribeToCalendar()"></button>
+
+        <button pButton type="button" severity="secondary" outlined
+          [loading]="calendarCopying()" [disabled]="calendarCopying()" (click)="copyCalendarLink()"
+          [icon]="calendarCopied() ? 'pi pi-check' : 'pi pi-copy'"
+          [label]="calendarCopied() ? 'Copié' : 'Copier le lien'"></button>
       </div>
-    </form>
+    </p-card>
 
-    <section class="settings-panel calendar-panel">
-      <div class="toggle-row">
-        <span>
-          <strong>Calendrier des sorties</strong>
-          <small>Ajouts et suppressions se synchronisent automatiquement.</small>
-        </span>
-      </div>
-
-      <div class="form-actions">
-        <button pButton pRipple class="save-btn" type="button" [disabled]="calendarSubscribeLoading()" (click)="subscribeToCalendar()">
-          <i [class]="calendarSubscribeLoading() ? 'pi pi-spinner pi-spin' : 'pi pi-calendar-plus'"></i>
-          <span>{{ calendarSubscribeLoading() ? 'Ouverture…' : "S'abonner" }}</span>
-        </button>
-
-        <button
-          pButton pRipple
-          class="copy-btn"
-          type="button"
-          severity="secondary"
-          [class.confirmed]="calendarCopied()"
-          [disabled]="calendarCopying()"
-          (click)="copyCalendarLink()"
-        >
-          <i [class]="calendarCopying() ? 'pi pi-spinner pi-spin' : (calendarCopied() ? 'pi pi-check' : 'pi pi-copy')"></i>
-          <span>{{ calendarCopied() ? 'Copié' : 'Copier le lien' }}</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="settings-panel about-panel">
-      <div class="toggle-row">
-        <span>
-          <strong>À propos</strong>
-          <small>Informations sur la version déployée.</small>
-        </span>
-      </div>
-
+    <p-card header="À propos">
       <div class="info-row">
         <span>Date de build</span>
         <strong>{{ buildDate }}</strong>
       </div>
-    </section>
+    </p-card>
   }
 </div>

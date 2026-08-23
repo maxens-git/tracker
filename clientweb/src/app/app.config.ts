@@ -1,4 +1,6 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { provideRouter, withRouterConfig, RouteReuseStrategy } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { ReloadRouteReuseStrategy } from '../shared/reload-route-reuse-strategy';
@@ -6,48 +8,38 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
-import { definePreset } from '@primeuix/themes';
+import { definePreset, palette } from '@primeuix/themes';
 
 import { routes } from './app.routes';
 
+// Sans cet enregistrement, le pipe `date` retombe sur en-US et sort des mois en
+// anglais (« 12 Aug 2026 ») dans une interface par ailleurs entièrement française.
+registerLocaleData(localeFr);
+
+// Aura fait défiler quatre teintes dans le spinner ; on le veut monochrome.
+const SPINNER_COLORS = {
+  root: {
+    colorOne: '{primary.color}',
+    colorTwo: '{primary.color}',
+    colorThree: '{primary.color}',
+    colorFour: '{primary.color}',
+  },
+};
+
 /**
- * Aura, mais avec la palette primary d'origine (emerald) remplacée par une rampe
- * construite autour de l'accent doré de clientios — Color.appAccent, #E7B766
- * (H 38°, S 73%). En thème clair on descend à primary.800 : le doré plein ne
- * tient pas le contraste, ni en texte sur blanc ni en blanc sur aplat.
+ * Aura tel quel, à deux exceptions près : la rampe `primary` pointe sur le bleu
+ * d'Aura plutôt que sur l'emerald d'origine (pour rester aligné sur le tint
+ * bleu du client iOS), et le spinner devient monochrome. Tout le reste —
+ * surfaces, rayons, focus ring, états — vient du preset stock : aucune valeur
+ * de thème n'est recopiée à la main, ici ou dans les feuilles de style.
  */
 const TrackerPreset = definePreset(Aura, {
   semantic: {
-    primary: {
-      50: '#fcf7ed',
-      100: '#f9edd7',
-      200: '#f3dcb4',
-      300: '#eecc91',
-      400: '#eac17b',
-      500: '#e7b766',
-      600: '#e0a338',
-      700: '#c7891f',
-      800: '#9a6b18',
-      900: '#775213',
-      950: '#47310b',
-    },
-    colorScheme: {
-      light: {
-        primary: {
-          color: '{primary.800}',
-          contrastColor: '#ffffff',
-          hoverColor: '{primary.900}',
-          activeColor: '{primary.950}',
-        },
-      },
-      dark: {
-        primary: {
-          color: '{primary.500}',
-          contrastColor: '{primary.950}',
-          hoverColor: '{primary.400}',
-          activeColor: '{primary.300}',
-        },
-      },
+    primary: palette('{blue}'),
+  },
+  components: {
+    progressspinner: {
+      colorScheme: { light: SPINNER_COLORS, dark: SPINNER_COLORS },
     },
   },
 });
@@ -55,13 +47,13 @@ const TrackerPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
     provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload' })),
     { provide: RouteReuseStrategy, useClass: ReloadRouteReuseStrategy },
     provideHttpClient(),
     provideAnimationsAsync(),
     MessageService,
     providePrimeNG({
-      ripple: true,
       translation: {
         dayNames: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
         dayNamesShort: ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'],
@@ -70,6 +62,26 @@ export const appConfig: ApplicationConfig = {
         monthNamesShort: ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'],
         today: "Aujourd'hui",
         clear: 'Effacer',
+        emptyMessage: 'Aucun résultat',
+        emptySelectionMessage: 'Aucune sélection',
+        emptySearchMessage: 'Aucun résultat',
+        emptyFilterMessage: 'Aucun résultat',
+        // Libellés lus par les lecteurs d'écran : paginator, overlays, tables.
+        aria: {
+          selectAll: 'Tout sélectionner',
+          unselectAll: 'Tout désélectionner',
+          close: 'Fermer',
+          previous: 'Précédent',
+          next: 'Suivant',
+          navigation: 'Navigation',
+          firstPageLabel: 'Première page',
+          lastPageLabel: 'Dernière page',
+          nextPageLabel: 'Page suivante',
+          prevPageLabel: 'Page précédente',
+          previousPageLabel: 'Page précédente',
+          pageLabel: 'Page {page}',
+          rowsPerPageLabel: 'Éléments par page',
+        },
       },
       theme: {
         preset: TrackerPreset,

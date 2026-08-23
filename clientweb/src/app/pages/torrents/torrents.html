@@ -1,4 +1,4 @@
-<div class="torrents-page">
+<div class="page">
   <div class="page-header">
     <h1 class="page-title">Recherche torrents</h1>
   </div>
@@ -6,18 +6,10 @@
   <form class="search-form" (ngSubmit)="search()">
     <p-iconfield iconPosition="left" styleClass="search-bar">
       <p-inputicon styleClass="pi pi-search" />
-      <input
-        pInputText
-        type="search"
-        name="query"
-        placeholder="Rechercher un torrent…"
-        [(ngModel)]="query"
-        autofocus
-      />
+      <input pInputText type="search" name="query" placeholder="Rechercher un torrent…" [(ngModel)]="query" autofocus />
     </p-iconfield>
 
     <p-multiselect
-      class="indexer-multiselect"
       name="indexers"
       [options]="indexers()"
       optionLabel="name"
@@ -31,66 +23,65 @@
       [showToggleAll]="false"
       [filter]="false"
       appendTo="body"
+      styleClass="indexer-select"
     />
 
-    <select
-      class="filter-select"
+    <p-select
       name="category"
+      [options]="categories()"
+      optionLabel="name"
+      optionValue="id"
       [(ngModel)]="selectedCategory"
-      (ngModelChange)="onFilterChange()"
+      (onChange)="onFilterChange()"
       [disabled]="loading()"
-    >
-      <option [ngValue]="null">Toutes les catégories</option>
-      @for (cat of categories(); track cat.id) {
-        <option [ngValue]="cat.id">{{ cat.name }}</option>
-      }
-    </select>
+      placeholder="Toutes les catégories"
+      [showClear]="true"
+      appendTo="body"
+      styleClass="category-select"
+    />
 
-    <button pButton pRipple type="submit" class="search-btn" [disabled]="loading() || !query.trim()">
-      <i [class]="loading() ? 'pi pi-spinner pi-spin' : 'pi pi-search'"></i>
-      <span>Rechercher</span>
-    </button>
+    <button pButton type="submit" icon="pi pi-search" label="Rechercher"
+      [loading]="loading()" [disabled]="loading() || !query.trim()"></button>
   </form>
 
   @if (searched() || bookmarks().length > 0) {
-    <div class="view-tabs" role="tablist">
-      <button
-        type="button"
-        class="view-tab"
-        [class.is-active]="view() === 'results'"
-        (click)="view.set('results')"
-      >Résultats</button>
-      <button
-        type="button"
-        class="view-tab"
-        [class.is-active]="view() === 'bookmarks'"
-        (click)="view.set('bookmarks')"
-      >Marque-pages ({{ bookmarks().length }})</button>
-    </div>
+    <p-selectbutton
+      [options]="viewOptions()"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+      [ngModel]="view()"
+      (ngModelChange)="view.set($event)"
+      styleClass="view-tabs"
+      ariaLabelledBy="Vue"
+    />
   }
 
   @if (loading() && view() === 'results') {
     <app-spinner />
   } @else if (view() === 'bookmarks' && bookmarks().length === 0) {
-    <p class="empty">Aucun marque-page. Ouvre un torrent et mets-le de côté pour le retrouver ici.</p>
+    <p-message severity="secondary" styleClass="state-message"
+      text="Aucun marque-page. Ouvrez un torrent et mettez-le de côté pour le retrouver ici." />
   } @else if (view() === 'results' && searched() && results().length === 0) {
-    <p class="empty">Aucun torrent trouvé.</p>
+    <p-message severity="secondary" styleClass="state-message" text="Aucun torrent trouvé." />
   } @else if (displayed().length > 0) {
     <p class="results-count">{{ displayed().length }} résultat{{ displayed().length > 1 ? 's' : '' }}</p>
+
     <p-table [value]="displayed()" styleClass="results-table" [scrollable]="true">
-      <ng-template pTemplate="header">
+      <ng-template #header>
         <tr>
           <th class="col-title">Titre</th>
           <th class="col-indexer">Indexeur</th>
           <th class="col-cat">Catégorie</th>
           <th class="col-age">Âge</th>
           <th class="col-num">Taille</th>
-          <th class="col-num"><i class="pi pi-arrow-up"></i></th>
-          <th class="col-num"><i class="pi pi-arrow-down"></i></th>
+          <th class="col-num"><i class="pi pi-arrow-up" aria-label="Seeders"></i></th>
+          <th class="col-num"><i class="pi pi-arrow-down" aria-label="Leechers"></i></th>
           <th class="col-action"></th>
         </tr>
       </ng-template>
-      <ng-template pTemplate="body" let-torrent>
+
+      <ng-template #body let-torrent>
         <tr
           class="torrent-row"
           [class.is-debriding]="debriding() === torrent.magnetUrl"
@@ -106,17 +97,13 @@
           <td class="col-num leechers">{{ torrent.leechers }}</td>
           <td class="col-action">
             @if (view() === 'bookmarks') {
-              <button
-                type="button"
-                class="row-remove"
-                title="Retirer des marque-pages"
+              <button pButton type="button" icon="pi pi-trash" severity="danger" text rounded size="small"
+                aria-label="Retirer des marque-pages"
+                [loading]="bookmarking() === torrent.magnetUrl"
                 [disabled]="bookmarking() === torrent.magnetUrl"
-                (click)="$event.stopPropagation(); removeBookmark(torrent)"
-              >
-                <i [class]="bookmarking() === torrent.magnetUrl ? 'pi pi-spinner pi-spin' : 'pi pi-trash'"></i>
-              </button>
+                (click)="$event.stopPropagation(); removeBookmark(torrent)"></button>
             } @else {
-              <i [class]="debriding() === torrent.magnetUrl ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
+              <i [class]="debriding() === torrent.magnetUrl ? 'pi pi-spin pi-spinner' : 'pi pi-bolt'"></i>
             }
           </td>
         </tr>
@@ -131,59 +118,44 @@
     [dismissableMask]="true"
     [draggable]="false"
     [resizable]="false"
-    styleClass="debrid-dialog"
     [style]="{ width: '46rem', maxWidth: '94vw' }"
   >
     @if (debridTorrent(); as t) {
       <div class="debrid-head">
-        <p class="debrid-subtitle" [title]="t.title">{{ t.title }}</p>
+        <p class="debrid-subtitle" [title]="t.title">{{ breakable(t.title) }}</p>
         <button
-          pButton pRipple
+          pButton
           type="button"
-          class="bookmark-btn"
-          [class.is-active]="isBookmarked(t.magnetUrl)"
           [severity]="isBookmarked(t.magnetUrl) ? undefined : 'secondary'"
+          [outlined]="!isBookmarked(t.magnetUrl)"
+          [icon]="isBookmarked(t.magnetUrl) ? 'pi pi-star-fill' : 'pi pi-star'"
+          [label]="isBookmarked(t.magnetUrl) ? 'Retirer des marque-pages' : 'Mettre de côté'"
+          [loading]="bookmarking() === t.magnetUrl"
           [disabled]="bookmarking() === t.magnetUrl"
           (click)="toggleBookmark(t)"
-        >
-          <i [class]="bookmarking() === t.magnetUrl ? 'pi pi-spinner pi-spin' : (isBookmarked(t.magnetUrl) ? 'pi pi-star-fill' : 'pi pi-star')"></i>
-          <span>{{ isBookmarked(t.magnetUrl) ? 'Retirer des marque-pages' : 'Mettre de côté' }}</span>
-        </button>
+        ></button>
       </div>
+
       <div class="debrid-meta">
-        <span class="meta-chip"><i class="pi pi-server"></i> {{ t.indexer }}</span>
-        <span class="meta-chip seeders"><i class="pi pi-arrow-up"></i> {{ t.seeders }} seeders</span>
-        <span class="meta-chip"><i class="pi pi-database"></i> {{ formatSize(totalDebridSize() || t.size) }}</span>
-        <span class="meta-chip"><i class="pi pi-file"></i> {{ debridFiles().length }} fichier{{ debridFiles().length > 1 ? 's' : '' }}</span>
+        <p-chip [label]="t.indexer" icon="pi pi-server" />
+        <p-chip [label]="t.seeders + ' seeders'" icon="pi pi-arrow-up" />
+        <p-chip [label]="formatSize(totalDebridSize() || t.size)" icon="pi pi-database" />
+        <p-chip [label]="debridFiles().length + ' fichier' + (debridFiles().length > 1 ? 's' : '')" icon="pi pi-file" />
       </div>
     }
 
     @if (debridFiles().length > 1) {
       <div class="debrid-bulk">
         @if (hasUnresolved()) {
-          <button
-            pButton pRipple
-            type="button"
-            class="bulk-btn"
+          <button pButton type="button" icon="pi pi-bolt"
+            [loading]="resolvingAll()"
             [disabled]="unlockingLink() !== null"
-            (click)="resolveAll()"
-          >
-            <i [class]="resolvingAll() ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
-            <span>{{ resolvingAll() ? 'Obtention… (' + resolvedCount() + '/' + selectedCount() + ')' : 'Obtenir les liens sélectionnés' }}</span>
-          </button>
+            [label]="resolvingAll() ? 'Obtention… (' + resolvedCount() + '/' + selectedCount() + ')' : 'Obtenir les liens sélectionnés'"
+            (click)="resolveAll()"></button>
         }
         @if (resolvedCount() > 0) {
-          <button
-            pButton pRipple
-            type="button"
-            class="bulk-btn"
-            severity="secondary"
-            [disabled]="resolvingAll()"
-            (click)="copyAll()"
-          >
-            <i class="pi pi-copy"></i>
-            <span>Copier tous les liens</span>
-          </button>
+          <button pButton type="button" severity="secondary" outlined icon="pi pi-copy"
+            label="Copier tous les liens" [disabled]="resolvingAll()" (click)="copyAll()"></button>
         }
       </div>
     }
@@ -192,42 +164,35 @@
       <div class="debrid-file">
         @if (debridFiles().length > 1) {
           <p-checkbox
-            class="file-check"
             [binary]="true"
             [ngModel]="isSelected(file)"
             (ngModelChange)="toggleSelection(file, $event)"
             [disabled]="resolvingAll()"
           />
         }
+
         <div class="file-info">
           <span class="file-name" [title]="file.filename">
-            @if (fileExt(file.filename); as ext) { <span class="file-ext">{{ ext }}</span> }
-            {{ file.filename || 'Fichier' }}
+            @if (fileExt(file.filename); as ext) {
+              <p-tag severity="secondary" [value]="ext" />
+            }
+            <span class="file-name-text">{{ breakable(file.filename) || 'Fichier' }}</span>
           </span>
           <span class="file-size">{{ formatSize(file.size) }}</span>
         </div>
+
         <div class="file-actions">
           @if (resolvedLink(file); as direct) {
-            <button pButton pRipple type="button" class="link-btn" severity="secondary" (click)="copyLink(direct)">
-              <i class="pi pi-copy"></i><span>Copier</span>
-            </button>
-            <a pButton pRipple class="link-btn vlc-btn" [href]="'vlc://' + direct">
-              <i class="pi pi-play"></i><span>VLC</span>
-            </a>
-            <a pButton pRipple class="link-btn" severity="secondary" [href]="direct" target="_blank" rel="noopener">
-              <i class="pi pi-download"></i><span>Télécharger</span>
-            </a>
+            <button pButton type="button" severity="secondary" outlined size="small"
+              icon="pi pi-copy" label="Copier" (click)="copyLink(direct)"></button>
+            <a pButton size="small" icon="pi pi-play" label="VLC" [href]="'vlc://' + direct"></a>
+            <a pButton severity="secondary" outlined size="small" icon="pi pi-download" label="Télécharger"
+              [href]="direct" target="_blank" rel="noopener"></a>
           } @else {
-            <button
-              pButton pRipple
-              type="button"
-              class="link-btn"
+            <button pButton type="button" size="small" icon="pi pi-bolt" label="Obtenir le lien"
+              [loading]="unlockingLink() === file.link"
               [disabled]="unlockingLink() !== null"
-              (click)="resolve(file)"
-            >
-              <i [class]="unlockingLink() === file.link ? 'pi pi-spinner pi-spin' : 'pi pi-bolt'"></i>
-              <span>Obtenir le lien</span>
-            </button>
+              (click)="resolve(file)"></button>
           }
         </div>
       </div>

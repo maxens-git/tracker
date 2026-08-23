@@ -11,7 +11,7 @@ import {
 } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
-import { Ripple } from 'primeng/ripple';
+import { TagModule } from 'primeng/tag';
 import { SettingsState } from '../../services/settings-state';
 
 type NavItem = {
@@ -25,7 +25,7 @@ type NavItem = {
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, ButtonModule, DrawerModule, Ripple],
+  imports: [RouterLink, RouterLinkActive, ButtonModule, DrawerModule, TagModule],
   templateUrl: './nav.html',
   styleUrl: './nav.scss',
 })

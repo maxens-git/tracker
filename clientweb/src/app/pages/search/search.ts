@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +15,11 @@ import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ChipModule } from 'primeng/chip';
+import { MessageModule } from 'primeng/message';
 
 type SortKey = 'relevance' | 'rating' | 'date_desc' | 'date_asc' | 'popularity';
 
@@ -30,7 +34,7 @@ const PAGES_PER_SEARCH = 3;
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [Ripple, CommonModule, FormsModule, PosterCard, Spinner, ButtonModule, IconFieldModule, InputIconModule, InputTextModule],
+  imports: [CommonModule, FormsModule, PosterCard, Spinner, ButtonModule, IconFieldModule, InputIconModule, InputTextModule, SelectButtonModule, SelectModule, MultiSelectModule, ChipModule, MessageModule],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })
@@ -51,9 +55,8 @@ export class Search implements OnInit {
 
   // ── Filtres genre + tri (appliqués côté client sur les résultats) ──────────
   allGenres = signal<TmdbGenre[]>([]);
-  selectedGenreIds = signal<Set<number>>(new Set());
+  selectedGenreIds = signal<number[]>([]);
   sort = signal<SortKey>('relevance');
-  showFilters = signal(false);
 
   readonly sortOptions: { key: SortKey; label: string }[] = [
     { key: 'relevance', label: 'Pertinence' },
@@ -64,7 +67,7 @@ export class Search implements OnInit {
   ];
 
   /** Vrai si un filtre genre ou un tri non par défaut est actif. */
-  hasActiveFilters = computed(() => this.selectedGenreIds().size > 0 || this.sort() !== 'relevance');
+  hasActiveFilters = computed(() => this.selectedGenreIds().length > 0 || this.sort() !== 'relevance');
 
   /** Genres effectivement présents dans les résultats, pour ne proposer que des filtres utiles. */
   relevantGenres = computed(() => {
@@ -76,7 +79,7 @@ export class Search implements OnInit {
   /** Résultats après filtre de type, filtre de genres et tri (tout côté client). */
   results = computed(() => {
     const f = this.filter();
-    const genres = this.selectedGenreIds();
+    const genres = new Set(this.selectedGenreIds());
     let items = this.allResults();
     if (f !== 'all') items = items.filter(r => r.media_type === f);
     if (genres.size > 0) {
@@ -87,6 +90,13 @@ export class Search implements OnInit {
 
   movieCount = computed(() => this.allResults().filter(r => r.media_type === 'movie').length);
   showCount = computed(() => this.allResults().filter(r => r.media_type === 'tv').length);
+
+  /** Options du <p-selectButton> de type, libellés comptés inclus. */
+  typeOptions = computed(() => [
+    { label: `Tout (${this.allResults().length})`, value: 'all' as const },
+    { label: `Films (${this.movieCount()})`, value: 'movie' as const },
+    { label: `Séries (${this.showCount()})`, value: 'tv' as const },
+  ]);
 
   ngOnInit() {
     this.tmdb.genres().subscribe(g => this.allGenres.set(g));
@@ -188,22 +198,8 @@ export class Search implements OnInit {
 
   // ── Filtres genre + tri ────────────────────────────────────────────────────
 
-  toggleFilters() { this.showFilters.update(v => !v); }
-
-  setSort(key: SortKey) { this.sort.set(key); }
-
-  isGenreSelected(id: number) { return this.selectedGenreIds().has(id); }
-
-  toggleGenre(id: number) {
-    this.selectedGenreIds.update(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
   resetFilters() {
-    this.selectedGenreIds.set(new Set());
+    this.selectedGenreIds.set([]);
     this.sort.set('relevance');
   }
 

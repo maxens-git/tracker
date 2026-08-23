@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -11,11 +10,15 @@ import { TmdbPerson, TmdbPersonCredit } from '../../../shared/interfaces/person'
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { profileUrl } from '../../../shared/services/tmdb-image';
+import { ButtonModule } from 'primeng/button';
+import { AvatarModule } from 'primeng/avatar';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 
 @Component({
   selector: 'app-person',
   standalone: true,
-  imports: [Ripple, CommonModule, PosterCard, Spinner],
+  imports: [CommonModule, PosterCard, Spinner, ButtonModule, AvatarModule, TagModule, MessageModule],
   templateUrl: './person.html',
   styleUrl: './person.scss',
 })

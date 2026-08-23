@@ -5,6 +5,12 @@ import { Api } from '../../../shared/services/api';
 import { Stats, StatsGenreBucket, StatsListGenres, CombinedYearBucket, CombinedMonthBucket } from '../../../shared/interfaces/stats';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { SYSTEM_LIST } from '../../../shared/constants';
+import { CardModule } from 'primeng/card';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { FormsModule } from '@angular/forms';
 
 const MONTHS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const GENRE_COLLAPSED_COUNT = 7;
@@ -12,7 +18,7 @@ const GENRE_COLLAPSED_COUNT = 7;
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [Spinner],
+  imports: [Spinner, FormsModule, CardModule, SelectButtonModule, ProgressBarModule, ButtonModule, MessageModule],
   templateUrl: './stats.html',
   styleUrl: './stats.scss',
 })
@@ -135,7 +141,23 @@ export class StatsPage implements OnInit {
     return max > 0 ? `${Math.round((value / max) * 100)}%` : '0%';
   }
 
+  /** Teinte de la barre d'un genre, prise dans les primitives du preset. */
   genreColor(index: number): string {
-    return ['#e89a63', '#8ba7ea', '#51b7d3', '#a7ba63', '#64bd8d', '#ea8e94', '#dd83ae'][index % 7];
+    const ramps = ['blue', 'violet', 'cyan', 'teal', 'amber', 'rose', 'indigo'];
+    return `var(--p-${ramps[index % ramps.length]}-500)`;
   }
+
+  /** Infobulle d'une barre du graphe (films / épisodes du bucket). */
+  barTooltip(b: { movies: number; episodes: number; total: number }, label: string | number): string {
+    if (b.total === 0) return `${label} — aucune activité`;
+    const parts: string[] = [];
+    if (b.movies > 0) parts.push(`${b.movies} film${b.movies > 1 ? 's' : ''}`);
+    if (b.episodes > 0) parts.push(`${b.episodes} épisode${b.episodes > 1 ? 's' : ''}`);
+    return `${label} — ${parts.join(' · ')}`;
+  }
+
+  readonly genreModeOptions = [
+    { label: 'Par titre', value: 'titles' as const },
+    { label: 'Répartition', value: 'tags' as const },
+  ];
 }

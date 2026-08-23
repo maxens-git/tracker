@@ -1,12 +1,12 @@
 <nav class="topbar">
   <a routerLink="/home" class="brand" (click)="close()" aria-label="Tracker accueil">
-    <span class="brand-mark"><img src="/favicon.ico" alt="" /></span>
+    <img src="/favicon.ico" alt="" />
     <span>Tracker</span>
   </a>
 
   <button
     pButton
-    pRipple
+   
     type="button"
     icon="pi pi-bars"
     class="menu-button"
@@ -20,14 +20,14 @@
 
 <aside class="sidebar" aria-label="Navigation principale">
   <a routerLink="/home" class="brand" aria-label="Tracker accueil">
-    <span class="brand-mark"><img src="/favicon.ico" alt="" /></span>
+    <img src="/favicon.ico" alt="" />
     <span>Tracker</span>
   </a>
 
   <div class="nav-links">
     @for (item of visibleItems(); track item.path) {
       <a
-        pRipple
+       
         [routerLink]="item.path"
         routerLinkActive="active"
         [routerLinkActiveOptions]="item.path === '/home' ? { exact: true } : { exact: false }"
@@ -40,7 +40,7 @@
         }
         <span>{{ item.label }}</span>
         @if (item.badge) {
-          <span class="nav-badge">{{ item.badge }}</span>
+          <p-tag severity="secondary" styleClass="nav-badge" [value]="item.badge" />
         }
       </a>
     }
@@ -62,14 +62,14 @@
 >
   <div class="drawer-content">
     <a routerLink="/home" class="brand" (click)="close()" aria-label="Tracker accueil">
-      <span class="brand-mark"><img src="/favicon.ico" alt="" /></span>
+      <img src="/favicon.ico" alt="" />
       <span>Tracker</span>
     </a>
 
     <div class="nav-links">
       @for (item of visibleItems(); track item.path) {
         <a
-          pRipple
+         
           [routerLink]="item.path"
           routerLinkActive="active"
           [routerLinkActiveOptions]="item.path === '/home' ? { exact: true } : { exact: false }"
@@ -79,7 +79,7 @@
           <i [class]="item.icon"></i>
           <span>{{ item.label }}</span>
           @if (item.badge) {
-            <span class="nav-badge">{{ item.badge }}</span>
+            <p-tag severity="secondary" styleClass="nav-badge" [value]="item.badge" />
           }
         </a>
       }

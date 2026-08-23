@@ -1,147 +1,34 @@
-.list-detail-page {
-  max-width: 1400px;
-}
-
 .back-link {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: var(--muted);
-  text-decoration: none;
-  margin-bottom: 1.2rem;
-  transition: color 0.15s ease;
-
-  &:hover { color: var(--text); }
+  margin-bottom: 0.75rem;
 }
 
-.header-main {
+.detail-header {
   display: flex;
   align-items: flex-start;
-  gap: 1.2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.list-icon {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  line-height: 1;
-}
-
-.list-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 0.3rem;
+.page-title {
   display: flex;
   align-items: center;
   gap: 0.6rem;
 }
 
-.badge-system {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.12);
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 4px;
-  padding: 0.15rem 0.45rem;
+::ng-deep .search-bar {
+  display: block;
+  max-width: 420px;
+  margin-bottom: 1.5rem;
 }
 
-.list-description {
+.results-meta {
+  margin: 0 0 1rem;
+  color: var(--p-text-muted-color);
   font-size: 0.85rem;
-  color: var(--muted);
-  margin: 0 0 0.3rem;
 }
 
-.list-meta {
-  font-size: 0.78rem;
-  color: var(--faint);
-}
-
-.search-bar input {
-  padding: 1rem 1.2rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  font-size: 1rem;
-  font-family: inherit;
-  transition: border-color 0.15s ease;
-
-  &::placeholder { color: var(--faint); }
-  &:focus { outline: none; border-color: var(--accent); }
-}
-
-.section-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.status {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.pagination {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.page-btn {
-  position: relative;
-  overflow: hidden;
-  min-width: 2.1rem;
-  padding: 0.35rem 0.6rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-
-  &:hover:not(:disabled) { background: var(--surface-hover); color: var(--text); }
-  &.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 600; }
-  &.nav { font-size: 1rem; line-height: 1; }
-  &:disabled { opacity: 0.4; cursor: default; }
-}
-
-.page-ellipsis {
-  min-width: 1.5rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 0.82rem;
-  user-select: none;
-}
-
-.pagination-info {
-  margin-top: 0.6rem;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.78rem;
+// Surtout ne pas toucher au `display` : l'hôte porte lui-même le flex d'Aura,
+// et le passer en block fait retomber les boutons les uns sous les autres.
+p-paginator {
+  margin-top: 1.5rem;
 }

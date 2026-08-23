@@ -1,7 +1,9 @@
 @if (loading()) {
   <app-spinner />
 } @else if (error()) {
-  <p class="error-msg">{{ error() }}</p>
+  <div class="page">
+    <p-message severity="error" styleClass="state-message" [text]="error()!" />
+  </div>
 } @else {
 
   @let m = movie();
@@ -12,70 +14,45 @@
     class="detail-page"
     [style.--backdrop-image]="isMovie && m ? backdropStyle(m.backdrop_path) : (!isMovie && s ? backdropStyle(s.backdrop_path) : null)"
   >
-    <button pButton pRipple type="button" class="back-btn" text severity="secondary" icon="pi pi-arrow-left" (click)="goBack()">
-      Retour
-    </button>
+    <button pButton type="button" severity="secondary" text class="back-btn"
+      icon="pi pi-arrow-left" label="Retour" (click)="goBack()"></button>
 
     <section class="detail-hero">
-      <aside class="hero-panel">
-        <div class="poster-wrap">
-          @if (isMovie && m) {
-            @if (poster(m.poster_path); as p) {
-              <img class="poster-img zoomable" [src]="p" [alt]="m.title" (click)="openPosterFullscreen()" />
-            } @else {
-              <div class="poster-placeholder">{{ m.title }}</div>
-            }
-          } @else if (!isMovie && s) {
-            @if (poster(s.poster_path); as p) {
-              <img class="poster-img zoomable" [src]="p" [alt]="s.name" (click)="openPosterFullscreen()" />
-            } @else {
-              <div class="poster-placeholder">{{ s.name }}</div>
-            }
-          }
-        </div>
-      </aside>
+      <div class="poster-wrap">
+        @if (posterSrc(); as src) {
+          <p-image
+            [src]="src"
+            [previewImageSrc]="posterPreviewSrc()!"
+            [alt]="mediaTitle"
+            [preview]="true"
+            styleClass="poster-img"
+          />
+        } @else {
+          <div class="poster-placeholder">{{ mediaTitle }}</div>
+        }
+      </div>
 
       <div class="hero-copy">
-        <div class="eyebrow">
-          @if (!isMovie && s) {
-            Série
-          } @else {
-            Film
-          }
-        </div>
+        <p-tag severity="secondary" [value]="isMovie ? 'Film' : 'Série'" />
 
         <div class="title-row">
-          @if (isMovie && m) {
-            <h1>{{ m.title }}</h1>
-          } @else if (!isMovie && s) {
-            <h1>{{ s.name }}</h1>
-          }
-          <a
-            pButton pRipple
-            class="title-torrents-btn"
-            rounded text
+          <h1>{{ mediaTitle }}</h1>
+          <a pButton rounded text severity="secondary"
+            icon="pi pi-download"
             routerLink="/torrents"
             [queryParams]="{ q: mediaTitle }"
-            title="Rechercher dans les torrents"
             aria-label="Rechercher dans les torrents"
-          >
-            <i class="pi pi-download"></i>
-          </a>
+          ></a>
         </div>
 
-        @if (isMovie && m && m.original_title && m.original_title !== m.title) {
-          <p class="original-title">{{ m.original_title }}</p>
-        } @else if (!isMovie && s && s.original_name && s.original_name !== s.name) {
-          <p class="original-title">{{ s.original_name }}</p>
+        @if (originalTitle(); as ot) {
+          <p class="original-title">{{ ot }}</p>
+        }
+        @if (tagline(); as tl) {
+          <p class="tagline">{{ tl }}</p>
         }
 
-        @if (isMovie && m?.tagline) {
-          <p class="tagline">{{ m!.tagline }}</p>
-        } @else if (!isMovie && s?.tagline) {
-          <p class="tagline">{{ s!.tagline }}</p>
-        }
-
-        <div class="meta-line">
+        <p class="meta-line">
           @if (isMovie && m) {
             @if (year(m.release_date); as y) { <span>{{ y }}</span> }
             @if (m.runtime) { <span>{{ formatRuntime(m.runtime) }}</span> }
@@ -86,43 +63,33 @@
             <span>{{ s.number_of_episodes }} épisodes</span>
             @if (s.status) { <span>{{ s.status }}</span> }
           }
-        </div>
+        </p>
 
         <div class="genre-line">
-          @if (isMovie && m) {
-            @for (genre of m.genres.slice(0, 4); track genre.id) {
-              <span>{{ genre.name }}</span>
-            }
-          } @else if (!isMovie && s) {
-            @for (genre of s.genres.slice(0, 4); track genre.id) {
-              <span>{{ genre.name }}</span>
-            }
+          @for (genre of genres(); track genre.id) {
+            <p-chip [label]="genre.name" />
           }
         </div>
 
-        <div class="facts hero-facts">
+        <div class="facts">
           @if (voteAvg) {
-            <div class="fact rating-fact">
+            <div class="fact">
               <span class="fact-label">TMDb</span>
-              <strong><i class="pi pi-star-fill"></i>{{ voteAvg!.toFixed(1) }}</strong>
+              <strong class="rating"><i class="pi pi-star-fill"></i>{{ voteAvg!.toFixed(1) }}</strong>
             </div>
           }
-
-          @if (isMovie && m && (m.budget || m.revenue)) {
-            @if (formatMoney(m.budget); as b) {
-              <div class="fact">
-                <span class="fact-label">Budget</span>
-                <strong>{{ b }}</strong>
-              </div>
-            }
-            @if (formatMoney(m.revenue); as r) {
-              <div class="fact">
-                <span class="fact-label">Recettes</span>
-                <strong>{{ r }}</strong>
-              </div>
-            }
+          @if (isMovie && m && formatMoney(m.budget); as b) {
+            <div class="fact">
+              <span class="fact-label">Budget</span>
+              <strong>{{ b }}</strong>
+            </div>
           }
-
+          @if (isMovie && m && formatMoney(m.revenue); as r) {
+            <div class="fact">
+              <span class="fact-label">Recettes</span>
+              <strong>{{ r }}</strong>
+            </div>
+          }
           @if (!isMovie && s) {
             <div class="fact">
               <span class="fact-label">Progression</span>
@@ -131,98 +98,73 @@
           }
         </div>
 
+        <!-- États du média : un bouton plein = actif, contour = inactif. -->
         <div class="actions">
-          <button
-            pButton pRipple
-            type="button"
-            class="btn-action btn-seen"
-            [class.active]="currentSeen"
+          <button pButton type="button"
+            [icon]="currentSeen ? 'pi pi-check-circle' : 'pi pi-circle'"
+            [label]="currentSeen ? 'Déjà vu' : 'Pas vu'"
+            [outlined]="!currentSeen"
+            [severity]="currentSeen ? 'success' : 'secondary'"
             [disabled]="seenPending()"
-            (click)="toggleSeen()"
-          >
-            <i [class]="currentSeen ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
-            <span>{{ currentSeen ? 'Déjà vu' : 'Pas vu' }}</span>
-          </button>
+            (click)="toggleSeen()"></button>
 
-          <button
-            pButton pRipple
-            type="button"
-            class="btn-action btn-liked"
-            [class.active]="currentLiked"
+          <button pButton type="button"
+            [icon]="currentLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+            [label]="currentLiked ? 'Aimé' : 'J\'aime'"
+            [outlined]="!currentLiked"
+            [severity]="currentLiked ? 'danger' : 'secondary'"
             [disabled]="likedPending()"
-            (click)="toggleLiked()"
-          >
-            <i [class]="currentLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
-            <span>{{ currentLiked ? 'Aimé' : "J'aime" }}</span>
-          </button>
+            (click)="toggleLiked()"></button>
 
-          <button
-            pButton pRipple
-            type="button"
-            class="btn-action btn-watchlist"
-            [class.active]="currentInWatchlist"
+          <button pButton type="button"
+            [icon]="currentInWatchlist ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"
+            [label]="currentInWatchlist ? 'Dans la watchlist' : 'Hors watchlist'"
+            [outlined]="!currentInWatchlist"
+            [severity]="currentInWatchlist ? undefined : 'secondary'"
             [disabled]="watchlistPending()"
-            (click)="toggleWatchlist()"
-          >
-            <i [class]="currentInWatchlist ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"></i>
-            <span>{{ currentInWatchlist ? 'Dans la watchlist' : 'Hors watchlist' }}</span>
-          </button>
+            (click)="toggleWatchlist()"></button>
 
-          <button
-            pButton pRipple
-            type="button"
-            class="btn-action btn-release"
-            [class.active]="releaseTracked()"
+          <button pButton type="button"
+            [icon]="releaseTracked() ? 'pi pi-bell-fill' : 'pi pi-bell'"
+            [label]="releaseTracked() ? 'Sortie suivie' : 'Suivre sortie'"
+            [outlined]="!releaseTracked()"
+            [severity]="releaseTracked() ? 'warn' : 'secondary'"
             [disabled]="releasePending()"
-            (click)="toggleReleaseTracking()"
-          >
-            <i [class]="releaseTracked() ? 'pi pi-bell-fill' : 'pi pi-bell'"></i>
-            <span>{{ releaseTracked() ? 'Sortie suivie' : 'Suivre sortie' }}</span>
-          </button>
+            (click)="toggleReleaseTracking()"></button>
 
-          <button
-            pButton pRipple
-            type="button"
-            class="btn-action btn-lists"
-            [class.active]="inAnyCustomList"
-            (click)="openListDialog()"
-          >
-            <i class="pi pi-list"></i>
-            <span>Listes</span>
-          </button>
+          <button pButton type="button"
+            icon="pi pi-list"
+            label="Listes"
+            [outlined]="!inAnyCustomList"
+            [severity]="inAnyCustomList ? undefined : 'secondary'"
+            (click)="openListDialog()"></button>
         </div>
       </div>
     </section>
 
     <div class="detail-grid">
       <main class="detail-main">
-        @if ((isMovie && m?.overview) || (!isMovie && s?.overview)) {
-          <section class="synopsis-section">
-            <h2>Synopsis</h2>
-            @if (isMovie && m?.overview) {
-              <p>{{ m!.overview }}</p>
-            } @else if (!isMovie && s?.overview) {
-              <p>{{ s!.overview }}</p>
-            }
+        @if (overview(); as text) {
+          <section class="content-section">
+            <h2 class="section-title">Synopsis</h2>
+            <p class="synopsis">{{ text }}</p>
           </section>
         }
 
         @if (credits()?.cast?.length) {
           <section class="content-section">
             <div class="section-heading">
-              <h2>Distribution</h2>
-              <span>{{ credits()!.cast.length }} personnes</span>
+              <h2 class="section-title">Distribution</h2>
+              <span class="section-count">{{ credits()!.cast.length }} personnes</span>
             </div>
             <div class="cast-list">
               @for (person of credits()!.cast.slice(0, 12); track person.id) {
                 <a class="cast-card" [routerLink]="['/person', person.id]">
-                  <div class="cast-photo">
-                    @if (profileUrl(person.profile_path); as p) {
-                      <img [src]="p" [alt]="person.name" loading="lazy" />
-                    } @else {
-                      <div class="cast-placeholder">{{ person.name[0] }}</div>
-                    }
-                  </div>
+                  @if (profileUrl(person.profile_path); as p) {
+                    <img class="cast-photo" [src]="p" [alt]="person.name" loading="lazy" />
+                  } @else {
+                    <p-avatar [label]="person.name[0]" shape="circle" size="xlarge" />
+                  }
                   <p class="cast-name">{{ person.name }}</p>
                   @if (person.character) {
                     <p class="cast-character">{{ person.character }}</p>
@@ -238,114 +180,122 @@
           @if (seasonList.length) {
             <section class="content-section">
               <div class="section-heading">
-                <h2>Saisons</h2>
-                <span>{{ seasonList.length }} saison{{ seasonList.length > 1 ? 's' : '' }}</span>
+                <h2 class="section-title">Saisons</h2>
+                <span class="section-count">{{ seasonList.length }} saison{{ seasonList.length > 1 ? 's' : '' }}</span>
               </div>
-              <div class="seasons-list">
-                @for (season of seasonList; track season.season_number) {
-                  @let seenCount = seasonSeenCount(season);
-                  @let total = season.episode_count;
-                  @let seasonSeen = isSeasonSeen(season);
-                  @let isExpanded = isSeasonExpanded(season.season_number);
 
-                  <div class="season-block" [class.expanded]="isExpanded" [class.all-seen]="seasonSeen">
-                    <div class="season-header" (click)="toggleSeason(season.season_number)">
-                      <div class="season-number">S{{ season.season_number }}</div>
+              <!-- Rangée d'onglets tant qu'elle tient sur une ligne, liste
+                   déroulante au-delà (séries à très nombreuses saisons). -->
+              @if (useSeasonDropdown()) {
+                <p-select
+                  [options]="seasons()"
+                  optionLabel="name"
+                  optionValue="season_number"
+                  [ngModel]="selectedSeason()"
+                  (ngModelChange)="selectSeason($event)"
+                  styleClass="season-picker"
+                  ariaLabel="Saison"
+                />
+              } @else {
+                <p-selectbutton
+                  [options]="seasonOptions()"
+                  optionLabel="label"
+                  optionValue="value"
+                  [allowEmpty]="false"
+                  [ngModel]="selectedSeason()"
+                  (ngModelChange)="selectSeason($event)"
+                  styleClass="season-picker"
+                  ariaLabelledBy="Saison"
+                />
+              }
 
-                      <div class="season-info">
-                        <span class="season-name">{{ season.name }}</span>
-                        <span class="season-sub">
-                          @if (year(season.air_date); as y) { {{ y }} · }
-                          {{ season.episode_count }} épisode{{ season.episode_count > 1 ? 's' : '' }}
-                        </span>
-                        @if (total > 0) {
-                          <div class="season-progress">
-                            <div class="progress-bar">
-                              <div class="progress-fill" [style.width.%]="seasonProgress(season)"></div>
-                            </div>
-                            <span class="progress-label">{{ seenCount }}/{{ total }}</span>
-                          </div>
-                        }
-                      </div>
+              @if (currentSeason(); as season) {
+                @let total = season.episode_count;
+                @let seasonSeen = isSeasonSeen(season);
+                @let seasonPending = isSeasonPending(season.season_number);
 
-                      <div class="season-actions">
-                        @let seasonPending = isSeasonPending(season.season_number);
-                        <button
-                          pButton pRipple
-                          type="button"
-                          class="btn-season-seen"
-                          [class.active]="seasonSeen"
-                          [class.pending]="seasonPending"
-                          [disabled]="seasonPending"
-                          (click)="toggleSeasonSeen(season, $event)"
-                          [title]="seasonSeen ? 'Marquer non vu' : 'Tout marquer vu'"
-                        >
-                          @if (seasonPending) {
-                            <i class="pi pi-spin pi-spinner" aria-label="Chargement"></i>
-                          } @else {
-                            {{ seasonSeen ? 'Vu' : 'Tout vu' }}
-                          }
-                        </button>
-                        <i class="pi pi-chevron-right chevron" [class.open]="isExpanded"></i>
-                      </div>
+                <div class="season-bar">
+                  <div class="season-headline">
+                    <h3>{{ season.name }}</h3>
+                    <span class="season-sub">
+                      @if (year(season.air_date); as y) { {{ y }} · }
+                      {{ total }} épisode{{ total > 1 ? 's' : '' }}
+                    </span>
+                  </div>
+
+                  @if (total > 0) {
+                    <div class="season-progress">
+                      <p-progressbar [value]="seasonProgress(season)" [showValue]="false" styleClass="season-bar-meter" />
+                      <span class="progress-label">{{ seasonSeenCount(season) }}/{{ total }}</span>
                     </div>
 
-                    @if (isExpanded) {
-                      @if (!season.loaded) {
-                        <div class="episodes-loading"><app-spinner /></div>
-                      } @else if (season.episodes.length) {
-                        <div class="episodes-list">
-                          @for (ep of season.episodes; track ep.episode_number) {
-                            @let epK = ep.season_number + '-' + ep.episode_number;
-                            @let epPending = isEpisodePending(epK);
-                            <div class="episode-row" [class.seen]="ep.seen">
-                              <span class="ep-num">{{ ep.episode_number }}</span>
-                              <div class="ep-body">
-                                <span class="ep-title">{{ ep.name }}</span>
-                                <span class="ep-meta">
-                                  @if (ep.air_date) { {{ ep.air_date | date:'dd MMM yyyy' }} }
-                                  @if (ep.runtime) { · {{ ep.runtime }}min }
-                                </span>
-                              </div>
-                              <button
-                                pButton pRipple
-                                type="button"
-                                class="btn-ep-seen"
-                                [class.seen]="ep.seen"
-                                [class.pending]="epPending"
-                                [disabled]="epPending"
-                                (click)="toggleEpisodeSeen(ep, $event)"
-                                [title]="ep.seen ? 'Marquer non vu' : 'Marquer comme vu'"
-                              >
-                                <i [class]="epPending ? 'pi pi-spin pi-spinner' : (ep.seen ? 'pi pi-check' : 'pi pi-circle')"></i>
-                              </button>
-                            </div>
+                    <button pButton type="button" size="small"
+                      icon="pi pi-check"
+                      [label]="seasonSeen ? 'Saison vue' : 'Tout marquer vu'"
+                      [outlined]="!seasonSeen"
+                      [severity]="seasonSeen ? 'success' : 'secondary'"
+                      [loading]="seasonPending"
+                      [disabled]="seasonPending"
+                      (click)="toggleSeasonSeen(season, $event)"></button>
+                  }
+                </div>
+
+                @if (!season.loaded) {
+                  <app-spinner />
+                } @else {
+                  <ul class="episodes">
+                    @for (ep of season.episodes; track ep.episode_number) {
+                      @let epPending = isEpisodePending(ep.season_number + '-' + ep.episode_number);
+                      <li class="episode" [class.seen]="ep.seen">
+                        <div class="ep-still">
+                          @if (stillUrl(ep.still_path); as img) {
+                            <img [src]="img" [alt]="ep.name" loading="lazy" decoding="async" />
+                          } @else {
+                            <i class="pi pi-video"></i>
                           }
                         </div>
-                      }
+
+                        <div class="ep-body">
+                          <div class="ep-head">
+                            <h4 class="ep-title">
+                              <span class="ep-num">{{ ep.episode_number }}</span>
+                              {{ ep.name }}
+                            </h4>
+                            <p-checkbox
+                              [binary]="true"
+                              [ngModel]="ep.seen"
+                              [disabled]="epPending"
+                              [ariaLabel]="'Épisode ' + ep.episode_number + ' vu'"
+                              (onChange)="toggleEpisodeSeen(ep, $event.originalEvent)"
+                            />
+                          </div>
+
+                          <p class="ep-meta">@if (ep.air_date) {{{ ep.air_date | date:'d MMMM yyyy' }}}@if (ep.air_date && ep.runtime) { · }@if (ep.runtime) {{{ ep.runtime }} min}</p>
+
+                          @if (ep.overview) {
+                            <p class="ep-overview">{{ ep.overview }}</p>
+                          }
+                        </div>
+                      </li>
                     }
-                  </div>
+                  </ul>
                 }
-              </div>
+              }
             </section>
           }
         }
 
         @if (topCrew.length) {
           <section class="content-section">
-            <div class="section-heading">
-              <h2>Équipe technique</h2>
-            </div>
+            <h2 class="section-title">Équipe technique</h2>
             <div class="cast-list">
               @for (person of topCrew; track person.id) {
                 <a class="cast-card" [routerLink]="['/person', person.id]">
-                  <div class="cast-photo">
-                    @if (profileUrl(person.profile_path); as p) {
-                      <img [src]="p" [alt]="person.name" loading="lazy" />
-                    } @else {
-                      <div class="cast-placeholder">{{ person.name[0] }}</div>
-                    }
-                  </div>
+                  @if (profileUrl(person.profile_path); as p) {
+                    <img class="cast-photo" [src]="p" [alt]="person.name" loading="lazy" />
+                  } @else {
+                    <p-avatar [label]="person.name[0]" shape="circle" size="xlarge" />
+                  }
                   <p class="cast-name">{{ person.name }}</p>
                   @if (person.job) {
                     <p class="cast-character">{{ jobLabel(person.job) }}</p>
@@ -358,15 +308,13 @@
 
         @if (filteredVideos.length) {
           <section class="content-section">
-            <div class="section-heading">
-              <h2>Bandes-annonces</h2>
-            </div>
+            <h2 class="section-title">Bandes-annonces</h2>
             <div class="trailers-list">
               @for (video of filteredVideos; track video.id) {
                 <a class="trailer-card" [href]="trailerLink(video.key)" target="_blank" rel="noopener">
                   <div class="trailer-thumb">
                     <img [src]="trailerThumb(video.key)" [alt]="video.name" loading="lazy" />
-                    <div class="play-btn"><i class="pi pi-play"></i></div>
+                    <span class="play-btn"><i class="pi pi-play"></i></span>
                   </div>
                   <p class="trailer-name">{{ video.name }}</p>
                 </a>
@@ -378,87 +326,39 @@
 
       <aside class="detail-aside">
         @if (!isMovie && s) {
-          <section class="side-section progress-card">
-            <h2>Progression</h2>
-            <div class="progress-score">
+          <p-card header="Progression">
+            <p class="progress-score">
               <strong>{{ showSeenEpisodeCount }}</strong>
               <span>/ {{ showEpisodeCount }} épisodes</span>
-            </div>
-            <div class="media-progress-bar">
-              <div class="media-progress-fill" [style.width.%]="showProgressPercent"></div>
-            </div>
-            <p>{{ currentSeen ? 'Série terminée' : 'Visionnage en cours' }}</p>
-          </section>
+            </p>
+            <p-progressbar [value]="showProgressPercent" [showValue]="false" />
+            <p class="progress-note">{{ currentSeen ? 'Série terminée' : 'Visionnage en cours' }}</p>
+          </p-card>
         }
 
-        <section class="side-section">
-          <h2>Infos</h2>
+        <p-card header="Infos">
           <dl class="info-list">
             @if (isMovie && m) {
-              @if (year(m.release_date); as y) {
-                <div>
-                  <dt>Sortie</dt>
-                  <dd>{{ y }}</dd>
-                </div>
-              }
-              @if (m.runtime) {
-                <div>
-                  <dt>Durée</dt>
-                  <dd>{{ formatRuntime(m.runtime) }}</dd>
-                </div>
-              }
-              @if (m.status) {
-                <div>
-                  <dt>Statut</dt>
-                  <dd>{{ m.status }}</dd>
-                </div>
-              }
-              @if (m.vote_count) {
-                <div>
-                  <dt>Votes</dt>
-                  <dd>{{ formatNumber(m.vote_count) }}</dd>
-                </div>
-              }
+              @if (year(m.release_date); as y) { <dt>Sortie</dt><dd>{{ y }}</dd> }
+              @if (m.runtime) { <dt>Durée</dt><dd>{{ formatRuntime(m.runtime) }}</dd> }
+              @if (m.status) { <dt>Statut</dt><dd>{{ m.status }}</dd> }
+              @if (m.vote_count) { <dt>Votes</dt><dd>{{ formatNumber(m.vote_count) }}</dd> }
             } @else if (!isMovie && s) {
-              @if (year(s.first_air_date); as y) {
-                <div>
-                  <dt>Première diffusion</dt>
-                  <dd>{{ y }}</dd>
-                </div>
-              }
-              @if (year(s.last_air_date); as y) {
-                <div>
-                  <dt>Dernier épisode</dt>
-                  <dd>{{ y }}</dd>
-                </div>
-              }
-              <div>
-                <dt>Saisons</dt>
-                <dd>{{ s.number_of_seasons }}</dd>
-              </div>
-              <div>
-                <dt>Épisodes</dt>
-                <dd>{{ s.number_of_episodes }}</dd>
-              </div>
-              @if (s.status) {
-                <div>
-                  <dt>Statut</dt>
-                  <dd>{{ s.status }}</dd>
-                </div>
-              }
+              @if (year(s.first_air_date); as y) { <dt>Première diffusion</dt><dd>{{ y }}</dd> }
+              @if (year(s.last_air_date); as y) { <dt>Dernier épisode</dt><dd>{{ y }}</dd> }
+              <dt>Saisons</dt><dd>{{ s.number_of_seasons }}</dd>
+              <dt>Épisodes</dt><dd>{{ s.number_of_episodes }}</dd>
+              @if (s.status) { <dt>Statut</dt><dd>{{ s.status }}</dd> }
             }
           </dl>
-        </section>
+        </p-card>
       </aside>
     </div>
 
     @if (similar().length) {
       <section class="content-section similar-section">
-        <div class="section-heading">
-          <h2>{{ isMovie ? 'Films similaires' : 'Séries similaires' }}</h2>
-          <span>{{ similar().length }}</span>
-        </div>
-        <div class="similar-list">
+        <h2 class="section-title">{{ isMovie ? 'Films similaires' : 'Séries similaires' }}</h2>
+        <div class="poster-grid">
           @for (item of similar(); track item.id) {
             <app-poster-card [item]="item" />
           }
@@ -469,7 +369,6 @@
 
   <p-dialog
     header="Ajouter à une liste"
-    styleClass="list-dialog"
     [visible]="listDialogOpen()"
     (visibleChange)="$event ? listDialogOpen.set(true) : closeListDialog()"
     [modal]="true"
@@ -479,86 +378,58 @@
     [blockScroll]="true"
     [style]="{ width: 'min(94vw, 560px)' }"
   >
-    <div class="list-dialog-body">
-      <section class="list-dialog-section">
-        <div class="list-dialog-heading">
-          <h3>Mes listes</h3>
-          <span>{{ customLists.length }}</span>
-        </div>
+    <section class="dialog-section">
+      <h3 class="section-title">Mes listes</h3>
 
-        @if (customLists.length) {
-          <div class="list-dialog-list">
-            @for (list of customLists; track list.id) {
-              <button
-                type="button"
-                pRipple class="list-dialog-row"
-                [class.in-list]="isInList(list.id)"
-                [disabled]="listPending() === list.id || creatingList()"
-                (click)="toggleList(list.id)"
-              >
-                <span class="list-dialog-icon">{{ list.icon || '📋' }}</span>
-                <span class="list-dialog-copy">
-                  <strong>{{ list.name }}</strong>
-                  @if (list.description) {
-                    <small>{{ list.description }}</small>
-                  } @else {
-                    <small>{{ list.itemsCount }} élément{{ list.itemsCount > 1 ? 's' : '' }}</small>
-                  }
-                </span>
-                <span class="list-dialog-state">
-                  @if (listPending() === list.id) {
-                    <i class="pi pi-spinner pi-spin"></i>
-                  } @else if (isInList(list.id)) {
-                    <i class="pi pi-check"></i>
-                  } @else {
-                    <i class="pi pi-plus"></i>
-                  }
-                </span>
-              </button>
-            }
-          </div>
-        } @else {
-          <p class="list-dialog-empty">Aucune liste personnalisée.</p>
-        }
-      </section>
-
-      <section class="list-dialog-section create-list-section">
-        <div class="list-dialog-heading">
-          <h3>Créer une liste</h3>
-        </div>
-
-        <form class="create-list-form" (ngSubmit)="createListAndAdd()">
-          <label class="dialog-field">
-            <span>Nom</span>
-            <input pInputText name="newListName" [(ngModel)]="newListName" maxlength="100" placeholder="Films du week-end" />
-          </label>
-
-          <label class="dialog-field">
-            <span>Icône</span>
-            <input pInputText name="newListIcon" [(ngModel)]="newListIcon" maxlength="4" placeholder="🎬" />
-          </label>
-
-          <label class="dialog-field full">
-            <span>Description</span>
-            <textarea pTextarea name="newListDescription" [(ngModel)]="newListDescription" rows="2" maxlength="500" placeholder="Optionnelle"></textarea>
-          </label>
-
-          @if (listCreateError()) {
-            <p class="dialog-error">{{ listCreateError() }}</p>
+      @if (customLists.length) {
+        <div class="list-rows">
+          @for (list of customLists; track list.id) {
+            <button
+              type="button"
+             
+              class="list-row"
+              [class.in-list]="isInList(list.id)"
+              [disabled]="listPending() === list.id || creatingList()"
+              (click)="toggleList(list.id)"
+            >
+              <span class="list-copy">
+                <strong>{{ list.name }}</strong>
+                <small>{{ list.description || (list.itemsCount + ' élément' + (list.itemsCount > 1 ? 's' : '')) }}</small>
+              </span>
+              <i [class]="listPending() === list.id
+                ? 'pi pi-spinner pi-spin'
+                : (isInList(list.id) ? 'pi pi-check' : 'pi pi-plus')"></i>
+            </button>
           }
+        </div>
+      } @else {
+        <p-message severity="secondary" size="small" text="Aucune liste personnalisée." />
+      }
+    </section>
 
-          <button pButton pRipple type="submit" class="dialog-create-btn" icon="pi pi-plus" [disabled]="!newListName.trim() || creatingList()" [loading]="creatingList()">
-            Créer et ajouter
-          </button>
-        </form>
-      </section>
-    </div>
+    <p-divider />
+
+    <section class="dialog-section">
+      <h3 class="section-title">Créer une liste</h3>
+
+      <form class="create-list-form" (ngSubmit)="createListAndAdd()">
+        <label class="field">
+          <span>Nom</span>
+          <input pInputText name="newListName" [(ngModel)]="newListName" maxlength="100" placeholder="Films du week-end" />
+        </label>
+
+        <label class="field full">
+          <span>Description</span>
+          <textarea pTextarea name="newListDescription" [(ngModel)]="newListDescription" rows="2" maxlength="500" placeholder="Optionnelle"></textarea>
+        </label>
+
+        @if (listCreateError()) {
+          <p-message severity="error" size="small" styleClass="full" [text]="listCreateError()!" />
+        }
+
+        <button pButton type="submit" class="full" icon="pi pi-plus" label="Créer et ajouter"
+          [disabled]="!newListName.trim() || creatingList()" [loading]="creatingList()"></button>
+      </form>
+    </section>
   </p-dialog>
-}
-
-@if (posterFullscreen(); as src) {
-  <div class="poster-lightbox" (click)="closePosterFullscreen()" role="dialog" aria-modal="true" aria-label="Affiche en plein écran">
-    <button pButton pRipple type="button" class="poster-lightbox-close" text rounded icon="pi pi-times" aria-label="Fermer" (click)="closePosterFullscreen()"></button>
-    <img class="poster-lightbox-img" [src]="src" alt="" (click)="$event.stopPropagation()" />
-  </div>
 }

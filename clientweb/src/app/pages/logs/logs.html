@@ -1,4 +1,4 @@
-<div class="logs-page">
+<div class="page">
   <div class="page-header">
     <div>
       <h1 class="page-title">Logs</h1>
@@ -6,90 +6,85 @@
     </div>
 
     <div class="header-actions">
-      <button pButton pRipple type="button" severity="secondary" [disabled]="loading()" (click)="refresh()">
-        <i [class]="loading() ? 'pi pi-spinner pi-spin' : 'pi pi-refresh'"></i>
-        <span>Rafraîchir</span>
-      </button>
-      <button pButton pRipple type="button" severity="danger" [disabled]="clearing() || loading()" (click)="clear()">
-        <i [class]="clearing() ? 'pi pi-spinner pi-spin' : 'pi pi-trash'"></i>
-        <span>Vider</span>
-      </button>
+      <button pButton type="button" severity="secondary" outlined icon="pi pi-refresh" label="Rafraîchir"
+        [loading]="loading()" [disabled]="loading()" (click)="refresh()"></button>
+      <button pButton type="button" severity="danger" outlined icon="pi pi-trash" label="Vider"
+        [loading]="clearing()" [disabled]="clearing() || loading()" (click)="clear()"></button>
     </div>
   </div>
 
-  <section class="log-filters" aria-label="Filtres des logs">
-    <label class="filter-field">
-      <span>Niveau</span>
-      <select name="level" [(ngModel)]="level" (change)="refresh()">
-        @for (option of levels; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </label>
+  <form class="log-filters" (ngSubmit)="refresh()">
+    <p-select
+      [options]="levels"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="level"
+      name="level"
+      (onChange)="refresh()"
+      styleClass="level-select"
+      ariaLabel="Niveau"
+    />
 
-    <form class="search-field" (ngSubmit)="refresh()">
-      <label>
-        <span>Recherche</span>
-        <input pInputText name="search" [(ngModel)]="search" placeholder="Message, catégorie, route…" />
-      </label>
-      <button pButton pRipple type="submit" [disabled]="loading()">
-        <i class="pi pi-search"></i>
-        <span>Filtrer</span>
-      </button>
-    </form>
-  </section>
+    <p-iconfield iconPosition="left" styleClass="log-search">
+      <p-inputicon styleClass="pi pi-search" />
+      <input pInputText name="search" [(ngModel)]="search" placeholder="Message, catégorie, route…" />
+    </p-iconfield>
+
+    <button pButton type="submit" label="Filtrer" [disabled]="loading()"></button>
+  </form>
 
   @if (error() && logs().length === 0) {
-    <div class="status text-center py-5">Erreur lors du chargement.</div>
+    <p-message severity="error" styleClass="state-message" text="Erreur lors du chargement." />
   } @else if (logs().length === 0 && loading()) {
     <app-spinner />
   } @else if (logs().length === 0) {
-    <div class="status text-center py-5">Aucun log pour le moment.</div>
+    <p-message severity="secondary" styleClass="state-message" text="Aucun log pour le moment." />
   } @else {
-    <div class="log-table" role="table" aria-label="Logs système">
-      <div class="log-row log-head" role="row">
-        <span role="columnheader">Date</span>
-        <span role="columnheader">Niveau</span>
-        <span role="columnheader">Source</span>
-        <span role="columnheader">Message</span>
-        <span role="columnheader">HTTP</span>
-      </div>
+    <p-table [value]="logs()" styleClass="logs-table" [scrollable]="true">
+      <ng-template #header>
+        <tr>
+          <th class="col-date">Date</th>
+          <th class="col-level">Niveau</th>
+          <th class="col-source">Source</th>
+          <th>Message</th>
+          <th class="col-http">HTTP</th>
+        </tr>
+      </ng-template>
 
-      @for (log of logs(); track log.id) {
-        <article class="log-row" role="row">
-          <time role="cell">{{ formatDate(log.createdAt) }}</time>
-          <span role="cell" class="level-pill" [class]="levelClass(log.level)">{{ log.level }}</span>
-          <span role="cell" class="category" [title]="log.category">{{ log.category }}</span>
-          <div role="cell" class="message">
+      <ng-template #body let-log>
+        <tr>
+          <td class="col-date">{{ formatDate(log.createdAt) }}</td>
+          <td class="col-level">
+            <p-tag [severity]="levelSeverity(log.level)" [value]="log.level" />
+          </td>
+          <td class="col-source" [title]="log.category">{{ log.category }}</td>
+          <td class="message">
             <strong>{{ log.message }}</strong>
             @if (log.exception) {
               <pre>{{ log.exception }}</pre>
             }
             @if (log.traceId) {
-              <small>Trace {{ log.traceId }}</small>
+              <small [title]="'Trace ' + log.traceId">{{ log.traceId }}</small>
             }
-          </div>
-          <span role="cell" class="http">
+          </td>
+          <td class="col-http">
             @if (log.method || log.path || log.statusCode) {
-              <span>{{ log.method }}</span>
-              <span class="path" [title]="log.path ?? ''">{{ log.path }}</span>
-              <span class="status-code">{{ log.statusCode }}</span>
-              @if (log.elapsedMs != null) {
-                <span>{{ log.elapsedMs }} ms</span>
-              }
+              <span class="http-route" [title]="log.path ?? ''">
+                <span class="http-method">{{ log.method }}</span>{{ log.path }}
+              </span>
+              <span class="http-status">{{ httpSummary(log) }}</span>
             } @else {
-              <span class="muted">-</span>
+              <span>—</span>
             }
-          </span>
-        </article>
-      }
-    </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
 
     @if (hasMore) {
       <div class="load-more">
-        <button pRipple type="button" (click)="loadMore()" [disabled]="loading()">
-          {{ loading() ? 'Chargement…' : 'Voir plus' }}
-        </button>
+        <button pButton type="button" severity="secondary" outlined label="Voir plus"
+          [loading]="loading()" [disabled]="loading()" (click)="loadMore()"></button>
       </div>
     }
   }

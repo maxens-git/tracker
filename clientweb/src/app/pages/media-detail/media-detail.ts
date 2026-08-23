@@ -1,5 +1,4 @@
-import { Component, OnInit, HostListener, inject, signal } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -15,7 +14,7 @@ import {
 } from '../../../shared/interfaces/media';
 import { PRIORITY_CREW_JOBS, localizedJob } from '../../../shared/services/crew';
 import { MediaListSummary } from '../../../shared/interfaces/list';
-import { posterUrl, backdropUrl, profileUrl, yearOf } from '../../../shared/services/tmdb-image';
+import { posterUrl, backdropUrl, profileUrl, stillUrl, yearOf } from '../../../shared/services/tmdb-image';
 import { errorMessage } from '../../../shared/services/http-error';
 import { EpisodeSeenDto } from '../../../shared/interfaces/episode';
 import { SYSTEM_LIST } from '../../../shared/constants';
@@ -24,6 +23,17 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
+import { ImageModule } from 'primeng/image';
+import { CheckboxModule } from 'primeng/checkbox';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { SelectModule } from 'primeng/select';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { ChipModule } from 'primeng/chip';
+import { AvatarModule } from 'primeng/avatar';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { DividerModule } from 'primeng/divider';
+import { MessageModule } from 'primeng/message';
 
 type MediaType = 'movie' | 'tv';
 
@@ -48,7 +58,12 @@ interface MediaDetailData {
 @Component({
   selector: 'app-media-detail',
   standalone: true,
-  imports: [Ripple, CommonModule, FormsModule, RouterLink, Spinner, PosterCard, ButtonModule, DialogModule, InputTextModule, TextareaModule],
+  imports: [
+    CommonModule, FormsModule, RouterLink, Spinner, PosterCard, ButtonModule,
+    DialogModule, InputTextModule, TextareaModule, ImageModule, CardModule, CheckboxModule,
+    SelectButtonModule, SelectModule,
+    TagModule, ChipModule, AvatarModule, ProgressBarModule, DividerModule, MessageModule,
+  ],
   templateUrl: './media-detail.html',
   styleUrl: './media-detail.scss',
 })
@@ -75,7 +90,8 @@ export class MediaDetail implements OnInit {
 
   userState = signal<UserState>({ tmdbId: 0, seen: false, liked: false, listIds: [] });
 
-  expandedSeason = signal<number | null>(null);
+  /** Saison affichée sous le sélecteur ; null tant que la série n'est pas chargée. */
+  selectedSeason = signal<number | null>(null);
   seenPending = signal(false);
   likedPending = signal(false);
   watchlistPending = signal(false);
@@ -88,7 +104,6 @@ export class MediaDetail implements OnInit {
   releaseTracked = signal(false);
   releasePending = signal(false);
   newListName = '';
-  newListIcon = '';
   newListDescription = '';
 
   ngOnInit() {
@@ -120,7 +135,7 @@ export class MediaDetail implements OnInit {
     this.credits.set(null);
     this.videos.set(null);
     this.similar.set([]);
-    this.expandedSeason.set(null);
+    this.selectedSeason.set(null);
     this.listDialogOpen.set(false);
     this.resetListForm();
     this.userState.set({ tmdbId, seen: false, liked: false, listIds: [] });
@@ -241,6 +256,19 @@ export class MediaDetail implements OnInit {
     );
     this.refreshSeasonsSeen();
     this.syncShowSeen();
+    this.selectInitialSeason();
+  }
+
+  /**
+   * À l'ouverture, on montre la saison en cours de visionnage — la première qui
+   * n'est pas terminée — plutôt que la saison 1 systématiquement. Si tout est
+   * vu, on affiche la dernière.
+   */
+  private selectInitialSeason() {
+    const list = this.seasons();
+    if (list.length === 0) return;
+    const inProgress = list.find(s => !this.isSeasonSeen(s));
+    this.selectSeason((inProgress ?? list[list.length - 1]).season_number);
   }
 
   goBack() { this.location.back(); }
@@ -250,6 +278,37 @@ export class MediaDetail implements OnInit {
   /** Titre affiché du média (titre du film ou nom de la série). */
   get mediaTitle(): string {
     return (this.isMovie ? this.movie()?.title : this.show()?.name) ?? '';
+  }
+
+  /** Titre original, seulement s'il diffère du titre affiché. */
+  originalTitle(): string | null {
+    const original = this.isMovie ? this.movie()?.original_title : this.show()?.original_name;
+    return original && original !== this.mediaTitle ? original : null;
+  }
+
+  tagline(): string | null {
+    return (this.isMovie ? this.movie()?.tagline : this.show()?.tagline) || null;
+  }
+
+  overview(): string | null {
+    return (this.isMovie ? this.movie()?.overview : this.show()?.overview) || null;
+  }
+
+  genres() {
+    return (this.isMovie ? this.movie()?.genres : this.show()?.genres)?.slice(0, 4) ?? [];
+  }
+
+  /** Affiche du média : taille d'affichage puis pleine résolution pour le zoom. */
+  posterSrc(): string | null {
+    return posterUrl(this.posterPath(), 'w500');
+  }
+
+  posterPreviewSrc(): string | null {
+    return posterUrl(this.posterPath(), 'original');
+  }
+
+  private posterPath(): string | null | undefined {
+    return this.isMovie ? this.movie()?.poster_path : this.show()?.poster_path;
   }
 
   get currentSeen() { return this.userState().seen; }
@@ -448,7 +507,6 @@ export class MediaDetail implements OnInit {
 
     const dto = {
       name,
-      icon: this.newListIcon.trim(),
       description: this.newListDescription.trim(),
     };
 
@@ -501,22 +559,34 @@ export class MediaDetail implements OnInit {
 
   private resetListForm() {
     this.newListName = '';
-    this.newListIcon = '';
     this.newListDescription = '';
     this.listCreateError.set(null);
   }
 
   // ── Seasons & episodes ────────────────────────────────────────────────────
 
-  toggleSeason(seasonNumber: number) {
-    const current = this.expandedSeason();
-    if (current === seasonNumber) {
-      this.expandedSeason.set(null);
-      return;
-    }
-    this.expandedSeason.set(seasonNumber);
+  selectSeason(seasonNumber: number) {
+    this.selectedSeason.set(seasonNumber);
     this.loadSeasonIfNeeded(seasonNumber);
   }
+
+  /** La saison actuellement affichée, ou null. */
+  currentSeason = computed<SeasonView | null>(() => {
+    const n = this.selectedSeason();
+    return n === null ? null : this.seasons().find(s => s.season_number === n) ?? null;
+  });
+
+  /** Options du sélecteur de saison (« S1 », « S2 »…). */
+  seasonOptions = computed(() =>
+    this.seasons().map(s => ({ label: `S${s.season_number}`, value: s.season_number })));
+
+  /**
+   * Au-delà de ce seuil, la rangée d'onglets déborderait : on bascule sur une
+   * liste déroulante.
+   */
+  useSeasonDropdown = computed(() => this.seasons().length > 8);
+
+  stillUrl(path?: string | null): string | null { return stillUrl(path, 'w300'); }
 
   private loadSeasonIfNeeded(seasonNumber: number) {
     const seasons = this.seasons();
@@ -537,10 +607,6 @@ export class MediaDetail implements OnInit {
         ));
       }
     });
-  }
-
-  isSeasonExpanded(seasonNumber: number): boolean {
-    return this.expandedSeason() === seasonNumber;
   }
 
   isEpisodePending(key: string): boolean {
@@ -580,8 +646,9 @@ export class MediaDetail implements OnInit {
     return Math.min(100, (this.seenCountInSeason(season.season_number) / season.episode_count) * 100);
   }
 
-  toggleEpisodeSeen(ep: TmdbEpisode, event: Event) {
-    event.stopPropagation();
+  // `event` est optionnel : la p-checkbox n'expose pas toujours l'événement natif.
+  toggleEpisodeSeen(ep: TmdbEpisode, event?: Event) {
+    event?.stopPropagation();
     const key = epKey(ep.season_number, ep.episode_number);
     if (this.isEpisodePending(key)) return;
     const newSeen = !ep.seen;
@@ -727,22 +794,6 @@ export class MediaDetail implements OnInit {
     return url ? `url(${url})` : null;
   }
 
-  poster(path?: string | null): string | null { return posterUrl(path, 'w500'); }
-
-  /** Poster affiché en plein écran (lightbox) ; null = fermé. */
-  posterFullscreen = signal<string | null>(null);
-
-  /** Ouvre le poster courant en plein écran, en pleine résolution. */
-  openPosterFullscreen() {
-    const path = this.mediaType() === 'movie' ? this.movie()?.poster_path : this.show()?.poster_path;
-    const url = posterUrl(path, 'original');
-    if (url) this.posterFullscreen.set(url);
-  }
-
-  closePosterFullscreen() { this.posterFullscreen.set(null); }
-
-  @HostListener('document:keydown.escape')
-  onEscape() { if (this.posterFullscreen()) this.closePosterFullscreen(); }
 
   profileUrl(path?: string | null): string | null { return profileUrl(path); }
 
@@ -767,9 +818,6 @@ export class MediaDetail implements OnInit {
     return new Intl.NumberFormat('fr-FR').format(value);
   }
 
-  genres(g: { id: number; name: string }[] | undefined): string {
-    return g?.map(x => x.name).join(', ') ?? '';
-  }
 }
 
 function epKey(season: number, episode: number): string {

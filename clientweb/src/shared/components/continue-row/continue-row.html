@@ -1,5 +1,5 @@
 <section class="continue-row">
-  <h2>{{ title }}</h2>
+  <h2 class="section-title">{{ title }}</h2>
   <div class="track">
     @for (entry of items; track entry.item.id) {
       @let c = card(entry);
@@ -7,16 +7,22 @@
         @if (c.image) {
           <img [src]="c.image" [alt]="c.title" loading="lazy" decoding="async" />
         } @else {
-          <div class="placeholder d-flex align-items-center justify-content-center text-center">{{ c.title }}</div>
+          <div class="placeholder">{{ c.title }}</div>
         }
-        <span class="badge">{{ c.progress }}</span>
+
+        <p-tag severity="contrast" styleClass="episode-tag" [value]="c.progress" />
+
         <div class="overlay">
           <h3>{{ c.title }}</h3>
         </div>
+
         @if (c.percent !== null) {
-          <div class="progress-bar" [attr.aria-label]="c.percent + '% vu'">
-            <span [style.width.%]="c.percent"></span>
-          </div>
+          <p-progressbar
+            styleClass="watch-progress"
+            [value]="c.percent"
+            [showValue]="false"
+            [attr.aria-label]="c.percent + '% vu'"
+          />
         }
       </a>
     }

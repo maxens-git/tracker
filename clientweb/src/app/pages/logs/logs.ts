@@ -3,16 +3,21 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Ripple } from 'primeng/ripple';
 import { Api, SystemLog } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { TableModule } from 'primeng/table';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 type LevelFilter = 'all' | 'Information' | 'Warning' | 'Error' | 'Critical';
 
 @Component({
   selector: 'app-logs',
   standalone: true,
-  imports: [FormsModule, ButtonModule, InputTextModule, Ripple, Spinner],
+  imports: [FormsModule, ButtonModule, InputTextModule, Spinner, TableModule, SelectModule, TagModule, MessageModule, IconFieldModule, InputIconModule],
   templateUrl: './logs.html',
   styleUrl: './logs.scss',
 })
@@ -95,8 +100,26 @@ export class LogsPage implements OnInit {
     });
   }
 
-  levelClass(level: string): string {
-    return `level-${level.toLowerCase()}`;
+  /**
+   * Requête HTTP résumée sur une ligne (« 200 · 514 ms »), pour ne pas faire
+   * tripler la hauteur de chaque ligne du tableau.
+   */
+  httpSummary(log: SystemLog): string {
+    const parts: string[] = [];
+    if (log.statusCode) parts.push(String(log.statusCode));
+    if (log.elapsedMs != null) parts.push(`${Math.round(log.elapsedMs)} ms`);
+    return parts.join(' · ');
+  }
+
+  /** Sévérité <p-tag> correspondant au niveau de log. */
+  levelSeverity(level: string): 'info' | 'warn' | 'danger' | 'secondary' {
+    switch (level) {
+      case 'Warning': return 'warn';
+      case 'Error':
+      case 'Critical': return 'danger';
+      case 'Information': return 'info';
+      default: return 'secondary';
+    }
   }
 
   formatDate(iso: string): string {

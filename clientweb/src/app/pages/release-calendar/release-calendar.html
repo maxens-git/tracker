@@ -1,148 +1,107 @@
-<div class="release-page">
-  <div class="page-head">
+<!--
+  Une seule définition de la timeline, réutilisée pour la vue liste, le panneau
+  du jour sélectionné et la section « date à confirmer ».
+-->
+<ng-template #timeline let-rows="rows" let-tba="tba">
+  <div class="timeline">
+    @for (item of rows; track item.id) {
+      <a class="app-card release-row" [routerLink]="['/', item.type, item.tmdbId]">
+        @if (tba) {
+          <time class="release-date tba">à confirmer</time>
+        } @else if (item.date) {
+          <time class="release-date">{{ formatDate(item.date) }}</time>
+        }
+
+        <div class="poster">
+          @if (poster(item.posterPath); as p) {
+            <img [src]="p" [alt]="item.title" loading="lazy" />
+          } @else {
+            <i class="pi pi-video"></i>
+          }
+        </div>
+
+        <div class="body">
+          <p-tag severity="secondary" [value]="item.kind" />
+          <strong>{{ item.title }}</strong>
+          <span class="release-subtitle">{{ item.subtitle }}</span>
+        </div>
+
+        <button pButton type="button" icon="pi pi-times" severity="secondary" text rounded size="small"
+          aria-label="Ne plus suivre" (click)="remove(item, $event)"></button>
+      </a>
+    }
+  </div>
+</ng-template>
+
+<div class="page">
+  <div class="page-header">
     <div>
       <h1 class="page-title">Sorties</h1>
       <p class="subtitle">{{ tracked().length }} média{{ tracked().length > 1 ? 's' : '' }} suivi{{ tracked().length > 1 ? 's' : '' }}</p>
     </div>
+
     <div class="head-actions">
-      <div class="view-toggle" role="group" aria-label="Mode d'affichage">
-        <button pRipple type="button" [class.active]="view() === 'list'" (click)="setView('list')">Liste</button>
-        <button pRipple type="button" [class.active]="view() === 'calendar'" (click)="setView('calendar')">Calendrier</button>
-      </div>
-      <a pButton pRipple routerLink="/settings" severity="secondary" outlined icon="pi pi-cog" label="Réglages"></a>
+      <p-selectbutton
+        [options]="viewOptions"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        [ngModel]="view()"
+        (ngModelChange)="setView($event)"
+        ariaLabelledBy="Mode d'affichage"
+      />
+      <a pButton routerLink="/settings" severity="secondary" outlined icon="pi pi-cog" label="Réglages"></a>
     </div>
   </div>
 
   @if (loading()) {
     <app-spinner />
   } @else if (error()) {
-    <div class="status">Impossible de charger le calendrier.</div>
+    <p-message severity="error" styleClass="state-message" text="Impossible de charger le calendrier." />
   } @else if (tracked().length === 0) {
-    <div class="empty">
-      <h2>Aucun média suivi</h2>
-      <p>Ajoutez un film ou une série depuis sa fiche détail.</p>
-      <a routerLink="/search">Rechercher</a>
-    </div>
+    <p-message severity="secondary" styleClass="state-message"
+      text="Aucun média suivi. Ajoutez un film ou une série depuis sa fiche détail." />
   } @else if (items().length === 0 && pendingItems().length === 0) {
-    <div class="empty">
-      <h2>Aucune date à venir</h2>
-      <p>Les médias suivis sont enregistrés; aucune sortie future n'est disponible côté TMDB pour le moment.</p>
-    </div>
-  } @else if (view() === 'list') {
-    @if (items().length > 0) {
-      <div class="timeline">
-        @for (item of items(); track item.id) {
-          <a class="release-row" [routerLink]="['/', item.type, item.tmdbId]">
-            <time>{{ formatDate(item.date) }}</time>
-            <div class="poster" [class.empty]="!poster(item.posterPath)">
-              @if (poster(item.posterPath); as p) {
-                <img [src]="p" [alt]="item.title" loading="lazy" />
-              } @else {
-                <span>🎬</span>
-              }
-            </div>
-            <div class="body">
-              <span class="kind">{{ item.kind }}</span>
-              <strong>{{ item.title }}</strong>
-              <span>{{ item.subtitle }}</span>
-            </div>
-            <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
-          </a>
-        }
-      </div>
-    }
-    @if (pendingItems().length > 0) {
-      <section class="pending">
-        <h2 class="pending-title">À venir · date à confirmer</h2>
-        <p class="pending-hint">Annoncé sur TMDB sans date de sortie. Basculera dans le calendrier dès qu'une date sera publiée.</p>
-        <div class="timeline">
-          @for (item of pendingItems(); track item.id) {
-            <a class="release-row pending-row" [routerLink]="['/', item.type, item.tmdbId]">
-              <time class="tba">à confirmer</time>
-              <div class="poster" [class.empty]="!poster(item.posterPath)">
-                @if (poster(item.posterPath); as p) {
-                  <img [src]="p" [alt]="item.title" loading="lazy" />
-                } @else {
-                  <span>🎬</span>
-                }
-              </div>
-              <div class="body">
-                <span class="kind">{{ item.kind }}</span>
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.subtitle }}</span>
-              </div>
-              <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
-            </a>
-          }
-        </div>
-      </section>
-    }
+    <p-message severity="secondary" styleClass="state-message"
+      text="Aucune date à venir. Les médias suivis sont enregistrés ; aucune sortie future n'est disponible côté TMDB pour le moment." />
   } @else {
-    <div class="calendar-view">
-      <p-datepicker
-        [inline]="true"
-        [(ngModel)]="calendarDate"
-        [firstDayOfWeek]="1"
-        (onSelect)="onDaySelect($event)"
-        styleClass="release-datepicker"
-      >
-        <ng-template pTemplate="date" let-date>
-          <span class="cal-cell" [class.has-release]="hasRelease(date)">{{ date.day }}</span>
-        </ng-template>
-      </p-datepicker>
 
-      <div class="day-panel">
-        <h2 class="day-title">{{ selectedDayLabel() }}</h2>
-        @if (selectedDayItems().length === 0) {
-          <p class="day-empty">Aucune sortie ce jour.</p>
-        } @else {
-          <div class="timeline">
-            @for (item of selectedDayItems(); track item.id) {
-              <a class="release-row compact" [routerLink]="['/', item.type, item.tmdbId]">
-                <div class="poster" [class.empty]="!poster(item.posterPath)">
-                  @if (poster(item.posterPath); as p) {
-                    <img [src]="p" [alt]="item.title" loading="lazy" />
-                  } @else {
-                    <span>🎬</span>
-                  }
-                </div>
-                <div class="body">
-                  <span class="kind">{{ item.kind }}</span>
-                  <strong>{{ item.title }}</strong>
-                  <span>{{ item.subtitle }}</span>
-                </div>
-                <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
-              </a>
-            }
-          </div>
-        }
+    @if (view() === 'list') {
+      @if (items().length > 0) {
+        <ng-container *ngTemplateOutlet="timeline; context: { rows: items(), tba: false }" />
+      }
+    } @else {
+      <div class="calendar-view">
+        <p-datepicker
+          [inline]="true"
+          [(ngModel)]="calendarDate"
+          [firstDayOfWeek]="1"
+          (onSelect)="onDaySelect($event)"
+          styleClass="release-datepicker"
+        >
+          <ng-template #date let-date>
+            <span class="cal-cell" [class.has-release]="hasRelease(date)">{{ date.day }}</span>
+          </ng-template>
+        </p-datepicker>
+
+        <section class="day-panel">
+          <h2 class="section-title">{{ selectedDayLabel() }}</h2>
+          @if (selectedDayItems().length === 0) {
+            <p-message severity="secondary" text="Aucune sortie ce jour." />
+          } @else {
+            <ng-container *ngTemplateOutlet="timeline; context: { rows: selectedDayItems(), tba: false }" />
+          }
+        </section>
       </div>
-    </div>
+    }
 
     @if (pendingItems().length > 0) {
       <section class="pending">
-        <h2 class="pending-title">À venir · date à confirmer</h2>
-        <p class="pending-hint">Annoncé sur TMDB sans date de sortie. Basculera dans le calendrier dès qu'une date sera publiée.</p>
-        <div class="timeline">
-          @for (item of pendingItems(); track item.id) {
-            <a class="release-row pending-row" [routerLink]="['/', item.type, item.tmdbId]">
-              <time class="tba">à confirmer</time>
-              <div class="poster" [class.empty]="!poster(item.posterPath)">
-                @if (poster(item.posterPath); as p) {
-                  <img [src]="p" [alt]="item.title" loading="lazy" />
-                } @else {
-                  <span>🎬</span>
-                }
-              </div>
-              <div class="body">
-                <span class="kind">{{ item.kind }}</span>
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.subtitle }}</span>
-              </div>
-              <button pRipple class="remove" title="Ne plus suivre" (click)="remove(item, $event)">×</button>
-            </a>
-          }
-        </div>
+        <h2 class="section-title">À venir · date à confirmer</h2>
+        <p class="subtitle pending-hint">
+          Annoncé sur TMDB sans date de sortie. Basculera dans le calendrier dès qu'une date sera publiée.
+        </p>
+        <ng-container *ngTemplateOutlet="timeline; context: { rows: pendingItems(), tba: true }" />
       </section>
     }
   }

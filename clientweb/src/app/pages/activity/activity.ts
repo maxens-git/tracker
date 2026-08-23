@@ -1,5 +1,4 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { RouterLink } from '@angular/router';
 import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
@@ -8,19 +7,24 @@ import { Activity, ActivityType } from '../../../shared/interfaces/activity';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { posterUrl } from '../../../shared/services/tmdb-image';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 
-/** Icône et couleur de pastille pour chaque type d'action. */
-const TYPE_STYLE: Record<ActivityType, { icon: string; tone: string }> = {
-  seen:            { icon: '✓', tone: 'tone-seen' },
-  unseen:          { icon: '↺', tone: 'tone-muted' },
-  liked:           { icon: '♥', tone: 'tone-like' },
-  unliked:         { icon: '♡', tone: 'tone-like' },
-  addedToList:     { icon: '＋', tone: 'tone-add' },
-  removedFromList: { icon: '−', tone: 'tone-remove' },
-  seasonSeen:      { icon: '✓', tone: 'tone-seen' },
-  seasonUnseen:    { icon: '↺', tone: 'tone-muted' },
-  episodeSeen:     { icon: '✓', tone: 'tone-seen' },
-  episodeUnseen:   { icon: '↺', tone: 'tone-muted' },
+/** Icône PrimeIcons et sévérité de <p-tag> pour chaque type d'action. */
+type TagSeverity = 'success' | 'secondary' | 'info' | 'warn' | 'danger';
+
+const TYPE_STYLE: Record<ActivityType, { icon: string; severity: TagSeverity }> = {
+  seen:            { icon: 'pi pi-check', severity: 'success' },
+  unseen:          { icon: 'pi pi-replay', severity: 'secondary' },
+  liked:           { icon: 'pi pi-heart-fill', severity: 'danger' },
+  unliked:         { icon: 'pi pi-heart', severity: 'secondary' },
+  addedToList:     { icon: 'pi pi-plus', severity: 'info' },
+  removedFromList: { icon: 'pi pi-minus', severity: 'warn' },
+  seasonSeen:      { icon: 'pi pi-check', severity: 'success' },
+  seasonUnseen:    { icon: 'pi pi-replay', severity: 'secondary' },
+  episodeSeen:     { icon: 'pi pi-check', severity: 'success' },
+  episodeUnseen:   { icon: 'pi pi-replay', severity: 'secondary' },
 };
 
 function actionLabel(a: Activity): string {
@@ -57,7 +61,7 @@ interface ActivityRow {
   title: string;
   label: string;
   icon: string;
-  tone: string;
+  severity: TagSeverity;
   link: (string | number)[];
   createdAt: string;
 }
@@ -65,7 +69,7 @@ interface ActivityRow {
 @Component({
   selector: 'app-activity',
   standalone: true,
-  imports: [Ripple, RouterLink, Spinner],
+  imports: [RouterLink, Spinner, ButtonModule, TagModule, MessageModule],
   templateUrl: './activity.html',
   styleUrl: './activity.scss',
 })
@@ -129,7 +133,7 @@ export class ActivityPage implements OnInit {
       title: title || (type === 'tv' ? 'Série' : 'Film'),
       label: actionLabel(a),
       icon: style.icon,
-      tone: style.tone,
+      severity: style.severity,
       link: ['/', type, a.tmdbId],
       createdAt: a.createdAt,
     };

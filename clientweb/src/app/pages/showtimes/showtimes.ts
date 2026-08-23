@@ -7,7 +7,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
-import { Ripple } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import {
@@ -16,6 +15,10 @@ import {
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { Autofocus } from '../../../shared/directives/autofocus';
 import { errorMessage } from '../../../shared/services/http-error';
+import { TagModule } from 'primeng/tag';
+import { ChipModule } from 'primeng/chip';
+import { MessageModule } from 'primeng/message';
+import { CardModule } from 'primeng/card';
 
 // Un code salle Allociné valide : une lettre suivie de 3 à 5 chiffres (ex. P0057).
 const THEATER_CODE = /^[A-Z][0-9]{3,5}$/;
@@ -63,7 +66,8 @@ interface MergedMovie {
   standalone: true,
   imports: [
     CommonModule, FormsModule, ButtonModule, InputTextModule, DatePickerModule,
-    MultiSelectModule, DialogModule, Ripple, Spinner, Autofocus,
+    MultiSelectModule, DialogModule, Spinner, Autofocus,
+    TagModule, ChipModule, MessageModule, CardModule,
   ],
   templateUrl: './showtimes.html',
   styleUrl: './showtimes.scss',

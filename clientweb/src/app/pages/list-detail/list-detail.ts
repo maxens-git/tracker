@@ -1,5 +1,4 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +9,13 @@ import { MediaListSummary } from '../../../shared/interfaces/list';
 import { MediaItem } from '../../../shared/interfaces/media';
 import { PosterCard } from '../../../shared/components/poster-card/poster-card';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { PaginatorModule } from 'primeng/paginator';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 import { SYSTEM_LIST_BY_SLUG } from '../../../shared/constants';
 
 type SystemListSlug = keyof typeof SYSTEM_LIST_BY_SLUG;
@@ -17,7 +23,7 @@ type SystemListSlug = keyof typeof SYSTEM_LIST_BY_SLUG;
 @Component({
   selector: 'app-list-detail',
   standalone: true,
-  imports: [Ripple, CommonModule, FormsModule, RouterLink, PosterCard, Spinner],
+  imports: [CommonModule, FormsModule, RouterLink, PosterCard, Spinner, PaginatorModule, IconFieldModule, InputIconModule, InputTextModule, ButtonModule, TagModule, MessageModule],
   templateUrl: './list-detail.html',
   styleUrl: './list-detail.scss',
 })
@@ -34,6 +40,7 @@ export class ListDetail implements OnInit {
 
   items = signal<MediaItem[]>([]);
   page = signal(1);
+  pageSize = signal(20);
   totalPages = signal(1);
   totalCount = signal(0);
   loading = signal(false);
@@ -73,6 +80,7 @@ export class ListDetail implements OnInit {
       // on charge les fiches TMDB correspondantes puis on recopie les états dessus.
       switchMap(result => {
         this.page.set(result.page);
+        this.pageSize.set(result.pageSize);
         this.totalPages.set(result.totalPages);
         this.totalCount.set(result.totalCount);
         this.syncPageParam(result.page);
@@ -121,28 +129,8 @@ export class ListDetail implements OnInit {
     );
   }
 
-  listIcon(): string {
-    const l = this.list();
-    if (!l) return '';
-    return l.icon ?? l.name.charAt(0).toUpperCase();
-  }
-
-  /**
-   * Pages à afficher autour de la page courante, avec 0 comme marqueur d'ellipsis (…).
-   * Ex. (courante 7 / 60) → [1, 0, 6, 7, 8, 0, 60].
-   */
-  pageList(): number[] {
-    const total = this.totalPages();
-    const current = this.page();
-    const delta = 1; // nombre de pages de part et d'autre de la courante
-    const left = Math.max(2, current - delta);
-    const right = Math.min(total - 1, current + delta);
-
-    const range: number[] = [1];
-    if (left > 2) range.push(0);
-    for (let i = left; i <= right; i++) range.push(i);
-    if (right < total - 1) range.push(0);
-    if (total > 1) range.push(total);
-    return range;
+  /** Index du premier élément de la page courante, pour <p-paginator>. */
+  firstRecord(): number {
+    return (this.page() - 1) * this.pageSize();
   }
 }

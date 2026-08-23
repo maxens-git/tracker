@@ -58,12 +58,12 @@ struct ListsView: View {
             }
         }
         .sheet(isPresented: $showingEditor) {
-            ListEditorSheet(list: editingList) { name, icon, description in
+            ListEditorSheet(list: editingList) { name, description in
                 Task {
                     if let editingList {
-                        await viewModel.update(editingList, name: name, description: description, icon: icon)
+                        await viewModel.update(editingList, name: name, description: description)
                     } else {
-                        await viewModel.createList(name: name, description: description, icon: icon)
+                        await viewModel.createList(name: name, description: description)
                     }
                 }
             }
@@ -83,24 +83,17 @@ struct ListsView: View {
     }
 
     private func row(for list: MediaListSummary) -> some View {
-        Label {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(list.name)
-                Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
+        VStack(alignment: .leading, spacing: 2) {
+            Text(list.name)
+            Text("\(list.itemsCount) élément\(list.itemsCount > 1 ? "s" : "")")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let description = list.description, !description.isEmpty {
+                Text(description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                if let description = list.description, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                    .lineLimit(1)
             }
-        } icon: {
-            Text(list.icon ?? String(list.name.prefix(1)))
-                .font(.body)
-                .frame(width: 29, height: 29)
-                .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
         .padding(.vertical, 2)
     }
@@ -113,18 +106,16 @@ private struct ListEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private let isEditing: Bool
-    private let onSave: (_ name: String, _ icon: String, _ description: String) -> Void
+    private let onSave: (_ name: String, _ description: String) -> Void
 
     @State private var name: String
-    @State private var icon: String
     @State private var description: String
 
     init(list: MediaListSummary?,
-         onSave: @escaping (_ name: String, _ icon: String, _ description: String) -> Void) {
+         onSave: @escaping (_ name: String, _ description: String) -> Void) {
         self.isEditing = list != nil
         self.onSave = onSave
         _name = State(initialValue: list?.name ?? "")
-        _icon = State(initialValue: list?.icon ?? "")
         _description = State(initialValue: list?.description ?? "")
     }
 
@@ -135,7 +126,6 @@ private struct ListEditorSheet: View {
             Form {
                 Section {
                     TextField("Nom", text: $name)
-                    TextField("Icône (emoji)", text: $icon)
                 }
                 Section("Description") {
                     TextField("Optionnelle", text: $description, axis: .vertical)
@@ -150,10 +140,7 @@ private struct ListEditorSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
-                        // Icône limitée à quelques caractères (un emoji) pour rester sous la limite backend.
-                        let trimmedIcon = String(icon.trimmingCharacters(in: .whitespaces).prefix(4))
                         onSave(trimmedName,
-                               trimmedIcon,
                                description.trimmingCharacters(in: .whitespaces))
                         dismiss()
                     }

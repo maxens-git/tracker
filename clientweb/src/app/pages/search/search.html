@@ -1,10 +1,10 @@
-<div class="search-page">
-  <p-iconfield iconPosition="left" styleClass="search-bar mb-3">
+<div class="page">
+  <p-iconfield iconPosition="left" styleClass="search-bar">
     <p-inputicon styleClass="pi pi-search" />
     <input
       pInputText
       type="search"
-      placeholder="Rechercher un film ou une série..."
+      placeholder="Rechercher un film ou une série…"
       [(ngModel)]="query"
       (ngModelChange)="onInput()"
       autofocus
@@ -12,89 +12,83 @@
   </p-iconfield>
 
   @if (searched()) {
-    <div class="filter-row mb-4">
-      <div class="filter-tabs">
-        <button pButton pRipple type="button" class="filter-tab" [class.active]="filter() === 'all'" [outlined]="filter() !== 'all'" (click)="setFilter('all')">
-          Tout <span class="count">{{ allResults().length }}</span>
-        </button>
-        <button pButton pRipple type="button" class="filter-tab" [class.active]="filter() === 'movie'" [outlined]="filter() !== 'movie'" (click)="setFilter('movie')">
-          Films <span class="count">{{ movieCount() }}</span>
-        </button>
-        <button pButton pRipple type="button" class="filter-tab" [class.active]="filter() === 'tv'" [outlined]="filter() !== 'tv'" (click)="setFilter('tv')">
-          Séries <span class="count">{{ showCount() }}</span>
-        </button>
-      </div>
+    <div class="filter-row">
+      <p-selectbutton
+        [options]="typeOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        [ngModel]="filter()"
+        (ngModelChange)="setFilter($event)"
+        ariaLabelledBy="Type de média"
+      />
 
       @if (allResults().length > 0) {
-        <button pButton pRipple type="button" icon="pi pi-sliders-h" class="filter-toggle" [outlined]="true" [class.active]="showFilters() || hasActiveFilters()" (click)="toggleFilters()">
-          Filtres & tri
-          @if (hasActiveFilters()) { <span class="dot"></span> }
-        </button>
+        <div class="filter-controls">
+          <p-select
+            [options]="sortOptions"
+            optionLabel="label"
+            optionValue="key"
+            [ngModel]="sort()"
+            (ngModelChange)="sort.set($event)"
+            styleClass="sort-select"
+            ariaLabel="Trier par"
+          />
+
+          @if (relevantGenres().length > 0) {
+            <p-multiselect
+              [options]="relevantGenres()"
+              optionLabel="name"
+              optionValue="id"
+              [ngModel]="selectedGenreIds()"
+              (ngModelChange)="selectedGenreIds.set($event)"
+              placeholder="Genres"
+              selectedItemsLabel="{0} genres"
+              [maxSelectedLabels]="1"
+              [filter]="false"
+              [showToggleAll]="false"
+              styleClass="genre-select"
+            />
+          }
+
+          @if (hasActiveFilters()) {
+            <button pButton type="button" severity="secondary" text
+              icon="pi pi-filter-slash" label="Réinitialiser" (click)="resetFilters()"></button>
+          }
+        </div>
       }
     </div>
-
-    @if (showFilters() && allResults().length > 0) {
-      <div class="filter-panel mb-4">
-        <div class="panel-section">
-          <span class="panel-label">Trier par</span>
-          <div class="chips">
-            @for (opt of sortOptions; track opt.key) {
-              <button pButton pRipple type="button" class="chip" [outlined]="sort() !== opt.key" [class.active]="sort() === opt.key" (click)="setSort(opt.key)">
-                {{ opt.label }}
-              </button>
-            }
-          </div>
-        </div>
-
-        @if (relevantGenres().length > 0) {
-          <div class="panel-section">
-            <span class="panel-label">Genres</span>
-            <div class="chips">
-              @for (g of relevantGenres(); track g.id) {
-                <button pButton pRipple type="button" class="chip" [outlined]="!isGenreSelected(g.id)" [class.active]="isGenreSelected(g.id)" (click)="toggleGenre(g.id)">
-                  {{ g.name }}
-                </button>
-              }
-            </div>
-          </div>
-        }
-
-        @if (hasActiveFilters()) {
-          <button pButton pRipple type="button" text severity="secondary" icon="pi pi-refresh" class="reset-btn" (click)="resetFilters()">Réinitialiser</button>
-        }
-      </div>
-    }
   }
 
   @if (loading()) {
     <app-spinner />
   } @else if (searched() && results().length === 0) {
-    <div class="status text-center py-5">Aucun résultat</div>
+    <p-message severity="secondary" styleClass="state-message" text="Aucun résultat." />
   } @else if (results().length > 0) {
-    <div class="grid">
+    <div class="poster-grid">
       @for (item of results(); track item.id) {
         <app-poster-card [item]="item" />
       }
     </div>
   } @else if (history.recent().length > 0) {
-    <div class="recent">
+    <section class="recent">
       <div class="recent-head">
-        <span class="recent-title">Recherches récentes</span>
-        <button type="button" class="recent-clear" (click)="clearHistory()">Tout effacer</button>
+        <h2 class="section-title">Recherches récentes</h2>
+        <button pButton type="button" severity="secondary" text size="small"
+          label="Tout effacer" (click)="clearHistory()"></button>
       </div>
-      <ul class="recent-list">
+      <div class="recent-chips">
         @for (entry of history.recent(); track entry) {
-          <li class="recent-item" (click)="useRecent(entry)">
-            <i class="pi pi-history"></i>
-            <span class="recent-label">{{ entry }}</span>
-            <button type="button" class="recent-remove" (click)="removeRecent(entry, $event)" [attr.aria-label]="'Retirer ' + entry">
-              <i class="pi pi-times"></i>
-            </button>
-          </li>
+          <p-chip
+            [label]="entry"
+            [removable]="true"
+            (onRemove)="history.remove(entry)"
+            (click)="useRecent(entry)"
+          />
         }
-      </ul>
-    </div>
+      </div>
+    </section>
   } @else {
-    <div class="status text-center py-5 hint">Tapez pour rechercher</div>
+    <p-message severity="secondary" styleClass="state-message" text="Tapez pour rechercher." />
   }
 </div>

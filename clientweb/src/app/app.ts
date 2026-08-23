@@ -9,13 +9,14 @@ import {
   NavigationError,
 } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { Nav } from '../shared/components/nav/nav';
 import { ThemeService } from '../shared/services/theme';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Nav, ToastModule],
+  imports: [RouterOutlet, Nav, ToastModule, ProgressBarModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

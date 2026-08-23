@@ -208,21 +208,19 @@ struct APIService {
         ])
     }
 
-    func createList(name: String, description: String? = nil, icon: String? = nil) async throws -> MediaListSummary {
+    func createList(name: String, description: String? = nil) async throws -> MediaListSummary {
         var payload: [String: AnyEncodable] = ["name": AnyEncodable(name)]
         if let description { payload["description"] = AnyEncodable(description) }
-        if let icon { payload["icon"] = AnyEncodable(icon) }
         let body = try encoder.encode(payload)
         return try await request("/MediaLists", method: "POST", body: body)
     }
 
     /// Met à jour une liste personnalisée (le backend refuse les listes système).
-    /// Les champs vides sont envoyés tels quels (chaîne vide = efface description/icône).
-    func updateList(id: Int, name: String, description: String, icon: String) async throws {
+    /// Les champs vides sont envoyés tels quels (chaîne vide = efface la description).
+    func updateList(id: Int, name: String, description: String) async throws {
         let payload: [String: AnyEncodable] = [
             "name": AnyEncodable(name),
             "description": AnyEncodable(description),
-            "icon": AnyEncodable(icon),
         ]
         let body = try encoder.encode(payload)
         try await rawRequest("/MediaLists/\(id)", method: "PUT", body: body)

@@ -1,24 +1,30 @@
 @if (loading()) {
   <app-spinner />
 } @else if (error()) {
-  <div class="status text-center py-5 px-4 error">{{ error() }}</div>
+  <div class="page">
+    <p-message severity="error" styleClass="state-message" [text]="error()!" />
+  </div>
 } @else if (data(); as d) {
   @if (hero(d); as h) {
-    <header class="hero d-flex align-items-end" [style.background-image]="h.backdrop ? 'var(--hero-home-overlay), url(' + h.backdrop + ')' : null">
+    <header class="hero" [style.background-image]="h.backdrop ? 'var(--hero-overlay), url(' + h.backdrop + ')' : null">
       <div class="hero-content">
-        <span class="eyebrow">À l'affiche</span>
+        <p-tag severity="secondary" value="À l'affiche" />
+
         <h1>{{ h.title }}</h1>
-        @if (h.year) { <span class="year d-inline-block mb-3">{{ h.year }}</span> }
-        @if (h.overview) { <p>{{ h.overview }}</p> }
-        <a class="btn-detail" [routerLink]="h.link">
-          <i class="pi pi-play"></i>
-          Voir la fiche
-        </a>
+
+        @if (h.year) {
+          <p-tag severity="secondary" [value]="h.year" />
+        }
+        @if (h.overview) {
+          <p>{{ h.overview }}</p>
+        }
+
+        <a pButton icon="pi pi-play" label="Voir la fiche" [routerLink]="h.link"></a>
       </div>
     </header>
   }
 
-  <main class="rows mx-auto pb-5 pt-4 px-4">
+  <div class="rows">
     @if (d.continueWatching.length) {
       <app-continue-row title="Reprendre" [items]="d.continueWatching" />
     }
@@ -26,5 +32,5 @@
     <app-media-row title="Films populaires" [items]="d.popularMovies" />
     <app-media-row title="Séries populaires" [items]="d.popularShows" />
     <app-media-row title="Mieux notés" [items]="d.topRated" />
-  </main>
+  </div>
 }

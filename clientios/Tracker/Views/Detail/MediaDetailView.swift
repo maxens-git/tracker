@@ -318,7 +318,6 @@ struct MediaDetailView: View {
                     Task { await viewModel.toggleList(list.id) }
                 } label: {
                     HStack(spacing: 12) {
-                        Text(list.icon ?? "📋")
                         Text(list.name)
                             .foregroundStyle(.primary)
                         Spacer()

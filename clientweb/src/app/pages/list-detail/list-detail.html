@@ -1,72 +1,64 @@
-<div class="list-detail-page">
-
+<div class="page">
   @if (loadingList()) {
     <app-spinner />
   } @else if (list(); as l) {
 
-    <div class="detail-header mb-4">
-      <a routerLink="/lists" class="back-link">← Listes</a>
-      <div class="header-main">
-        <div class="list-icon">{{ listIcon() }}</div>
-        <div class="header-info">
-          <h1 class="list-name">
-            {{ l.name }}
-            @if (l.isSystem) {
-              <span class="badge-system">système</span>
-            }
-          </h1>
-          @if (l.description) {
-            <p class="list-description">{{ l.description }}</p>
-          }
-          <div class="list-meta">
-            {{ l.itemsCount }} élément{{ l.itemsCount !== 1 ? 's' : '' }}
-          </div>
-        </div>
-      </div>
-    </div>
+    <a pButton routerLink="/lists" severity="secondary" text size="small"
+      icon="pi pi-arrow-left" label="Listes" class="back-link"></a>
 
-    <div class="search-bar mb-4">
-      <input
-        type="search"
-        placeholder="Rechercher dans cette liste…"
-        [(ngModel)]="query"
-        class="w-100"
-      />
-    </div>
+    <header class="detail-header">
+      <div class="header-info">
+        <h1 class="page-title">
+          <span>{{ l.name }}</span>
+          @if (l.isSystem) {
+            <p-tag severity="secondary" value="Système" />
+          }
+        </h1>
+        @if (l.description) {
+          <p class="subtitle">{{ l.description }}</p>
+        }
+        <p class="subtitle">{{ l.itemsCount }} élément{{ l.itemsCount !== 1 ? 's' : '' }}</p>
+      </div>
+    </header>
+
+    <p-iconfield iconPosition="left" styleClass="search-bar">
+      <p-inputicon styleClass="pi pi-search" />
+      <input pInputText type="search" placeholder="Rechercher dans cette liste…" [(ngModel)]="query" />
+    </p-iconfield>
 
     @if (loading()) {
       <app-spinner />
     } @else if (filteredItems.length === 0) {
-      <div class="status text-center py-5">
-        {{ query ? 'Aucun résultat pour « ' + query + ' »' : 'Cette liste est vide.' }}
-      </div>
+      <p-message
+        severity="secondary"
+        styleClass="state-message"
+        [text]="query ? 'Aucun résultat pour « ' + query + ' »' : 'Cette liste est vide.'"
+      />
     } @else {
-      <div class="results-meta mb-3">
+      <p class="results-meta">
         @if (query.trim()) {
           {{ filteredItems.length }} résultat{{ filteredItems.length !== 1 ? 's' : '' }} sur cette page
         } @else {
           {{ totalCount() }} élément{{ totalCount() !== 1 ? 's' : '' }}
         }
-      </div>
-      <div class="grid mb-4">
+      </p>
+
+      <div class="poster-grid">
         @for (item of filteredItems; track item.id) {
           <app-poster-card [item]="item" />
         }
       </div>
 
       @if (totalPages() > 1 && !query.trim()) {
-        <div class="pagination">
-          <button pRipple class="page-btn nav" [disabled]="page() === 1" (click)="loadPage(page() - 1)" title="Précédent">‹</button>
-          @for (p of pageList(); track $index) {
-            @if (p === 0) {
-              <span class="page-ellipsis">…</span>
-            } @else {
-              <button pRipple class="page-btn" [class.active]="p === page()" (click)="loadPage(p)">{{ p }}</button>
-            }
-          }
-          <button pRipple class="page-btn nav" [disabled]="page() === totalPages()" (click)="loadPage(page() + 1)" title="Suivant">›</button>
-        </div>
-        <div class="pagination-info">Page {{ page() }} / {{ totalPages() }}</div>
+        <p-paginator
+          [first]="firstRecord()"
+          [rows]="pageSize()"
+          [totalRecords]="totalCount()"
+          [showFirstLastIcon]="true"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="{first} – {last} sur {totalRecords}"
+          (onPageChange)="loadPage(($event.page ?? 0) + 1)"
+        />
       }
     }
   }

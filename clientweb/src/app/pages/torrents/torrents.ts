@@ -12,15 +12,23 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { Ripple } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { Api, TorrentResult, TorrentBookmark, DebridFile, Indexer, TorrentCategory } from '../../../shared/services/api';
 import { Spinner } from '../../../shared/components/spinner/spinner';
+import { SelectModule } from 'primeng/select';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TagModule } from 'primeng/tag';
+import { ChipModule } from 'primeng/chip';
+import { MessageModule } from 'primeng/message';
 
 @Component({
   selector: 'app-torrents',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, TableModule, DialogModule, MultiSelectModule, CheckboxModule, InputTextModule, IconFieldModule, InputIconModule, Ripple, Spinner],
+  imports: [
+    CommonModule, FormsModule, ButtonModule, TableModule, DialogModule, MultiSelectModule,
+    CheckboxModule, InputTextModule, IconFieldModule, InputIconModule, Spinner,
+    SelectModule, SelectButtonModule, TagModule, ChipModule, MessageModule,
+  ],
   templateUrl: './torrents.html',
   styleUrl: './torrents.scss',
 })
@@ -39,6 +47,11 @@ export class Torrents implements OnInit {
   // Vue courante : marque-pages mis de côté par défaut (affichés à l'ouverture),
   // puis « résultats » dès qu'une recherche est lancée.
   view = signal<'results' | 'bookmarks'>('bookmarks');
+  /** Onglets Résultats / Marque-pages du <p-selectButton>. */
+  viewOptions = computed(() => [
+    { label: 'Résultats', value: 'results' as const },
+    { label: `Marque-pages (${this.bookmarks().length})`, value: 'bookmarks' as const },
+  ]);
   // Marque-pages persistés en base (les plus récents en tête).
   bookmarks = signal<TorrentBookmark[]>([]);
   // Marque-page en cours d'ajout/retrait (clé = magnetUrl) pour désactiver le bouton.
@@ -332,6 +345,14 @@ export class Torrents implements OnInit {
     } catch {
       this.showError('Impossible de copier le lien.');
     }
+  }
+
+  // Les noms de release n'ont aucune espace : sans point de coupure, le navigateur
+  // les tronque au milieu d'un mot. On insère des espaces de largeur nulle après les
+  // séparateurs usuels (. _ - + ] )) pour que le retour à la ligne tombe entre deux
+  // segments. Le texte reste identique visuellement, et l'attribut title garde l'original.
+  breakable(text: string): string {
+    return (text || '').replace(/[._\-+\])]/g, '$&\u200B');
   }
 
   // Extension de fichier en majuscules (ex. « MKV »), vide si aucune.

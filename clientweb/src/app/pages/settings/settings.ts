@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Ripple } from 'primeng/ripple';
 import { FormsModule } from '@angular/forms';
 import { Api, Settings } from '../../../shared/services/api';
 import { switchMap } from 'rxjs/operators';
@@ -7,6 +6,8 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { CardModule } from 'primeng/card';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { ThemeMode, ThemeService } from '../../../shared/services/theme';
 import { SettingsState } from '../../../shared/services/settings-state';
@@ -15,7 +16,7 @@ import { buildInfo } from '../../../environments/build-info';
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [Ripple, FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner],
+  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner, CardModule, SelectButtonModule],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })

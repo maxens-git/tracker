@@ -1,42 +1,43 @@
 @if (loading()) {
   <app-spinner />
 } @else if (error()) {
-  <p class="error-msg">{{ error() }}</p>
+  <div class="page">
+    <p-message severity="error" styleClass="state-message" [text]="error()!" />
+  </div>
 } @else if (person(); as p) {
-
-  <div class="person-page">
-
-    <button pRipple class="back-btn" (click)="goBack()">← Retour</button>
+  <div class="page">
+    <button pButton type="button" severity="secondary" text size="small"
+      icon="pi pi-arrow-left" label="Retour" class="back-btn" (click)="goBack()"></button>
 
     <section class="header-section">
       <div class="photo-wrap">
         @if (profile(p.profile_path); as img) {
           <img class="photo" [src]="img" [alt]="p.name" />
         } @else {
-          <div class="photo-placeholder">{{ p.name[0] }}</div>
+          <p-avatar [label]="p.name[0]" size="xlarge" shape="square" styleClass="photo-placeholder" />
         }
       </div>
 
       <div class="info">
-        <h1 class="name">{{ p.name }}</h1>
+        <h1 class="page-title name">{{ p.name }}</h1>
         @if (p.known_for_department) {
-          <p class="department">{{ p.known_for_department }}</p>
+          <p-tag severity="info" [value]="p.known_for_department" />
         }
 
-        <ul class="facts">
+        <dl class="facts">
           @if (p.birthday) {
-            <li>
-              <span class="label">Naissance</span>
-              <span>{{ p.birthday | date:'longDate' }}@if (age !== null) { ({{ age }} ans) }</span>
-            </li>
+            <dt>Naissance</dt>
+            <dd>{{ p.birthday | date:'longDate' }}@if (age !== null) { ({{ age }} ans) }</dd>
           }
           @if (p.deathday) {
-            <li><span class="label">Décès</span><span>{{ p.deathday | date:'longDate' }}</span></li>
+            <dt>Décès</dt>
+            <dd>{{ p.deathday | date:'longDate' }}</dd>
           }
           @if (p.place_of_birth) {
-            <li><span class="label">Lieu</span><span>{{ p.place_of_birth }}</span></li>
+            <dt>Lieu</dt>
+            <dd>{{ p.place_of_birth }}</dd>
           }
-        </ul>
+        </dl>
 
         @if (p.biography) {
           <p class="biography">{{ p.biography }}</p>
@@ -47,14 +48,14 @@
     @if (filmography().length) {
       <section class="content-section">
         <h2 class="section-title">Filmographie</h2>
-        <div class="grid">
+        <div class="poster-grid">
           @for (item of filmography(); track item.media_type + '-' + item.id) {
             <app-poster-card [item]="item" />
           }
         </div>
       </section>
     } @else {
-      <p class="status">Aucune œuvre trouvée.</p>
+      <p-message severity="secondary" styleClass="state-message" text="Aucune œuvre trouvée." />
     }
   </div>
 }

@@ -1,193 +1,78 @@
-.status {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 .lists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.list-card-wrap {
+  position: relative;
+
+  &:hover .list-actions {
+    opacity: 1;
+  }
 }
 
 .list-card {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  padding: var(--p-card-body-padding);
+  transition: box-shadow 0.15s, outline-color 0.15s;
+  outline: 1px solid transparent;
 
   &:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-hover);
+    outline-color: var(--p-primary-color);
+    box-shadow: var(--app-shadow-md);
   }
 }
 
-.list-icon {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
 .list-info {
-  flex: 1;
   min-width: 0;
+  flex: 1;
 }
 
 .list-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 0.25rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.badge-system {
-  font-size: 0.65rem;
+  color: var(--p-text-color);
+  font-size: 0.95rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.12);
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 4px;
-  padding: 0.1rem 0.4rem;
 }
 
 .list-description {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
   overflow: hidden;
+  margin: 0.3rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .list-counts {
+  margin: 0.3rem 0 0;
+  color: var(--app-text-faint);
   font-size: 0.78rem;
-  color: var(--faint);
-}
-
-/* ── Carte + actions (modifier / supprimer) ──────────────────────────────── */
-.list-card-wrap {
-  position: relative;
-
-  &:hover .list-actions { opacity: 1; }
 }
 
 .list-actions {
   position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
+  top: 0.5rem;
+  right: 0.5rem;
   display: flex;
-  gap: 0.35rem;
+  gap: 0.15rem;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s;
 }
 
-:host ::ng-deep .action-btn.p-button {
-  width: 32px;
-  height: 32px;
-  background: var(--surface-glass-strong);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid var(--border-strong);
-  transition: border-color 0.15s ease, color 0.15s ease;
-
-  &:hover { border-color: var(--accent); }
-}
-
-/* Sur tactile (pas de survol), garder les actions visibles. */
+// Sans survol (tactile), les actions restent visibles.
 @media (hover: none) {
-  .list-actions { opacity: 1; }
-}
-
-/* ── Dialogue création / édition ─────────────────────────────────────────── */
-:host ::ng-deep .list-editor-dialog {
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-  background: var(--surface-overlay);
-  color: var(--text);
-  box-shadow: var(--shadow-2);
-
-  .p-dialog-header,
-  .p-dialog-content {
-    background: transparent;
-    color: inherit;
-  }
-
-  .p-dialog-header {
-    padding: 1rem 1rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .p-dialog-title {
-    font-size: 1rem;
-    font-weight: 900;
-  }
-
-  .p-dialog-content {
-    padding: 1rem;
+  .list-actions {
+    opacity: 1;
   }
 }
 
 .editor-form {
   display: grid;
   gap: 1rem;
-}
-
-.field {
-  display: block;
-
-  span {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 0.35rem;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    background: var(--bg-elevated);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.55rem 0.7rem;
-    font: inherit;
-    font-size: 0.9rem;
-    resize: vertical;
-
-    &:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-  }
-}
-
-.form-error {
-  margin: -0.25rem 0 0;
-  font-size: 0.8rem;
-  color: var(--danger);
-}
-
-.dialog-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.6rem;
 }

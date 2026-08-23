@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TagModule } from 'primeng/tag';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { MediaItem } from '../../interfaces/media';
 import { backdropUrl, posterUrl, displayTitle } from '../../services/tmdb-image';
 
@@ -24,7 +26,7 @@ interface ContinueCard {
 @Component({
   selector: 'app-continue-row',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TagModule, ProgressBarModule],
   templateUrl: './continue-row.html',
   styleUrl: './continue-row.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

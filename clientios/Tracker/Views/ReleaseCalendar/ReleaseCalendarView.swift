@@ -93,11 +93,12 @@ struct ReleaseCalendarView: View {
         .refreshable { await viewModel.load(forceRefresh: true) }
     }
 
-    /// `source` distingue les sections : un même média listé deux fois doit
-    /// avoir deux id de transition différents, sinon le zoom part toujours de
-    /// la première ligne.
+    /// `source` distingue chaque ligne : un même média peut apparaître plusieurs
+    /// fois (plusieurs épisodes/saisons de la même série, ou deux sections), et
+    /// sans discriminant unique le zoom part toujours de la première ligne. On y
+    /// ajoute donc l'id de l'item, unique par épisode/saison.
     private func releaseLink(_ item: ReleaseCalendarItem, source: String) -> some View {
-        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: source)
+        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "\(source)-\(item.id)")
         return NavigationLink(value: route) {
             releaseRow(item)
                 .zoomSource(route, in: zoomNamespace)
@@ -168,7 +169,7 @@ struct ReleaseCalendarView: View {
             } else {
                 CardGroup {
                     ForEach(items) { item in
-                        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: source)
+                        let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "\(source)-\(item.id)")
                         NavigationLink(value: route) {
                             HStack {
                                 releaseRow(item)

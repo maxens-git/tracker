@@ -8,6 +8,11 @@ export function backdropUrl(path: string | undefined | null, size: 'w780' | 'w12
   return path ? `${BASE}/${size}${path}` : null;
 }
 
+/** Image d'illustration d'un épisode (« still » TMDB). */
+export function stillUrl(path: string | undefined | null, size: 'w300' | 'w780' = 'w300'): string | null {
+  return path ? `${BASE}/${size}${path}` : null;
+}
+
 export function profileUrl(path: string | undefined | null, size: 'w185' | 'w342' = 'w185'): string | null {
   return path ? `${BASE}/${size}${path}` : null;
 }
