@@ -71,6 +71,26 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Complément du `scrollbar-gutter` ci-dessus, pour les popups.
+
+   PrimeNG bloque le défilement de la page en posant `.p-overflow-hidden` sur
+   <body> : `overflow: hidden` + un `padding-right` égal à la largeur de la
+   barre, mesurée juste avant. Cette compensation suppose que la barre — et sa
+   gouttière — disparaissent avec le blocage ; avec `scrollbar-gutter: stable`
+   la gouttière reste réservée (une boîte en `overflow: hidden` est un conteneur
+   de défilement), seule la barre elle-même s'efface. Le padding s'ajoute donc à
+   une place déjà réservée et tout le contenu saute vers la gauche à l'ouverture
+   de chaque popup, puis revient à la fermeture.
+
+   La gouttière fait déjà le travail : on neutralise le padding, mais seulement
+   là où `scrollbar-gutter` est réellement pris en charge — ailleurs, la
+   compensation de PrimeNG reste la bonne réponse. */
+@supports (scrollbar-gutter: stable) {
+  body.p-overflow-hidden {
+    padding-right: 0;
+  }
+}
+
 html,
 body {
   min-height: 100%;
