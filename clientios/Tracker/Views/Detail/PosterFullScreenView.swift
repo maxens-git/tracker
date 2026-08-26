@@ -18,10 +18,6 @@ struct PosterFullScreenView: View {
     @State private var loadedImage: UIImage?
     @State private var didFail = false
 
-    // Zoom / déplacement.
-    @State private var scale: CGFloat = 1
-    @State private var lastScale: CGFloat = 1
-
     // Retour utilisateur de l'enregistrement.
     @State private var saveMessage: String?
 
@@ -36,12 +32,7 @@ struct PosterFullScreenView: View {
                 Color.black.ignoresSafeArea()
 
                 if let loadedImage {
-                    Image(uiImage: loadedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .scaleEffect(scale)
-                        .gesture(magnification)
-                        .onTapGesture(count: 2) { resetZoom() }
+                    ZoomableImageView(image: loadedImage)
                 } else if didFail {
                     placeholder
                 } else {
@@ -66,11 +57,10 @@ struct PosterFullScreenView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button {
-                            saveToPhotos()
+                            Task { await saveToPhotos() }
                         } label: {
                             Label("Enregistrer dans Photos", systemImage: "square.and.arrow.down")
                         }
-                        .disabled(loadedImage == nil)
 
                         if let loadedImage {
                             ShareLink(item: Image(uiImage: loadedImage),
@@ -97,23 +87,6 @@ struct PosterFullScreenView: View {
         .foregroundStyle(.white.opacity(0.7))
     }
 
-    private var magnification: some Gesture {
-        MagnificationGesture()
-            .onChanged { value in
-                scale = min(max(lastScale * value, 1), 5)
-            }
-            .onEnded { _ in
-                lastScale = scale
-            }
-    }
-
-    private func resetZoom() {
-        withAnimation(.spring(response: 0.3)) {
-            scale = 1
-            lastScale = 1
-        }
-    }
-
     private func loadImage() async {
         guard let imageURL else { didFail = true; return }
         do {
@@ -128,22 +101,26 @@ struct PosterFullScreenView: View {
         }
     }
 
-    private func saveToPhotos() {
-        guard let loadedImage else { return }
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
-            DispatchQueue.main.async {
-                guard status == .authorized || status == .limited else {
-                    show(message: "Accès à Photos refusé")
-                    return
-                }
-                PHPhotoLibrary.shared().performChanges {
-                    PHAssetChangeRequest.creationRequestForAsset(from: loadedImage)
-                } completionHandler: { success, _ in
-                    DispatchQueue.main.async {
-                        show(message: success ? "Enregistré dans Photos" : "Échec de l'enregistrement")
-                    }
-                }
+    private func saveToPhotos() async {
+        guard let image = loadedImage else { return }
+
+        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        guard status == .authorized || status == .limited else {
+            show(message: "Accès à Photos refusé")
+            return
+        }
+
+        do {
+            // PhotoKit exécute ce bloc sur une file de fond. Il doit rester
+            // `@Sendable` : sans ça, l'isolation MainActor par défaut du module
+            // l'annote implicitement et la vérification d'exécuteur ajoutée par
+            // Swift 6 fait planter l'app à l'enregistrement.
+            try await PHPhotoLibrary.shared().performChanges { @Sendable in
+                PHAssetChangeRequest.creationRequestForAsset(from: image)
             }
+            show(message: "Enregistré dans Photos")
+        } catch {
+            show(message: "Échec de l'enregistrement")
         }
     }
 
@@ -154,4 +131,106 @@ struct PosterFullScreenView: View {
             withAnimation { saveMessage = nil }
         }
     }
+}
+
+// MARK: - Zoom
+
+/// Affiche l'image dans un `UIScrollView` pour retrouver le zoom natif d'iOS :
+/// pincement centré sur les doigts, déplacement libre et double tap sur le
+/// point visé. `scaleEffect` ne sait zoomer que sur le centre de l'image.
+private struct ZoomableImageView: UIViewRepresentable {
+    let image: UIImage
+
+    func makeUIView(context: Context) -> ZoomableScrollView {
+        let view = ZoomableScrollView()
+        view.imageView.image = image
+        return view
+    }
+
+    func updateUIView(_ view: ZoomableScrollView, context: Context) {
+        guard view.imageView.image !== image else { return }
+        view.imageView.image = image
+        view.resetLayout()
+    }
+}
+
+private final class ZoomableScrollView: UIScrollView, UIScrollViewDelegate {
+    let imageView = UIImageView()
+
+    /// Taille pour laquelle l'image a été calée, pour ne recalculer qu'au besoin.
+    private var laidOutSize: CGSize = .zero
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        delegate = self
+        minimumZoomScale = 1
+        maximumZoomScale = 5
+        showsHorizontalScrollIndicator = false
+        showsVerticalScrollIndicator = false
+        contentInsetAdjustmentBehavior = .never
+        decelerationRate = .fast
+        backgroundColor = .clear
+
+        imageView.contentMode = .scaleAspectFit
+        addSubview(imageView)
+
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
+        doubleTap.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTap)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) n'est pas utilisé")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if bounds.size != laidOutSize {
+            laidOutSize = bounds.size
+            resetLayout()
+        }
+        centerContent()
+    }
+
+    /// Cale l'image à sa taille « ajustée » et annule le zoom en cours.
+    func resetLayout() {
+        guard let size = imageView.image?.size, size.width > 0, size.height > 0,
+              bounds.width > 0, bounds.height > 0 else { return }
+
+        if zoomScale != minimumZoomScale { zoomScale = minimumZoomScale }
+        let fit = min(bounds.width / size.width, bounds.height / size.height)
+        imageView.frame = CGRect(origin: .zero,
+                                 size: CGSize(width: size.width * fit, height: size.height * fit))
+        contentSize = imageView.frame.size
+        centerContent()
+    }
+
+    /// Garde l'image centrée tant qu'elle tient dans la vue.
+    private func centerContent() {
+        let horizontal = max((bounds.width - contentSize.width) / 2, 0)
+        let vertical = max((bounds.height - contentSize.height) / 2, 0)
+        contentInset = UIEdgeInsets(top: vertical, left: horizontal,
+                                    bottom: vertical, right: horizontal)
+    }
+
+    @objc private func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+        guard zoomScale <= minimumZoomScale else {
+            setZoomScale(minimumZoomScale, animated: true)
+            return
+        }
+
+        // Zoome sur le point touché, pas sur le centre.
+        let point = gesture.location(in: imageView)
+        let target = min(maximumZoomScale, 3)
+        let size = CGSize(width: bounds.width / target, height: bounds.height / target)
+        zoom(to: CGRect(x: point.x - size.width / 2, y: point.y - size.height / 2,
+                        width: size.width, height: size.height), animated: true)
+    }
+
+    // MARK: UIScrollViewDelegate
+
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) { centerContent() }
 }
