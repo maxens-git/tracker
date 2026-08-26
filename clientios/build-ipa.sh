@@ -59,6 +59,22 @@ if ! command -v xcodebuild >/dev/null 2>&1; then
     exit 1
 fi
 
+# `command -v xcodebuild` réussit même quand seuls les Command Line Tools sont
+# sélectionnés : c'est un shim qui échoue à l'exécution. On teste donc l'outil.
+if ! xcodebuild -version >/dev/null 2>&1; then
+    print_error "xcodebuild inutilisable : dossier développeur actif = $(xcode-select -p 2>/dev/null || echo 'inconnu')"
+    XCODE_APP=""
+    for candidate in /Applications/Xcode.app /Applications/Xcode-beta.app; do
+        [ -d "${candidate}" ] && XCODE_APP="${candidate}" && break
+    done
+    if [ -n "${XCODE_APP}" ]; then
+        echo "   Lancez : sudo xcode-select -s ${XCODE_APP}/Contents/Developer"
+    else
+        echo "   Installez Xcode, puis : sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+    fi
+    exit 1
+fi
+
 DERIVED_DATA="${OUTPUT_DIR}/DerivedData"
 IPA_PATH="${OUTPUT_DIR}/${SCHEME}.ipa"
 
@@ -72,6 +88,15 @@ VERSION_ARGS=()
 
 print_step "Build non signé de ${SCHEME} (${CONFIGURATION})"
 
+APP_PATH="${DERIVED_DATA}/Build/Products/${CONFIGURATION}-iphoneos/${SCHEME}.app"
+
+# On supprime le produit précédent : sans ça, un build en échec laisse en place
+# l'app du build d'avant et le .ipa est assemblé à partir de sources périmées.
+rm -rf "${APP_PATH}"
+
+# `| grep` masque le code de sortie de xcodebuild (et grep renvoie 1 quand il ne
+# filtre rien) : on relit donc le statut réel via PIPESTATUS.
+set +e
 xcodebuild build \
     -project "${PROJECT}" \
     -scheme "${SCHEME}" \
@@ -84,9 +109,15 @@ xcodebuild build \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGN_ENTITLEMENTS="" \
     ${VERSION_ARGS[@]+"${VERSION_ARGS[@]}"} \
-    | grep -E '^(\*\*|error:|warning: .*deprecated)' || true
+    | grep -E '^(\*\*|error:|warning: .*deprecated)'
+BUILD_STATUS=${PIPESTATUS[0]}
+set -e
 
-APP_PATH="${DERIVED_DATA}/Build/Products/${CONFIGURATION}-iphoneos/${SCHEME}.app"
+if [ "${BUILD_STATUS}" -ne 0 ]; then
+    print_error "Le build a échoué (code ${BUILD_STATUS}). Aucun .ipa généré."
+    exit 1
+fi
+
 if [ ! -d "${APP_PATH}" ]; then
     print_error "App introuvable après le build: ${APP_PATH}"
     exit 1
