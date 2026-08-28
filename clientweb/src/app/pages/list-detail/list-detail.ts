@@ -16,7 +16,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { MessageModule } from 'primeng/message';
-import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { SYSTEM_LIST_BY_SLUG } from '../../../shared/constants';
 
@@ -28,7 +27,7 @@ const CHUNK_SIZE = 20;
 @Component({
   selector: 'app-list-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PosterCard, Spinner, PaginatorModule, IconFieldModule, InputIconModule, InputTextModule, ButtonModule, TagModule, MessageModule, TooltipModule],
+  imports: [CommonModule, FormsModule, RouterLink, PosterCard, Spinner, PaginatorModule, IconFieldModule, InputIconModule, InputTextModule, ButtonModule, TagModule, MessageModule],
   templateUrl: './list-detail.html',
   styleUrl: './list-detail.scss',
 })

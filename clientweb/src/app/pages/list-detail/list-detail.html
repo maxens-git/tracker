@@ -27,8 +27,6 @@
         icon="pi pi-copy"
         label="Copier les titres"
         styleClass="copy-titles"
-        pTooltip="Copie tous les titres de la liste, un par ligne"
-        tooltipPosition="bottom"
         [loading]="copying()"
         [disabled]="l.itemsCount === 0"
         (onClick)="copyAllTitles()"
