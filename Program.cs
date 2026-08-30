@@ -31,12 +31,27 @@ builder.Services.AddCors(options =>
 var connectionStringsOptions = builder.Configuration.GetSection(ConnectionStringsOptions.SectionName).Get<ConnectionStringsOptions>();
 var connectionString = connectionStringsOptions?.DefaultConnection ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection non configuré dans appsettings.json");
 
+// Logger minimal pour la phase de démarrage : le conteneur d'injection n'existe pas encore.
+using var startupLoggerFactory = LoggerFactory.Create(logging => logging.AddConfiguration(builder.Configuration.GetSection("Logging")).AddConsole());
+var startupLogger = startupLoggerFactory.CreateLogger("Tracker.Startup");
+
+var serverVersion = await DatabaseServerVersionResolver.ResolveAsync(
+    connectionString, connectionStringsOptions?.ServerVersion, startupLogger);
+
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseMySql(
         connectionString,
-        ServerVersion.AutoDetect(connectionString)
+        serverVersion,
+        // Coupure réseau ou redémarrage de MySQL : on retente la commande au lieu de
+        // faire remonter l'erreur jusqu'au client.
+        mySql => mySql.EnableRetryOnFailure(
+            maxRetryCount: 10,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)
     )
 );
+
+builder.Services.AddSingleton<DatabaseInitializer>();
 
 builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
@@ -89,15 +104,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-using (var scope = app.Services.CreateScope())
+// Migrations et seed : on réessaie pendant 20 s avant d'ouvrir le port, puis en tâche de fond
+// sans limite. Une base indisponible retarde le service, elle ne fait plus tomber l'API.
+var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+using var startupDatabaseTimeout = CancellationTokenSource.CreateLinkedTokenSource(app.Lifetime.ApplicationStopping);
+startupDatabaseTimeout.CancelAfter(TimeSpan.FromSeconds(20));
+
+if (!await databaseInitializer.TryInitializeAsync(maxAttempts: 0, startupDatabaseTimeout.Token))
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
-    await context.Database.MigrateAsync();
-
-    await DbSeeder.SeedSystemListsAsync(context);
-
-    if (app.Configuration.GetValue<bool>("JustWatch:EnableImport"))
-        await DbSeeder.SeedFromJustWatchAsync(context, app.Environment.ContentRootPath);
+    app.Logger.LogError("Base de données injoignable : l'API démarre quand même et réessaiera en arrière-plan.");
+    _ = Task.Run(() => databaseInitializer.TryInitializeAsync(maxAttempts: 0, app.Lifetime.ApplicationStopping));
 }
 
 app.MapControllers();
