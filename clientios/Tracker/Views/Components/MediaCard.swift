@@ -30,9 +30,13 @@ struct MediaCard: View {
                         .fill(Color.appSurface)
                         .shadow(color: .black.opacity(0.16), radius: 8, x: 0, y: 4)
                 }
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                        .strokeBorder(Color.appStroke.opacity(0.3), lineWidth: 0.5)
+                }
 
             Text(title)
-                .font(.footnote)
+                .font(.footnote.weight(.semibold))
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
@@ -46,6 +50,8 @@ struct MediaCard: View {
         // La carte se cale en haut de sa cellule : l'affiche reste alignée d'une
         // vignette à l'autre, et l'espace libre des titres courts passe en bas.
         .frame(maxHeight: .infinity, alignment: .top)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 
     /// Pastille « vu » : coche blanche sur pastille verte, posée sur l'affiche.
@@ -61,7 +67,7 @@ struct MediaCard: View {
 
 /// Grille adaptative réutilisée par Home / Recherche / Détail de liste.
 struct MediaGrid<Content: View>: View {
-    let columns = [GridItem(.adaptive(minimum: 110), spacing: 16)]
+    let columns = [GridItem(.adaptive(minimum: 112, maximum: 180), spacing: 16)]
     /// Espacement vertical entre les rangées.
     var spacing: CGFloat = 20
     @ViewBuilder let content: () -> Content
@@ -71,5 +77,6 @@ struct MediaGrid<Content: View>: View {
             content()
         }
         .padding(.horizontal)
+        .contentColumn()
     }
 }

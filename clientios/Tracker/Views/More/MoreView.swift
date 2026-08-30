@@ -17,6 +17,27 @@ struct MoreView: View {
     var body: some View {
         List {
             Section {
+                HStack(spacing: 14) {
+                    Image("icon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 58, height: 58)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Tracker")
+                            .font(.title3.weight(.bold))
+                        Text("Votre cinéma, vos séries, votre rythme.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+                .accessibilityElement(children: .combine)
+            }
+
+            Section {
                 row(icon: "ticket.fill", tint: .orange, title: "Séances",
                     subtitle: "Cinémas & horaires") { ShowtimesView() }
 
@@ -28,7 +49,7 @@ struct MoreView: View {
                 row(icon: "clock.arrow.circlepath", tint: .indigo, title: "Activité",
                     subtitle: "Vos dernières actions") { ActivityView() }
 
-                row(icon: "chart.bar.fill", tint: .green, title: "Stats",
+                row(icon: "chart.bar.fill", tint: .green, title: "Statistiques",
                     subtitle: "Votre suivi en chiffres") { StatsView() }
             }
 

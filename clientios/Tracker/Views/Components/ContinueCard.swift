@@ -17,15 +17,27 @@ struct ContinueCard: View {
             thumbnail
 
             Text(item.title)
-                .font(.footnote.weight(.medium))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
 
-            Text(item.nextLabel)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            HStack(spacing: 6) {
+                Label(item.nextLabel, systemImage: "play.circle.fill")
+                    .labelStyle(.titleAndIcon)
+                    .lineLimit(1)
+
+                Spacer(minLength: 4)
+
+                if let progress = item.progress {
+                    Text(progress, format: .percent.precision(.fractionLength(0)))
+                        .monospacedDigit()
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 
     private var thumbnail: some View {

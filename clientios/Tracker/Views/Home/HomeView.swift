@@ -17,12 +17,11 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             if viewModel.isLoading && viewModel.trending.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 80)
+                HomeLoadingView()
+                    .contentColumn()
             } else {
                 VStack(alignment: .leading, spacing: 28) {
-                    if let featured = viewModel.featured, !(hideSeenItems && viewModel.isSeen(featured)) {
+                    if let featured = visible(viewModel.trending).first {
                         HeroView(item: featured)
                             .padding(.horizontal)
                     }
@@ -33,11 +32,27 @@ struct HomeView: View {
                 }
                 .padding(.top, 8)
                 .padding(.bottom, 24)
+                .contentColumn()
             }
         }
+        .background(Color.appBackground)
         .navigationTitle("Découvrir")
         .task { await viewModel.load() }
         .refreshable { await viewModel.reload() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Toggle(isOn: $hideSeenItems) {
+                        Label("Masquer les contenus vus", systemImage: "eye.slash")
+                    }
+                } label: {
+                    Label("Options d'affichage",
+                          systemImage: hideSeenItems
+                          ? "line.3.horizontal.decrease.circle.fill"
+                          : "line.3.horizontal.decrease.circle")
+                }
+            }
+        }
         .overlay {
             if let error = viewModel.errorMessage, viewModel.trending.isEmpty {
                 ContentUnavailableView("Erreur", systemImage: "wifi.slash", description: Text(error))
@@ -56,7 +71,7 @@ struct HomeView: View {
     private func continueSection(_ items: [ContinueWatchingItem]) -> some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                SectionHeader("En cours")
+                SectionHeader("Reprendre")
                     .padding(.horizontal)
 
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -65,7 +80,7 @@ struct HomeView: View {
                             let route = MediaRoute(tmdbId: item.id, type: .tv, source: "continue")
                             NavigationLink(value: route) {
                                 ContinueCard(item: item)
-                                    .frame(width: 228)
+                                    .frame(width: 252)
                                     .zoomSource(route, in: zoomNamespace)
                             }
                             .buttonStyle(.pressableCard)
@@ -96,7 +111,7 @@ struct HomeView: View {
                                           title: item.displayTitle,
                                           subtitle: item.year,
                                           seen: viewModel.isSeen(item))
-                                    .frame(width: 120)
+                                    .frame(width: 132)
                                     .zoomSource(route, in: zoomNamespace)
                             }
                             .buttonStyle(.pressableCard)
@@ -109,6 +124,57 @@ struct HomeView: View {
                 .scrollTargetBehavior(.viewAligned)
             }
         }
+    }
+}
+
+/// État de chargement qui conserve la structure finale de l'accueil. Il évite
+/// le grand écran vide autour d'un spinner et réduit le saut de mise en page à
+/// l'arrivée des images.
+private struct HomeLoadingView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pulsing = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 30) {
+            RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous)
+                .fill(Color.appPlaceholder)
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .padding(.horizontal)
+
+            ForEach(0..<3, id: \.self) { section in
+                VStack(alignment: .leading, spacing: 12) {
+                    skeletonLine(width: section == 0 ? 112 : 150, height: 18)
+                    .padding(.horizontal)
+
+                    HStack(spacing: 14) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            VStack(alignment: .leading, spacing: 7) {
+                                RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                                    .fill(Color.appPlaceholder)
+                                    .frame(width: 132, height: 198)
+                                skeletonLine(width: 104, height: 11)
+                                skeletonLine(width: 48, height: 9)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+        }
+        .padding(.top, 8)
+        .padding(.bottom, 24)
+        .opacity(pulsing ? 0.58 : 1)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true),
+                   value: pulsing)
+        .onAppear { pulsing = true }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Chargement des recommandations")
+    }
+
+    private func skeletonLine(width: CGFloat, height: CGFloat) -> some View {
+        Capsule()
+            .fill(Color.appPlaceholder)
+            .frame(width: width, height: height)
     }
 }
 

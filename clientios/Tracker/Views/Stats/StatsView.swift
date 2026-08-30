@@ -40,6 +40,7 @@ struct StatsView: View {
                                   movieColor: movieColor, episodeColor: episodeColor)
                 }
                 .padding()
+                .contentColumn()
             } else if viewModel.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 400)
@@ -58,19 +59,21 @@ struct StatsView: View {
     }
 
     private func summaryGrid(_ stats: Stats) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-            statCard("Films vus", value: "\(stats.moviesSeenCount)", systemImage: "film")
-            statCard("Séries vues", value: "\(stats.showsSeenCount)", systemImage: "tv")
-            statCard("Épisodes vus", value: "\(stats.episodesSeenCount)", systemImage: "play.rectangle")
-            statCard("Temps total", value: viewModel.formatRuntime(stats.totalRuntimeMinutes), systemImage: "clock")
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 16)], spacing: 16) {
+            statCard("Films vus", value: "\(stats.moviesSeenCount)", systemImage: "film.fill", tint: .blue)
+            statCard("Séries vues", value: "\(stats.showsSeenCount)", systemImage: "tv.fill", tint: .purple)
+            statCard("Épisodes vus", value: "\(stats.episodesSeenCount)", systemImage: "play.rectangle.fill", tint: .green)
+            statCard("Temps total", value: viewModel.formatRuntime(stats.totalRuntimeMinutes), systemImage: "clock.fill", tint: .orange)
         }
     }
 
-    private func statCard(_ title: String, value: String, systemImage: String) -> some View {
+    private func statCard(_ title: String, value: String, systemImage: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Image(systemName: systemImage)
-                .font(.title2)
-                .foregroundStyle(.tint)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(tint)
+                .frame(width: 36, height: 36)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             Text(value)
                 .font(.title.weight(.semibold))
                 .monospacedDigit()
@@ -79,6 +82,7 @@ struct StatsView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: 128, alignment: .topLeading)
         .padding()
         .cardBackground()
     }
@@ -224,7 +228,7 @@ private struct GenrePreferenceCard: View {
                 if let icon = selectedList?.icon, !icon.isEmpty {
                     Text(icon)
                 }
-                Text(selectedList?.name ?? "Liste")
+                Text(selectedList?.displayName ?? "Liste")
                     .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
@@ -240,8 +244,8 @@ private struct GenrePreferenceCard: View {
 
     /// Libellé d'un élément du menu : icône + nom.
     private func menuLabel(_ list: StatsListGenres) -> String {
-        if let icon = list.icon, !icon.isEmpty { return "\(icon) \(list.name)" }
-        return list.name
+        if let icon = list.icon, !icon.isEmpty { return "\(icon) \(list.displayName)" }
+        return list.displayName
     }
 
     private func genreRow(_ genre: StatsGenreBucket, color: Color) -> some View {

@@ -51,6 +51,22 @@ struct MediaListSummary: Decodable, Identifiable, Hashable {
         }
     }
 
+    /// Libellé destiné à l'interface. Le backend conserve ses identifiants
+    /// historiques en anglais, mais ils ne doivent pas remonter tels quels dans
+    /// une app entièrement en français.
+    var displayName: String {
+        guard isSystem else { return name }
+        return Self.localizedSystemName(name)
+    }
+
+    static func localizedSystemName(_ name: String) -> String {
+        switch name {
+        case "Watchlist": return "À voir"
+        case "Seen": return "Vus"
+        default: return name
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, name, description, icon, isSystem, createdAt, updatedAt
         case moviesCount, showsCount
@@ -216,6 +232,7 @@ struct StatsListGenres: Decodable, Identifiable, Hashable {
     let isSystem: Bool
     let genres: [StatsGenreBucket]
     var id: Int { listId }
+    var displayName: String { isSystem ? MediaListSummary.localizedSystemName(name) : name }
 }
 
 // ── Logs système ──────────────────────────────────────────────────────────

@@ -29,6 +29,29 @@ enum AppRadius {
     static let large: CGFloat = 20    // grandes surfaces (bannière), généreux comme iOS 26
 }
 
+/// Largeurs de lecture communes. Sur iPad, les contenus restent centrés et ne
+/// s'étirent pas jusqu'aux bords ; sur iPhone ces plafonds sont transparents.
+enum AppLayout {
+    static let contentMaxWidth: CGFloat = 1_100
+    static let readableMaxWidth: CGFloat = 760
+}
+
+private struct ContentColumn: ViewModifier {
+    let maxWidth: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .frame(maxWidth: maxWidth)
+            .frame(maxWidth: .infinity)
+    }
+}
+
+extension View {
+    func contentColumn(maxWidth: CGFloat = AppLayout.contentMaxWidth) -> some View {
+        modifier(ContentColumn(maxWidth: maxWidth))
+    }
+}
+
 // MARK: - Carte pressable
 
 /// Retour au toucher des vignettes : la carte s'enfonce légèrement sous le
@@ -102,6 +125,10 @@ private struct CardBackground: ViewModifier {
             .padding(padding ?? 0)
             .background(Color.appSurface,
                         in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(Color.appStroke.opacity(0.35), lineWidth: 0.5)
+            }
     }
 }
 
