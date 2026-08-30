@@ -77,10 +77,12 @@
         </div>
 
         @if (hasMoreGenres()) {
-          <button pButton type="button" severity="secondary" text size="small"
-            [icon]="showAllGenres() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-            [label]="showAllGenres() ? 'Voir moins' : 'Voir plus'"
-            (click)="showAllGenres.set(!showAllGenres())"></button>
+          <div class="genre-toggle">
+            <button pButton type="button" severity="secondary" text size="small"
+              [icon]="showAllGenres() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              [label]="showAllGenres() ? 'Voir moins' : 'Voir plus'"
+              (click)="showAllGenres.set(!showAllGenres())"></button>
+          </div>
         }
       </p-card>
     }

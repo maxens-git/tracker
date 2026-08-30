@@ -75,6 +75,13 @@
   height: 8px;
 }
 
+.genre-toggle {
+  margin-top: 1rem;
+  // Le bouton texte porte son propre rembourrage : on le décale pour aligner
+  // son libellé sur les noms de genres.
+  margin-left: -0.5rem;
+}
+
 // ── Histogrammes ───────────────────────────────────────────────────────────
 
 .charts-grid {
