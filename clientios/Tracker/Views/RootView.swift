@@ -12,32 +12,43 @@
 import SwiftUI
 
 struct RootView: View {
+    /// Onglet affiché. Nécessaire pour distinguer l'onglet Recherche : c'est la barre
+    /// d'onglets qui porte son champ de saisie, elle ne doit donc pas s'y replier.
+    @State private var selection: AppTab = .home
+
+    private enum AppTab {
+        case home, lists, releases, more, search
+    }
+
     var body: some View {
-        TabView {
-            Tab("Accueil", systemImage: "house") {
+        TabView(selection: $selection) {
+            Tab("Accueil", systemImage: "house", value: AppTab.home) {
                 TabStack { HomeView() }
             }
 
-            Tab("Listes", systemImage: "list.bullet") {
+            Tab("Listes", systemImage: "list.bullet", value: AppTab.lists) {
                 TabStack { ListsView() }
             }
 
-            Tab("Sorties", systemImage: "calendar") {
+            Tab("Sorties", systemImage: "calendar", value: AppTab.releases) {
                 TabStack { ReleaseCalendarView() }
             }
 
-            Tab("Plus", systemImage: "ellipsis") {
+            Tab("Plus", systemImage: "ellipsis", value: AppTab.more) {
                 TabStack { MoreView() }
             }
 
             // Déclaré en dernier, comme il est rendu : `role: .search` détache cet
             // onglet des autres et lui donne l'affordance de recherche dédiée de
             // la barre iOS 26, au lieu d'un cinquième onglet indifférencié.
-            Tab("Recherche", systemImage: "magnifyingglass", role: .search) {
+            Tab("Recherche", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 TabStack { SearchView() }
             }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        // La barre se replie au défilement pour laisser respirer les affiches — sauf sur
+        // l'onglet Recherche, où elle contient le champ de saisie : un historique plus haut
+        // que l'écran le faisait disparaître, et il fallait re-glisser vers le bas.
+        .tabBarMinimizeBehavior(selection == .search ? .never : .onScrollDown)
         // Applique au lancement la config TMDB éventuellement surchargée dans les
         // réglages (clé / URL / langue), pour que l'accueil l'utilise directement.
         .task {
