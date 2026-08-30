@@ -32,7 +32,11 @@ struct SearchView: View {
         .listStyle(.plain)
         .navigationTitle("Recherche")
         .errorToast($viewModel.errorMessage)
-        .searchable(text: $viewModel.query, prompt: "Films, séries…")
+        .searchable(
+            text: $viewModel.query,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "Films, séries…"
+        )
         .onChange(of: viewModel.query) { _, newValue in viewModel.search(newValue) }
         .task { await viewModel.loadGenresIfNeeded() }
         .toolbar {
