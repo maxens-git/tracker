@@ -144,20 +144,27 @@ private struct HomeLoadingView: View {
             ForEach(0..<3, id: \.self) { section in
                 VStack(alignment: .leading, spacing: 12) {
                     skeletonLine(width: section == 0 ? 112 : 150, height: 18)
-                    .padding(.horizontal)
+                        .padding(.horizontal)
 
-                    HStack(spacing: 14) {
-                        ForEach(0..<3, id: \.self) { _ in
-                            VStack(alignment: .leading, spacing: 7) {
-                                RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
-                                    .fill(Color.appPlaceholder)
-                                    .frame(width: 132, height: 198)
-                                skeletonLine(width: 104, height: 11)
-                                skeletonLine(width: 48, height: 9)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 14) {
+                            ForEach(0..<3, id: \.self) { _ in
+                                VStack(alignment: .leading, spacing: 7) {
+                                    RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                                        .fill(Color.appPlaceholder)
+                                        .frame(width: 132, height: 198)
+                                        .clipShape(
+                                            RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous)
+                                        )
+                                    skeletonLine(width: 104, height: 11)
+                                    skeletonLine(width: 48, height: 9)
+                                }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .scrollDisabled(true)
+                    .clipped()
                 }
             }
         }
