@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct TrackerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     /// Apparence choisie dans les réglages ; `.system` laisse iOS décider.
     @AppStorage(AppStorageKeys.appearance) private var appearance = AppAppearance.system
 

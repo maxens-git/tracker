@@ -349,6 +349,16 @@ final class MediaDetailViewModel {
                 try await api.removeTrackedMedia(tmdbId: tmdbId, type: type)
                 Haptics.impact(.light)
             }
+
+            if NotificationPreferences.delivery == .tracker {
+                if adding {
+                    // La reconstruction complète découvre immédiatement les
+                    // épisodes du média qui vient d'être suivi.
+                    Task { try? await NotificationSyncService.shared.sync(forceRefresh: true) }
+                } else {
+                    await LocalNotificationService.shared.cancel(tmdbId: tmdbId, type: type)
+                }
+            }
         } catch {
             releaseTracked.toggle()
             if !error.isCancellation { errorMessage = error.localizedDescription }

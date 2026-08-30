@@ -57,6 +57,9 @@ struct RootView: View {
                     apiKey: settings.tmdbApiKey,
                     baseURL: settings.tmdbBaseUrl,
                     language: settings.tmdbLanguage)
+                if NotificationPreferences.delivery == .tracker {
+                    _ = try? await NotificationSyncService.shared.sync(settings: settings)
+                }
             }
         }
     }
