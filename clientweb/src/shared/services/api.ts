@@ -291,11 +291,11 @@ export class Api {
     return this.http.delete(`${API}/MediaLists/${listId}/items/${tmdbId}`, { params: { type } });
   }
 
-  createList(dto: { name: string; description?: string; icon?: string }): Observable<MediaListSummary> {
+  createList(dto: { name: string; description?: string }): Observable<MediaListSummary> {
     return this.http.post<MediaListSummary>(`${API}/MediaLists`, dto);
   }
 
-  updateList(id: number, dto: { name?: string; description?: string; icon?: string }): Observable<unknown> {
+  updateList(id: number, dto: { name?: string; description?: string }): Observable<unknown> {
     return this.http.put(`${API}/MediaLists/${id}`, dto);
   }
 

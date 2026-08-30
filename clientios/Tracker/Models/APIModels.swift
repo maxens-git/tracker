@@ -23,7 +23,6 @@ struct MediaListSummary: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
     let description: String?
-    let icon: String?
     let isSystem: Bool
     let createdAt: Date?
     let updatedAt: Date?
@@ -68,7 +67,7 @@ struct MediaListSummary: Decodable, Identifiable, Hashable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, name, description, icon, isSystem, createdAt, updatedAt
+        case id, name, description, isSystem, createdAt, updatedAt
         case moviesCount, showsCount
         case itemsCountRaw = "itemsCount"
     }
@@ -228,7 +227,6 @@ struct StatsGenreBucket: Decodable, Identifiable, Hashable {
 struct StatsListGenres: Decodable, Identifiable, Hashable {
     let listId: Int
     let name: String
-    let icon: String?
     let isSystem: Bool
     let genres: [StatsGenreBucket]
     var id: Int { listId }

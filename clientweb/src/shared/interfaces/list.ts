@@ -2,7 +2,6 @@ export interface MediaListSummary {
   id: number;
   name: string;
   description?: string;
-  icon?: string;
   isSystem: boolean;
   itemsCount: number;
   createdAt: string;

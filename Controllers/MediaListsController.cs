@@ -146,7 +146,7 @@ public class MediaListsController(
         if (await context.MediaLists.AnyAsync(l => l.Name == dto.Name))
             return BadRequest("Une liste portant ce nom existe déjà.");
 
-        MediaList list = new(dto.Name, dto.Description, dto.Icon);
+        MediaList list = new(dto.Name, dto.Description);
 
         context.MediaLists.Add(list);
         await context.SaveChangesAsync();
@@ -171,7 +171,6 @@ public class MediaListsController(
 
         list.Name = dto.Name ?? list.Name;
         list.Description = dto.Description ?? list.Description;
-        list.Icon = dto.Icon ?? list.Icon;
         list.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();

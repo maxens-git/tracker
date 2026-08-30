@@ -50,7 +50,7 @@ final class StatsViewModel {
             // pour que la carte reste affichée comme avant.
             var loadedGenres = (try? await genresResult) ?? []
             if loadedGenres.isEmpty, !loadedStats.favoriteGenres.isEmpty {
-                loadedGenres = [StatsListGenres(listId: -1, name: "Vu", icon: nil,
+                loadedGenres = [StatsListGenres(listId: -1, name: "Vu",
                                                 isSystem: true, genres: loadedStats.favoriteGenres)]
             }
             listGenres = loadedGenres

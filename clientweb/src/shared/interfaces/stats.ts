@@ -18,7 +18,6 @@ export interface StatsGenreBucket {
 export interface StatsListGenres {
   listId: number;
   name: string;
-  icon?: string;
   isSystem: boolean;
   genres: StatsGenreBucket[];
 }

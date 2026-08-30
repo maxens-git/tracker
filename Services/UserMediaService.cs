@@ -62,7 +62,7 @@ public class UserMediaService(ApiDbContext context)
 
         if (watchlist == null)
         {
-            watchlist = new MediaList(SystemLists.Watchlist, icon: SystemLists.Icons[SystemLists.Watchlist], isSystem: true);
+            watchlist = new MediaList(SystemLists.Watchlist, isSystem: true);
             context.MediaLists.Add(watchlist);
             await context.SaveChangesAsync();
         }

@@ -57,7 +57,6 @@ public class StatsService(ApiDbContext context)
             {
                 ListId = list.Id,
                 Name = list.Name,
-                Icon = list.Icon,
                 IsSystem = list.IsSystem,
                 Genres = AggregateGenres(payloads),
             });

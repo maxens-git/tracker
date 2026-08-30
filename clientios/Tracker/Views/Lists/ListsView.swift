@@ -122,9 +122,7 @@ struct ListsView: View {
     }
 
     private func row(for list: MediaListSummary) -> some View {
-        HStack(spacing: 13) {
-            listIcon(for: list)
-
+        HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(list.displayName)
                     .font(.body.weight(.medium))
@@ -152,27 +150,6 @@ struct ListsView: View {
                 .background(Color(.tertiarySystemFill), in: .capsule)
         }
         .padding(.vertical, 4)
-    }
-
-    @ViewBuilder
-    private func listIcon(for list: MediaListSummary) -> some View {
-        let presentation = presentation(for: list)
-        Image(systemName: presentation.icon)
-            .font(.body.weight(.semibold))
-            .foregroundStyle(.white)
-            .frame(width: 42, height: 42)
-            .background(presentation.tint.gradient,
-                        in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-            .accessibilityHidden(true)
-    }
-
-    private func presentation(for list: MediaListSummary) -> (icon: String, tint: Color) {
-        switch list.routeId {
-        case "watchlist": return ("bookmark.fill", .blue)
-        case "seen": return ("checkmark", .green)
-        case "liked": return ("heart.fill", .pink)
-        default: return ("rectangle.stack.fill", .indigo)
-        }
     }
 
     private func systemSubtitle(for list: MediaListSummary) -> String {

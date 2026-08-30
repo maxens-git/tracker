@@ -15,8 +15,7 @@ public static class DbSeeder
             bool exists = await context.MediaLists.AnyAsync(l => l.Name == name);
             if (!exists)
             {
-                SystemLists.Icons.TryGetValue(name, out string? icon);
-                context.MediaLists.Add(new MediaList(name, icon: icon, isSystem: true));
+                context.MediaLists.Add(new MediaList(name, isSystem: true));
             }
         }
 

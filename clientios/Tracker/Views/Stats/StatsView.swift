@@ -225,9 +225,6 @@ private struct GenrePreferenceCard: View {
             }
         } label: {
             HStack(spacing: 6) {
-                if let icon = selectedList?.icon, !icon.isEmpty {
-                    Text(icon)
-                }
                 Text(selectedList?.displayName ?? "Liste")
                     .font(.subheadline.weight(.medium))
                     .lineLimit(1)
@@ -242,9 +239,8 @@ private struct GenrePreferenceCard: View {
         .buttonStyle(.plain)
     }
 
-    /// Libellé d'un élément du menu : icône + nom.
+    /// Libellé localisé d'un élément du menu.
     private func menuLabel(_ list: StatsListGenres) -> String {
-        if let icon = list.icon, !icon.isEmpty { return "\(icon) \(list.displayName)" }
         return list.displayName
     }
 
