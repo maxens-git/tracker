@@ -15,6 +15,7 @@ struct RootView: View {
     /// Onglet affiché. Nécessaire pour distinguer l'onglet Recherche : c'est la barre
     /// d'onglets qui porte son champ de saisie, elle ne doit donc pas s'y replier.
     @State private var selection: AppTab = .home
+    @State private var authentication = AuthenticationManager.shared
 
     private enum AppTab {
         case home, lists, releases, more, search
@@ -45,6 +46,9 @@ struct RootView: View {
                 TabStack { SearchView() }
             }
         }
+        // Une nouvelle identité reconstruit les écrans et relance leurs `.task`,
+        // y compris les requêtes qui avaient découvert l'expiration de session.
+        .id(authentication.sessionGeneration)
         // La barre se replie au défilement pour laisser respirer les affiches — sauf sur
         // l'onglet Recherche, où elle contient le champ de saisie : un historique plus haut
         // que l'écran le faisait disparaître, et il fallait re-glisser vers le bas.
@@ -61,6 +65,9 @@ struct RootView: View {
                     _ = try? await NotificationSyncService.shared.sync(settings: settings)
                 }
             }
+        }
+        .sheet(isPresented: $authentication.isLoginPresented) {
+            AuthenticationView()
         }
     }
 }

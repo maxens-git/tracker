@@ -10,6 +10,7 @@ import Foundation
 /// Erreurs réseau génériques de l'app.
 enum NetworkError: LocalizedError {
     case invalidURL
+    case authenticationRequired
     case badStatus(Int, message: String? = nil)
     case decoding(Error)
     case transport(Error)
@@ -17,6 +18,7 @@ enum NetworkError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL: return "URL invalide."
+        case .authenticationRequired: return "Connexion au serveur requise."
         case .badStatus(let code, let message): return message ?? "Réponse serveur invalide (\(code))."
         case .decoding: return "Impossible de lire la réponse du serveur."
         case .transport(let error): return error.localizedDescription

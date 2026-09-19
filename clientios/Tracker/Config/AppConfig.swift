@@ -62,6 +62,23 @@ enum AppConfig {
     static let apiProdURL = "https://tracker.maxens.org/api"
     static let apiDevURL = "http://localhost:5050/api"
 
+    static var productionHost: String? { URL(string: apiProdURL)?.host }
+
+    /// Une ressource JSON protégée : sans session, Authelia la redirige vers son
+    /// portail ; après connexion, son retour sur ce domaine signale le succès.
+    static var authenticationProbeURL: URL? {
+        URL(string: apiProdURL + "/Settings")
+    }
+
+    /// Ne copie que les cookies du site de production : ceux de Tracker, ceux
+    /// du domaine parent partagé et ceux du sous-domaine Authelia.
+    static func acceptsAuthenticationCookie(_ cookie: HTTPCookie) -> Bool {
+        guard let host = productionHost else { return false }
+        let domain = cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        let siteDomain = host.split(separator: ".").suffix(2).joined(separator: ".")
+        return domain == siteDomain || domain.hasSuffix("." + siteDomain)
+    }
+
     /// Vrai si l'utilisateur a basculé sur le serveur de développement (localhost).
     static var useDevServer: Bool {
         get { UserDefaults.standard.bool(forKey: AppStorageKeys.useDevServer) }

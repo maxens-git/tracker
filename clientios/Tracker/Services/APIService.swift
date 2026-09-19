@@ -65,6 +65,14 @@ struct APIService {
 
         do {
             let (data, response) = try await session.data(for: req)
+            if AuthenticationManager.shared.requiresAuthentication(
+                originalURL: url,
+                response: response,
+                data: data
+            ) {
+                AuthenticationManager.shared.presentLogin()
+                throw NetworkError.authenticationRequired
+            }
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
                 let code = (response as? HTTPURLResponse)?.statusCode ?? -1
                 throw NetworkError.badStatus(code, message: Self.serverMessage(from: data))
