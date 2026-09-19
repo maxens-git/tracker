@@ -20,6 +20,7 @@ export interface MediaListItem {
   tmdbId: number;
   mediaType: string;
   posterPath?: string | null;
+  title?: string | null;
   seen: boolean;
   liked: boolean;
   addedAt: string;

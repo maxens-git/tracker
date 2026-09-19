@@ -17,7 +17,8 @@ public class UserMediaService(ApiDbContext context)
         MediaType mediaType,
         string? posterPath = null,
         int? runtime = null,
-        IEnumerable<MediaGenreDto>? genres = null)
+        IEnumerable<MediaGenreDto>? genres = null,
+        string? title = null)
     {
         UserMedia? um = await context.UserMedia
             .FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
@@ -26,7 +27,7 @@ public class UserMediaService(ApiDbContext context)
 
         if (um == null)
         {
-            um = new UserMedia(tmdbId, mediaType, posterPath, runtime, genreNamesJson);
+            um = new UserMedia(tmdbId, mediaType, posterPath, runtime, genreNamesJson, title);
             context.UserMedia.Add(um);
             await context.SaveChangesAsync();
             return um;
@@ -35,6 +36,7 @@ public class UserMediaService(ApiDbContext context)
         if (posterPath != null) um.PosterPath = posterPath;
         if (runtime.HasValue) um.Runtime = runtime;
         if (genreNamesJson != null) um.GenreNamesJson = genreNamesJson;
+        if (title != null) um.Title = title;
         return um;
     }
 

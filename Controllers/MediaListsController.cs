@@ -107,7 +107,7 @@ public class MediaListsController(
 
         UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath, genres: dto.Genres);
 
-        context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath));
+        context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, dto.Title));
 
         list.UpdatedAt = DateTime.UtcNow;
         activityService.Log(ActivityType.AddedToList, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, list.Id, list.Name);

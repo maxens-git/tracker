@@ -67,7 +67,7 @@ public class ShowEpisodesController(
     [HttpPost("{showTmdbId}/seen")]
     public async Task<IActionResult> MarkShowSeen(int showTmdbId, [FromBody] MarkShowSeenDto dto)
     {
-        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show, dto.PosterPath, genres: dto.Genres);
+        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show, dto.PosterPath, genres: dto.Genres, title: dto.Title);
         um.Seen = dto.Seen;
 
         foreach (SeasonEpisodesDto season in dto.Seasons)

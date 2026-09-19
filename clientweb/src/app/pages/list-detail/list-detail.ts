@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { of, forkJoin, from, map, switchMap, concatMap, reduce } from 'rxjs';
+import { of, from, map, switchMap, concatMap, reduce, firstValueFrom } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { MediaListSummary } from '../../../shared/interfaces/list';
@@ -137,60 +137,97 @@ export class ListDetail implements OnInit {
 
   /**
    * Copie les titres de toute la liste — pas seulement la page affichée.
-   * Le backend ne renvoie que des références (tmdbId), et sa pagination est
-   * figée à 20 : on parcourt donc toutes les pages, puis on résout les fiches
-   * TMDB par paquets de 20 (via concatMap) pour éviter d'envoyer des centaines
-   * de requêtes simultanées sur une grande liste.
+   * Le backend stocke désormais le titre à l'ajout (voir MediaListItem.Title),
+   * donc la plupart des items n'ont besoin d'aucun appel TMDB. Seuls les items
+   * ajoutés avant l'introduction de ce champ (titre manquant côté backend) sont
+   * résolus via TMDB, par paquets de 20 (concatMap) pour ne pas envoyer des
+   * centaines de requêtes simultanées sur une grande liste ancienne.
+   * Les pages backend sont elles aussi parcourues séquentiellement (concatMap).
    */
   copyAllTitles() {
     if (this.copying()) return;
     this.copying.set(true);
 
-    this.api.listItems(this.listId, 1).pipe(
+    const titles$ = this.api.listItems(this.listId, 1).pipe(
       switchMap(first => {
-        const rest = Array.from(
+        const remainingPages = Array.from(
           { length: Math.max(0, first.totalPages - 1) },
-          (_, i) => this.api.listItems(this.listId, i + 2),
+          (_, i) => i + 2,
         );
-        return rest.length === 0 ? of([first]) : forkJoin([of(first), ...rest]);
+        if (remainingPages.length === 0) return of([first]);
+        return from(remainingPages).pipe(
+          concatMap(p => this.api.listItems(this.listId, p)),
+          reduce((all, page) => [...all, page], [first]),
+        );
       }),
-      map(pages => pages.flatMap(p => p.items.map(i => ({ tmdbId: i.tmdbId, mediaType: i.mediaType })))),
-      switchMap(refs => {
-        if (refs.length === 0) return of([] as MediaItem[]);
+      map(pages => pages.flatMap(p => p.items)),
+      switchMap(items => {
+        const known = items.map(i => (i.title ?? '').trim()).filter(t => t.length > 0);
+        const missing = items.filter(i => !i.title?.trim());
+
+        if (missing.length === 0) return of(known);
+
+        const refs = missing.map(i => ({ tmdbId: i.tmdbId, mediaType: i.mediaType }));
         const chunks: typeof refs[] = [];
         for (let i = 0; i < refs.length; i += CHUNK_SIZE) chunks.push(refs.slice(i, i + CHUNK_SIZE));
         return from(chunks).pipe(
           concatMap(chunk => this.tmdb.fetchMany(chunk)),
           reduce((all, batch) => [...all, ...batch], [] as MediaItem[]),
+          map(resolved => [...known, ...resolved.map(i => i.title ?? i.name ?? '').filter(t => t.length > 0)]),
         );
       }),
-    ).subscribe({
-      next: async items => {
-        const titles = items.map(i => i.title ?? i.name ?? '').filter(t => t.length > 0);
-        this.copying.set(false);
+    );
 
-        if (titles.length === 0) {
-          this.messages.add({ severity: 'info', summary: 'Listes', detail: 'Aucun titre à copier.', life: 2500 });
-          return;
-        }
+    const titlesPromise = firstValueFrom(titles$);
 
-        try {
-          await navigator.clipboard?.writeText(titles.join('\n'));
-          this.messages.add({
-            severity: 'success',
-            summary: 'Listes',
-            detail: `${titles.length} titre${titles.length !== 1 ? 's' : ''} copié${titles.length !== 1 ? 's' : ''}.`,
-            life: 2500,
-          });
-        } catch {
-          this.messages.add({ severity: 'error', summary: 'Listes', detail: 'Impossible de copier les titres.', life: 3500 });
-        }
+    // Sur une grande liste, réunir toutes les pages + résoudre les titres manquants peut
+    // prendre plusieurs secondes — largement au-delà de la fenêtre d'« activation
+    // utilisateur » que les navigateurs exigent pour un clipboard.writeText() tardif
+    // (sinon : NotAllowedError, capté plus bas par "Impossible de copier les titres").
+    // Pour rester dans le geste de clic, on écrit tout de suite un ClipboardItem dont le
+    // contenu est une promesse : le navigateur valide la permission maintenant et ne
+    // résout le contenu réel qu'une fois les titres prêts.
+    const supportsAsyncClipboardItem =
+      typeof ClipboardItem !== 'undefined' && typeof navigator.clipboard?.write === 'function';
+
+    const clipboardPromise = supportsAsyncClipboardItem
+      ? navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': titlesPromise.then(titles => new Blob([titles.join('\n')], { type: 'text/plain' })),
+          }),
+        ])
+      : titlesPromise.then(titles => navigator.clipboard.writeText(titles.join('\n')));
+    clipboardPromise.catch(() => {}); // géré via titlesPromise ci-dessous ; évite un rejet non capté si le fetch échoue.
+
+    titlesPromise.then(
+      titles => {
+        clipboardPromise.then(
+          () => {
+            this.copying.set(false);
+
+            if (titles.length === 0) {
+              this.messages.add({ severity: 'info', summary: 'Listes', detail: 'Aucun titre à copier.', life: 2500 });
+              return;
+            }
+
+            this.messages.add({
+              severity: 'success',
+              summary: 'Listes',
+              detail: `${titles.length} titre${titles.length !== 1 ? 's' : ''} copié${titles.length !== 1 ? 's' : ''}.`,
+              life: 2500,
+            });
+          },
+          () => {
+            this.copying.set(false);
+            this.messages.add({ severity: 'error', summary: 'Listes', detail: 'Impossible de copier les titres.', life: 3500 });
+          },
+        );
       },
-      error: () => {
+      () => {
         this.copying.set(false);
         this.messages.add({ severity: 'error', summary: 'Listes', detail: 'Impossible de récupérer les titres de la liste.', life: 3500 });
       },
-    });
+    );
   }
 
   /** Index du premier élément de la page courante, pour <p-paginator>. */

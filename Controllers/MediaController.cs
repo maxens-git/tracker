@@ -40,7 +40,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres, dto.Title);
         um.Seen = dto.Seen;
         activityService.Log(dto.Seen ? ActivityType.MarkedSeen : ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
@@ -48,10 +48,10 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     }
 
     [HttpPost("{tmdbId}/liked")]
-    public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromQuery] string? posterPath, [FromBody] bool liked)
+    public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromQuery] string? posterPath, [FromQuery] string? title, [FromBody] bool liked)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, posterPath);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, posterPath, title: title);
         um.Liked = liked;
         activityService.Log(liked ? ActivityType.Liked : ActivityType.Unliked, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
@@ -62,7 +62,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
     public async Task<IActionResult> AddToWatchlist(int tmdbId, [FromQuery] string type, [FromBody] AddToWatchlistDto? dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime, dto?.Genres);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime, dto?.Genres, dto?.Title);
         MediaList watchlist = await mediaService.EnsureWatchlist();
 
         bool alreadyIn = await context.MediaListItems
@@ -71,7 +71,7 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
         if (alreadyIn)
             return BadRequest("Déjà dans la watchlist");
 
-        context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath));
+        context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, dto?.Title));
         watchlist.UpdatedAt = DateTime.UtcNow;
         activityService.Log(ActivityType.AddedToList, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, watchlist.Id, watchlist.Name);
         await context.SaveChangesAsync();

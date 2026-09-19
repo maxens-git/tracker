@@ -14,12 +14,14 @@ export interface AddListItemPayload {
   tmdbId: number;
   mediaType: string;
   posterPath?: string | null;
+  title?: string | null;
   genres?: TmdbGenre[] | null;
 }
 
 export interface AddToWatchlistPayload {
   posterPath?: string | null;
   runtime?: number | null;
+  title?: string | null;
   genres?: TmdbGenre[] | null;
 }
 
@@ -27,6 +29,7 @@ export interface MarkSeenPayload {
   seen: boolean;
   posterPath?: string | null;
   runtime?: number | null;
+  title?: string | null;
   genres?: TmdbGenre[] | null;
 }
 
@@ -38,6 +41,7 @@ export interface MarkSeasonSeenPayload {
 export interface MarkShowSeenPayload {
   seen: boolean;
   posterPath?: string | null;
+  title?: string | null;
   genres?: TmdbGenre[] | null;
   seasons: { seasonNumber: number; episodeNumbers: number[] }[];
 }
@@ -229,10 +233,12 @@ export class Api {
     return this.http.post(`${API}/Media/${tmdbId}/seen`, payload, { params: { type } });
   }
 
-  markLiked(tmdbId: number, type: 'movie' | 'tv', liked: boolean): Observable<unknown> {
+  markLiked(tmdbId: number, type: 'movie' | 'tv', liked: boolean, title?: string | null): Observable<unknown> {
+    const params: Record<string, string> = { type };
+    if (title) params['title'] = title;
     return this.http.post(`${API}/Media/${tmdbId}/liked`, liked, {
       headers: { 'Content-Type': 'application/json' },
-      params: { type }
+      params
     });
   }
 

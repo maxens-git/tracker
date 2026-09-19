@@ -26,6 +26,7 @@ public class MarkShowSeenDto
 {
     public bool Seen { get; set; }
     public string? PosterPath { get; set; }
+    public string? Title { get; set; }
     public List<MediaGenreDto> Genres { get; set; } = new();
     public List<SeasonEpisodesDto> Seasons { get; set; } = new();
 }

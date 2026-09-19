@@ -418,6 +418,7 @@ export class MediaDetail implements OnInit {
           seen: newSeen,
           posterPath: this.currentPosterPath(),
           runtime: this.movie()?.runtime ?? null,
+          title: this.mediaTitle,
           genres: this.movie()?.genres ?? [],
         }),
         () => this.seenPending.set(false),
@@ -427,6 +428,7 @@ export class MediaDetail implements OnInit {
       const payload: MarkShowSeenPayload = {
         seen: newSeen,
         posterPath: this.currentPosterPath(),
+        title: this.mediaTitle,
         genres: this.show()?.genres ?? [],
         seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: episodeRange(s.episode_count) }))
       };
@@ -458,7 +460,7 @@ export class MediaDetail implements OnInit {
     this.runOptimistic(
       () => this.patchUserState({ liked: newLiked }),
       () => this.patchUserState({ liked: !newLiked }),
-      this.api.markLiked(tmdbId, this.mediaType(), newLiked),
+      this.api.markLiked(tmdbId, this.mediaType(), newLiked, this.mediaTitle),
       () => this.likedPending.set(false),
     );
   }
@@ -478,6 +480,7 @@ export class MediaDetail implements OnInit {
       : this.api.addToWatchlist(tmdbId, type, {
           posterPath: this.currentPosterPath(),
           runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
+          title: this.mediaTitle,
           genres: this.isMovie ? (this.movie()?.genres ?? []) : (this.show()?.genres ?? []),
         });
 
@@ -519,6 +522,7 @@ export class MediaDetail implements OnInit {
           tmdbId: this.userState().tmdbId,
           mediaType: this.mediaType(),
           posterPath: this.currentPosterPath(),
+          title: this.mediaTitle,
           genres: this.currentGenres(),
         }).pipe(map(() => list))
       )
@@ -547,7 +551,7 @@ export class MediaDetail implements OnInit {
 
     const request = inList
       ? this.api.removeItemFromList(listId, tmdbId, type)
-      : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath(), genres: this.currentGenres() });
+      : this.api.addItemToList(listId, { tmdbId, mediaType: type, posterPath: this.currentPosterPath(), title: this.mediaTitle, genres: this.currentGenres() });
 
     this.runOptimistic(
       () => { this.setListMembership(listId, !inList); this.bumpListItemCount(listId, delta); },
@@ -738,6 +742,7 @@ export class MediaDetail implements OnInit {
     this.api.markSeen(showId, 'tv', {
       seen: derived,
       posterPath: this.currentPosterPath(),
+      title: this.mediaTitle,
       genres: this.show()?.genres ?? [],
     }).subscribe({
       error: () => { /* optimiste : réconcilié au prochain reload */ },
