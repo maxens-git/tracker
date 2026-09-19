@@ -44,7 +44,7 @@
       [loading]="loading()" [disabled]="loading() || !query.trim()"></button>
   </form>
 
-  @if (searched() || bookmarks().length > 0) {
+  @if (searched() || bookmarksLoading() || bookmarks().length > 0) {
     <p-selectbutton
       [options]="viewOptions()"
       optionLabel="label"
@@ -57,7 +57,7 @@
     />
   }
 
-  @if (loading() && view() === 'results') {
+  @if ((loading() && view() === 'results') || (bookmarksLoading() && view() === 'bookmarks')) {
     <app-spinner />
   } @else if (view() === 'bookmarks' && bookmarks().length === 0) {
     <p-message severity="secondary" styleClass="state-message"

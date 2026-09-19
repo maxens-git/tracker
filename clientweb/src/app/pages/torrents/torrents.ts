@@ -54,6 +54,9 @@ export class Torrents implements OnInit {
   ]);
   // Marque-pages persistés en base (les plus récents en tête).
   bookmarks = signal<TorrentBookmark[]>([]);
+  // Chargement initial des marque-pages (évite d'afficher « aucun marque-page »
+  // avant que la réponse n'arrive, puis de basculer brutalement sur le tableau).
+  bookmarksLoading = signal(true);
   // Marque-page en cours d'ajout/retrait (clé = magnetUrl) pour désactiver le bouton.
   bookmarking = signal<string | null>(null);
   // Torrents affichés dans le tableau selon la vue.
@@ -99,7 +102,16 @@ export class Torrents implements OnInit {
     // Silencieux en cas d'échec : on peut toujours chercher sur « tous / toutes ».
     this.loadInto(this.api.torrentIndexers(), this.indexers);
     this.loadInto(this.api.torrentCategories(), this.categories);
-    this.loadInto(this.api.torrentBookmarks(), this.bookmarks);
+    this.api.torrentBookmarks().subscribe({
+      next: bookmarks => {
+        this.bookmarks.set(bookmarks);
+        this.bookmarksLoading.set(false);
+      },
+      error: () => {
+        this.bookmarks.set([]);
+        this.bookmarksLoading.set(false);
+      },
+    });
 
     // Restaure l'état depuis l'URL (partage/rechargement) et relance la recherche.
     const params = this.route.snapshot.queryParamMap;
