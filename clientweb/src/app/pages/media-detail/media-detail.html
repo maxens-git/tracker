@@ -43,6 +43,13 @@
             [queryParams]="{ q: mediaTitle }"
             aria-label="Rechercher dans les torrents"
           ></a>
+          <a pButton rounded text severity="secondary"
+            icon="pi pi-external-link"
+            [href]="imdbUrl()"
+            target="_blank"
+            rel="noopener"
+            aria-label="Voir sur IMDb"
+          ></a>
         </div>
 
         @if (originalTitle(); as ot) {

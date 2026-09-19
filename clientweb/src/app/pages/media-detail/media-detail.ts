@@ -290,6 +290,14 @@ export class MediaDetail implements OnInit {
     return (this.isMovie ? this.movie()?.tagline : this.show()?.tagline) || null;
   }
 
+  /** Lien IMDb : direct si l'ID IMDb du film est connu, sinon recherche par titre. */
+  imdbUrl(): string {
+    const imdbId = this.isMovie ? this.movie()?.imdb_id : null;
+    return imdbId
+      ? `https://www.imdb.com/title/${imdbId}/`
+      : `https://www.imdb.com/find/?q=${encodeURIComponent(this.mediaTitle)}`;
+  }
+
   overview(): string | null {
     return (this.isMovie ? this.movie()?.overview : this.show()?.overview) || null;
   }

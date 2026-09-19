@@ -85,6 +85,18 @@ final class MediaDetailViewModel {
     /// Vrai si la série est marquée terminée par TMDB (Ended/Canceled).
     var showIsEnded: Bool { show?.isEnded ?? false }
 
+    /// Lien vers la fiche IMDb : direct si l'identifiant IMDb du film est connu,
+    /// sinon recherche IMDb par titre (cas des séries, dont TMDB ne fournit pas l'ID IMDb ici).
+    var imdbURL: URL? {
+        if let imdbId = movie?.imdbId, !imdbId.isEmpty {
+            return URL(string: "https://www.imdb.com/title/\(imdbId)/")
+        }
+        guard !title.isEmpty else { return nil }
+        var components = URLComponents(string: "https://www.imdb.com/find/")
+        components?.queryItems = [URLQueryItem(name: "q", value: title)]
+        return components?.url
+    }
+
     var seen: Bool { state?.seen ?? false }
     var liked: Bool { state?.liked ?? false }
 

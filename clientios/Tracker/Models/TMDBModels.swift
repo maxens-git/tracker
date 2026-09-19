@@ -100,6 +100,7 @@ struct TMDBMovie: Decodable, Identifiable {
     let budget: Int?
     let revenue: Int?
     let genres: [TMDBGenre]?
+    let imdbId: String?
 
     enum CodingKeys: String, CodingKey {
         case id, title, overview, runtime, budget, revenue, genres
@@ -107,6 +108,7 @@ struct TMDBMovie: Decodable, Identifiable {
         case backdropPath = "backdrop_path"
         case releaseDate = "release_date"
         case voteAverage = "vote_average"
+        case imdbId = "imdb_id"
     }
 }
 

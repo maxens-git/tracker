@@ -14,6 +14,7 @@ struct MediaDetailView: View {
     @State private var viewModel: MediaDetailViewModel
     @State private var showingPoster = false
     @State private var showingListPicker = false
+    @State private var showingImdb = false
     /// Le titre n'apparaît dans la barre qu'une fois l'en-tête défilé, pour
     /// laisser l'image respirer en haut de l'écran (comportement des fiches
     /// des apps média d'Apple).
@@ -241,6 +242,19 @@ struct MediaDetailView: View {
                            active: viewModel.releaseTracked, tint: .orange, busy: viewModel.releasePending) {
                     await viewModel.toggleReleaseTracking()
                 }
+                if viewModel.imdbURL != nil {
+                    Button {
+                        showingImdb = true
+                    } label: {
+                        Image(systemName: "arrow.up.forward.app")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(Color.primary)
+                            .frame(width: 46, height: 40)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Voir sur IMDb")
+                }
                 if !viewModel.customLists.isEmpty {
                     iconToggle(title: "Listes",
                                systemImage: viewModel.isInAnyCustomList ? "text.badge.checkmark" : "text.badge.plus",
@@ -254,6 +268,11 @@ struct MediaDetailView: View {
         }
         .padding(.horizontal)
         .sheet(isPresented: $showingListPicker) { listPickerSheet }
+        .sheet(isPresented: $showingImdb) {
+            if let imdbURL = viewModel.imdbURL {
+                SafariView(url: imdbURL).ignoresSafeArea()
+            }
+        }
     }
 
     /// « Marquer vu » : capsule proéminente tant que le média n'est pas vu,
