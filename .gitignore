@@ -17,6 +17,8 @@
 *.ncb
 *.aps
 .env
+appsettings.Development.json
+appsettings.*.local.json
 # Packages
 # Laissez ceci si vous utilisez le format de projet SDK moderne
 # sinon, ignorez-le. Le modèle par défaut ASP.NET Core l'utilise.

@@ -15,7 +15,7 @@ enum AppConfig {
     // Les trois valeurs ci-dessous sont surchargeables via les réglages (écran
     // Réglages → TMDB), persistés dans UserDefaults. À défaut de surcharge, on
     // retombe sur les valeurs compilées par défaut.
-    static let defaultTmdbApiKey = "REDACTED_TMDB_API_KEY"
+    static let defaultTmdbApiKey = ""
     static let defaultTmdbBaseURL = "https://api.themoviedb.org/3"
     static let defaultTmdbLanguage = "fr-FR"
     static let tmdbImageBaseURL = "https://image.tmdb.org/t/p"

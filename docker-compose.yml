@@ -7,7 +7,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: Server=db;Port=3306;Database=tracker;Uid=tracker;Pwd=tracker;
-      JustWatch__EnableImport: "false"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
+      JustWatch__EnableImport: ${JUSTWATCH__ENABLEIMPORT:-false}
+      TMDB__ApiKey: ${TMDB_API_KEY:-}
+      OMDb__ApiKey: ${OMDB_API_KEY:-}
     restart: unless-stopped

@@ -10,19 +10,20 @@ Nécessite pymysql et requests (voir le venv créé pour ce script).
 """
 
 import argparse
+import os
 import time
 import sys
 
 import pymysql
 import requests
 
-DB_HOST = "REDACTED_INTERNAL_IP"
-DB_PORT = 3306
-DB_NAME = "tracker"
-DB_USER = "root"
-DB_PASSWORD = "REDACTED"
+DB_HOST = os.environ["DB_HOST"]
+DB_PORT = int(os.environ.get("DB_PORT", "3306"))
+DB_NAME = os.environ.get("DB_NAME", "tracker")
+DB_USER = os.environ["DB_USER"]
+DB_PASSWORD = os.environ["DB_PASSWORD"]
 
-TMDB_API_KEY = "REDACTED_TMDB_API_KEY"
+TMDB_API_KEY = os.environ["TMDB_API_KEY"]
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_LANGUAGE = "fr-FR"
 
