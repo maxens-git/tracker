@@ -359,6 +359,16 @@ export class Torrents implements OnInit {
     }
   }
 
+  // Copie le lien magnet brut : toujours disponible, même quand le débridage échoue.
+  async copyMagnet(torrent: TorrentResult) {
+    try {
+      await navigator.clipboard?.writeText(torrent.magnetUrl);
+      this.messages.add({ severity: 'success', summary: 'Torrents', detail: 'Lien magnet copié.', life: 2500 });
+    } catch {
+      this.showError('Impossible de copier le lien magnet.');
+    }
+  }
+
   // Les noms de release n'ont aucune espace : sans point de coupure, le navigateur
   // les tronque au milieu d'un mot. On insère des espaces de largeur nulle après les
   // séparateurs usuels (. _ - + ] )) pour que le retour à la ligne tombe entre deux

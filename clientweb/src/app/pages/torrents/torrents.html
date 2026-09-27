@@ -96,6 +96,9 @@
           <td class="col-num seeders">{{ torrent.seeders }}</td>
           <td class="col-num leechers">{{ torrent.leechers }}</td>
           <td class="col-action">
+            <button pButton type="button" icon="pi pi-copy" severity="secondary" text rounded size="small"
+              aria-label="Copier le lien magnet"
+              (click)="$event.stopPropagation(); copyMagnet(torrent)"></button>
             @if (view() === 'bookmarks') {
               <button pButton type="button" icon="pi pi-trash" severity="danger" text rounded size="small"
                 aria-label="Retirer des marque-pages"

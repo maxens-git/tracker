@@ -229,6 +229,7 @@ private struct TorrentRow: View {
 
             HStack(spacing: 10) {
                 debridButton
+                copyMagnetButton
                 bookmarkButton
             }
         }
@@ -257,6 +258,18 @@ private struct TorrentRow: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(viewModel.debridingMagnet != nil)
+    }
+
+    /// Copie le lien magnet brut : toujours disponible, même si le débridage échoue.
+    private var copyMagnetButton: some View {
+        Button {
+            viewModel.copy(torrent.magnetUrl)
+        } label: {
+            Image(systemName: "doc.on.doc")
+                .frame(width: 28)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityLabel("Copier le lien magnet")
     }
 
     /// Bouton « mettre de côté » : ajoute / retire le torrent des marque-pages.
