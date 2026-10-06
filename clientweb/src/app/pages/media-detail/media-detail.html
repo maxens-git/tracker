@@ -116,9 +116,17 @@
             (click)="toggleSeen()"></button>
 
           <button pButton type="button" outlined severity="secondary"
+            icon="pi pi-plus"
+            label="Vu aujourd'hui"
+            [loading]="quickAddPending()"
+            [disabled]="quickAddPending()"
+            (click)="quickAddWatch()"></button>
+
+          <button pButton type="button" text rounded severity="secondary"
             icon="pi pi-history"
-            label="Ajouter un visionnage"
-            (click)="openWatchDialog()"></button>
+            (click)="openWatchDialog()"
+            aria-label="Gérer l'historique des visionnages"
+          ></button>
 
           <button pButton type="button"
             [icon]="currentLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"

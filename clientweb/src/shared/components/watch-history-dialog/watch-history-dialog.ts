@@ -99,6 +99,7 @@ export class WatchHistoryDialog implements OnChanges {
       next: event => {
         this.events.update(list => sortDesc([...list, event]));
         this.adding.set(false);
+        this.newDate = new Date();
         this.emitCountChange();
       },
       error: err => {

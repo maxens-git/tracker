@@ -109,6 +109,7 @@ export class MediaDetail implements OnInit {
 
   watchDialogOpen = signal(false);
   watchDialogTarget = signal<{ season: number; episode: number } | null>(null);
+  quickAddPending = signal(false);
 
   ngOnInit() {
     this.route.paramMap.pipe(
@@ -466,6 +467,27 @@ export class MediaDetail implements OnInit {
   }
 
   // ── Watch history ────────────────────────────────────────────────────────
+
+  quickAddWatch() {
+    if (this.quickAddPending()) return;
+    this.quickAddPending.set(true);
+    const tmdbId = this.userState().tmdbId;
+    const previousWatchCount = this.userState().watchCount;
+
+    this.api.addWatch(tmdbId, this.mediaType(), {
+      watchedAt: new Date().toISOString(),
+      posterPath: this.currentPosterPath(),
+      runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
+      title: this.mediaTitle,
+      genres: this.currentGenres(),
+    }).subscribe({
+      next: () => {
+        this.patchUserState({ seen: true, watchCount: previousWatchCount + 1 });
+        this.quickAddPending.set(false);
+      },
+      error: err => { this.quickAddPending.set(false); this.showToast(errorMessage(err)); },
+    });
+  }
 
   openWatchDialog() {
     this.watchDialogTarget.set(null);
