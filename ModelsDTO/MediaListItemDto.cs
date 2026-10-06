@@ -9,6 +9,7 @@ public class MediaListItemDto
     public string? PosterPath { get; set; }
     public string? Title { get; set; }
     public bool Seen { get; set; }
+    public int WatchCount { get; set; }
     public bool Liked { get; set; }
     public DateTime AddedAt { get; set; }
 
@@ -19,6 +20,7 @@ public class MediaListItemDto
         PosterPath = item.PosterPath ?? um?.PosterPath;
         Title = item.Title;
         Seen = um?.Seen ?? false;
+        WatchCount = um?.WatchCount ?? 0;
         Liked = um?.Liked ?? false;
         AddedAt = item.AddedAt;
     }
@@ -30,6 +32,7 @@ public class MediaListItemDto
         PosterPath = m.PosterPath;
         Title = m.Title;
         Seen = m.Seen;
+        WatchCount = m.WatchCount;
         Liked = m.Liked;
         AddedAt = m.AddedAt;
     }

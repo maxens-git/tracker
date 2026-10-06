@@ -23,9 +23,15 @@ public class UserEpisode
 
     public int EpisodeNumber { get; set; }
 
+    /// <summary>Dérivé de <see cref="WatchCount"/> &gt; 0, maintenu en synchronisation par <see cref="Services.WatchHistoryService"/>.</summary>
     public bool Seen { get; set; } = false;
+
+    /// <summary>Nombre de visionnages enregistrés (voir <see cref="WatchEvents"/> pour l'historique daté).</summary>
+    public int WatchCount { get; set; } = 0;
 
     public int? Runtime { get; set; }
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+
+    public List<UserEpisodeWatchEvent> WatchEvents { get; set; } = new();
 }

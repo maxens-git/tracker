@@ -22,16 +22,29 @@ export interface StatsListGenres {
   genres: StatsGenreBucket[];
 }
 
+export interface MostRewatchedItem {
+  tmdbId: number;
+  mediaType: string;
+  title?: string | null;
+  posterPath?: string | null;
+  seasonNumber?: number | null;
+  episodeNumber?: number | null;
+  watchCount: number;
+}
+
 export interface Stats {
   moviesSeenCount: number;
   showsSeenCount: number;
   episodesSeenCount: number;
+  moviesWatchCount: number;
+  episodesWatchCount: number;
   totalRuntimeMinutes: number;
   moviesSeenByYear: StatsYearBucket[];
   moviesSeenByMonth: StatsMonthBucket[];
   episodesSeenByYear: StatsYearBucket[];
   episodesSeenByMonth: StatsMonthBucket[];
   favoriteGenres: StatsGenreBucket[];
+  mostRewatched: MostRewatchedItem[];
 }
 
 export interface CombinedYearBucket {

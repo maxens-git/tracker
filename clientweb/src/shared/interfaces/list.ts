@@ -22,6 +22,7 @@ export interface MediaListItem {
   posterPath?: string | null;
   title?: string | null;
   seen: boolean;
+  watchCount: number;
   liked: boolean;
   addedAt: string;
 }

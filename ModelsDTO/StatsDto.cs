@@ -8,6 +8,12 @@ public class StatsDto
     public int ShowsSeenCount { get; set; }
     public int EpisodesSeenCount { get; set; }
 
+    /// <summary>Nombre total de visionnages (revisionnages inclus), à distinguer de <see cref="MoviesSeenCount"/> (titres distincts).</summary>
+    public int MoviesWatchCount { get; set; }
+
+    /// <summary>Nombre total de visionnages d'épisodes (revisionnages inclus).</summary>
+    public int EpisodesWatchCount { get; set; }
+
     public int TotalRuntimeMinutes { get; set; }
     public double TotalRuntimeHours => TotalRuntimeMinutes / 60d;
 
@@ -18,6 +24,20 @@ public class StatsDto
     public List<StatsMonthBucket> EpisodesSeenByMonth { get; set; } = new();
 
     public List<StatsGenreBucket> FavoriteGenres { get; set; } = new();
+
+    public List<MostRewatchedDto> MostRewatched { get; set; } = new();
+}
+
+/// <summary>Film, série ou épisode revu au moins une fois (<see cref="WatchCount"/> &gt;= 2).</summary>
+public class MostRewatchedDto
+{
+    public int TmdbId { get; set; }
+    public string MediaType { get; set; } = "";
+    public string? Title { get; set; }
+    public string? PosterPath { get; set; }
+    public int? SeasonNumber { get; set; }
+    public int? EpisodeNumber { get; set; }
+    public int WatchCount { get; set; }
 }
 
 public class StatsYearBucket

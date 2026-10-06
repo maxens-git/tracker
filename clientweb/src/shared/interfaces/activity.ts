@@ -8,7 +8,9 @@ export type ActivityType =
   | 'seasonSeen'
   | 'seasonUnseen'
   | 'episodeSeen'
-  | 'episodeUnseen';
+  | 'episodeUnseen'
+  | 'rewatched'
+  | 'episodeRewatched';
 
 /** Entrée du journal d'activité renvoyée par le backend. */
 export interface Activity {

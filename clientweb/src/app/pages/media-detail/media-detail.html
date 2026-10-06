@@ -109,11 +109,16 @@
         <div class="actions">
           <button pButton type="button"
             [icon]="currentSeen ? 'pi pi-check-circle' : 'pi pi-circle'"
-            [label]="currentSeen ? 'Déjà vu' : 'Pas vu'"
+            [label]="currentSeen ? ('Déjà vu' + (currentWatchCount > 1 ? ' ×' + currentWatchCount : '')) : 'Pas vu'"
             [outlined]="!currentSeen"
             [severity]="currentSeen ? 'success' : 'secondary'"
             [disabled]="seenPending()"
             (click)="toggleSeen()"></button>
+
+          <button pButton type="button" outlined severity="secondary"
+            icon="pi pi-history"
+            label="Ajouter un visionnage"
+            (click)="openWatchDialog()"></button>
 
           <button pButton type="button"
             [icon]="currentLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
@@ -267,14 +272,26 @@
                             <h4 class="ep-title">
                               <span class="ep-num">{{ ep.episode_number }}</span>
                               {{ ep.name }}
+                              @if ((ep.watchCount ?? 0) > 1) {
+                                <span class="ep-watch-count">×{{ ep.watchCount }}</span>
+                              }
                             </h4>
-                            <p-checkbox
-                              [binary]="true"
-                              [ngModel]="ep.seen"
-                              [disabled]="epPending"
-                              [ariaLabel]="'Épisode ' + ep.episode_number + ' vu'"
-                              (onChange)="toggleEpisodeSeen(ep, $event.originalEvent)"
-                            />
+                            <div class="ep-controls">
+                              @if (ep.seen) {
+                                <button pButton type="button" text rounded severity="secondary"
+                                  icon="pi pi-history"
+                                  (click)="openEpisodeWatchDialog(ep, $event)"
+                                  aria-label="Historique des visionnages"
+                                ></button>
+                              }
+                              <p-checkbox
+                                [binary]="true"
+                                [ngModel]="ep.seen"
+                                [disabled]="epPending"
+                                [ariaLabel]="'Épisode ' + ep.episode_number + ' vu'"
+                                (onChange)="toggleEpisodeSeen(ep, $event.originalEvent)"
+                              />
+                            </div>
                           </div>
 
                           <p class="ep-meta">@if (ep.air_date) {{{ ep.air_date | date:'d MMMM yyyy' }}}@if (ep.air_date && ep.runtime) { · }@if (ep.runtime) {{{ ep.runtime }} min}</p>
@@ -439,4 +456,18 @@
       </form>
     </section>
   </p-dialog>
+
+  <app-watch-history-dialog
+    [visible]="watchDialogOpen()"
+    [tmdbId]="userState().tmdbId"
+    [mediaType]="mediaType()"
+    [seasonNumber]="watchDialogTarget()?.season ?? null"
+    [episodeNumber]="watchDialogTarget()?.episode ?? null"
+    [title]="mediaTitle"
+    [posterPath]="currentPosterPath()"
+    [runtime]="isMovie ? (movie()?.runtime ?? null) : null"
+    [genres]="currentGenres()"
+    (visibleChange)="onWatchDialogVisibleChange($event)"
+    (watchCountChanged)="onWatchCountChanged($event)"
+  />
 }

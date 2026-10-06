@@ -25,6 +25,8 @@ const TYPE_STYLE: Record<ActivityType, { icon: string; severity: TagSeverity }> 
   seasonUnseen:    { icon: 'pi pi-replay', severity: 'secondary' },
   episodeSeen:     { icon: 'pi pi-check', severity: 'success' },
   episodeUnseen:   { icon: 'pi pi-replay', severity: 'secondary' },
+  rewatched:       { icon: 'pi pi-history', severity: 'success' },
+  episodeRewatched: { icon: 'pi pi-history', severity: 'success' },
 };
 
 function actionLabel(a: Activity): string {
@@ -39,6 +41,8 @@ function actionLabel(a: Activity): string {
     case 'seasonUnseen':    return `Saison ${a.seasonNumber} non vue`;
     case 'episodeSeen':     return `Épisode S${a.seasonNumber}E${a.episodeNumber} vu`;
     case 'episodeUnseen':   return `Épisode S${a.seasonNumber}E${a.episodeNumber} non vu`;
+    case 'rewatched':       return 'Revu';
+    case 'episodeRewatched': return `Épisode S${a.seasonNumber}E${a.episodeNumber} revu`;
   }
 }
 

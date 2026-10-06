@@ -23,6 +23,14 @@
         <div class="kpi-value">{{ s.episodesSeenCount }}</div>
         <div class="kpi-label">Épisodes vus</div>
       </p-card>
+      <p-card>
+        <div class="kpi-value">{{ s.moviesWatchCount }}</div>
+        <div class="kpi-label">Visionnages de films</div>
+      </p-card>
+      <p-card>
+        <div class="kpi-value">{{ s.episodesWatchCount }}</div>
+        <div class="kpi-label">Visionnages d'épisodes</div>
+      </p-card>
       <p-card styleClass="kpi-accent">
         <div class="kpi-value">
           {{ formatRuntime(s.totalRuntimeMinutes) }}
@@ -31,6 +39,25 @@
         <div class="kpi-label">Temps total</div>
       </p-card>
     </div>
+
+    <!-- Films / séries / épisodes les plus revus -->
+    @if (s.mostRewatched.length > 0) {
+      <p-card header="Plus rewatchés">
+        <div class="rewatch-list">
+          @for (item of s.mostRewatched; track item.tmdbId + '-' + (item.seasonNumber ?? 0) + '-' + (item.episodeNumber ?? 0)) {
+            <div class="rewatch-row">
+              <span class="rewatch-title">
+                {{ item.title || 'Sans titre' }}
+                @if (item.seasonNumber != null && item.episodeNumber != null) {
+                  <small>S{{ item.seasonNumber }}E{{ item.episodeNumber }}</small>
+                }
+              </span>
+              <span class="rewatch-count">×{{ item.watchCount }}</span>
+            </div>
+          }
+        </div>
+      </p-card>
+    }
 
     <!-- Genres préférés -->
     @if (genreLists().length > 0) {

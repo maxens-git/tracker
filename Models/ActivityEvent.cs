@@ -16,6 +16,10 @@ public enum ActivityType
     MarkedSeasonUnseen = 7,
     MarkedEpisodeSeen = 8,
     MarkedEpisodeUnseen = 9,
+    /// <summary>Nouveau visionnage daté ajouté alors que le média était déjà vu (2e+ visionnage).</summary>
+    Rewatched = 10,
+    /// <summary>Nouveau visionnage daté ajouté alors que l'épisode était déjà vu (2e+ visionnage).</summary>
+    EpisodeRewatched = 11,
 }
 
 /// <summary>

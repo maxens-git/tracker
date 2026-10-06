@@ -99,7 +99,7 @@ export class ListDetail implements OnInit {
         return this.tmdb.fetchMany(refs).pipe(
           map(tmdbItems => tmdbItems.map(item => {
             const state = stateByTmdbId.get(item.id);
-            return { ...item, seen: state?.seen ?? false, liked: state?.liked ?? false };
+            return { ...item, seen: state?.seen ?? false, watchCount: state?.watchCount ?? 0, liked: state?.liked ?? false };
           })),
         );
       }),

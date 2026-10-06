@@ -10,27 +10,73 @@ public class StatsService(ApiDbContext context)
 {
     public async Task<StatsDto> GetStats()
     {
-        // Dates d'ajout des films vus / épisodes vus : base commune des compteurs annuels et mensuels.
-        IQueryable<DateTime> movieSeenDates = context.UserMedia
-            .Where(m => m.Seen && m.MediaType == MediaType.Movie)
-            .Select(m => m.AddedAt);
+        // Dates réelles de chaque visionnage (revisionnages inclus) : base des compteurs annuels et mensuels.
+        IQueryable<DateTime> movieWatchDates = context.UserMediaWatchEvents
+            .Join(context.UserMedia.Where(m => m.MediaType == MediaType.Movie),
+                w => w.UserMediaId, m => m.Id, (w, m) => w.WatchedAt);
 
-        IQueryable<DateTime> episodeSeenDates = context.UserEpisodes
-            .Where(e => e.Seen)
-            .Select(e => e.AddedAt);
+        IQueryable<DateTime> episodeWatchDates = context.UserEpisodeWatchEvents
+            .Select(w => w.WatchedAt);
 
         return new StatsDto
         {
             MoviesSeenCount = await context.UserMedia.CountAsync(m => m.Seen && m.MediaType == MediaType.Movie),
             ShowsSeenCount = await context.UserMedia.CountAsync(m => m.Seen && m.MediaType == MediaType.Show),
             EpisodesSeenCount = await context.UserEpisodes.CountAsync(e => e.Seen),
+            MoviesWatchCount = await movieWatchDates.CountAsync(),
+            EpisodesWatchCount = await episodeWatchDates.CountAsync(),
             TotalRuntimeMinutes = await TotalRuntimeMinutes(),
-            MoviesSeenByYear = await CountByYear(movieSeenDates),
-            MoviesSeenByMonth = await CountByMonth(movieSeenDates),
-            EpisodesSeenByYear = await CountByYear(episodeSeenDates),
-            EpisodesSeenByMonth = await CountByMonth(episodeSeenDates),
+            MoviesSeenByYear = await CountByYear(movieWatchDates),
+            MoviesSeenByMonth = await CountByMonth(movieWatchDates),
+            EpisodesSeenByYear = await CountByYear(episodeWatchDates),
+            EpisodesSeenByMonth = await CountByMonth(episodeWatchDates),
             FavoriteGenres = await FavoriteGenres(),
+            MostRewatched = await MostRewatched(),
         };
+    }
+
+    /// <summary>Films, séries et épisodes revus au moins une fois, triés par nombre de visionnages décroissant.</summary>
+    private async Task<List<MostRewatchedDto>> MostRewatched()
+    {
+        List<MostRewatchedDto> movies = await context.UserMedia
+            .Where(m => m.WatchCount >= 2)
+            .Select(m => new MostRewatchedDto
+            {
+                TmdbId = m.TmdbId,
+                MediaType = m.MediaType == MediaType.Movie ? "movie" : "show",
+                Title = m.Title,
+                PosterPath = m.PosterPath,
+                WatchCount = m.WatchCount,
+            })
+            .ToListAsync();
+
+        List<UserEpisode> rewatchedEpisodes = await context.UserEpisodes
+            .Where(e => e.WatchCount >= 2)
+            .ToListAsync();
+
+        Dictionary<int, UserMedia> shows = await context.UserMedia
+            .Where(m => m.MediaType == MediaType.Show)
+            .ToDictionaryAsync(m => m.TmdbId);
+
+        List<MostRewatchedDto> episodes = rewatchedEpisodes.Select(e =>
+        {
+            shows.TryGetValue(e.ShowTmdbId, out UserMedia? show);
+            return new MostRewatchedDto
+            {
+                TmdbId = e.ShowTmdbId,
+                MediaType = "show",
+                Title = show?.Title,
+                PosterPath = show?.PosterPath,
+                SeasonNumber = e.SeasonNumber,
+                EpisodeNumber = e.EpisodeNumber,
+                WatchCount = e.WatchCount,
+            };
+        }).ToList();
+
+        return movies.Concat(episodes)
+            .OrderByDescending(d => d.WatchCount)
+            .Take(10)
+            .ToList();
     }
 
     /// <summary>Genres les plus vus, calculés sur les films et séries marqués comme vus.</summary>
@@ -127,28 +173,27 @@ public class StatsService(ApiDbContext context)
             .ToList();
     }
 
-    /// <summary>Durée totale vue : films + épisodes, avec fallback pour séries sans épisodes détaillés.</summary>
+    /// <summary>Durée totale vue (revisionnages comptés autant de fois) : films + épisodes, avec fallback pour séries sans épisodes détaillés.</summary>
     private async Task<int> TotalRuntimeMinutes()
     {
         int moviesRuntime = await context.UserMedia
-            .Where(m => m.Seen && m.MediaType == MediaType.Movie && m.Runtime != null)
-            .SumAsync(m => (int?)m.Runtime ?? 0);
+            .Where(m => m.MediaType == MediaType.Movie && m.Runtime != null)
+            .SumAsync(m => (m.Runtime ?? 0) * m.WatchCount);
 
         int episodesRuntime = await context.UserEpisodes
-            .Where(e => e.Seen && e.Runtime != null)
-            .SumAsync(e => (int?)e.Runtime ?? 0);
+            .Where(e => e.Runtime != null)
+            .SumAsync(e => (e.Runtime ?? 0) * e.WatchCount);
 
         IQueryable<int> showsWithSeenEpisodes = context.UserEpisodes
-            .Where(e => e.Seen)
+            .Where(e => e.WatchCount > 0)
             .Select(e => e.ShowTmdbId)
             .Distinct();
 
         int showFallbackRuntime = await context.UserMedia
-            .Where(m => m.Seen
-                        && m.MediaType == MediaType.Show
+            .Where(m => m.MediaType == MediaType.Show
                         && m.Runtime != null
                         && !showsWithSeenEpisodes.Contains(m.TmdbId))
-            .SumAsync(m => (int?)m.Runtime ?? 0);
+            .SumAsync(m => (m.Runtime ?? 0) * m.WatchCount);
 
         return moviesRuntime + episodesRuntime + showFallbackRuntime;
     }

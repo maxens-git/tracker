@@ -25,7 +25,11 @@ public class UserMedia
 
     public MediaType MediaType { get; set; }
 
+    /// <summary>Dérivé de <see cref="WatchCount"/> &gt; 0, maintenu en synchronisation par <see cref="Services.WatchHistoryService"/>.</summary>
     public bool Seen { get; set; } = false;
+
+    /// <summary>Nombre de visionnages enregistrés (voir <see cref="WatchEvents"/> pour l'historique daté).</summary>
+    public int WatchCount { get; set; } = 0;
 
     public bool Liked { get; set; } = false;
 
@@ -45,4 +49,6 @@ public class UserMedia
     public string? GenreNamesJson { get; set; }
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+
+    public List<UserMediaWatchEvent> WatchEvents { get; set; } = new();
 }

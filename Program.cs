@@ -57,6 +57,7 @@ builder.Services.AddScoped<UserMediaService>();
 builder.Services.AddScoped<MediaListService>();
 builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<WatchHistoryService>();
 builder.Services.AddScoped<SystemLogService>();
 builder.Services.AddSingleton<SystemLogQueue>();
 builder.Services.AddSingleton<ILoggerProvider, DatabaseLoggerProvider>();

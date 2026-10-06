@@ -7,6 +7,7 @@ import { MediaListSummary, PaginatedResult, MediaListItem } from '../interfaces/
 import { Stats, StatsListGenres } from '../interfaces/stats';
 import { EpisodeSeenDto } from '../interfaces/episode';
 import { Activity } from '../interfaces/activity';
+import { WatchEvent } from '../interfaces/watch-event';
 
 const API = '/api';
 
@@ -27,6 +28,14 @@ export interface AddToWatchlistPayload {
 
 export interface MarkSeenPayload {
   seen: boolean;
+  posterPath?: string | null;
+  runtime?: number | null;
+  title?: string | null;
+  genres?: TmdbGenre[] | null;
+}
+
+export interface AddWatchPayload {
+  watchedAt: string;
   posterPath?: string | null;
   runtime?: number | null;
   title?: string | null;
@@ -233,6 +242,18 @@ export class Api {
     return this.http.post(`${API}/Media/${tmdbId}/seen`, payload, { params: { type } });
   }
 
+  getWatches(tmdbId: number, type: 'movie' | 'tv'): Observable<WatchEvent[]> {
+    return this.http.get<WatchEvent[]>(`${API}/Media/${tmdbId}/watches`, { params: { type } });
+  }
+
+  addWatch(tmdbId: number, type: 'movie' | 'tv', payload: AddWatchPayload): Observable<WatchEvent> {
+    return this.http.post<WatchEvent>(`${API}/Media/${tmdbId}/watches`, payload, { params: { type } });
+  }
+
+  deleteWatch(tmdbId: number, type: 'movie' | 'tv', watchId: number): Observable<unknown> {
+    return this.http.delete(`${API}/Media/${tmdbId}/watches/${watchId}`, { params: { type } });
+  }
+
   markLiked(tmdbId: number, type: 'movie' | 'tv', liked: boolean, title?: string | null): Observable<unknown> {
     const params: Record<string, string> = { type };
     if (title) params['title'] = title;
@@ -273,6 +294,19 @@ export class Api {
     return this.http.post(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/seen`, seen, {
       headers: { 'Content-Type': 'application/json' }
     });
+  }
+
+  getEpisodeWatches(showTmdbId: number, seasonNumber: number, episodeNumber: number): Observable<WatchEvent[]> {
+    return this.http.get<WatchEvent[]>(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`);
+  }
+
+  addEpisodeWatch(showTmdbId: number, seasonNumber: number, episodeNumber: number, watchedAt: string): Observable<WatchEvent> {
+    return this.http.post<WatchEvent>(
+      `${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`, { watchedAt });
+  }
+
+  deleteEpisodeWatch(showTmdbId: number, seasonNumber: number, episodeNumber: number, watchId: number): Observable<unknown> {
+    return this.http.delete(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches/${watchId}`);
   }
 
   // ── Lists ────────────────────────────────────────────────────────────────
@@ -449,6 +483,12 @@ export class Api {
 export function withUserStates(items: MediaItem[], states: Map<number, UserState>): MediaItem[] {
   return items.map(item => {
     const s = states.get(item.id);
-    return { ...item, seen: s?.seen ?? false, liked: s?.liked ?? false, listIds: s?.listIds ?? [] };
+    return {
+      ...item,
+      seen: s?.seen ?? false,
+      watchCount: s?.watchCount ?? 0,
+      liked: s?.liked ?? false,
+      listIds: s?.listIds ?? [],
+    };
   });
 }

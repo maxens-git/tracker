@@ -14,7 +14,8 @@
 
   <div class="badges">
     @if (item.seen) {
-      <p-tag severity="success" icon="pi pi-check" value="Vu" />
+      <p-tag severity="success" icon="pi pi-check"
+        [value]="(item.watchCount ?? 0) > 1 ? 'Vu ×' + item.watchCount : 'Vu'" />
     }
     @if (rating) {
       <p-tag severity="contrast" icon="pi pi-star-fill" [value]="rating" />

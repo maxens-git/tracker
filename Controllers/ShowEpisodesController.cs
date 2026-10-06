@@ -12,7 +12,8 @@ namespace Tracker.Controllers;
 public class ShowEpisodesController(
     ApiDbContext context,
     UserMediaService mediaService,
-    ActivityService activityService) : ControllerBase
+    ActivityService activityService,
+    WatchHistoryService watchHistoryService) : ControllerBase
 {
     [HttpGet("{showTmdbId}/episodes")]
     public async Task<ActionResult<List<EpisodeSeenDto>>> GetEpisodes(int showTmdbId)
@@ -41,6 +42,13 @@ public class ShowEpisodesController(
             .Where(m => m.MediaType == MediaType.Show)
             .ToDictionaryAsync(m => m.TmdbId, m => m.PosterPath);
 
+        List<int> seenEpisodeIds = seenEpisodes.Select(e => e.Id).ToList();
+        Dictionary<int, DateTime> lastWatchedByEpisodeId = await context.UserEpisodeWatchEvents
+            .Where(w => seenEpisodeIds.Contains(w.UserEpisodeId))
+            .GroupBy(w => w.UserEpisodeId)
+            .Select(g => new { EpisodeId = g.Key, Last = g.Max(w => w.WatchedAt) })
+            .ToDictionaryAsync(x => x.EpisodeId, x => x.Last);
+
         return seenEpisodes
             .GroupBy(e => e.ShowTmdbId)
             .Select(g =>
@@ -56,8 +64,7 @@ public class ShowEpisodesController(
                     SeenEpisodeCount = g.Count(),
                     LastSeasonNumber = last.SeasonNumber,
                     LastEpisodeNumber = last.EpisodeNumber,
-                    // Le plus récemment coché en premier (AddedAt = date du marquage initial).
-                    LastWatchedAt = g.Max(e => e.AddedAt),
+                    LastWatchedAt = g.Max(e => lastWatchedByEpisodeId.GetValueOrDefault(e.Id, e.AddedAt)),
                 };
             })
             .OrderByDescending(s => s.LastWatchedAt)
@@ -68,7 +75,11 @@ public class ShowEpisodesController(
     public async Task<IActionResult> MarkShowSeen(int showTmdbId, [FromBody] MarkShowSeenDto dto)
     {
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show, dto.PosterPath, genres: dto.Genres, title: dto.Title);
-        um.Seen = dto.Seen;
+
+        if (dto.Seen && um.WatchCount == 0)
+            watchHistoryService.AddMovieWatch(um, DateTime.UtcNow);
+        else if (!dto.Seen && um.WatchCount > 0)
+            await watchHistoryService.ClearMovieWatches(um);
 
         foreach (SeasonEpisodesDto season in dto.Seasons)
             foreach (int epNumber in season.EpisodeNumbers)
@@ -108,15 +119,77 @@ public class ShowEpisodesController(
         return Ok(new { showTmdbId, seasonNumber, episodeNumber, seen });
     }
 
-    /// <summary>Crée ou met à jour l'état "vu" d'un épisode (sans sauvegarder : l'appelant le fait).</summary>
+    [HttpGet("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches")]
+    public async Task<ActionResult<List<WatchEventDto>>> GetEpisodeWatches(int showTmdbId, int seasonNumber, int episodeNumber)
+    {
+        UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
+        if (ep == null) return new List<WatchEventDto>();
+
+        List<UserEpisodeWatchEvent> events = await watchHistoryService.GetEpisodeWatchHistory(ep.Id);
+        return events.Select(e => new WatchEventDto(e)).ToList();
+    }
+
+    /// <summary>Ajoute un visionnage d'épisode à une date choisie par l'utilisateur.</summary>
+    [HttpPost("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches")]
+    public async Task<ActionResult<WatchEventDto>> AddEpisodeWatch(
+        int showTmdbId, int seasonNumber, int episodeNumber, [FromBody] AddEpisodeWatchDto dto)
+    {
+        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
+        UserEpisode ep = await EnsureEpisode(showTmdbId, seasonNumber, episodeNumber);
+        bool wasSeen = ep.WatchCount > 0;
+
+        UserEpisodeWatchEvent ev = watchHistoryService.AddEpisodeWatch(ep, dto.WatchedAt);
+        activityService.Log(wasSeen ? ActivityType.EpisodeRewatched : ActivityType.MarkedEpisodeSeen,
+                            showTmdbId, MediaType.Show, um.PosterPath,
+                            seasonNumber: seasonNumber, episodeNumber: episodeNumber);
+
+        await context.SaveChangesAsync();
+        return Ok(new WatchEventDto(ev));
+    }
+
+    /// <summary>Supprime un visionnage d'épisode précis de l'historique.</summary>
+    [HttpDelete("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches/{watchId}")]
+    public async Task<IActionResult> DeleteEpisodeWatch(int showTmdbId, int seasonNumber, int episodeNumber, int watchId)
+    {
+        UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
+        UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
+        if (ep == null) return NotFound();
+
+        bool removed = await watchHistoryService.RemoveEpisodeWatch(ep, watchId);
+        if (!removed) return NotFound("Visionnage introuvable");
+
+        if (ep.WatchCount == 0)
+            activityService.Log(ActivityType.MarkedEpisodeUnseen, showTmdbId, MediaType.Show, um.PosterPath,
+                                seasonNumber: seasonNumber, episodeNumber: episodeNumber);
+
+        await context.SaveChangesAsync();
+        return Ok(new { showTmdbId, seasonNumber, episodeNumber, seen = ep.Seen, watchCount = ep.WatchCount });
+    }
+
+    private Task<UserEpisode?> FindEpisode(int showTmdbId, int seasonNumber, int episodeNumber) =>
+        context.UserEpisodes.FirstOrDefaultAsync(e =>
+            e.ShowTmdbId == showTmdbId && e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber);
+
+    /// <summary>Récupère l'épisode ou le crée (sauvegardé immédiatement pour obtenir son Id, requis par la FK des visionnages).</summary>
+    private async Task<UserEpisode> EnsureEpisode(int showTmdbId, int seasonNumber, int episodeNumber)
+    {
+        UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
+        if (ep != null) return ep;
+
+        ep = new UserEpisode(showTmdbId, seasonNumber, episodeNumber, seen: false);
+        context.UserEpisodes.Add(ep);
+        await context.SaveChangesAsync();
+        return ep;
+    }
+
+    /// <summary>Crée ou met à jour l'état "vu" d'un épisode (sans sauvegarder l'appel courant : l'appelant le fait).</summary>
     private async Task UpsertEpisode(int showTmdbId, int seasonNumber, int episodeNumber, bool seen)
     {
-        UserEpisode? ep = await context.UserEpisodes
-            .FirstOrDefaultAsync(e => e.ShowTmdbId == showTmdbId && e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber);
+        UserEpisode ep = await EnsureEpisode(showTmdbId, seasonNumber, episodeNumber);
 
-        if (ep == null)
-            context.UserEpisodes.Add(new UserEpisode(showTmdbId, seasonNumber, episodeNumber, seen));
-        else
-            ep.Seen = seen;
+        if (seen && ep.WatchCount == 0)
+            watchHistoryService.AddEpisodeWatch(ep, DateTime.UtcNow);
+        else if (!seen && ep.WatchCount > 0)
+            await watchHistoryService.ClearEpisodeWatches(ep);
     }
 }

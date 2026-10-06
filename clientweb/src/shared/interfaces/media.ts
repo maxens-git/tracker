@@ -3,6 +3,7 @@
 export interface UserState {
   tmdbId: number;
   seen: boolean;
+  watchCount: number;
   liked: boolean;
   listIds: number[];
 }
@@ -83,6 +84,7 @@ export interface TmdbEpisode {
   air_date: string | null;
   still_path: string | null;
   seen?: boolean;
+  watchCount?: number;
 }
 
 export interface TmdbCastMember {
@@ -157,6 +159,7 @@ export interface MediaItem {
   vote_count: number;
   popularity: number;
   seen: boolean;
+  watchCount?: number;
   liked?: boolean;
   listIds?: number[];
 }

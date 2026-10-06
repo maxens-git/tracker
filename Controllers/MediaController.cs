@@ -9,7 +9,11 @@ namespace Tracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MediaController(ApiDbContext context, UserMediaService mediaService, ActivityService activityService) : ControllerBase
+public class MediaController(
+    ApiDbContext context,
+    UserMediaService mediaService,
+    ActivityService activityService,
+    WatchHistoryService watchHistoryService) : ControllerBase
 {
     [HttpGet("states")]
     public async Task<ActionResult<List<UserStateDto>>> GetStates([FromQuery] string tmdbIds, [FromQuery] string type = "movie")
@@ -36,15 +40,75 @@ public class MediaController(ApiDbContext context, UserMediaService mediaService
         }).ToList();
     }
 
+    /// <summary>
+    /// Bascule "vu"/"pas vu" : passer à vu ajoute 1 visionnage daté à maintenant, repasser à
+    /// non-vu efface tout l'historique. Idempotent (aucun effet si l'état demandé est déjà atteint).
+    /// Pour logger un visionnage à une date choisie ou consulter/éditer l'historique, voir les
+    /// endpoints <c>/watches</c>.
+    /// </summary>
     [HttpPost("{tmdbId}/seen")]
     public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres, dto.Title);
-        um.Seen = dto.Seen;
-        activityService.Log(dto.Seen ? ActivityType.MarkedSeen : ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
+
+        if (dto.Seen && um.WatchCount == 0)
+        {
+            watchHistoryService.AddMovieWatch(um, DateTime.UtcNow);
+            activityService.Log(ActivityType.MarkedSeen, tmdbId, mediaType, um.PosterPath);
+        }
+        else if (!dto.Seen && um.WatchCount > 0)
+        {
+            await watchHistoryService.ClearMovieWatches(um);
+            activityService.Log(ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
+        }
+
         await context.SaveChangesAsync();
-        return Ok(new { tmdbId, seen = um.Seen });
+        return Ok(new { tmdbId, seen = um.Seen, watchCount = um.WatchCount });
+    }
+
+    [HttpGet("{tmdbId}/watches")]
+    public async Task<ActionResult<List<WatchEventDto>>> GetWatches(int tmdbId, [FromQuery] string type)
+    {
+        MediaType mediaType = MediaTypeExtensions.Parse(type);
+        UserMedia? um = await context.UserMedia.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
+        if (um == null) return new List<WatchEventDto>();
+
+        List<UserMediaWatchEvent> events = await watchHistoryService.GetMovieWatchHistory(um.Id);
+        return events.Select(e => new WatchEventDto(e)).ToList();
+    }
+
+    /// <summary>Ajoute un visionnage à une date choisie par l'utilisateur (permet de logger un revisionnage passé).</summary>
+    [HttpPost("{tmdbId}/watches")]
+    public async Task<ActionResult<WatchEventDto>> AddWatch(int tmdbId, [FromQuery] string type, [FromBody] AddWatchDto dto)
+    {
+        MediaType mediaType = MediaTypeExtensions.Parse(type);
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres, dto.Title);
+        bool wasSeen = um.WatchCount > 0;
+
+        UserMediaWatchEvent ev = watchHistoryService.AddMovieWatch(um, dto.WatchedAt);
+        activityService.Log(wasSeen ? ActivityType.Rewatched : ActivityType.MarkedSeen, tmdbId, mediaType, um.PosterPath);
+
+        await context.SaveChangesAsync();
+        return Ok(new WatchEventDto(ev));
+    }
+
+    /// <summary>Supprime un visionnage précis de l'historique (édition, pas forcément un "je n'ai pas vu ce film").</summary>
+    [HttpDelete("{tmdbId}/watches/{watchId}")]
+    public async Task<IActionResult> DeleteWatch(int tmdbId, [FromQuery] string type, int watchId)
+    {
+        MediaType mediaType = MediaTypeExtensions.Parse(type);
+        UserMedia? um = await context.UserMedia.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
+        if (um == null) return NotFound();
+
+        bool removed = await watchHistoryService.RemoveMovieWatch(um, watchId);
+        if (!removed) return NotFound("Visionnage introuvable");
+
+        if (um.WatchCount == 0)
+            activityService.Log(ActivityType.MarkedUnseen, tmdbId, mediaType, um.PosterPath);
+
+        await context.SaveChangesAsync();
+        return Ok(new { tmdbId, seen = um.Seen, watchCount = um.WatchCount });
     }
 
     [HttpPost("{tmdbId}/liked")]

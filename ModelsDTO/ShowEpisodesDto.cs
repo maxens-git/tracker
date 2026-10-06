@@ -7,13 +7,20 @@ public class EpisodeSeenDto
     public int SeasonNumber { get; set; }
     public int EpisodeNumber { get; set; }
     public bool Seen { get; set; }
+    public int WatchCount { get; set; }
 
     public EpisodeSeenDto(UserEpisode e)
     {
         SeasonNumber = e.SeasonNumber;
         EpisodeNumber = e.EpisodeNumber;
         Seen = e.Seen;
+        WatchCount = e.WatchCount;
     }
+}
+
+public class AddEpisodeWatchDto
+{
+    public DateTime WatchedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class MarkSeasonSeenDto

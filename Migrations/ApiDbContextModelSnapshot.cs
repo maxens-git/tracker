@@ -477,12 +477,41 @@ namespace TrackerApi.Migrations
                     b.Property<int>("ShowTmdbId")
                         .HasColumnType("int");
 
+                    b.Property<int>("WatchCount")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ShowTmdbId", "SeasonNumber", "EpisodeNumber")
                         .IsUnique();
 
                     b.ToTable("UserEpisodes");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserEpisodeWatchEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserEpisodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("WatchedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserEpisodeId");
+
+                    b.HasIndex("WatchedAt");
+
+                    b.ToTable("UserEpisodeWatchEvents");
                 });
 
             modelBuilder.Entity("Tracker.Models.UserMedia", b =>
@@ -522,12 +551,41 @@ namespace TrackerApi.Migrations
                     b.Property<int>("TmdbId")
                         .HasColumnType("int");
 
+                    b.Property<int>("WatchCount")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TmdbId", "MediaType")
                         .IsUnique();
 
                     b.ToTable("UserMedia");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserMediaWatchEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserMediaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("WatchedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserMediaId");
+
+                    b.HasIndex("WatchedAt");
+
+                    b.ToTable("UserMediaWatchEvents");
                 });
 
             modelBuilder.Entity("Tracker.Models.MediaListItem", b =>
@@ -541,9 +599,41 @@ namespace TrackerApi.Migrations
                     b.Navigation("MediaList");
                 });
 
+            modelBuilder.Entity("Tracker.Models.UserEpisodeWatchEvent", b =>
+                {
+                    b.HasOne("Tracker.Models.UserEpisode", "UserEpisode")
+                        .WithMany("WatchEvents")
+                        .HasForeignKey("UserEpisodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserEpisode");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserMediaWatchEvent", b =>
+                {
+                    b.HasOne("Tracker.Models.UserMedia", "UserMedia")
+                        .WithMany("WatchEvents")
+                        .HasForeignKey("UserMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserMedia");
+                });
+
             modelBuilder.Entity("Tracker.Models.MediaList", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserEpisode", b =>
+                {
+                    b.Navigation("WatchEvents");
+                });
+
+            modelBuilder.Entity("Tracker.Models.UserMedia", b =>
+                {
+                    b.Navigation("WatchEvents");
                 });
 #pragma warning restore 612, 618
         }

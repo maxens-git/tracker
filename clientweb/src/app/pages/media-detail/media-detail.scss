@@ -359,6 +359,13 @@
   gap: 1rem;
 }
 
+.ep-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
 .ep-title {
   min-width: 0;
   margin: 0;
@@ -370,6 +377,13 @@
   margin-right: 0.5rem;
   color: var(--app-text-faint);
   font-variant-numeric: tabular-nums;
+}
+
+.ep-watch-count {
+  margin-left: 0.4rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.78rem;
+  font-weight: 500;
 }
 
 .ep-meta {

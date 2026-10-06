@@ -1,0 +1,36 @@
+.add-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  p-datepicker {
+    flex: 1;
+  }
+}
+
+.hint {
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+}
+
+.watch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.watch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.25rem;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}

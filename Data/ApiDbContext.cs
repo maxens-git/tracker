@@ -11,6 +11,8 @@ public class ApiDbContext : DbContext
 
     public DbSet<UserMedia> UserMedia { get; set; } = null!;
     public DbSet<UserEpisode> UserEpisodes { get; set; } = null!;
+    public DbSet<UserMediaWatchEvent> UserMediaWatchEvents { get; set; } = null!;
+    public DbSet<UserEpisodeWatchEvent> UserEpisodeWatchEvents { get; set; } = null!;
     public DbSet<MediaList> MediaLists { get; set; } = null!;
     public DbSet<MediaListItem> MediaListItems { get; set; } = null!;
     public DbSet<ActivityEvent> ActivityEvents { get; set; } = null!;
@@ -33,6 +35,30 @@ public class ApiDbContext : DbContext
         modelBuilder.Entity<UserEpisode>()
             .HasIndex(e => new { e.ShowTmdbId, e.SeasonNumber, e.EpisodeNumber })
             .IsUnique();
+
+        modelBuilder.Entity<UserMediaWatchEvent>()
+            .HasOne(w => w.UserMedia)
+            .WithMany(m => m.WatchEvents)
+            .HasForeignKey(w => w.UserMediaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserMediaWatchEvent>()
+            .HasIndex(w => w.UserMediaId);
+
+        modelBuilder.Entity<UserMediaWatchEvent>()
+            .HasIndex(w => w.WatchedAt);
+
+        modelBuilder.Entity<UserEpisodeWatchEvent>()
+            .HasOne(w => w.UserEpisode)
+            .WithMany(e => e.WatchEvents)
+            .HasForeignKey(w => w.UserEpisodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserEpisodeWatchEvent>()
+            .HasIndex(w => w.UserEpisodeId);
+
+        modelBuilder.Entity<UserEpisodeWatchEvent>()
+            .HasIndex(w => w.WatchedAt);
 
         modelBuilder.Entity<MediaList>()
             .HasIndex(ml => ml.Name)

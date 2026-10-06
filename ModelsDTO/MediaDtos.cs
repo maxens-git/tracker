@@ -17,6 +17,15 @@ public class MarkSeenDto
     public List<MediaGenreDto> Genres { get; set; } = new();
 }
 
+public class AddWatchDto
+{
+    public DateTime WatchedAt { get; set; } = DateTime.UtcNow;
+    public string? PosterPath { get; set; }
+    public int? Runtime { get; set; }
+    public string? Title { get; set; }
+    public List<MediaGenreDto> Genres { get; set; } = new();
+}
+
 public class MediaGenreDto
 {
     public int Id { get; set; }

@@ -1,0 +1,47 @@
+<p-dialog
+  [header]="isEpisode ? 'Visionnages de l\'épisode' : 'Visionnages'"
+  [visible]="visible"
+  (visibleChange)="$event ? null : close()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [blockScroll]="true"
+  [style]="{ width: 'min(94vw, 480px)' }"
+>
+  <div class="add-row">
+    <p-datepicker
+      [(ngModel)]="newDate"
+      dateFormat="dd/mm/yy"
+      [showTime]="true"
+      hourFormat="24"
+      [showIcon]="true"
+      [maxDate]="today"
+      appendTo="body"
+    />
+    <button pButton type="button" icon="pi pi-plus" label="Ajouter"
+      [loading]="adding()" [disabled]="adding()"
+      (click)="addWatch()"></button>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Chargement…</p>
+  } @else if (events().length === 0) {
+    <p class="hint">Aucun visionnage enregistré.</p>
+  } @else {
+    <ul class="watch-list">
+      @for (event of events(); track event.id) {
+        <li class="watch-row">
+          <span>{{ event.watchedAt | date:'d MMMM yyyy, HH:mm' }}</span>
+          <button pButton type="button" text rounded severity="danger"
+            icon="pi pi-trash"
+            [loading]="removingId() === event.id"
+            [disabled]="removingId() !== null"
+            (click)="removeWatch(event)"
+            aria-label="Supprimer ce visionnage"
+          ></button>
+        </li>
+      }
+    </ul>
+  }
+</p-dialog>

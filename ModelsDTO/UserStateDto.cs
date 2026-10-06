@@ -6,6 +6,7 @@ public class UserStateDto
 {
     public int TmdbId { get; set; }
     public bool Seen { get; set; }
+    public int WatchCount { get; set; }
     public bool Liked { get; set; }
     public List<int> ListIds { get; set; } = new();
 
@@ -13,6 +14,7 @@ public class UserStateDto
     {
         TmdbId = tmdbId;
         Seen = um?.Seen ?? false;
+        WatchCount = um?.WatchCount ?? 0;
         Liked = um?.Liked ?? false;
         ListIds = listIds;
     }

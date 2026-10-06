@@ -44,6 +44,44 @@
   background: color-mix(in srgb, var(--p-primary-color) 6%, var(--p-card-background));
 }
 
+// ── Plus rewatchés ───────────────────────────────────────────────────────────
+
+.rewatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rewatch-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rewatch-title {
+  color: var(--p-text-color);
+  font-size: 0.9rem;
+
+  small {
+    margin-left: 0.4rem;
+    color: var(--app-text-faint);
+    font-size: 0.78rem;
+  }
+}
+
+.rewatch-count {
+  flex-shrink: 0;
+  color: var(--p-primary-color);
+  font-weight: 700;
+}
+
 // ── Genres ─────────────────────────────────────────────────────────────────
 
 .genre-controls {

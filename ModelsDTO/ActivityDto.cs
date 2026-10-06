@@ -31,6 +31,8 @@ public class ActivityDto
             ActivityType.MarkedSeasonUnseen => "seasonUnseen",
             ActivityType.MarkedEpisodeSeen => "episodeSeen",
             ActivityType.MarkedEpisodeUnseen => "episodeUnseen",
+            ActivityType.Rewatched => "rewatched",
+            ActivityType.EpisodeRewatched => "episodeRewatched",
             _ => "unknown",
         };
         TmdbId = e.TmdbId;
