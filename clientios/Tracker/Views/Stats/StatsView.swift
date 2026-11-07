@@ -19,6 +19,10 @@ struct StatsView: View {
                 VStack(spacing: 24) {
                     summaryGrid(stats)
 
+                    if let rewatched = stats.mostRewatched, !rewatched.isEmpty {
+                        mostRewatchedCard(rewatched)
+                    }
+
                     if !viewModel.genreLists.isEmpty {
                         GenrePreferenceCard(lists: viewModel.genreLists,
                                             selectedListId: $viewModel.selectedListId,
@@ -63,7 +67,51 @@ struct StatsView: View {
             statCard("Films vus", value: "\(stats.moviesSeenCount)", systemImage: "film.fill", tint: .blue)
             statCard("Séries vues", value: "\(stats.showsSeenCount)", systemImage: "tv.fill", tint: .purple)
             statCard("Épisodes vus", value: "\(stats.episodesSeenCount)", systemImage: "play.rectangle.fill", tint: .green)
+            if let count = stats.moviesWatchCount {
+                statCard("Visionnages de films", value: "\(count)", systemImage: "film.stack.fill", tint: .indigo)
+            }
+            if let count = stats.episodesWatchCount {
+                statCard("Visionnages d'épisodes", value: "\(count)", systemImage: "rectangle.stack.fill", tint: .teal)
+            }
             statCard("Temps total", value: viewModel.formatRuntime(stats.totalRuntimeMinutes), systemImage: "clock.fill", tint: .orange)
+        }
+    }
+
+    /// Films / séries / épisodes revus au moins une fois, du plus revu au moins revu.
+    private func mostRewatchedCard(_ items: [MostRewatched]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader("Les plus revus")
+            CardGroup {
+                ForEach(items) { item in
+                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "stats")) {
+                        HStack(spacing: 12) {
+                            PosterImage(path: item.posterPath, cornerRadius: 6)
+                                .frame(width: 36, height: 54)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.title ?? "Sans titre")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(2)
+                                if let season = item.seasonNumber, let episode = item.episodeNumber {
+                                    Text("S\(season)E\(episode)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer(minLength: 8)
+                            Text("×\(item.watchCount)")
+                                .font(.headline)
+                                .monospacedDigit()
+                                .foregroundStyle(Color.appGreen)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    if item.id != items.last?.id { RowDivider(leadingInset: 64) }
+                }
+            }
         }
     }
 

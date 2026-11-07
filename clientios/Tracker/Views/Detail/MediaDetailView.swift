@@ -21,6 +21,8 @@ struct MediaDetailView: View {
     @State private var showsBarTitle = false
     /// Épisode dont le synopsis est déplié (un seul à la fois).
     @State private var expandedEpisodeId: Int?
+    /// Média ou épisode dont la feuille d'historique des visionnages est ouverte.
+    @State private var watchHistoryTarget: WatchHistoryTarget?
     @Environment(\.openURL) private var openURL
     @Environment(\.zoomNamespace) private var zoomNamespace
     /// Namespace local de la transition zoom affiche → plein écran.
@@ -99,6 +101,11 @@ struct MediaDetailView: View {
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load(forceRefresh: true) }
+        .sheet(item: $watchHistoryTarget) { target in
+            WatchHistorySheet(target: target) { count in
+                await viewModel.applyWatchCount(count, for: target)
+            }
+        }
         .fullScreenCover(isPresented: $showingPoster) {
             PosterFullScreenView(posterPath: viewModel.posterPath)
                 // L'affiche plein écran s'ouvre en zoom depuis la vignette.
@@ -226,6 +233,7 @@ struct MediaDetailView: View {
     private var actions: some View {
         HStack(spacing: 12) {
             seenButton
+            watchHistoryMenu
 
             Spacer(minLength: 0)
 
@@ -283,7 +291,8 @@ struct MediaDetailView: View {
             if viewModel.seenPending {
                 ProgressView()
             } else if viewModel.seen {
-                Label("Vu", systemImage: "checkmark.circle.fill")
+                Label(viewModel.watchCount > 1 ? "Vu ×\(viewModel.watchCount)" : "Vu",
+                      systemImage: "checkmark.circle.fill")
                     .foregroundStyle(Color.appGreen)
             } else {
                 Label("Marquer vu", systemImage: "checkmark.circle")
@@ -302,6 +311,39 @@ struct MediaDetailView: View {
                 .buttonStyle(.glassProminent)
                 .disabled(viewModel.seenPending)
         }
+    }
+
+    /// Revisionnages : ajout rapide daté d'aujourd'hui, ou historique complet
+    /// (ajout à une date passée, suppression d'un visionnage).
+    private var watchHistoryMenu: some View {
+        Menu {
+            Button {
+                Task { await viewModel.addWatchNow() }
+            } label: {
+                Label(viewModel.seen ? "Revu aujourd'hui" : "Vu aujourd'hui",
+                      systemImage: "plus.circle")
+            }
+            .disabled(viewModel.quickWatchPending)
+
+            Button {
+                watchHistoryTarget = viewModel.mediaWatchTarget
+            } label: {
+                Label("Historique des visionnages", systemImage: "clock.arrow.circlepath")
+            }
+        } label: {
+            Group {
+                if viewModel.quickWatchPending {
+                    ProgressView()
+                } else {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.subheadline.weight(.semibold))
+                }
+            }
+            .frame(width: 24, height: 24)
+        }
+        .buttonStyle(.glass)
+        .disabled(viewModel.isLoading && viewModel.title.isEmpty)
+        .accessibilityLabel("Visionnages")
     }
 
     /// Icône-bascule logée dans la capsule de verre commune : glyphe rempli et
@@ -544,6 +586,7 @@ struct MediaDetailView: View {
     /// durée, puis le synopsis tronqué que le toucher déplie.
     private func episodeRow(season: Int, episode: TMDBEpisode) -> some View {
         let seen = viewModel.isEpisodeSeen(season: season, episode: episode.episodeNumber)
+        let watchCount = viewModel.episodeWatchCount(season: season, episode: episode.episodeNumber)
         let upcoming = isUpcoming(episode)
         let synopsisOpen = expandedEpisodeId == episode.id
         let overview = episode.overview ?? ""
@@ -553,11 +596,17 @@ struct MediaDetailView: View {
                 episodeStill(episode, seen: seen, upcoming: upcoming)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Épisode \(episode.episodeNumber)")
-                        .font(.caption2.weight(.semibold))
-                        .textCase(.uppercase)
-                        .kerning(0.5)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        Text("Épisode \(episode.episodeNumber)")
+                            .textCase(.uppercase)
+                            .kerning(0.5)
+                            .foregroundStyle(.secondary)
+                        if watchCount > 1 {
+                            Text("×\(watchCount)")
+                                .foregroundStyle(Color.appGreen)
+                        }
+                    }
+                    .font(.caption2.weight(.semibold))
 
                     Text(episode.name)
                         .font(.subheadline.weight(.semibold))
@@ -574,6 +623,18 @@ struct MediaDetailView: View {
                 }
 
                 Spacer(minLength: 0)
+
+                if seen {
+                    Button {
+                        watchHistoryTarget = viewModel.episodeWatchTarget(season: season, episode: episode.episodeNumber)
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Historique des visionnages")
+                }
 
                 Button {
                     Task { await viewModel.toggleEpisodeSeen(season: season, episode: episode.episodeNumber) }
@@ -600,6 +661,18 @@ struct MediaDetailView: View {
         .onTapGesture {
             guard !overview.isEmpty else { return }
             expandedEpisodeId = synopsisOpen ? nil : episode.id
+        }
+        .contextMenu {
+            Button {
+                Task { await viewModel.addEpisodeWatchNow(season: season, episode: episode.episodeNumber) }
+            } label: {
+                Label(seen ? "Revu aujourd'hui" : "Vu aujourd'hui", systemImage: "plus.circle")
+            }
+            Button {
+                watchHistoryTarget = viewModel.episodeWatchTarget(season: season, episode: episode.episodeNumber)
+            } label: {
+                Label("Historique des visionnages", systemImage: "clock.arrow.circlepath")
+            }
         }
     }
 

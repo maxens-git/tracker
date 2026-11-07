@@ -64,7 +64,7 @@ struct APIService {
         }
 
         do {
-            let (data, response) = try await session.data(for: req)
+            let (data, response) = try await session.data(for: req, delegate: AuthRedirectBlocker.shared)
             if AuthenticationManager.shared.requiresAuthentication(
                 originalURL: url,
                 response: response,
@@ -158,6 +158,53 @@ struct APIService {
     func removeFromWatchlist(tmdbId: Int, type: MediaType) async throws {
         try await rawRequest("/Media/\(tmdbId)/watchlist", method: "DELETE",
                              query: [URLQueryItem(name: "type", value: type.rawValue)])
+    }
+
+    // ── Historique des visionnages ────────────────────────────────────────
+
+    func watches(tmdbId: Int, type: MediaType) async throws -> [WatchEvent] {
+        try await request("/Media/\(tmdbId)/watches",
+                          query: [URLQueryItem(name: "type", value: type.rawValue)],
+                          forceRefresh: true)
+    }
+
+    /// Ajoute un visionnage daté (premier visionnage ou revisionnage).
+    func addWatch(tmdbId: Int, type: MediaType, watchedAt: Date, posterPath: String? = nil,
+                  runtime: Int? = nil, title: String? = nil, genres: [TMDBGenre] = []) async throws -> WatchEvent {
+        var payload: [String: AnyEncodable] = ["watchedAt": AnyEncodable(Self.isoDate(watchedAt))]
+        if let posterPath { payload["posterPath"] = AnyEncodable(posterPath) }
+        if let runtime { payload["runtime"] = AnyEncodable(runtime) }
+        if let title, !title.isEmpty { payload["title"] = AnyEncodable(title) }
+        if !genres.isEmpty { payload["genres"] = AnyEncodable(genres) }
+        let body = try encoder.encode(payload)
+        return try await request("/Media/\(tmdbId)/watches", method: "POST",
+                                 query: [URLQueryItem(name: "type", value: type.rawValue)], body: body)
+    }
+
+    func deleteWatch(tmdbId: Int, type: MediaType, watchId: Int) async throws {
+        try await rawRequest("/Media/\(tmdbId)/watches/\(watchId)", method: "DELETE",
+                             query: [URLQueryItem(name: "type", value: type.rawValue)])
+    }
+
+    func episodeWatches(showTmdbId: Int, season: Int, episode: Int) async throws -> [WatchEvent] {
+        try await request("/Shows/\(showTmdbId)/seasons/\(season)/episodes/\(episode)/watches",
+                          forceRefresh: true)
+    }
+
+    func addEpisodeWatch(showTmdbId: Int, season: Int, episode: Int, watchedAt: Date) async throws -> WatchEvent {
+        let body = try encoder.encode(["watchedAt": Self.isoDate(watchedAt)])
+        return try await request("/Shows/\(showTmdbId)/seasons/\(season)/episodes/\(episode)/watches",
+                                 method: "POST", body: body)
+    }
+
+    func deleteEpisodeWatch(showTmdbId: Int, season: Int, episode: Int, watchId: Int) async throws {
+        try await rawRequest("/Shows/\(showTmdbId)/seasons/\(season)/episodes/\(episode)/watches/\(watchId)",
+                             method: "DELETE")
+    }
+
+    /// Date ISO 8601 en UTC ("2026-10-06T20:15:00Z"), lue comme DateTime UTC par ASP.NET.
+    private static func isoDate(_ date: Date) -> String {
+        ISO8601DateFormatter().string(from: date)
     }
 
     // ── Épisodes ──────────────────────────────────────────────────────────

@@ -161,6 +161,8 @@ private struct ActivityRow: View {
         case .seasonUnseen: return "Saison \(activity.seasonNumber ?? 0) non vue"
         case .episodeSeen: return "Épisode S\(activity.seasonNumber ?? 0)E\(activity.episodeNumber ?? 0) vu"
         case .episodeUnseen: return "Épisode S\(activity.seasonNumber ?? 0)E\(activity.episodeNumber ?? 0) non vu"
+        case .rewatched: return "Revu"
+        case .episodeRewatched: return "Épisode S\(activity.seasonNumber ?? 0)E\(activity.episodeNumber ?? 0) revu"
         case .unknown: return ""
         }
     }
@@ -169,6 +171,8 @@ private struct ActivityRow: View {
         switch activity.type {
         case .seen, .seasonSeen, .episodeSeen:
             return ActivityStyle(icon: "checkmark", tint: .green)
+        case .rewatched, .episodeRewatched:
+            return ActivityStyle(icon: "arrow.clockwise", tint: .green)
         case .unseen, .seasonUnseen, .episodeUnseen:
             return ActivityStyle(icon: "arrow.uturn.backward", tint: .gray)
         case .liked:           return ActivityStyle(icon: "heart.fill", tint: .pink)

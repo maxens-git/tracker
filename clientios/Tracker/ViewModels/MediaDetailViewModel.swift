@@ -34,6 +34,8 @@ final class MediaDetailViewModel {
     private(set) var seenPending = false
     private(set) var watchlistPending = false
     private(set) var likedPending = false
+    /// Ajout rapide d'un visionnage (« Revu aujourd'hui ») en cours.
+    private(set) var quickWatchPending = false
     /// Chargement du contenu secondaire (distribution, équipe, bandes-annonces, similaires).
     private(set) var isLoadingExtras = false
     var errorMessage: String?
@@ -41,6 +43,9 @@ final class MediaDetailViewModel {
     // ── Saisons / épisodes (séries) ───────────────────────────────────────
     /// Clés "saison-épisode" des épisodes marqués vus.
     private(set) var episodesSeen: Set<String> = []
+    /// Nombre de visionnages par épisode vu (clé "saison-épisode"). Un épisode vu
+    /// absent du dictionnaire compte pour 1.
+    private(set) var episodeWatchCounts: [String: Int] = [:]
     /// Épisodes chargés par numéro de saison (chargement paresseux).
     private(set) var seasonEpisodes: [Int: [TMDBEpisode]] = [:]
     private(set) var loadingSeasons: Set<Int> = []
@@ -98,6 +103,7 @@ final class MediaDetailViewModel {
     }
 
     var seen: Bool { state?.seen ?? false }
+    var watchCount: Int { state?.watchCount ?? 0 }
     var liked: Bool { state?.liked ?? false }
 
     /// Vrai si le média figure dans la watchlist (dérivé de `state.listIds`).
@@ -151,7 +157,11 @@ final class MediaDetailViewModel {
             }
             if type == .tv {
                 let seen = try await api.showEpisodes(showTmdbId: tmdbId, forceRefresh: forceRefresh)
-                episodesSeen = Set(seen.filter(\.seen).map { epKey($0.seasonNumber, $0.episodeNumber) })
+                let seenEpisodes = seen.filter(\.seen)
+                episodesSeen = Set(seenEpisodes.map { epKey($0.seasonNumber, $0.episodeNumber) })
+                episodeWatchCounts = Dictionary(uniqueKeysWithValues: seenEpisodes.map {
+                    (epKey($0.seasonNumber, $0.episodeNumber), max(1, $0.watchCount ?? 1))
+                })
                 // Ne PAS recalculer l'état "vu" global ici : une série peut être marquée
                 // vue directement (bouton « Vu ») sans qu'aucun épisode soit enregistré.
                 // On fait confiance à l'état persisté (state.seen). syncShowSeen() ne doit
@@ -232,6 +242,7 @@ final class MediaDetailViewModel {
             return
         }
 
+        let previousState = state
         applyLocalState(seen: newValue, liked: liked)
         do {
             try await api.markSeen(tmdbId: tmdbId, type: type, seen: newValue,
@@ -239,7 +250,7 @@ final class MediaDetailViewModel {
                                    genres: movie?.genres ?? [])
             newValue ? Haptics.success() : Haptics.impact(.light)
         } catch {
-            applyLocalState(seen: !newValue, liked: liked)
+            state = previousState
             if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
@@ -257,6 +268,7 @@ final class MediaDetailViewModel {
         // Sauvegarde pour rollback.
         let previousState = state
         let previousEpisodes = episodesSeen
+        let previousCounts = episodeWatchCounts
 
         // Mise à jour optimiste : état global + set d'épisodes.
         applyLocalState(seen: newValue, liked: liked)
@@ -266,6 +278,7 @@ final class MediaDetailViewModel {
             }
         } else {
             episodesSeen.removeAll()
+            episodeWatchCounts.removeAll()
         }
 
         do {
@@ -275,6 +288,7 @@ final class MediaDetailViewModel {
         } catch {
             state = previousState
             episodesSeen = previousEpisodes
+            episodeWatchCounts = previousCounts
             if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
@@ -388,7 +402,7 @@ final class MediaDetailViewModel {
         } else {
             ids.removeAll { $0 == listId }
         }
-        state = UserState(tmdbId: current.tmdbId, seen: current.seen,
+        state = UserState(tmdbId: current.tmdbId, seen: current.seen, watchCount: current.watchCount,
                           liked: current.liked, listIds: ids)
     }
 
@@ -461,6 +475,7 @@ final class MediaDetailViewModel {
             ?? (episodeCount > 0 ? Array(1...episodeCount) : [])
         guard !numbers.isEmpty else { return }
         let previous = episodesSeen
+        let previousCounts = episodeWatchCounts
 
         setEpisodesSeen(season: season, episodes: numbers, seen: newSeen)
 
@@ -469,6 +484,7 @@ final class MediaDetailViewModel {
             newSeen ? Haptics.success() : Haptics.impact(.light)
         } catch {
             episodesSeen = previous
+            episodeWatchCounts = previousCounts
             if !error.isCancellation { errorMessage = error.localizedDescription }
             Haptics.error()
         }
@@ -499,15 +515,104 @@ final class MediaDetailViewModel {
     }
 
     /// Ajoute / retire d'un coup plusieurs épisodes d'une saison du set des épisodes vus.
+    /// Comme côté backend, passer à « non vu » efface l'historique de l'épisode.
     private func setEpisodesSeen(season: Int, episodes: [Int], seen: Bool) {
         for episode in episodes {
             let key = epKey(season, episode)
-            if seen { episodesSeen.insert(key) } else { episodesSeen.remove(key) }
+            if seen {
+                episodesSeen.insert(key)
+            } else {
+                episodesSeen.remove(key)
+                episodeWatchCounts[key] = nil
+            }
         }
     }
 
+    /// Met à jour l'état local en reproduisant la bascule du backend : passer à vu
+    /// crée un premier visionnage, repasser à non vu efface tout l'historique.
     private func applyLocalState(seen: Bool, liked: Bool) {
-        state = UserState(tmdbId: tmdbId, seen: seen, liked: liked, listIds: state?.listIds ?? [])
+        let count = seen ? max(1, watchCount) : 0
+        applyLocalState(seen: seen, watchCount: count, liked: liked)
+    }
+
+    private func applyLocalState(seen: Bool, watchCount: Int, liked: Bool) {
+        state = UserState(tmdbId: tmdbId, seen: seen, watchCount: watchCount,
+                          liked: liked, listIds: state?.listIds ?? [])
+    }
+
+    // ── Historique des visionnages ────────────────────────────────────────
+
+    /// Nombre de visionnages d'un épisode (0 s'il n'est pas vu).
+    func episodeWatchCount(season: Int, episode: Int) -> Int {
+        let key = epKey(season, episode)
+        guard episodesSeen.contains(key) else { return 0 }
+        return episodeWatchCounts[key] ?? 1
+    }
+
+    /// Cible « film / série » de la feuille d'historique, avec les métadonnées
+    /// nécessaires si le backend doit créer le média à l'ajout d'un visionnage.
+    var mediaWatchTarget: WatchHistoryTarget {
+        .media(tmdbId: tmdbId, type: type, posterPath: posterPath,
+               runtime: movie?.runtime, title: title, genres: genres)
+    }
+
+    func episodeWatchTarget(season: Int, episode: Int) -> WatchHistoryTarget? {
+        guard let showId = show?.id else { return nil }
+        return .episode(showTmdbId: showId, season: season, episode: episode)
+    }
+
+    /// « Revu aujourd'hui » : ajoute un visionnage daté de maintenant au film / à la série.
+    func addWatchNow() async {
+        guard !quickWatchPending else { return }
+        quickWatchPending = true
+        defer { quickWatchPending = false }
+        do {
+            _ = try await api.addWatch(tmdbId: tmdbId, type: type, watchedAt: Date(),
+                                       posterPath: posterPath, runtime: movie?.runtime,
+                                       title: title, genres: genres)
+            applyLocalState(seen: true, watchCount: watchCount + 1, liked: liked)
+            Haptics.success()
+        } catch {
+            if !error.isCancellation { errorMessage = error.localizedDescription }
+            Haptics.error()
+        }
+    }
+
+    /// « Revu aujourd'hui » pour un épisode.
+    func addEpisodeWatchNow(season: Int, episode: Int) async {
+        guard let showId = show?.id else { return }
+        let count = episodeWatchCount(season: season, episode: episode)
+        do {
+            _ = try await api.addEpisodeWatch(showTmdbId: showId, season: season, episode: episode, watchedAt: Date())
+            applyEpisodeWatchCount(season: season, episode: episode, count: count + 1)
+            Haptics.success()
+        } catch {
+            if !error.isCancellation { errorMessage = error.localizedDescription }
+            Haptics.error()
+        }
+        await syncShowSeen()
+    }
+
+    /// Répercute un changement fait dans la feuille d'historique (ajout / suppression).
+    func applyWatchCount(_ count: Int, for target: WatchHistoryTarget) async {
+        switch target {
+        case .media:
+            applyLocalState(seen: count > 0, watchCount: count, liked: liked)
+        case let .episode(_, season, episode):
+            applyEpisodeWatchCount(season: season, episode: episode, count: count)
+            await syncShowSeen()
+        }
+    }
+
+    private func applyEpisodeWatchCount(season: Int, episode: Int, count: Int) {
+        let key = epKey(season, episode)
+        if count > 0 {
+            episodesSeen.insert(key)
+            episodeWatchCounts[key] = count
+        } else {
+            episodesSeen.remove(key)
+            episodeWatchCounts[key] = nil
+        }
     }
 
     private func formatMoney(_ amount: Int?) -> String? {

@@ -73,7 +73,9 @@ struct TMDBService {
         do {
             let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                throw NetworkError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
+                let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+                throw NetworkError.badStatus(code, message: code == 401
+                    ? "Clé API TMDB manquante ou invalide (Réglages → TMDB)." : nil)
             }
             do {
                 return try decoder.decode(T.self, from: data)

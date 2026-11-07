@@ -16,12 +16,33 @@ struct RootView: View {
     /// d'onglets qui porte son champ de saisie, elle ne doit donc pas s'y replier.
     @State private var selection: AppTab = .home
     @State private var authentication = AuthenticationManager.shared
+    /// Vrai dès qu'une clé TMDB est connue (mémorisée d'un lancement précédent ou
+    /// reçue de /Settings). Tant qu'elle manque, les écrans ne sont pas montés :
+    /// sinon ils interrogent TMDB sans clé et affichent un 401 trompeur.
+    @State private var tmdbReady = !AppConfig.tmdbApiKey.isEmpty
+    /// Échec du chargement initial des réglages (affiché à la place des onglets).
+    @State private var bootstrapError: NetworkError?
 
     private enum AppTab {
         case home, lists, releases, more, search
     }
 
     var body: some View {
+        Group {
+            if tmdbReady {
+                tabs
+            } else {
+                bootstrapView
+            }
+        }
+        // Relancé après chaque connexion : la clé TMDB arrive avec la session.
+        .task(id: authentication.sessionGeneration) { await loadRemoteSettings() }
+        .sheet(isPresented: $authentication.isLoginPresented) {
+            AuthenticationView()
+        }
+    }
+
+    private var tabs: some View {
         TabView(selection: $selection) {
             Tab("Accueil", systemImage: "house", value: AppTab.home) {
                 TabStack { HomeView() }
@@ -53,21 +74,50 @@ struct RootView: View {
         // l'onglet Recherche, où elle contient le champ de saisie : un historique plus haut
         // que l'écran le faisait disparaître, et il fallait re-glisser vers le bas.
         .tabBarMinimizeBehavior(selection == .search ? .never : .onScrollDown)
-        // Applique au lancement la config TMDB éventuellement surchargée dans les
-        // réglages (clé / URL / langue), pour que l'accueil l'utilise directement.
-        .task {
-            if let settings = try? await APIService.shared.settings() {
-                AppConfig.setTmdbOverrides(
-                    apiKey: settings.tmdbApiKey,
-                    baseURL: settings.tmdbBaseUrl,
-                    language: settings.tmdbLanguage)
-                if NotificationPreferences.delivery == .tracker {
-                    _ = try? await NotificationSyncService.shared.sync(settings: settings)
+    }
+
+    /// Premier lancement (aucune clé TMDB mémorisée) : attente des réglages, ou
+    /// invitation à se connecter / réessayer si leur chargement a échoué.
+    @ViewBuilder
+    private var bootstrapView: some View {
+        if let bootstrapError {
+            ContentUnavailableView {
+                Label("Serveur inaccessible", systemImage: "lock.icloud")
+            } description: {
+                Text(bootstrapError.localizedDescription)
+            } actions: {
+                if case .authenticationRequired = bootstrapError {
+                    Button("Se connecter") { authentication.presentLogin() }
+                        .buttonStyle(.glassProminent)
+                } else {
+                    Button("Réessayer") { Task { await loadRemoteSettings() } }
+                        .buttonStyle(.glassProminent)
                 }
             }
+        } else {
+            ProgressView()
         }
-        .sheet(isPresented: $authentication.isLoginPresented) {
-            AuthenticationView()
+    }
+
+    /// Applique la config TMDB éventuellement surchargée dans les réglages
+    /// (clé / URL / langue), puis synchronise les notifications locales.
+    private func loadRemoteSettings() async {
+        bootstrapError = nil
+        do {
+            let settings = try await APIService.shared.settings()
+            AppConfig.setTmdbOverrides(
+                apiKey: settings.tmdbApiKey,
+                baseURL: settings.tmdbBaseUrl,
+                language: settings.tmdbLanguage)
+            // Même sans clé côté serveur on affiche l'app : les erreurs TMDB
+            // l'expliqueront mieux qu'un chargement sans fin.
+            tmdbReady = true
+            if NotificationPreferences.delivery == .tracker {
+                _ = try? await NotificationSyncService.shared.sync(settings: settings)
+            }
+        } catch {
+            if error.isCancellation { return }
+            bootstrapError = error as? NetworkError ?? .transport(error)
         }
     }
 }

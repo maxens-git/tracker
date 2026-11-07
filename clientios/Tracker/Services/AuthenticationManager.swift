@@ -25,6 +25,8 @@ final class AuthenticationManager {
               let http = response as? HTTPURLResponse else { return false }
 
         if http.statusCode == 401 || http.statusCode == 403 { return true }
+        // Redirection vers le portail, non suivie (cf. `AuthRedirectBlocker`).
+        if (300..<400).contains(http.statusCode) { return true }
 
         if let finalHost = http.url?.host,
            finalHost != originalURL.host {
@@ -45,6 +47,23 @@ final class AuthenticationManager {
     func authenticationSucceeded() {
         isLoginPresented = false
         sessionGeneration += 1
+    }
+}
+
+/// Empêche `URLSession` de suivre la redirection d'Authelia vers son portail :
+/// le 302 suffit à détecter la session manquante, inutile de télécharger la page
+/// de connexion (et d'attendre) avant d'afficher la feuille.
+nonisolated final class AuthRedirectBlocker: NSObject, URLSessionTaskDelegate {
+    static let shared = AuthRedirectBlocker()
+
+    // Variante à completion handler : la variante `async` fait planter le
+    // compilateur Swift 6.4 (thunk Objective-C).
+    func urlSession(_ session: URLSession, task: URLSessionTask,
+                    willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest,
+                    completionHandler: @escaping @Sendable (URLRequest?) -> Void) {
+        let from = task.originalRequest?.url?.host
+        completionHandler(request.url?.host == from ? request : nil)
     }
 }
 

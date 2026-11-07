@@ -26,7 +26,8 @@ struct ListDetailView: View {
                         MediaCard(posterPath: viewModel.posterPath(for: item),
                                   title: viewModel.title(for: item),
                                   subtitle: viewModel.year(for: item),
-                                  seen: item.seen)
+                                  seen: item.seen,
+                                  watchCount: item.watchCount ?? 0)
                             .zoomSource(route, in: zoomNamespace)
                             .task {
                                 if item == viewModel.items.last { await viewModel.loadMore() }

@@ -15,6 +15,8 @@ struct MediaCard: View {
     var subtitle: String?
     /// Coche « vu » posée sur l'affiche quand le média est déjà vu.
     var seen: Bool = false
+    /// Nombre de visionnages : affiché à côté de la coche à partir de 2.
+    var watchCount: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -55,13 +57,26 @@ struct MediaCard: View {
     }
 
     /// Pastille « vu » : coche blanche sur pastille verte, posée sur l'affiche.
+    @ViewBuilder
     private var seenBadge: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .font(.body)
-            .symbolRenderingMode(.palette)
-            .foregroundStyle(.white, Color.appGreen)
-            .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
-            .padding(6)
+        if watchCount > 1 {
+            Label("×\(watchCount)", systemImage: "checkmark")
+                .labelStyle(.titleAndIcon)
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(Color.appGreen, in: .capsule)
+                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                .padding(6)
+        } else {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.body)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, Color.appGreen)
+                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                .padding(6)
+        }
     }
 }
 

@@ -12,10 +12,41 @@ import Foundation
 struct UserState: Decodable, Identifiable {
     let tmdbId: Int
     let seen: Bool
+    /// Nombre de visionnages enregistrés (revisionnages inclus).
+    let watchCount: Int
     let liked: Bool
     let listIds: [Int]
 
     var id: Int { tmdbId }
+
+    init(tmdbId: Int, seen: Bool, watchCount: Int, liked: Bool, listIds: [Int]) {
+        self.tmdbId = tmdbId
+        self.seen = seen
+        self.watchCount = watchCount
+        self.liked = liked
+        self.listIds = listIds
+    }
+
+    // Décodage tolérant : un backend antérieur à l'historique des visionnages
+    // ne renvoie pas `watchCount` (on le déduit alors de `seen`).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        tmdbId = try c.decode(Int.self, forKey: .tmdbId)
+        seen = try c.decode(Bool.self, forKey: .seen)
+        watchCount = try c.decodeIfPresent(Int.self, forKey: .watchCount) ?? (seen ? 1 : 0)
+        liked = try c.decode(Bool.self, forKey: .liked)
+        listIds = try c.decode([Int].self, forKey: .listIds)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case tmdbId, seen, watchCount, liked, listIds
+    }
+}
+
+/// Un visionnage daté d'un film / d'une série ou d'un épisode (GET …/watches).
+struct WatchEvent: Decodable, Identifiable, Hashable {
+    let id: Int
+    let watchedAt: Date
 }
 
 /// Résumé d'une liste (système ou personnalisée).
@@ -79,6 +110,8 @@ struct MediaListItem: Decodable, Identifiable, Hashable {
     let mediaType: String
     let posterPath: String?
     let seen: Bool
+    /// Nombre de visionnages (nil sur un backend antérieur à l'historique).
+    let watchCount: Int?
     let liked: Bool
     let addedAt: Date?
 
@@ -101,6 +134,8 @@ struct EpisodeSeen: Decodable, Hashable {
     let seasonNumber: Int
     let episodeNumber: Int
     let seen: Bool
+    /// Nombre de visionnages de l'épisode (nil sur un backend antérieur à l'historique).
+    let watchCount: Int?
 }
 
 /// Série « en cours » : au moins un épisode vu, série non terminée (section « Reprendre »).
@@ -164,6 +199,7 @@ struct CalendarInfo: Decodable {
 enum ActivityType: String, Decodable {
     case seen, unseen, liked, unliked, addedToList, removedFromList
     case seasonSeen, seasonUnseen, episodeSeen, episodeUnseen
+    case rewatched, episodeRewatched
     case unknown
 
     init(from decoder: Decoder) throws {
@@ -194,6 +230,10 @@ struct Stats: Decodable {
     let moviesSeenCount: Int
     let showsSeenCount: Int
     let episodesSeenCount: Int
+    /// Visionnages de films (revisionnages inclus) — absent sur un backend antérieur.
+    let moviesWatchCount: Int?
+    /// Visionnages d'épisodes (revisionnages inclus) — absent sur un backend antérieur.
+    let episodesWatchCount: Int?
     let totalRuntimeMinutes: Int
     let totalRuntimeHours: Double
     let moviesSeenByYear: [StatsYearBucket]
@@ -201,6 +241,23 @@ struct Stats: Decodable {
     let episodesSeenByYear: [StatsYearBucket]
     let episodesSeenByMonth: [StatsMonthBucket]
     let favoriteGenres: [StatsGenreBucket]
+    let mostRewatched: [MostRewatched]?
+}
+
+/// Film, série ou épisode revu au moins une fois (watchCount >= 2).
+struct MostRewatched: Decodable, Identifiable, Hashable {
+    let tmdbId: Int
+    let mediaType: String
+    let title: String?
+    let posterPath: String?
+    let seasonNumber: Int?
+    let episodeNumber: Int?
+    let watchCount: Int
+
+    var id: String { "\(mediaType)-\(tmdbId)-\(seasonNumber ?? 0)-\(episodeNumber ?? 0)" }
+    // Contrairement aux autres DTO, le backend renvoie ici "movie" / "show".
+    var type: MediaType { mediaType == "movie" ? .movie : .tv }
+    var isEpisode: Bool { seasonNumber != nil && episodeNumber != nil }
 }
 
 struct StatsYearBucket: Decodable, Identifiable, Hashable {
