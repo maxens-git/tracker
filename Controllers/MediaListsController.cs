@@ -58,7 +58,9 @@ public class MediaListsController(
     [HttpGet("seen/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetSeenItems(
         [FromQuery] int page = 1, [FromQuery] string type = "all") =>
-        GetUserMediaItems(context.UserMedia.Where(m => m.Seen), page, type);
+        GetUserMediaItems(context.UserMedia.Where(m => m.Seen), page, type,
+            q => q.OrderByDescending(m => m.WatchEvents.Max(w => (DateTime?)w.WatchedAt) ?? m.AddedAt)
+                  .ThenByDescending(m => m.Id));
 
     [HttpGet("liked/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetLikedItems(
@@ -195,13 +197,15 @@ public class MediaListsController(
 
     /// <summary>Pagine une requête sur <see cref="UserMedia"/> (listes virtuelles "Vu"/"J'aime").</summary>
     private async Task<PaginatedResult<MediaListItemDto>> GetUserMediaItems(
-        IQueryable<UserMedia> source, int page, string type)
+        IQueryable<UserMedia> source, int page, string type,
+        Func<IQueryable<UserMedia>, IOrderedQueryable<UserMedia>>? orderBy = null)
     {
         IQueryable<UserMedia> query = MediaListService.ApplyTypeFilter(source, type);
         int total = await query.CountAsync();
 
-        List<UserMedia> items = await query
-            .OrderByDescending(m => m.AddedAt)
+        orderBy ??= q => q.OrderByDescending(m => m.AddedAt).ThenByDescending(m => m.Id);
+
+        List<UserMedia> items = await orderBy(query)
             .Skip((page - 1) * MediaListService.PageSize).Take(MediaListService.PageSize)
             .ToListAsync();
 

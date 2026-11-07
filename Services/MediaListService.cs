@@ -18,6 +18,7 @@ public class MediaListService(ApiDbContext context)
 
         List<MediaListItem> items = await query
             .OrderByDescending(i => i.AddedAt)
+            .ThenByDescending(i => i.Id)
             .Skip((page - 1) * PageSize).Take(PageSize)
             .ToListAsync();
 
