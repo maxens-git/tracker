@@ -45,8 +45,10 @@ public class AllDebridService(HttpClient http, ApiDbContext context, ILogger<All
 
         if (!ready)
         {
-            // Pas en cache : on nettoie pour ne pas lancer de téléchargement.
-            await TryDelete(apiKey, id, cancellationToken);
+            // Le nettoyage doit aussi partir si le client s'est déconnecté depuis l'upload.
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await TryDelete(apiKey, id, cleanupTimeout.Token);
+            cancellationToken.ThrowIfCancellationRequested();
             logger.LogInformation("Débridage refusé (non caché) pour le magnet id {Id}.", id);
             throw new NotCachedException();
         }

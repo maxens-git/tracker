@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { shareReplay, tap } from 'rxjs/operators';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import { Api, Settings } from './api';
 import { setTmdbConfig } from './tmdb.service';
 
@@ -17,17 +17,28 @@ export class SettingsState {
   readonly torrentsEnabled = signal(true);
 
   private cached$?: Observable<Settings>;
+  private latest?: Settings;
+  private revision = 0;
 
   /** Charge les réglages (mis en cache, partagé entre appelants). */
   load(): Observable<Settings> {
+    const revision = this.revision;
     return (this.cached$ ??= this.api.settings().pipe(
-      tap(settings => this.applyToRuntime(settings)),
+      // Un GET démarré avant une sauvegarde peut terminer après celle-ci.
+      // Ses abonnés doivent eux aussi recevoir les réglages les plus récents.
+      map(settings => revision === this.revision ? settings : this.latest ?? settings),
+      tap(settings => {
+        this.latest = settings;
+        this.applyToRuntime(settings);
+      }),
       shareReplay({ bufferSize: 1, refCount: false }),
     ));
   }
 
   /** Applique des réglages fraîchement enregistrés et rafraîchit le cache. */
   apply(settings: Settings) {
+    this.revision++;
+    this.latest = settings;
     this.applyToRuntime(settings);
     this.cached$ = of(settings);
   }

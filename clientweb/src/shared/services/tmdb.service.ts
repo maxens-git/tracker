@@ -17,11 +17,11 @@ let BASE = environment.tmdbBaseUrl;
 let KEY = environment.tmdbApiKey;
 let LANG = environment.tmdbLang;
 
-/** Surcharge la config TMDB avec les réglages (les champs vides sont ignorés). */
+/** Un champ fourni mais vide rétablit la configuration compilée, comme l'API. */
 export function setTmdbConfig(config: { apiKey?: string | null; baseUrl?: string | null; language?: string | null }) {
-  if (config.apiKey?.trim()) KEY = config.apiKey.trim();
-  if (config.baseUrl?.trim()) BASE = config.baseUrl.trim();
-  if (config.language?.trim()) LANG = config.language.trim();
+  if (config.apiKey !== undefined) KEY = config.apiKey?.trim() || environment.tmdbApiKey;
+  if (config.baseUrl !== undefined) BASE = (config.baseUrl?.trim() || environment.tmdbBaseUrl).replace(/\/+$/, '');
+  if (config.language !== undefined) LANG = config.language?.trim() || environment.tmdbLang;
 }
 
 function params(extra: Record<string, string | number> = {}): HttpParams {

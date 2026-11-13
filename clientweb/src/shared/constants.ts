@@ -17,9 +17,8 @@ export const SYSTEM_LIST_BY_SLUG: Record<'watchlist' | 'seen' | 'liked', string>
 
 /**
  * Nom de la liste système → slug d'URL.
- * Les listes système "Seen"/"J'aime" sont virtuelles côté backend (aucune ligne
- * dans MediaListItems) : il faut les router par slug, pas par id numérique,
- * sinon GET /MediaLists/{id}/items renvoie une liste vide.
+ * Les slugs donnent des liens stables aux listes système, dont "Seen"/"J'aime"
+ * sont virtuelles côté backend (leurs éléments viennent des états utilisateur).
  */
 export const SLUG_BY_SYSTEM_LIST: Record<string, 'watchlist' | 'seen' | 'liked'> = {
   [SYSTEM_LIST.watchlist]: 'watchlist',

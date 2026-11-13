@@ -62,11 +62,13 @@
 
   @if (loading()) {
     <app-spinner />
+  } @else if (error()) {
+    <p-message severity="error" styleClass="state-message" text="Impossible de charger les résultats de recherche." />
   } @else if (searched() && results().length === 0) {
     <p-message severity="secondary" styleClass="state-message" text="Aucun résultat." />
   } @else if (results().length > 0) {
     <div class="poster-grid">
-      @for (item of results(); track item.id) {
+      @for (item of results(); track item.media_type + ':' + item.id) {
         <app-poster-card [item]="item" />
       }
     </div>

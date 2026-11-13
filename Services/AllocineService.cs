@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
@@ -38,6 +39,8 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
     public async Task<IReadOnlyList<TheaterShowtimesDto>> GetMultipleShowtimes(
         IEnumerable<string> codes, string? date, CancellationToken cancellationToken)
     {
+        // Les erreurs d'entrée doivent remonter avant le traitement des pannes par salle.
+        string day = NormalizeDate(date);
         // Normalise (valide) et déduplique en conservant l'ordre, puis plafonne.
         var normalized = new List<string>();
         var seen = new HashSet<string>();
@@ -49,7 +52,7 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
         }
 
         TheaterShowtimesDto?[] results = await Task.WhenAll(
-            normalized.Select(code => GetShowtimesOrNull(code, date, cancellationToken)));
+            normalized.Select(code => GetShowtimesOrNull(code, day, cancellationToken)));
 
         return results.Where(r => r is not null).Select(r => r!).ToList();
     }
@@ -59,6 +62,10 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
         try
         {
             return await GetShowtimes(code, date, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -159,8 +166,8 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
     private static string NormalizeDate(string? date)
     {
         if (string.IsNullOrWhiteSpace(date)) return TodayIso();
-        return DateOnly.TryParseExact(date.Trim(), "yyyy-MM-dd", out DateOnly parsed)
-            ? parsed.ToString("yyyy-MM-dd")
+        return DateOnly.TryParseExact(date.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly parsed)
+            ? parsed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : throw new InvalidOperationException("Date invalide, format attendu : YYYY-MM-DD.");
     }
 
@@ -170,7 +177,7 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
     private static string TheaterPageUrl(string code) =>
         $"https://www.allocine.fr/seance/salle_gen_csalle={code}.html";
 
-    private static string TodayIso() => DateTime.Now.ToString("yyyy-MM-dd");
+    private static string TodayIso() => DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private async Task<JsonDocument> FetchJson(string url, CancellationToken cancellationToken)
     {
@@ -352,6 +359,10 @@ public partial class AllocineService(HttpClient http, IMemoryCache cache, ILogge
                 postalCode,
                 city,
                 ReadString(root, "image"));
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

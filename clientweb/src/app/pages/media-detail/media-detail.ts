@@ -1,8 +1,10 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin, of, switchMap, Observable } from 'rxjs';
+import { forkJoin, of, switchMap, Observable, EMPTY, Subject, takeUntil } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, MarkShowSeenPayload, MarkSeasonSeenPayload, withUserStates } from '../../../shared/services/api';
@@ -70,6 +72,8 @@ interface MediaDetailData {
 })
 export class MediaDetail implements OnInit {
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
+  private navigationChanged = new Subject<void>();
   private tmdb = inject(TmdbService);
   private api = inject(Api);
   private location = inject(Location);
@@ -83,6 +87,8 @@ export class MediaDetail implements OnInit {
   show = signal<TmdbShow | null>(null);
   seasons = signal<SeasonView[]>([]);
   episodesSeen = signal<Map<string, boolean>>(new Map());
+  episodeWatchCounts = signal<Map<string, number>>(new Map());
+  reconcilingState = signal(false);
 
   credits = signal<TmdbCredits | null>(null);
   videos = signal<TmdbVideos | null>(null);
@@ -117,8 +123,14 @@ export class MediaDetail implements OnInit {
         const type = this.route.snapshot.data['type'] as MediaType;
         const tmdbId = Number(params.get('tmdbId'));
         this.resetForNavigation(type, tmdbId);
-        return type === 'movie' ? this.loadMovieData$(tmdbId) : this.loadShowData$(tmdbId);
+        const request = type === 'movie' ? this.loadMovieData$(tmdbId) : this.loadShowData$(tmdbId);
+        return request.pipe(catchError(() => {
+          this.error.set('Impossible de charger les détails et votre état de visionnage.');
+          this.loading.set(false);
+          return EMPTY;
+        }));
       }),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: result => this.applyLoadedData(result),
       error: () => {
@@ -130,6 +142,17 @@ export class MediaDetail implements OnInit {
 
   /** Remet tous les signaux à zéro avant de charger un nouveau média (navigation interne incluse). */
   private resetForNavigation(type: MediaType, tmdbId: number) {
+    this.navigationChanged.next();
+    this.seenPending.set(false);
+    this.likedPending.set(false);
+    this.watchlistPending.set(false);
+    this.listPending.set(null);
+    this.creatingList.set(false);
+    this.episodePending.set(new Set());
+    this.seasonPending.set(new Set());
+    this.quickAddPending.set(false);
+    this.reconcilingState.set(false);
+    this.episodeWatchCounts.set(new Map());
     this.mediaType.set(type);
     this.loading.set(true);
     this.error.set(null);
@@ -173,12 +196,12 @@ export class MediaDetail implements OnInit {
       state: this.userState$(tmdbId),
       lists: this.lists$(),
       tracked: this.trackedState$(tmdbId),
-      episodesSeen: this.api.showEpisodes(tmdbId).pipe(catchError(() => of([]))),
+      episodesSeen: this.api.showEpisodes(tmdbId),
     });
   }
 
   private userState$(tmdbId: number): Observable<UserState[]> {
-    return this.api.states([tmdbId], this.mediaType()).pipe(catchError(() => of([])));
+    return this.api.states([tmdbId], this.mediaType());
   }
 
   /** Récupère les similaires TMDB puis y recopie les états utilisateur (badge « VU », etc.). */
@@ -195,13 +218,12 @@ export class MediaDetail implements OnInit {
   }
 
   private lists$(): Observable<MediaListSummary[]> {
-    return this.api.lists().pipe(catchError(() => of([])));
+    return this.api.lists();
   }
 
   private trackedState$(tmdbId: number): Observable<boolean> {
     return this.api.trackedMediaState(tmdbId, this.mediaType()).pipe(
       map(state => state.tracked),
-      catchError(() => of(false)),
     );
   }
 
@@ -255,6 +277,7 @@ export class MediaDetail implements OnInit {
       epSeenMap.set(epKey(ep.seasonNumber, ep.episodeNumber), ep.seen);
     }
     this.episodesSeen.set(epSeenMap);
+    this.episodeWatchCounts.set(new Map(episodesSeen.map(ep => [epKey(ep.seasonNumber, ep.episodeNumber), ep.watchCount])));
 
     this.seasons.set(
       show.seasons
@@ -262,7 +285,6 @@ export class MediaDetail implements OnInit {
         .map(s => ({ ...s, episodes: [], seen: false, loaded: false }))
     );
     this.refreshSeasonsSeen();
-    this.syncShowSeen();
     this.selectInitialSeason();
   }
 
@@ -402,9 +424,47 @@ export class MediaDetail implements OnInit {
   /** Applique un changement optimiste, lance la requête et l'annule en cas d'erreur. */
   private runOptimistic(apply: () => void, revert: () => void, request: Observable<unknown>, done: () => void): void {
     apply();
-    request.subscribe({
+    this.currentRequest(request).subscribe({
       complete: done,
-      error: err => { revert(); done(); this.showToast(errorMessage(err)); },
+      error: err => { revert(); done(); this.handleMutationError(err); },
+    });
+  }
+
+  private currentRequest<T>(request: Observable<T>): Observable<T> {
+    return request.pipe(takeUntil(this.navigationChanged), takeUntilDestroyed(this.destroyRef));
+  }
+
+  get watchMutationPending(): boolean {
+    return this.seenPending() || this.quickAddPending() || this.reconcilingState()
+      || this.episodePending().size > 0 || this.seasonPending().size > 0;
+  }
+
+  private handleMutationError(err: unknown) {
+    this.showToast(errorMessage(err));
+    if (err instanceof HttpErrorResponse && err.status === 409) this.reloadUserState();
+  }
+
+  private reloadUserState() {
+    const tmdbId = this.userState().tmdbId;
+    this.reconcilingState.set(true);
+    this.currentRequest(forkJoin({
+      state: this.userState$(tmdbId),
+      episodes: this.isMovie ? of<EpisodeSeenDto[]>([]) : this.api.showEpisodes(tmdbId),
+    })).subscribe({
+      next: ({ state, episodes }) => {
+        this.userState.set(state[0] ?? { tmdbId, seen: false, watchCount: 0, liked: false, listIds: [] });
+        if (!this.isMovie) {
+          this.episodesSeen.set(new Map(episodes.map(ep => [epKey(ep.seasonNumber, ep.episodeNumber), ep.seen])));
+          this.episodeWatchCounts.set(new Map(episodes.map(ep => [epKey(ep.seasonNumber, ep.episodeNumber), ep.watchCount])));
+          this.refreshSeasonsSeen();
+        }
+        this.reconcilingState.set(false);
+      },
+      error: err => {
+        this.reconcilingState.set(false);
+        this.error.set('Impossible de recharger votre état de visionnage. Rechargez cette page.');
+        this.showToast(errorMessage(err));
+      },
     });
   }
 
@@ -419,7 +479,7 @@ export class MediaDetail implements OnInit {
   // ── Seen ─────────────────────────────────────────────────────────────────
 
   toggleSeen() {
-    if (this.seenPending()) return;
+    if (this.watchMutationPending || this.watchDialogOpen()) return;
     this.seenPending.set(true);
     const newSeen = !this.currentSeen;
     const previousWatchCount = this.userState().watchCount;
@@ -449,7 +509,7 @@ export class MediaDetail implements OnInit {
         genres: this.show()?.genres ?? [],
         seasons: seasons.map(s => ({ seasonNumber: s.season_number, episodeNumbers: episodeRange(s.episode_count) }))
       };
-      this.api.markShowSeen(tmdbId, payload).subscribe({
+      this.currentRequest(this.api.markShowSeen(tmdbId, payload)).subscribe({
         next: () => {
           const newMap = new Map<string, boolean>();
           for (const s of seasons) {
@@ -458,10 +518,12 @@ export class MediaDetail implements OnInit {
             }
           }
           this.episodesSeen.set(newMap);
+          this.episodeWatchCounts.update(previous => new Map([...newMap].map(([key, seen]) =>
+            [key, seen ? Math.max(1, previous.get(key) ?? 0) : 0])));
           this.refreshSeasonsSeen();
           this.seenPending.set(false);
         },
-        error: err => { this.patchUserState({ seen: !newSeen, watchCount: previousWatchCount }); this.seenPending.set(false); this.showToast(errorMessage(err)); },
+        error: err => { this.patchUserState({ seen: !newSeen, watchCount: previousWatchCount }); this.seenPending.set(false); this.handleMutationError(err); },
       });
     }
   }
@@ -469,33 +531,35 @@ export class MediaDetail implements OnInit {
   // ── Watch history ────────────────────────────────────────────────────────
 
   quickAddWatch() {
-    if (this.quickAddPending()) return;
+    if (this.watchMutationPending || this.watchDialogOpen()) return;
     this.quickAddPending.set(true);
     const tmdbId = this.userState().tmdbId;
     const previousWatchCount = this.userState().watchCount;
 
-    this.api.addWatch(tmdbId, this.mediaType(), {
+    this.currentRequest(this.api.addWatch(tmdbId, this.mediaType(), {
       watchedAt: new Date().toISOString(),
       posterPath: this.currentPosterPath(),
       runtime: this.isMovie ? (this.movie()?.runtime ?? null) : null,
       title: this.mediaTitle,
       genres: this.currentGenres(),
-    }).subscribe({
+    })).subscribe({
       next: () => {
         this.patchUserState({ seen: true, watchCount: previousWatchCount + 1 });
         this.quickAddPending.set(false);
       },
-      error: err => { this.quickAddPending.set(false); this.showToast(errorMessage(err)); },
+      error: err => { this.quickAddPending.set(false); this.handleMutationError(err); },
     });
   }
 
   openWatchDialog() {
+    if (this.watchMutationPending) return;
     this.watchDialogTarget.set(null);
     this.watchDialogOpen.set(true);
   }
 
   openEpisodeWatchDialog(ep: TmdbEpisode, event?: Event) {
     event?.stopPropagation();
+    if (this.watchMutationPending) return;
     this.watchDialogTarget.set({ season: ep.season_number, episode: ep.episode_number });
     this.watchDialogOpen.set(true);
   }
@@ -515,6 +579,7 @@ export class MediaDetail implements OnInit {
   }
 
   private patchEpisodeWatchCount(seasonNumber: number, episodeNumber: number, watchCount: number) {
+    this.episodeWatchCounts.update(counts => new Map(counts).set(epKey(seasonNumber, episodeNumber), watchCount));
     this.seasons.update(prev => prev.map(s => {
       if (s.season_number !== seasonNumber) return s;
       return {
@@ -537,7 +602,7 @@ export class MediaDetail implements OnInit {
     this.runOptimistic(
       () => this.patchUserState({ liked: newLiked }),
       () => this.patchUserState({ liked: !newLiked }),
-      this.api.markLiked(tmdbId, this.mediaType(), newLiked, this.mediaTitle),
+      this.api.markLiked(tmdbId, this.mediaType(), newLiked, this.mediaTitle, this.currentPosterPath()),
       () => this.likedPending.set(false),
     );
   }
@@ -593,20 +658,20 @@ export class MediaDetail implements OnInit {
     this.creatingList.set(true);
     this.listCreateError.set(null);
 
-    this.api.createList(dto).pipe(
-      switchMap(list =>
-        this.api.addItemToList(list.id, {
-          tmdbId: this.userState().tmdbId,
-          mediaType: this.mediaType(),
-          posterPath: this.currentPosterPath(),
-          title: this.mediaTitle,
-          genres: this.currentGenres(),
-        }).pipe(map(() => list))
-      )
-    ).subscribe({
+    const item = {
+      tmdbId: this.userState().tmdbId, mediaType: this.mediaType(),
+      posterPath: this.currentPosterPath(), title: this.mediaTitle, genres: this.currentGenres(),
+    };
+    this.currentRequest(this.api.createList(dto).pipe(
+      switchMap(list => {
+        this.lists.update(lists => [...lists, list]);
+        this.resetListForm();
+        return this.api.addItemToList(list.id, item).pipe(map(() => list));
+      })
+    )).subscribe({
       next: list => {
         this.creatingList.set(false);
-        this.lists.update(lists => [...lists, { ...list, itemsCount: 1 }]);
+        this.bumpListItemCount(list.id, 1);
         this.setListMembership(list.id, true);
         this.resetListForm();
         this.showSuccess(`Ajouté à « ${list.name} ».`);
@@ -675,18 +740,20 @@ export class MediaDetail implements OnInit {
     if (idx === -1 || seasons[idx].loaded) return;
 
     const showId = this.show()!.id;
-    this.tmdb.season(showId, seasonNumber).subscribe({
+    this.currentRequest(this.tmdb.season(showId, seasonNumber)).subscribe({
       next: season => {
         const epMap = this.episodesSeen();
         const episodes = season.episodes.map(ep => ({
           ...ep,
-          seen: epMap.get(epKey(ep.season_number, ep.episode_number)) ?? false
+          seen: epMap.get(epKey(ep.season_number, ep.episode_number)) ?? false,
+          watchCount: this.episodeWatchCounts().get(epKey(ep.season_number, ep.episode_number)) ?? 0
         }));
-        const allSeen = episodes.every(ep => ep.seen);
+        const allSeen = episodes.length > 0 && episodes.every(ep => ep.seen);
         this.seasons.update(prev => prev.map((s, i) =>
-          i === idx ? { ...s, episodes, seen: allSeen, loaded: true } : s
+          s.season_number === seasonNumber ? { ...s, episodes, seen: allSeen, loaded: true } : s
         ));
-      }
+      },
+      error: err => this.showToast(errorMessage(err)),
     });
   }
 
@@ -731,27 +798,30 @@ export class MediaDetail implements OnInit {
   toggleEpisodeSeen(ep: TmdbEpisode, event?: Event) {
     event?.stopPropagation();
     const key = epKey(ep.season_number, ep.episode_number);
-    if (this.isEpisodePending(key)) return;
+    if (this.watchMutationPending || this.watchDialogOpen()) return;
     const newSeen = !ep.seen;
     const showId = this.show()!.id;
 
+    const previousCount = this.episodeWatchCounts().get(key) ?? 0;
     this.episodePending.update(s => setWith(s, key));
     this.patchEpisode(ep.season_number, ep.episode_number, newSeen);
 
-    this.api.markEpisodeSeen(showId, ep.season_number, ep.episode_number, newSeen).subscribe({
+    this.currentRequest(this.api.markEpisodeSeen(showId, ep.season_number, ep.episode_number, newSeen)).subscribe({
       complete: () => {
         this.episodePending.update(s => setWithout(s, key));
       },
-      error: () => {
+      error: err => {
         this.patchEpisode(ep.season_number, ep.episode_number, ep.seen ?? false);
+        this.patchEpisodeWatchCount(ep.season_number, ep.episode_number, previousCount);
         this.episodePending.update(s => setWithout(s, key));
+        this.handleMutationError(err);
       },
     });
   }
 
   toggleSeasonSeen(season: SeasonView, event: Event) {
     event.stopPropagation();
-    if (this.isSeasonPending(season.season_number)) return;
+    if (this.watchMutationPending || this.watchDialogOpen()) return;
     const newSeen = !this.isSeasonSeen(season);
     const showId = this.show()!.id;
     // Si les épisodes ne sont pas chargés, on utilise 1..episode_count (comme le bouton série).
@@ -759,20 +829,26 @@ export class MediaDetail implements OnInit {
       ? season.episodes.map(ep => ep.episode_number)
       : episodeRange(season.episode_count);
 
+    const previousSeen = new Map(this.episodesSeen());
+    const previousCounts = new Map(this.episodeWatchCounts());
     this.seasonPending.update(s => setWith(s, season.season_number));
     this.patchSeason(season.season_number, newSeen);
 
-    this.api.markSeasonSeen(showId, season.season_number, { seen: newSeen, episodeNumbers }).subscribe({
+    this.currentRequest(this.api.markSeasonSeen(showId, season.season_number, { seen: newSeen, episodeNumbers })).subscribe({
       complete: () => this.seasonPending.update(s => setWithout(s, season.season_number)),
-      error: () => {
-        this.patchSeason(season.season_number, !newSeen);
+      error: err => {
+        this.episodesSeen.set(previousSeen);
+        this.episodeWatchCounts.set(previousCounts);
+        this.refreshSeasonsSeen();
         this.seasonPending.update(s => setWithout(s, season.season_number));
+        this.handleMutationError(err);
       },
     });
   }
 
   private patchEpisode(seasonNumber: number, episodeNumber: number, seen: boolean) {
     const key = epKey(seasonNumber, episodeNumber);
+    this.patchEpisodeWatchCount(seasonNumber, episodeNumber, seen ? Math.max(1, this.episodeWatchCounts().get(key) ?? 0) : 0);
     this.episodesSeen.update(m => { const n = new Map(m); n.set(key, seen); return n; });
     this.seasons.update(prev => prev.map(s => {
       if (s.season_number !== seasonNumber) return s;
@@ -782,7 +858,6 @@ export class MediaDetail implements OnInit {
       // La saison est "vue" dès que tous ses épisodes chargés le sont.
       return { ...s, episodes, seen: episodes.length > 0 && episodes.every(ep => ep.seen) };
     }));
-    this.syncShowSeen();
   }
 
   private patchSeason(seasonNumber: number, seen: boolean) {
@@ -790,7 +865,9 @@ export class MediaDetail implements OnInit {
     const episodeNumbers = (season && season.episodes.length > 0)
       ? season.episodes.map(ep => ep.episode_number)
       : episodeRange(season?.episode_count ?? 0);
-    // Garde la map des épisodes synchro pour que la dérivation série soit correcte.
+    for (const epNumber of episodeNumbers)
+      this.patchEpisodeWatchCount(seasonNumber, epNumber, seen ? Math.max(1, this.episodeWatchCounts().get(epKey(seasonNumber, epNumber)) ?? 0) : 0);
+    // La progression par épisode est indépendante des visionnages explicites de la série.
     this.episodesSeen.update(m => {
       const n = new Map(m);
       for (const epNum of episodeNumbers) n.set(epKey(seasonNumber, epNum), seen);
@@ -803,34 +880,6 @@ export class MediaDetail implements OnInit {
         episodes: s.episodes.map(ep => ({ ...ep, seen }))
       }
     ));
-    this.syncShowSeen();
-  }
-
-  /**
-   * Recalcule l'état "vu" global de la série à partir des épisodes (une série est vue
-   * quand toutes ses saisons réelles le sont) et le persiste si la valeur a changé.
-   */
-  private syncShowSeen() {
-    const derived = this.computeShowSeen();
-    if (derived === this.currentSeen) return;
-
-    this.patchUserState({ seen: derived });
-    const showId = this.userState().tmdbId;
-    this.api.markSeen(showId, 'tv', {
-      seen: derived,
-      posterPath: this.currentPosterPath(),
-      title: this.mediaTitle,
-      genres: this.show()?.genres ?? [],
-    }).subscribe({
-      error: () => { /* optimiste : réconcilié au prochain reload */ },
-    });
-  }
-
-  /** Vrai si toutes les saisons réelles (hors spéciales, épisodes connus) sont vues. */
-  private computeShowSeen(): boolean {
-    const seasons = this.seasons().filter(s => s.episode_count > 0);
-    if (seasons.length === 0) return false;
-    return seasons.every(s => this.isSeasonFullySeen(s.season_number, s.episode_count));
   }
 
   /** Compte les épisodes vus d'une saison dans la map. */
@@ -843,19 +892,15 @@ export class MediaDetail implements OnInit {
     return seen;
   }
 
-  /** Compte les épisodes vus d'une saison dans la map et compare au total TMDB. */
-  private isSeasonFullySeen(seasonNumber: number, episodeCount: number): boolean {
-    return episodeCount > 0 && this.seenCountInSeason(seasonNumber) >= episodeCount;
-  }
-
   private refreshSeasonsSeen() {
     const epMap = this.episodesSeen();
     this.seasons.update(prev => prev.map(s => ({
       ...s,
-      seen: s.loaded && s.episodes.length > 0 && s.episodes.every(ep => ep.seen),
+      seen: this.isSeasonSeen(s),
       episodes: s.episodes.map(ep => ({
         ...ep,
-        seen: epMap.get(epKey(s.season_number, ep.episode_number)) ?? false
+        seen: epMap.get(epKey(s.season_number, ep.episode_number)) ?? false,
+        watchCount: this.episodeWatchCounts().get(epKey(s.season_number, ep.episode_number)) ?? 0
       }))
     })));
   }

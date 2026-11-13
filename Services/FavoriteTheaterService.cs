@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.ModelsDTO;
@@ -31,13 +32,22 @@ public class FavoriteTheaterService(ApiDbContext context)
         FavoriteTheater? existing = await context.FavoriteTheaters.FirstOrDefaultAsync(f => f.Code == code);
         if (existing is not null) return new FavoriteTheaterDto(existing);
 
-        int nextPosition = await context.FavoriteTheaters.AnyAsync()
-            ? await context.FavoriteTheaters.MaxAsync(f => f.Position) + 1
-            : 0;
+        int nextPosition = (await context.FavoriteTheaters.MaxAsync(f => (int?)f.Position) ?? -1) + 1;
 
         var favorite = new FavoriteTheater(code, nextPosition);
         context.FavoriteTheaters.Add(favorite);
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is MySqlException { Number: 1062 })
+        {
+            // Une autre requête a pu ajouter le même code entre la lecture et l'insertion.
+            context.Entry(favorite).State = EntityState.Detached;
+            existing = await context.FavoriteTheaters.FirstOrDefaultAsync(f => f.Code == code);
+            if (existing is null) throw;
+            return new FavoriteTheaterDto(existing);
+        }
 
         return new FavoriteTheaterDto(favorite);
     }

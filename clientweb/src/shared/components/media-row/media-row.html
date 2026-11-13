@@ -1,7 +1,7 @@
 <section class="media-row">
   <h2 class="section-title">{{ title }}</h2>
   <div class="track">
-    @for (item of items; track item.id) {
+    @for (item of items; track item.media_type + ':' + item.id) {
       <app-poster-card [item]="item" />
     }
   </div>

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -16,7 +17,7 @@ public class ShowEpisodesController(
     WatchHistoryService watchHistoryService) : ControllerBase
 {
     [HttpGet("{showTmdbId}/episodes")]
-    public async Task<ActionResult<List<EpisodeSeenDto>>> GetEpisodes(int showTmdbId)
+    public async Task<ActionResult<List<EpisodeSeenDto>>> GetEpisodes([Range(1, int.MaxValue)] int showTmdbId)
     {
         List<UserEpisode> episodes = await context.UserEpisodes
             .Where(e => e.ShowTmdbId == showTmdbId && e.Seen)
@@ -72,8 +73,12 @@ public class ShowEpisodesController(
     }
 
     [HttpPost("{showTmdbId}/seen")]
-    public async Task<IActionResult> MarkShowSeen(int showTmdbId, [FromBody] MarkShowSeenDto dto)
+    public async Task<IActionResult> MarkShowSeen([Range(1, int.MaxValue)] int showTmdbId, [FromBody] MarkShowSeenDto dto)
     {
+        if (dto.Seasons == null || dto.Seasons.Any(s => s == null || s.SeasonNumber < 0
+                || s.EpisodeNumbers == null || s.EpisodeNumbers.Any(n => n < 1)))
+            return BadRequest("Les saisons et numéros d'épisode sont invalides.");
+
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show, dto.PosterPath, genres: dto.Genres, title: dto.Title);
 
         if (dto.Seen && um.WatchCount == 0)
@@ -92,8 +97,11 @@ public class ShowEpisodesController(
     }
 
     [HttpPost("{showTmdbId}/seasons/{seasonNumber}/seen")]
-    public async Task<IActionResult> MarkSeasonSeen(int showTmdbId, int seasonNumber, [FromBody] MarkSeasonSeenDto dto)
+    public async Task<IActionResult> MarkSeasonSeen([Range(1, int.MaxValue)] int showTmdbId, [Range(0, int.MaxValue)] int seasonNumber, [FromBody] MarkSeasonSeenDto dto)
     {
+        if (dto.EpisodeNumbers == null || dto.EpisodeNumbers.Any(n => n < 1))
+            return BadRequest("Les numéros d'épisode doivent être strictement positifs.");
+
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
 
         foreach (int epNumber in dto.EpisodeNumbers)
@@ -106,7 +114,7 @@ public class ShowEpisodesController(
     }
 
     [HttpPost("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/seen")]
-    public async Task<IActionResult> MarkEpisodeSeen(int showTmdbId, int seasonNumber, int episodeNumber, [FromBody] bool seen)
+    public async Task<IActionResult> MarkEpisodeSeen([Range(1, int.MaxValue)] int showTmdbId, [Range(0, int.MaxValue)] int seasonNumber, [Range(1, int.MaxValue)] int episodeNumber, [FromBody] bool seen)
     {
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
         await UpsertEpisode(showTmdbId, seasonNumber, episodeNumber, seen);
@@ -120,7 +128,7 @@ public class ShowEpisodesController(
     }
 
     [HttpGet("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches")]
-    public async Task<ActionResult<List<WatchEventDto>>> GetEpisodeWatches(int showTmdbId, int seasonNumber, int episodeNumber)
+    public async Task<ActionResult<List<WatchEventDto>>> GetEpisodeWatches([Range(1, int.MaxValue)] int showTmdbId, [Range(0, int.MaxValue)] int seasonNumber, [Range(1, int.MaxValue)] int episodeNumber)
     {
         UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
         if (ep == null) return new List<WatchEventDto>();
@@ -132,7 +140,7 @@ public class ShowEpisodesController(
     /// <summary>Ajoute un visionnage d'épisode à une date choisie par l'utilisateur.</summary>
     [HttpPost("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches")]
     public async Task<ActionResult<WatchEventDto>> AddEpisodeWatch(
-        int showTmdbId, int seasonNumber, int episodeNumber, [FromBody] AddEpisodeWatchDto dto)
+        [Range(1, int.MaxValue)] int showTmdbId, [Range(0, int.MaxValue)] int seasonNumber, [Range(1, int.MaxValue)] int episodeNumber, [FromBody] AddEpisodeWatchDto dto)
     {
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
         UserEpisode ep = await EnsureEpisode(showTmdbId, seasonNumber, episodeNumber);
@@ -149,7 +157,7 @@ public class ShowEpisodesController(
 
     /// <summary>Supprime un visionnage d'épisode précis de l'historique.</summary>
     [HttpDelete("{showTmdbId}/seasons/{seasonNumber}/episodes/{episodeNumber}/watches/{watchId}")]
-    public async Task<IActionResult> DeleteEpisodeWatch(int showTmdbId, int seasonNumber, int episodeNumber, int watchId)
+    public async Task<IActionResult> DeleteEpisodeWatch([Range(1, int.MaxValue)] int showTmdbId, [Range(0, int.MaxValue)] int seasonNumber, [Range(1, int.MaxValue)] int episodeNumber, int watchId)
     {
         UserMedia um = await mediaService.EnsureUserMedia(showTmdbId, MediaType.Show);
         UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
@@ -166,11 +174,13 @@ public class ShowEpisodesController(
         return Ok(new { showTmdbId, seasonNumber, episodeNumber, seen = ep.Seen, watchCount = ep.WatchCount });
     }
 
-    private Task<UserEpisode?> FindEpisode(int showTmdbId, int seasonNumber, int episodeNumber) =>
-        context.UserEpisodes.FirstOrDefaultAsync(e =>
+    private async Task<UserEpisode?> FindEpisode(int showTmdbId, int seasonNumber, int episodeNumber) =>
+        context.UserEpisodes.Local.FirstOrDefault(e =>
+            e.ShowTmdbId == showTmdbId && e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber)
+        ?? await context.UserEpisodes.FirstOrDefaultAsync(e =>
             e.ShowTmdbId == showTmdbId && e.SeasonNumber == seasonNumber && e.EpisodeNumber == episodeNumber);
 
-    /// <summary>Récupère l'épisode ou le crée (sauvegardé immédiatement pour obtenir son Id, requis par la FK des visionnages).</summary>
+    /// <summary>Récupère l'épisode ou le crée ; l'appelant sauvegarde toute l'opération en une fois.</summary>
     private async Task<UserEpisode> EnsureEpisode(int showTmdbId, int seasonNumber, int episodeNumber)
     {
         UserEpisode? ep = await FindEpisode(showTmdbId, seasonNumber, episodeNumber);
@@ -178,7 +188,6 @@ public class ShowEpisodesController(
 
         ep = new UserEpisode(showTmdbId, seasonNumber, episodeNumber, seen: false);
         context.UserEpisodes.Add(ep);
-        await context.SaveChangesAsync();
         return ep;
     }
 

@@ -32,7 +32,19 @@ public class BackupService(ApiDbContext context, ILogger<BackupService> logger)
         },
     };
 
-    public async Task<DatabaseBackup> Export(bool includeLogs, CancellationToken cancellationToken)
+    public Task<DatabaseBackup> Export(bool includeLogs, CancellationToken cancellationToken) =>
+        context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            // Toutes les tables doivent provenir du même instant, y compris si un
+            // visionnage ou une suppression arrive pendant l'export.
+            await using var transaction = await context.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.RepeatableRead, cancellationToken);
+            DatabaseBackup backup = await ExportSnapshot(includeLogs, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return backup;
+        });
+
+    private async Task<DatabaseBackup> ExportSnapshot(bool includeLogs, CancellationToken cancellationToken)
     {
         IEnumerable<string> applied = await context.Database.GetAppliedMigrationsAsync(cancellationToken);
 
@@ -82,67 +94,67 @@ public class BackupService(ApiDbContext context, ILogger<BackupService> logger)
         Validate(backup);
         bool replaceLogs = backup.SystemLogEntries != null;
 
-        // Les logs ne sont référencés par rien : on laisse MySQL renuméroter pour ne pas
-        // entrer en collision avec ceux écrits en parallèle par SystemLogWriterService.
-        foreach (SystemLogEntry log in backup.SystemLogEntries ?? [])
-            log.Id = 0;
-
         // EnableRetryOnFailure impose de passer par la stratégie d'exécution pour une transaction manuelle.
         IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
+        try
         {
-            context.ChangeTracker.Clear();
-            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-
-            // Enfants d'abord pour respecter les clés étrangères.
-            await context.UserMediaWatchEvents.ExecuteDeleteAsync(cancellationToken);
-            await context.UserEpisodeWatchEvents.ExecuteDeleteAsync(cancellationToken);
-            await context.MediaListItems.ExecuteDeleteAsync(cancellationToken);
-            await context.UserMedia.ExecuteDeleteAsync(cancellationToken);
-            await context.UserEpisodes.ExecuteDeleteAsync(cancellationToken);
-            await context.MediaLists.ExecuteDeleteAsync(cancellationToken);
-            await context.ActivityEvents.ExecuteDeleteAsync(cancellationToken);
-            await context.TrackedMediaReleases.ExecuteDeleteAsync(cancellationToken);
-            await context.ReleaseNotifications.ExecuteDeleteAsync(cancellationToken);
-            await context.KnownSeasons.ExecuteDeleteAsync(cancellationToken);
-            await context.TorrentBookmarks.ExecuteDeleteAsync(cancellationToken);
-            await context.FavoriteTheaters.ExecuteDeleteAsync(cancellationToken);
-            await context.Settings.ExecuteDeleteAsync(cancellationToken);
-            if (replaceLogs)
-                await context.SystemLogEntries.ExecuteDeleteAsync(cancellationToken);
-
-            context.Settings.AddRange(backup.Settings);
-            context.UserMedia.AddRange(backup.UserMedia);
-            context.UserMediaWatchEvents.AddRange(backup.UserMediaWatchEvents);
-            context.UserEpisodes.AddRange(backup.UserEpisodes);
-            context.UserEpisodeWatchEvents.AddRange(backup.UserEpisodeWatchEvents);
-            context.MediaLists.AddRange(backup.MediaLists);
-            context.MediaListItems.AddRange(backup.MediaListItems);
-            context.ActivityEvents.AddRange(backup.ActivityEvents);
-            context.TrackedMediaReleases.AddRange(backup.TrackedMediaReleases);
-            context.ReleaseNotifications.AddRange(backup.ReleaseNotifications);
-            context.KnownSeasons.AddRange(backup.KnownSeasons);
-            context.TorrentBookmarks.AddRange(backup.TorrentBookmarks);
-            context.FavoriteTheaters.AddRange(backup.FavoriteTheaters);
-            if (replaceLogs)
-                context.SystemLogEntries.AddRange(backup.SystemLogEntries!);
-
-            try
+            await strategy.ExecuteAsync(async () =>
             {
+                context.ChangeTracker.Clear();
+                // Les logs ne sont référencés par rien : renuméroter à chaque tentative
+                // évite les collisions avec le writer qui continue en parallèle.
+                foreach (SystemLogEntry log in backup.SystemLogEntries ?? [])
+                    log.Id = 0;
+                await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+                // Enfants d'abord pour respecter les clés étrangères.
+                await context.UserMediaWatchEvents.ExecuteDeleteAsync(cancellationToken);
+                await context.UserEpisodeWatchEvents.ExecuteDeleteAsync(cancellationToken);
+                await context.MediaListItems.ExecuteDeleteAsync(cancellationToken);
+                await context.UserMedia.ExecuteDeleteAsync(cancellationToken);
+                await context.UserEpisodes.ExecuteDeleteAsync(cancellationToken);
+                await context.MediaLists.ExecuteDeleteAsync(cancellationToken);
+                await context.ActivityEvents.ExecuteDeleteAsync(cancellationToken);
+                await context.TrackedMediaReleases.ExecuteDeleteAsync(cancellationToken);
+                await context.ReleaseNotifications.ExecuteDeleteAsync(cancellationToken);
+                await context.KnownSeasons.ExecuteDeleteAsync(cancellationToken);
+                await context.TorrentBookmarks.ExecuteDeleteAsync(cancellationToken);
+                await context.FavoriteTheaters.ExecuteDeleteAsync(cancellationToken);
+                await context.Settings.ExecuteDeleteAsync(cancellationToken);
+                if (replaceLogs)
+                    await context.SystemLogEntries.ExecuteDeleteAsync(cancellationToken);
+
+                context.Settings.AddRange(backup.Settings);
+                context.UserMedia.AddRange(backup.UserMedia);
+                context.UserMediaWatchEvents.AddRange(backup.UserMediaWatchEvents);
+                context.UserEpisodes.AddRange(backup.UserEpisodes);
+                context.UserEpisodeWatchEvents.AddRange(backup.UserEpisodeWatchEvents);
+                context.MediaLists.AddRange(backup.MediaLists);
+                context.MediaListItems.AddRange(backup.MediaListItems);
+                context.ActivityEvents.AddRange(backup.ActivityEvents);
+                context.TrackedMediaReleases.AddRange(backup.TrackedMediaReleases);
+                context.ReleaseNotifications.AddRange(backup.ReleaseNotifications);
+                context.KnownSeasons.AddRange(backup.KnownSeasons);
+                context.TorrentBookmarks.AddRange(backup.TorrentBookmarks);
+                context.FavoriteTheaters.AddRange(backup.FavoriteTheaters);
+                if (replaceLogs)
+                    context.SystemLogEntries.AddRange(backup.SystemLogEntries!);
+
                 await context.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new BackupValidationException(
-                    $"Import refusé par la base : {ex.InnerException?.Message ?? ex.Message}");
-            }
 
-            await transaction.CommitAsync(cancellationToken);
-        });
+                // Les listes système font partie de la restauration atomique.
+                await DbSeeder.SeedSystemListsAsync(context, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            });
+        }
+        catch (DbUpdateException ex)
+        {
+            // Laisser d'abord la stratégie reconnaître et rejouer les pannes transitoires.
+            throw new BackupValidationException(
+                $"Import refusé par la base : {ex.InnerException?.Message ?? ex.Message}");
+        }
 
         context.ChangeTracker.Clear();
-        // Une sauvegarde ancienne ou éditée à la main peut ne pas contenir toutes les listes système.
-        await DbSeeder.SeedSystemListsAsync(context);
 
         Dictionary<string, int> counts = new()
         {
@@ -183,9 +195,25 @@ public class BackupService(ApiDbContext context, ILogger<BackupService> logger)
         if (backup.Format != DatabaseBackup.FormatName)
             throw new BackupValidationException("Ce fichier n'est pas une sauvegarde Tracker.");
 
-        if (backup.Version > DatabaseBackup.CurrentVersion)
+        if (backup.Version < 1 || backup.Version > DatabaseBackup.CurrentVersion)
             throw new BackupValidationException(
                 $"Sauvegarde en version {backup.Version}, cette version de l'application ne gère que la version {DatabaseBackup.CurrentVersion}.");
+
+        ValidateRows(backup.Settings, s => s.Id, nameof(backup.Settings));
+        ValidateRows(backup.UserMedia, m => m.Id, nameof(backup.UserMedia));
+        ValidateRows(backup.UserMediaWatchEvents, w => w.Id, nameof(backup.UserMediaWatchEvents));
+        ValidateRows(backup.UserEpisodes, e => e.Id, nameof(backup.UserEpisodes));
+        ValidateRows(backup.UserEpisodeWatchEvents, w => w.Id, nameof(backup.UserEpisodeWatchEvents));
+        ValidateRows(backup.MediaLists, l => l.Id, nameof(backup.MediaLists));
+        ValidateRows(backup.MediaListItems, i => i.Id, nameof(backup.MediaListItems));
+        ValidateRows(backup.ActivityEvents, e => e.Id, nameof(backup.ActivityEvents));
+        ValidateRows(backup.TrackedMediaReleases, r => r.Id, nameof(backup.TrackedMediaReleases));
+        ValidateRows(backup.ReleaseNotifications, n => n.Id, nameof(backup.ReleaseNotifications));
+        ValidateRows(backup.KnownSeasons, s => s.Id, nameof(backup.KnownSeasons));
+        ValidateRows(backup.TorrentBookmarks, b => b.Id, nameof(backup.TorrentBookmarks));
+        ValidateRows(backup.FavoriteTheaters, t => t.Id, nameof(backup.FavoriteTheaters));
+        if (backup.SystemLogEntries != null)
+            ValidateRows(backup.SystemLogEntries, l => l.Id, nameof(backup.SystemLogEntries));
 
         HashSet<int> mediaIds = backup.UserMedia.Select(m => m.Id).ToHashSet();
         HashSet<int> episodeIds = backup.UserEpisodes.Select(e => e.Id).ToHashSet();
@@ -199,6 +227,23 @@ public class BackupService(ApiDbContext context, ILogger<BackupService> logger)
 
         if (backup.MediaListItems.FirstOrDefault(i => !listIds.Contains(i.MediaListId)) is { } orphanItem)
             throw new BackupValidationException($"Item {orphanItem.Id} rattaché à une liste inexistante ({orphanItem.MediaListId}).");
+    }
+
+    private static void ValidateRows<T>(List<T>? rows, Func<T, int> getId, string table) where T : class
+    {
+        if (rows == null)
+            throw new BackupValidationException($"La table {table} ne peut pas être null.");
+
+        HashSet<int> ids = new();
+        foreach (T row in rows)
+        {
+            if (row == null)
+                throw new BackupValidationException($"La table {table} contient une ligne null.");
+
+            int id = getId(row);
+            if (id <= 0 || !ids.Add(id))
+                throw new BackupValidationException($"Identifiant invalide ou dupliqué dans {table} : {id}.");
+        }
     }
 
     private static void RemoveNavigationProperties(JsonTypeInfo typeInfo)

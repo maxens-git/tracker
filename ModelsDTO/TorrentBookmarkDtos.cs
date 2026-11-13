@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Tracker.Models;
 
 namespace Tracker.ModelsDTO;
@@ -23,11 +24,11 @@ public record TorrentBookmarkDto(
 
 /// <summary>Corps de création d'un marque-page : les champs d'un résultat de recherche torrent.</summary>
 public record TorrentBookmarkCreateDto(
-    string Title,
+    [Required, StringLength(1000)] string Title,
     long Size,
     int Seeders,
     int Leechers,
-    string Indexer,
-    string MagnetUrl,
-    string? Category,
+    [Required, StringLength(200)] string Indexer,
+    [Required] string MagnetUrl,
+    [StringLength(200)] string? Category,
     DateTimeOffset? PublishDate);

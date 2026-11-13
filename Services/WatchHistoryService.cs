@@ -16,7 +16,7 @@ public class WatchHistoryService(ApiDbContext context)
 
     public UserMediaWatchEvent AddMovieWatch(UserMedia um, DateTime watchedAt)
     {
-        UserMediaWatchEvent ev = new(um.Id, watchedAt);
+        UserMediaWatchEvent ev = new(um.Id, watchedAt) { UserMedia = um };
         context.UserMediaWatchEvents.Add(ev);
         um.WatchCount++;
         um.Seen = true;
@@ -49,6 +49,8 @@ public class WatchHistoryService(ApiDbContext context)
             .Where(w => w.UserMediaId == um.Id)
             .ToListAsync();
 
+        events.AddRange(context.UserMediaWatchEvents.Local
+            .Where(w => w.UserMedia == um && !events.Contains(w)));
         context.UserMediaWatchEvents.RemoveRange(events);
         um.WatchCount = 0;
         um.Seen = false;
@@ -58,7 +60,7 @@ public class WatchHistoryService(ApiDbContext context)
 
     public UserEpisodeWatchEvent AddEpisodeWatch(UserEpisode ep, DateTime watchedAt)
     {
-        UserEpisodeWatchEvent ev = new(ep.Id, watchedAt);
+        UserEpisodeWatchEvent ev = new(ep.Id, watchedAt) { UserEpisode = ep };
         context.UserEpisodeWatchEvents.Add(ev);
         ep.WatchCount++;
         ep.Seen = true;
@@ -91,6 +93,8 @@ public class WatchHistoryService(ApiDbContext context)
             .Where(w => w.UserEpisodeId == ep.Id)
             .ToListAsync();
 
+        events.AddRange(context.UserEpisodeWatchEvents.Local
+            .Where(w => w.UserEpisode == ep && !events.Contains(w)));
         context.UserEpisodeWatchEvents.RemoveRange(events);
         ep.WatchCount = 0;
         ep.Seen = false;

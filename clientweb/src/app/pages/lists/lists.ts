@@ -43,6 +43,7 @@ export class Lists implements OnInit {
 
   private reload() {
     this.loading.set(true);
+    this.error.set(false);
     this.api.lists().subscribe({
       next: data => { this.lists.set(data); this.loading.set(false); },
       error: () => { this.error.set(true); this.loading.set(false); },

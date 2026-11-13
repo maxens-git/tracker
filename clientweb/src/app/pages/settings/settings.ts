@@ -29,6 +29,7 @@ export class SettingsPage implements OnInit {
   readonly theme = inject(ThemeService);
 
   loading = signal(true);
+  loadFailed = signal(false);
   saving = signal(false);
   testing = signal(false);
   saved = signal(false);
@@ -63,6 +64,12 @@ export class SettingsPage implements OnInit {
   };
 
   ngOnInit() {
+    this.loadSettings();
+  }
+
+  loadSettings() {
+    this.loading.set(true);
+    this.loadFailed.set(false);
     this.api.settings().subscribe({
       next: settings => {
         this.form = {
@@ -85,6 +92,7 @@ export class SettingsPage implements OnInit {
         this.loading.set(false);
       },
       error: () => {
+        this.loadFailed.set(true);
         this.loading.set(false);
         this.showError('Impossible de charger les réglages.');
       },
@@ -92,7 +100,7 @@ export class SettingsPage implements OnInit {
   }
 
   save() {
-    if (this.saving()) return;
+    if (this.loading() || this.loadFailed() || this.saving() || this.testing() || this.importing()) return;
     this.saving.set(true);
     this.saved.set(false);
 
@@ -104,15 +112,15 @@ export class SettingsPage implements OnInit {
         window.setTimeout(() => this.saved.set(false), 2200);
         this.showSuccess('Réglages enregistrés.');
       },
-      error: () => {
+      error: err => {
         this.saving.set(false);
-        this.showError('Impossible d’enregistrer les réglages.');
+        this.showError(errorMessage(err, 'Impossible d’enregistrer les réglages.'));
       },
     });
   }
 
   sendTestNotification() {
-    if (this.testing() || this.saving()) return;
+    if (this.loading() || this.loadFailed() || this.testing() || this.saving() || this.importing()) return;
     this.testing.set(true);
     this.testSent.set(false);
 
@@ -128,9 +136,9 @@ export class SettingsPage implements OnInit {
         window.setTimeout(() => this.testSent.set(false), 2200);
         this.showSuccess('Notification de test envoyée.');
       },
-      error: () => {
+      error: err => {
         this.testing.set(false);
-        this.showError('Impossible d’envoyer la notification de test.');
+        this.showError(errorMessage(err, 'Impossible d’envoyer la notification de test.'));
       },
     });
   }
@@ -159,7 +167,8 @@ export class SettingsPage implements OnInit {
     this.api.calendarInfo().subscribe({
       next: async info => {
         try {
-          await navigator.clipboard?.writeText(info.httpsUrl);
+          if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(info.httpsUrl);
           this.calendarCopied.set(true);
           window.setTimeout(() => this.calendarCopied.set(false), 2200);
           this.showSuccess('Lien du calendrier copié.');
@@ -177,14 +186,19 @@ export class SettingsPage implements OnInit {
   }
 
   exportBackup() {
-    if (this.exporting()) return;
+    if (this.exporting() || this.importing()) return;
     this.exporting.set(true);
 
     this.api.exportBackup(this.exportIncludeLogs).subscribe({
       next: response => {
+        if (!response.body) {
+          this.exporting.set(false);
+          this.showError('Le serveur a renvoyé une sauvegarde vide.');
+          return;
+        }
         const disposition = response.headers.get('Content-Disposition') ?? '';
         const fileName = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'tracker-backup.json';
-        const url = URL.createObjectURL(response.body!);
+        const url = URL.createObjectURL(response.body);
         const link = document.createElement('a');
         link.href = url;
         link.download = fileName;
@@ -203,14 +217,18 @@ export class SettingsPage implements OnInit {
   importBackup(input: HTMLInputElement) {
     const file = input.files?.[0];
     input.value = '';
-    if (!file || this.importing()) return;
+    if (!file || this.importing() || this.exporting() || this.saving() || this.testing()) return;
+
+    if (file.size > 512 * 1024 * 1024) {
+      this.showError('La sauvegarde ne doit pas dépasser 512 Mo.');
+      return;
+    }
 
     if (!confirm(`Remplacer toutes les données par le contenu de « ${file.name} » ? Les données actuelles seront définitivement perdues.`)) return;
 
     this.importing.set(true);
     this.api.importBackup(file).subscribe({
       next: result => {
-        this.importing.set(false);
         const media = result.counts['userMedia'] ?? 0;
         const lists = result.counts['mediaLists'] ?? 0;
         this.showSuccess(`Import terminé : ${media} médias, ${lists} listes. Rechargement…`);
@@ -254,8 +272,8 @@ export class SettingsPage implements OnInit {
 
   private notificationTimeParts(): { hour: number; minute: number } {
     return {
-      hour: Math.max(0, Math.min(23, Number(this.form.notificationHour) || 0)),
-      minute: Math.max(0, Math.min(59, Number(this.form.notificationMinute) || 0)),
+      hour: Math.trunc(Math.max(0, Math.min(23, Number(this.form.notificationHour) || 0))),
+      minute: Math.trunc(Math.max(0, Math.min(59, Number(this.form.notificationMinute) || 0))),
     };
   }
 
@@ -263,7 +281,7 @@ export class SettingsPage implements OnInit {
     const time = this.notificationTimeParts();
     return {
       ...this.form,
-      notifyDaysAhead: Number(this.form.notifyDaysAhead) || 0,
+      notifyDaysAhead: Math.trunc(Math.max(0, Math.min(30, Number(this.form.notifyDaysAhead) || 0))),
       notificationHour: time.hour,
       notificationMinute: time.minute,
     };

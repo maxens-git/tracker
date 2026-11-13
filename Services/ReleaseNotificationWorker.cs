@@ -42,13 +42,16 @@ public class ReleaseNotificationWorker(
 
             TmdbReleaseService tmdb = scope.ServiceProvider.GetRequiredService<TmdbReleaseService>();
             NtfyService ntfy = scope.ServiceProvider.GetRequiredService<NtfyService>();
-            await NotifyUpcoming(context, tmdb, ntfy, settings!, today, cancellationToken);
-            await DetectNewSeasons(context, tmdb, ntfy, settings!, today, cancellationToken);
+            bool releasesSucceeded = await NotifyUpcoming(context, tmdb, ntfy, settings!, today, cancellationToken);
+            bool seasonsSucceeded = await DetectNewSeasons(context, tmdb, ntfy, settings!, today, cancellationToken);
 
-            lastRunDate = today;
+            // Les envois réussis sont dédupliqués en base ; les échecs doivent pouvoir
+            // être retentés au prochain passage, même si leur sortie est aujourd'hui.
+            if (releasesSucceeded && seasonsSucceeded)
+                lastRunDate = today;
             logger.LogInformation("Cycle de notifications de sorties terminé pour {Date}.", today);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
@@ -74,7 +77,7 @@ public class ReleaseNotificationWorker(
         return TimeOnly.FromDateTime(DateTime.Now) >= configuredTime;
     }
 
-    private async Task NotifyUpcoming(
+    private async Task<bool> NotifyUpcoming(
         ApiDbContext context,
         TmdbReleaseService tmdb,
         NtfyService ntfy,
@@ -87,9 +90,24 @@ public class ReleaseNotificationWorker(
         logger.LogInformation("Vérification des sorties à venir: {Count} médias suivis, fenêtre {DaysAhead} jours.",
             tracked.Count, daysAhead);
 
+        bool succeeded = true;
         foreach (TrackedMediaRelease media in tracked)
         {
-            List<ReleaseCandidate> releases = await tmdb.GetUpcomingReleases(media, today, daysAhead, cancellationToken);
+            List<ReleaseCandidate> releases;
+            try
+            {
+                releases = await tmdb.GetUpcomingReleases(media, today, daysAhead, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                succeeded = false;
+                logger.LogWarning(ex, "Vérification des sorties échouée pour {Type} {TmdbId}.", media.MediaType, media.TmdbId);
+                continue;
+            }
             if (releases.Count > 0)
             {
                 logger.LogInformation("{Count} sortie(s) détectée(s) pour {Title} ({Type} {TmdbId}).",
@@ -108,25 +126,31 @@ public class ReleaseNotificationWorker(
 
                 // Un envoi en échec (ntfy momentanément indisponible…) ne doit pas
                 // interrompre le reste du cycle : on logue et on passe au suivant.
+                ReleaseNotification notification = new(release.TmdbId, release.MediaType, release.ReleaseKey);
                 try
                 {
                     await ntfy.SendReleaseNotification(settings, release, cancellationToken);
-                    context.ReleaseNotifications.Add(new ReleaseNotification(release.TmdbId, release.MediaType, release.ReleaseKey));
+                    context.ReleaseNotifications.Add(notification);
                     await context.SaveChangesAsync(cancellationToken);
                     logger.LogInformation("Notification de sortie enregistrée comme envoyée: {ReleaseTitle} ({ReleaseKey}).",
                         release.ReleaseTitle, release.ReleaseKey);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
                     throw;
                 }
                 catch (Exception ex)
                 {
+                    succeeded = false;
+                    // Un INSERT en échec ne doit pas être retenté implicitement avec
+                    // chaque envoi suivant dans le même DbContext.
+                    context.Entry(notification).State = EntityState.Detached;
                     logger.LogWarning(ex, "Notification de sortie échouée pour {Type} {TmdbId} ({ReleaseKey}).",
                         release.MediaType, release.TmdbId, release.ReleaseKey);
                 }
             }
         }
+        return succeeded;
     }
 
     /// <summary>
@@ -135,7 +159,7 @@ public class ReleaseNotificationWorker(
     /// d'une série (aucune saison mémorisée) ne fait que semer l'instantané sans
     /// notifier — sinon chaque saison existante déclencherait une fausse alerte.
     /// </summary>
-    private async Task DetectNewSeasons(
+    private async Task<bool> DetectNewSeasons(
         ApiDbContext context,
         TmdbReleaseService tmdb,
         NtfyService ntfy,
@@ -148,9 +172,24 @@ public class ReleaseNotificationWorker(
             .ToListAsync(cancellationToken);
         logger.LogInformation("Vérification des nouvelles saisons: {Count} série(s) suivie(s).", shows.Count);
 
+        bool succeeded = true;
         foreach (TrackedMediaRelease media in shows)
         {
-            List<SeasonInfo> seasons = await tmdb.GetShowSeasons(media.TmdbId, cancellationToken);
+            List<SeasonInfo> seasons;
+            try
+            {
+                seasons = await tmdb.GetShowSeasons(media.TmdbId, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                succeeded = false;
+                logger.LogWarning(ex, "Vérification des saisons échouée pour {TmdbId}.", media.TmdbId);
+                continue;
+            }
             if (seasons.Count == 0) continue;
 
             List<KnownSeason> known = await context.KnownSeasons
@@ -177,33 +216,39 @@ public class ReleaseNotificationWorker(
                     continue;
                 }
 
-                context.KnownSeasons.Add(new KnownSeason(
-                    media.TmdbId, season.SeasonNumber, season.Name, season.AirDate, season.EpisodeCount));
+                if (!seeding && IsUpcoming(season.AirDate, today))
+                {
+                    try
+                    {
+                        logger.LogInformation("Nouvelle saison à notifier: {Title} S{Season} (air date: {AirDate}).",
+                            media.Title, season.SeasonNumber, season.AirDate ?? "à confirmer");
+                        await ntfy.SendSeasonAnnouncedNotification(
+                            settings, media.Title, $"{media.Title} — saison {season.SeasonNumber}", season.AirDate, cancellationToken);
+                        logger.LogInformation("Notification de nouvelle saison envoyée pour {Title} S{Season}.",
+                            media.Title, season.SeasonNumber);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        succeeded = false;
+                        logger.LogWarning(ex, "Notification de nouvelle saison échouée pour {TmdbId} S{Season}.",
+                            media.TmdbId, season.SeasonNumber);
+                        // Garder la saison inconnue permet de réessayer son annonce.
+                        continue;
+                    }
+                }
 
-                if (seeding || !IsUpcoming(season.AirDate, today)) continue;
-
-                try
-                {
-                    logger.LogInformation("Nouvelle saison à notifier: {Title} S{Season} (air date: {AirDate}).",
-                        media.Title, season.SeasonNumber, season.AirDate ?? "à confirmer");
-                    await ntfy.SendSeasonAnnouncedNotification(
-                        settings, media.Title, $"{media.Title} — saison {season.SeasonNumber}", season.AirDate, cancellationToken);
-                    logger.LogInformation("Notification de nouvelle saison envoyée pour {Title} S{Season}.",
-                        media.Title, season.SeasonNumber);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Notification de nouvelle saison échouée pour {TmdbId} S{Season}.",
-                        media.TmdbId, season.SeasonNumber);
-                }
+                KnownSeason added = new(media.TmdbId, season.SeasonNumber, season.Name, season.AirDate, season.EpisodeCount);
+                context.KnownSeasons.Add(added);
+                knownByNumber.Add(season.SeasonNumber, added);
             }
 
             await context.SaveChangesAsync(cancellationToken);
         }
+        return succeeded;
     }
 
     /// <summary>Une saison est « à venir » si elle n'a pas de date, ou une date non passée.</summary>

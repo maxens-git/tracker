@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -16,7 +17,7 @@ public class MediaController(
     WatchHistoryService watchHistoryService) : ControllerBase
 {
     [HttpGet("states")]
-    public async Task<ActionResult<List<UserStateDto>>> GetStates([FromQuery] string tmdbIds, [FromQuery] string type = "movie")
+    public async Task<ActionResult<List<UserStateDto>>> GetStates([FromQuery] string tmdbIds, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type = "movie")
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         List<int> ids = ParseTmdbIds(tmdbIds);
@@ -47,7 +48,7 @@ public class MediaController(
     /// endpoints <c>/watches</c>.
     /// </summary>
     [HttpPost("{tmdbId}/seen")]
-    public async Task<IActionResult> MarkSeen(int tmdbId, [FromQuery] string type, [FromBody] MarkSeenDto dto)
+    public async Task<IActionResult> MarkSeen([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type, [FromBody] MarkSeenDto dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres, dto.Title);
@@ -68,7 +69,7 @@ public class MediaController(
     }
 
     [HttpGet("{tmdbId}/watches")]
-    public async Task<ActionResult<List<WatchEventDto>>> GetWatches(int tmdbId, [FromQuery] string type)
+    public async Task<ActionResult<List<WatchEventDto>>> GetWatches([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia? um = await context.UserMedia.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
@@ -80,7 +81,7 @@ public class MediaController(
 
     /// <summary>Ajoute un visionnage à une date choisie par l'utilisateur (permet de logger un revisionnage passé).</summary>
     [HttpPost("{tmdbId}/watches")]
-    public async Task<ActionResult<WatchEventDto>> AddWatch(int tmdbId, [FromQuery] string type, [FromBody] AddWatchDto dto)
+    public async Task<ActionResult<WatchEventDto>> AddWatch([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type, [FromBody] AddWatchDto dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto.PosterPath, dto.Runtime, dto.Genres, dto.Title);
@@ -95,7 +96,7 @@ public class MediaController(
 
     /// <summary>Supprime un visionnage précis de l'historique (édition, pas forcément un "je n'ai pas vu ce film").</summary>
     [HttpDelete("{tmdbId}/watches/{watchId}")]
-    public async Task<IActionResult> DeleteWatch(int tmdbId, [FromQuery] string type, int watchId)
+    public async Task<IActionResult> DeleteWatch([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type, int watchId)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia? um = await context.UserMedia.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
@@ -112,21 +113,21 @@ public class MediaController(
     }
 
     [HttpPost("{tmdbId}/liked")]
-    public async Task<IActionResult> MarkLiked(int tmdbId, [FromQuery] string type, [FromQuery] string? posterPath, [FromQuery] string? title, [FromBody] bool liked)
+    public async Task<IActionResult> MarkLiked([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type, [FromQuery, MaxLength(500)] string? posterPath, [FromQuery, MaxLength(500)] string? title, [FromBody] bool liked)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, posterPath, title: title);
+        if (um.Liked != liked)
+            activityService.Log(liked ? ActivityType.Liked : ActivityType.Unliked, tmdbId, mediaType, um.PosterPath);
         um.Liked = liked;
-        activityService.Log(liked ? ActivityType.Liked : ActivityType.Unliked, tmdbId, mediaType, um.PosterPath);
         await context.SaveChangesAsync();
         return Ok(new { tmdbId, liked = um.Liked });
     }
 
     [HttpPost("{tmdbId}/watchlist")]
-    public async Task<IActionResult> AddToWatchlist(int tmdbId, [FromQuery] string type, [FromBody] AddToWatchlistDto? dto)
+    public async Task<IActionResult> AddToWatchlist([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type, [FromBody] AddToWatchlistDto? dto)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
-        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime, dto?.Genres, dto?.Title);
         MediaList watchlist = await mediaService.EnsureWatchlist();
 
         bool alreadyIn = await context.MediaListItems
@@ -135,7 +136,11 @@ public class MediaController(
         if (alreadyIn)
             return BadRequest("Déjà dans la watchlist");
 
-        context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, dto?.Title));
+        UserMedia um = await mediaService.EnsureUserMedia(tmdbId, mediaType, dto?.PosterPath, dto?.Runtime, dto?.Genres, dto?.Title);
+        context.MediaListItems.Add(new MediaListItem(watchlist.Id, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, dto?.Title ?? um.Title)
+        {
+            MediaList = watchlist
+        });
         watchlist.UpdatedAt = DateTime.UtcNow;
         activityService.Log(ActivityType.AddedToList, tmdbId, mediaType, dto?.PosterPath ?? um.PosterPath, watchlist.Id, watchlist.Name);
         await context.SaveChangesAsync();
@@ -143,7 +148,7 @@ public class MediaController(
     }
 
     [HttpDelete("{tmdbId}/watchlist")]
-    public async Task<IActionResult> RemoveFromWatchlist(int tmdbId, [FromQuery] string type)
+    public async Task<IActionResult> RemoveFromWatchlist([Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type)
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         MediaList? watchlist = await mediaService.FindWatchlist();
@@ -169,5 +174,6 @@ public class MediaController(
         tmdbIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(s => int.TryParse(s, out int id) ? id : 0)
             .Where(id => id > 0)
+            .Distinct()
             .ToList();
 }

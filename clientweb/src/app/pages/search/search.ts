@@ -1,8 +1,9 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+import { Subject, distinctUntilChanged, switchMap, of, timer } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { Api, withUserStates } from '../../../shared/services/api';
@@ -44,6 +45,7 @@ export class Search implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
   private query$ = new Subject<string>();
   readonly history = inject(SearchHistoryService);
 
@@ -51,6 +53,7 @@ export class Search implements OnInit {
   allResults = signal<MediaItem[]>([]);
   loading = signal(false);
   searched = signal(false);
+  error = signal(false);
   filter = signal<'all' | 'movie' | 'tv'>('all');
 
   // ── Filtres genre + tri (appliqués côté client sur les résultats) ──────────
@@ -99,7 +102,7 @@ export class Search implements OnInit {
   ]);
 
   ngOnInit() {
-    this.tmdb.genres().subscribe(g => this.allGenres.set(g));
+    this.tmdb.genres().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(g => this.allGenres.set(g));
 
     const initial = this.route.snapshot.queryParamMap.get('q') ?? '';
     const initialType = this.route.snapshot.queryParamMap.get('type');
@@ -113,43 +116,43 @@ export class Search implements OnInit {
     }
 
     this.query$.pipe(
-      debounceTime(300),
+      map(q => q.trim()),
       distinctUntilChanged(),
       switchMap(q => {
-        if (!q.trim()) {
+        this.error.set(false);
+        if (!q) {
           this.allResults.set([]);
           this.searched.set(false);
           this.loading.set(false);
           this.clearQueryParams();
-          return of(null);
+          return of({ query: q, results: [] as MediaItem[] });
         }
         this.loading.set(true);
         this.searched.set(true);
         this.syncQueryParams(q);
-        return this.tmdb.searchPages(q, PAGES_PER_SEARCH).pipe(
-          // La requête est transportée avec sa réponse : le classement en a
-          // besoin, et un switchMap a pu changer `this.query` entre-temps.
-          map(results => ({ query: q, results })),
-          catchError(() => of(null)),
+        // Une nouvelle frappe annule immédiatement toute la recherche précédente,
+        // y compris l'appel API qui enrichit les états après la réponse TMDB.
+        return timer(300).pipe(
+          switchMap(() => this.tmdb.searchPages(q, PAGES_PER_SEARCH)),
+          switchMap(items => {
+            const media = items.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
+            const results = rank(deduplicate(media), q);
+            return this.api.statesByTmdbId(results).pipe(
+              map(states => ({ query: q, results: withUserStates(results, states) })),
+            );
+          }),
+          catchError(() => {
+            this.error.set(true);
+            return of({ query: q, results: [] as MediaItem[] });
+          }),
         );
       }),
-      // Pour chaque réponse TMDB, on enrichit les résultats avec les états utilisateur.
-      switchMap(resp => {
-        if (!resp) return of([] as MediaItem[]);
-        const media = resp.results.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
-        // Dédoublonnage (une même fiche peut revenir d'une page à l'autre) puis
-        // reclassement : l'ordre TMDB privilégie la popularité, pas la
-        // correspondance avec ce qui a été tapé.
-        const results = rank(deduplicate(media), resp.query);
-        return this.api.statesByTmdbId(results).pipe(
-          map(states => withUserStates(results, states))
-        );
-      })
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: results => {
-        if (results) this.allResults.set(results);
+      next: ({ query, results }) => {
+        this.allResults.set(results);
         // La recherche a abouti : on l'ajoute à l'historique récent.
-        if (results && results.length > 0) this.history.record(this.query);
+        if (results.length > 0) this.history.record(query);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

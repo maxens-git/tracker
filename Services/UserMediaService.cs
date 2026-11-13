@@ -10,7 +10,7 @@ public class UserMediaService(ApiDbContext context)
 {
     /// <summary>
     /// Récupère le <see cref="UserMedia"/> existant ou le crée. Met à jour le poster/runtime
-    /// si fournis. La sauvegarde de la mise à jour est laissée à l'appelant.
+    /// si fournis. La création et les modifications sont sauvegardées par l'appelant.
     /// </summary>
     public async Task<UserMedia> EnsureUserMedia(
         int tmdbId,
@@ -20,8 +20,9 @@ public class UserMediaService(ApiDbContext context)
         IEnumerable<MediaGenreDto>? genres = null,
         string? title = null)
     {
-        UserMedia? um = await context.UserMedia
-            .FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
+        UserMedia? um = context.UserMedia.Local
+            .FirstOrDefault(m => m.TmdbId == tmdbId && m.MediaType == mediaType)
+            ?? await context.UserMedia.FirstOrDefaultAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
 
         string? genreNamesJson = SerializeGenreNames(genres);
 
@@ -29,7 +30,6 @@ public class UserMediaService(ApiDbContext context)
         {
             um = new UserMedia(tmdbId, mediaType, posterPath, runtime, genreNamesJson, title);
             context.UserMedia.Add(um);
-            await context.SaveChangesAsync();
             return um;
         }
 
@@ -45,7 +45,7 @@ public class UserMediaService(ApiDbContext context)
         if (genres == null) return null;
 
         List<string> names = genres
-            .Select(g => g.Name.Trim())
+            .Select(g => g?.Name?.Trim() ?? string.Empty)
             .Where(name => name.Length > 0)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -54,8 +54,9 @@ public class UserMediaService(ApiDbContext context)
     }
 
     /// <summary>Retourne la watchlist système ou <c>null</c> si elle n'existe pas encore.</summary>
-    public Task<MediaList?> FindWatchlist() =>
-        context.MediaLists.FirstOrDefaultAsync(l => l.IsSystem && l.Name == SystemLists.Watchlist);
+    public async Task<MediaList?> FindWatchlist() =>
+        context.MediaLists.Local.FirstOrDefault(l => l.IsSystem && l.Name == SystemLists.Watchlist)
+        ?? await context.MediaLists.FirstOrDefaultAsync(l => l.IsSystem && l.Name == SystemLists.Watchlist);
 
     /// <summary>Retourne la watchlist système, en la créant si nécessaire.</summary>
     public async Task<MediaList> EnsureWatchlist()

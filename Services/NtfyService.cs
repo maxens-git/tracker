@@ -107,7 +107,7 @@ public class NtfyService(HttpClient http, ILogger<NtfyService> logger)
     /// </summary>
     private static string EncodeHeader(string value)
     {
-        if (value.All(c => c < 128))
+        if (value.All(c => c is >= ' ' and <= '~'))
             return value;
 
         string base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));

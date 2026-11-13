@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -57,19 +58,19 @@ public class MediaListsController(
 
     [HttpGet("seen/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetSeenItems(
-        [FromQuery] int page = 1, [FromQuery] string type = "all") =>
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all") =>
         GetUserMediaItems(context.UserMedia.Where(m => m.Seen), page, type,
             q => q.OrderByDescending(m => m.WatchEvents.Max(w => (DateTime?)w.WatchedAt) ?? m.AddedAt)
                   .ThenByDescending(m => m.Id));
 
     [HttpGet("liked/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetLikedItems(
-        [FromQuery] int page = 1, [FromQuery] string type = "all") =>
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all") =>
         GetUserMediaItems(context.UserMedia.Where(m => m.Liked), page, type);
 
     [HttpGet("watchlist/items")]
     public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetWatchlistItems(
-        [FromQuery] int page = 1, [FromQuery] string type = "all")
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all")
     {
         MediaList? watchlist = await userMediaService.FindWatchlist();
 
@@ -83,11 +84,16 @@ public class MediaListsController(
 
     [HttpGet("{id:int}/items")]
     public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetItems(
-        int id, [FromQuery] int page = 1, [FromQuery] string type = "all")
+        int id, [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all")
     {
-        bool exists = await context.MediaLists.AnyAsync(ml => ml.Id == id);
-        if (!exists)
+        MediaList? list = await context.MediaLists.FindAsync(id);
+        if (list == null)
             return NotFound("Liste introuvable");
+
+        if (list.IsSystem && list.Name == SystemLists.Seen)
+            return await GetSeenItems(page, type);
+        if (list.IsSystem && list.Name == SystemLists.Liked)
+            return await GetLikedItems(page, type);
 
         return await mediaListService.GetListItemsPaginated(id, page, type);
     }
@@ -99,6 +105,9 @@ public class MediaListsController(
         if (list == null)
             return NotFound("Liste introuvable");
 
+        if (IsVirtualList(list))
+            return BadRequest("Utilisez l'état vu ou aimé du média pour modifier cette liste.");
+
         MediaType mediaType = MediaTypeExtensions.Parse(dto.MediaType);
 
         bool alreadyIn = await context.MediaListItems
@@ -107,9 +116,9 @@ public class MediaListsController(
         if (alreadyIn)
             return BadRequest("Déjà dans la liste");
 
-        UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath, genres: dto.Genres);
+        UserMedia um = await userMediaService.EnsureUserMedia(dto.TmdbId, mediaType, dto.PosterPath, genres: dto.Genres, title: dto.Title);
 
-        context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, dto.Title));
+        context.MediaListItems.Add(new MediaListItem(id, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, dto.Title ?? um.Title));
 
         list.UpdatedAt = DateTime.UtcNow;
         activityService.Log(ActivityType.AddedToList, dto.TmdbId, mediaType, dto.PosterPath ?? um.PosterPath, list.Id, list.Name);
@@ -118,8 +127,12 @@ public class MediaListsController(
     }
 
     [HttpDelete("{id:int}/items/{tmdbId}")]
-    public async Task<IActionResult> RemoveItem(int id, int tmdbId, [FromQuery] string type = "movie")
+    public async Task<IActionResult> RemoveItem(int id, [Range(1, int.MaxValue)] int tmdbId, [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type = "movie")
     {
+        MediaList? list = await context.MediaLists.FindAsync(id);
+        if (list != null && IsVirtualList(list))
+            return BadRequest("Utilisez l'état vu ou aimé du média pour modifier cette liste.");
+
         MediaType mediaType = MediaTypeExtensions.Parse(type);
 
         MediaListItem? item = await context.MediaListItems
@@ -128,7 +141,6 @@ public class MediaListsController(
         if (item == null)
             return NotFound("Élément absent de la liste");
 
-        MediaList? list = await context.MediaLists.FindAsync(id);
         if (list != null) list.UpdatedAt = DateTime.UtcNow;
 
         context.MediaListItems.Remove(item);
@@ -145,10 +157,11 @@ public class MediaListsController(
         if (string.IsNullOrWhiteSpace(dto.Name))
             return BadRequest("Le nom est requis.");
 
-        if (await context.MediaLists.AnyAsync(l => l.Name == dto.Name))
+        string name = dto.Name.Trim();
+        if (await context.MediaLists.AnyAsync(l => l.Name == name))
             return BadRequest("Une liste portant ce nom existe déjà.");
 
-        MediaList list = new(dto.Name, dto.Description);
+        MediaList list = new(name, dto.Description);
 
         context.MediaLists.Add(list);
         await context.SaveChangesAsync();
@@ -167,11 +180,15 @@ public class MediaListsController(
         if (list.IsSystem)
             return BadRequest("Impossible de modifier une liste système");
 
-        if (dto.Name != null && dto.Name != list.Name &&
-            await context.MediaLists.AnyAsync(l => l.Name == dto.Name && l.Id != id))
+        string? name = dto.Name?.Trim();
+        if (name != null && name.Length == 0)
+            return BadRequest("Le nom est requis.");
+
+        if (name != null && name != list.Name &&
+            await context.MediaLists.AnyAsync(l => l.Name == name && l.Id != id))
             return BadRequest("Une liste portant ce nom existe déjà.");
 
-        list.Name = dto.Name ?? list.Name;
+        list.Name = name ?? list.Name;
         list.Description = dto.Description ?? list.Description;
         list.UpdatedAt = DateTime.UtcNow;
 
@@ -200,15 +217,22 @@ public class MediaListsController(
         IQueryable<UserMedia> source, int page, string type,
         Func<IQueryable<UserMedia>, IOrderedQueryable<UserMedia>>? orderBy = null)
     {
+        page = Math.Max(1, page);
         IQueryable<UserMedia> query = MediaListService.ApplyTypeFilter(source, type);
         int total = await query.CountAsync();
+        long offset = ((long)page - 1) * MediaListService.PageSize;
+        if (offset >= total)
+            return MediaListService.Paginate([], page, total);
 
         orderBy ??= q => q.OrderByDescending(m => m.AddedAt).ThenByDescending(m => m.Id);
 
         List<UserMedia> items = await orderBy(query)
-            .Skip((page - 1) * MediaListService.PageSize).Take(MediaListService.PageSize)
+            .Skip((int)offset).Take(MediaListService.PageSize)
             .ToListAsync();
 
         return MediaListService.Paginate(items.Select(MediaListService.ToDto).ToList(), page, total);
     }
+
+    private static bool IsVirtualList(MediaList list) =>
+        list.IsSystem && list.Name is SystemLists.Seen or SystemLists.Liked;
 }

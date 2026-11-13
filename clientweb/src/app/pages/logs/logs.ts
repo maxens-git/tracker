@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -24,6 +26,10 @@ type LevelFilter = 'all' | 'Information' | 'Warning' | 'Error' | 'Critical';
 export class LogsPage implements OnInit {
   private api = inject(Api);
   private messages = inject(MessageService);
+  private destroyRef = inject(DestroyRef);
+  private request?: Subscription;
+  private currentLevel: LevelFilter = 'all';
+  private currentSearch = '';
 
   logs = signal<SystemLog[]>([]);
   page = signal(0);
@@ -53,6 +59,9 @@ export class LogsPage implements OnInit {
   }
 
   refresh() {
+    this.request?.unsubscribe();
+    this.currentLevel = this.level;
+    this.currentSearch = this.search.trim();
     this.logs.set([]);
     this.page.set(0);
     this.totalPages.set(1);
@@ -61,13 +70,16 @@ export class LogsPage implements OnInit {
   }
 
   loadMore() {
-    if (this.loading()) return;
+    if (this.loading() || !this.hasMore) return;
 
     const next = this.page() + 1;
     this.loading.set(true);
     this.error.set(false);
 
-    this.api.logs(next, this.level, this.search.trim()).subscribe({
+    this.request = this.api.logs(next, this.currentLevel, this.currentSearch).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.loading.set(false)),
+    ).subscribe({
       next: result => {
         this.logs.update(current => [...current, ...result.items]);
         this.page.set(result.page);
@@ -87,7 +99,7 @@ export class LogsPage implements OnInit {
     if (this.clearing()) return;
 
     this.clearing.set(true);
-    this.api.clearLogs().subscribe({
+    this.api.clearLogs().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.clearing.set(false);
         this.messages.add({ severity: 'success', summary: 'Logs', detail: 'Logs vidés.', life: 3500 });

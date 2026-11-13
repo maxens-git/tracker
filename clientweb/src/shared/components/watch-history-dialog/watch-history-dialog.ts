@@ -1,4 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -30,6 +33,8 @@ export interface WatchCountChange {
 })
 export class WatchHistoryDialog implements OnChanges {
   private api = inject(Api);
+  private destroyRef = inject(DestroyRef);
+  private sessionChanged = new Subject<void>();
   private messages = inject(MessageService);
 
   @Input() visible = false;
@@ -49,7 +54,8 @@ export class WatchHistoryDialog implements OnChanges {
   loading = signal(false);
   adding = signal(false);
   removingId = signal<number | null>(null);
-  newDate: Date = new Date();
+  historyError = signal<string | null>(null);
+  newDate: Date | null = new Date();
   today = new Date();
 
   get isEpisode(): boolean {
@@ -57,77 +63,105 @@ export class WatchHistoryDialog implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible'] && this.visible) {
-      this.newDate = new Date();
-      this.loadHistory();
+    if (['visible', 'tmdbId', 'mediaType', 'seasonNumber', 'episodeNumber'].some(key => changes[key])) {
+      this.sessionChanged.next();
+      this.adding.set(false);
+      this.removingId.set(null);
+      this.events.set([]);
+      if (this.visible) {
+        this.today = new Date();
+        this.newDate = new Date();
+        this.loadHistory();
+      }
     }
   }
 
   close() {
+    this.sessionChanged.next();
     this.visible = false;
     this.visibleChange.emit(false);
   }
 
-  private loadHistory() {
+  private currentRequest<T>(request: Observable<T>): Observable<T> {
+    return request.pipe(takeUntil(this.sessionChanged), takeUntilDestroyed(this.destroyRef));
+  }
+
+  loadHistory() {
     this.loading.set(true);
+    this.historyError.set(null);
     const request$ = this.isEpisode
       ? this.api.getEpisodeWatches(this.tmdbId, this.seasonNumber!, this.episodeNumber!)
       : this.api.getWatches(this.tmdbId, this.mediaType);
 
-    request$.subscribe({
-      next: events => { this.events.set(sortDesc(events)); this.loading.set(false); },
-      error: err => { this.loading.set(false); this.messages.add({ severity: 'error', summary: 'Historique', detail: errorMessage(err), life: 4000 }); },
+    this.currentRequest(request$).subscribe({
+      next: events => {
+        this.events.set(sortDesc(events));
+        this.loading.set(false);
+        this.emitCountChange();
+      },
+      error: err => {
+        this.loading.set(false);
+        this.historyError.set(errorMessage(err));
+      },
     });
   }
 
+  get mutationPending(): boolean {
+    return this.adding() || this.removingId() !== null;
+  }
+
   addWatch() {
-    if (this.adding()) return;
+    if (this.loading() || this.historyError() || this.mutationPending) return;
+    if (!(this.newDate instanceof Date) || !Number.isFinite(this.newDate.getTime())
+        || this.newDate.getUTCFullYear() < 1000 || this.newDate.getUTCFullYear() > 9999) {
+      this.messages.add({ severity: 'error', summary: 'Historique', detail: 'Choisissez une date valide.', life: 4000 });
+      return;
+    }
+    const watchedAt = this.newDate.toISOString();
     this.adding.set(true);
-    const watchedAt = (this.newDate ?? new Date()).toISOString();
 
     const request$ = this.isEpisode
       ? this.api.addEpisodeWatch(this.tmdbId, this.seasonNumber!, this.episodeNumber!, watchedAt)
       : this.api.addWatch(this.tmdbId, this.mediaType, {
-          watchedAt,
-          posterPath: this.posterPath,
-          runtime: this.runtime,
-          title: this.title,
-          genres: this.genres,
+          watchedAt, posterPath: this.posterPath, runtime: this.runtime,
+          title: this.title, genres: this.genres,
         });
 
-    request$.subscribe({
+    this.currentRequest(request$).subscribe({
       next: event => {
         this.events.update(list => sortDesc([...list, event]));
         this.adding.set(false);
         this.newDate = new Date();
         this.emitCountChange();
+        this.loadHistory();
       },
-      error: err => {
-        this.adding.set(false);
-        this.messages.add({ severity: 'error', summary: 'Historique', detail: errorMessage(err), life: 4000 });
-      },
+      error: err => { this.adding.set(false); this.handleMutationError(err); },
     });
   }
 
   removeWatch(event: WatchEvent) {
-    if (this.removingId() !== null) return;
+    if (this.loading() || this.historyError() || this.mutationPending) return;
     this.removingId.set(event.id);
 
     const request$ = this.isEpisode
       ? this.api.deleteEpisodeWatch(this.tmdbId, this.seasonNumber!, this.episodeNumber!, event.id)
       : this.api.deleteWatch(this.tmdbId, this.mediaType, event.id);
 
-    request$.subscribe({
+    this.currentRequest(request$).subscribe({
       next: () => {
         this.events.update(list => list.filter(e => e.id !== event.id));
         this.removingId.set(null);
         this.emitCountChange();
+        this.loadHistory();
       },
-      error: err => {
-        this.removingId.set(null);
-        this.messages.add({ severity: 'error', summary: 'Historique', detail: errorMessage(err), life: 4000 });
-      },
+      error: err => { this.removingId.set(null); this.handleMutationError(err); },
     });
+  }
+
+  private handleMutationError(err: unknown) {
+    this.messages.add({ severity: 'error', summary: 'Historique', detail: errorMessage(err), life: 4000 });
+    if (err instanceof HttpErrorResponse && (err.status === 409 || err.status === 404))
+      this.loadHistory();
   }
 
   private emitCountChange() {

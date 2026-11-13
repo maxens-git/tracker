@@ -21,6 +21,13 @@ public class RequestLogMiddleware(RequestDelegate next, SystemLogQueue queue)
         {
             await next(context);
         }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            failedWithException = true;
+            stopwatch.Stop();
+            Enqueue(context, LogLevel.Information, "API request cancelled", null, stopwatch.Elapsed.TotalMilliseconds, 499);
+            throw;
+        }
         catch (Exception ex)
         {
             failedWithException = true;
@@ -51,7 +58,7 @@ public class RequestLogMiddleware(RequestDelegate next, SystemLogQueue queue)
         }
     }
 
-    private void Enqueue(HttpContext context, LogLevel level, string message, Exception? exception, double elapsedMs)
+    private void Enqueue(HttpContext context, LogLevel level, string message, Exception? exception, double elapsedMs, int? statusCode = null)
     {
         queue.TryWrite(new SystemLogWrite(
             DateTime.UtcNow,
@@ -60,10 +67,15 @@ public class RequestLogMiddleware(RequestDelegate next, SystemLogQueue queue)
             message,
             exception?.ToString(),
             0,
-            context.TraceIdentifier,
-            context.Request.Method,
-            context.Request.Path.Value,
-            context.Response.StatusCode,
+            Limit(context.TraceIdentifier, 100),
+            Limit(context.Request.Method, 12),
+            Limit(context.Request.Path.Value, 1000),
+            statusCode ?? (exception != null && !context.Response.HasStarted
+                ? StatusCodes.Status500InternalServerError
+                : context.Response.StatusCode),
             Math.Round(elapsedMs, 1)));
     }
+
+    private static string? Limit(string? value, int length) =>
+        value?.Length > length ? value[..length] : value;
 }

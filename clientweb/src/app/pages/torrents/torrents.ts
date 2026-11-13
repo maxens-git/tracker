@@ -1,9 +1,10 @@
-import { Component, inject, signal, computed, OnInit, WritableSignal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit, WritableSignal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, from, of, concatMap, tap, catchError, finalize } from 'rxjs';
+import { Observable, Subscription, from, of, concatMap, tap, catchError, finalize } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
@@ -20,6 +21,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { MessageModule } from 'primeng/message';
+import { errorMessage } from '../../../shared/services/http-error';
 
 @Component({
   selector: 'app-torrents',
@@ -38,6 +40,9 @@ export class Torrents implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
+  private unlockRequest?: Subscription;
+  private resolveAllRequest?: Subscription;
 
   query = '';
   results = signal<TorrentResult[]>([]);
@@ -102,14 +107,15 @@ export class Torrents implements OnInit {
     // Silencieux en cas d'échec : on peut toujours chercher sur « tous / toutes ».
     this.loadInto(this.api.torrentIndexers(), this.indexers);
     this.loadInto(this.api.torrentCategories(), this.categories);
-    this.api.torrentBookmarks().subscribe({
+    this.api.torrentBookmarks().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: bookmarks => {
         this.bookmarks.set(bookmarks);
         this.bookmarksLoading.set(false);
       },
-      error: () => {
+      error: err => {
         this.bookmarks.set([]);
         this.bookmarksLoading.set(false);
+        this.showError(errorMessage(err, 'Impossible de charger les marque-pages.'));
       },
     });
 
@@ -123,16 +129,16 @@ export class Torrents implements OnInit {
 
   private parseIdParam(raw: string | null): number | null {
     const id = Number(raw);
-    return raw !== null && Number.isFinite(id) ? id : null;
+    return raw !== null && raw.trim() !== '' && Number.isInteger(id) && id > 0 && id <= 2147483647 ? id : null;
   }
 
   private parseIdList(raw: string | null): number[] {
     if (!raw) return [];
-    return raw.split(',').map(Number).filter(Number.isFinite);
+    return [...new Set(raw.split(',').map(value => this.parseIdParam(value)).filter((id): id is number => id !== null))];
   }
 
   private loadInto<T>(source$: Observable<T[]>, target: WritableSignal<T[]>) {
-    source$.subscribe({
+    source$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: items => target.set(items),
       error: () => target.set([]),
     });
@@ -170,7 +176,7 @@ export class Torrents implements OnInit {
     this.debridFiles.set([]);
     this.syncQueryParams(q);
 
-    this.api.searchTorrents(q, this.selectedIndexers, this.selectedCategory).subscribe({
+    this.api.searchTorrents(q, this.selectedIndexers, this.selectedCategory).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: results => {
         this.results.set(results);
         this.loading.set(false);
@@ -186,9 +192,10 @@ export class Torrents implements OnInit {
   debrid(torrent: TorrentResult) {
     if (this.debriding()) return;
 
+    this.cancelLinkRequests();
     this.debriding.set(torrent.magnetUrl);
 
-    this.api.debridMagnet(torrent.magnetUrl).subscribe({
+    this.api.debridMagnet(torrent.magnetUrl).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
         this.debriding.set(null);
         if (result.files.length === 0) {
@@ -214,22 +221,38 @@ export class Torrents implements OnInit {
 
   // ── Marque-pages ───────────────────────────────────────────────────────
   bookmarkFor(magnetUrl: string): TorrentBookmark | undefined {
-    return this.bookmarks().find(b => b.magnetUrl === magnetUrl);
+    const key = this.magnetKey(magnetUrl);
+    return this.bookmarks().find(b => this.magnetKey(b.magnetUrl) === key);
   }
 
   isBookmarked(magnetUrl: string): boolean {
-    return this.bookmarks().some(b => b.magnetUrl === magnetUrl);
+    return this.bookmarkFor(magnetUrl) !== undefined;
+  }
+
+  // Même identité que l'API : xt/BTIH décodé, sans dépendre du nom ni des trackers.
+  // Les liens sans hash reconnu ne sont équivalents que si leur texte est identique.
+  private magnetKey(value: string): string {
+    const magnet = value.trim();
+    try {
+      const url = new URL(magnet);
+      for (const [name, topic] of url.searchParams) {
+        if (name.toLowerCase() !== 'xt' || !/^urn:btih:/i.test(topic)) continue;
+        const hash = topic.slice(9);
+        if (/^[a-z0-9]{1,64}$/i.test(hash)) return `btih:${hash.toLowerCase()}`;
+      }
+    } catch { /* Un lien non standard reste identifié par son texte. */ }
+    return `magnet:${magnet}`;
   }
 
   // Ajoute ou retire le torrent des marque-pages (mise à jour optimiste + rollback si échec).
   toggleBookmark(torrent: TorrentResult) {
-    if (this.bookmarking()) return;
+    if (this.bookmarking() || this.bookmarksLoading()) return;
     this.bookmarking.set(torrent.magnetUrl);
 
     const existing = this.bookmarkFor(torrent.magnetUrl);
     if (existing) {
       this.bookmarks.update(list => list.filter(b => b.id !== existing.id));
-      this.api.removeTorrentBookmark(existing.id).subscribe({
+      this.api.removeTorrentBookmark(existing.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => this.bookmarking.set(null),
         error: (err: HttpErrorResponse) => {
           this.bookmarks.update(list => [existing, ...list]); // rollback
@@ -238,7 +261,7 @@ export class Torrents implements OnInit {
         },
       });
     } else {
-      this.api.addTorrentBookmark(torrent).subscribe({
+      this.api.addTorrentBookmark(torrent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: saved => {
           // Dédup : le backend est idempotent, on n'ajoute pas deux fois le même.
           this.bookmarks.update(list =>
@@ -260,7 +283,7 @@ export class Torrents implements OnInit {
 
     const index = this.bookmarks().findIndex(b => b.id === bookmark.id);
     this.bookmarks.update(list => list.filter(b => b.id !== bookmark.id));
-    this.api.removeTorrentBookmark(bookmark.id).subscribe({
+    this.api.removeTorrentBookmark(bookmark.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.bookmarking.set(null),
       error: (err: HttpErrorResponse) => {
         this.bookmarks.update(list => {
@@ -297,7 +320,7 @@ export class Torrents implements OnInit {
     if (this.unlockingLink() || this.resolvedLink(file)) return;
 
     this.unlockingLink.set(file.link);
-    this.api.unlockLink(file.link).subscribe({
+    this.unlockRequest = this.api.unlockLink(file.link).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ directLink }) => {
         this.resolved.update(map => ({ ...map, [file.link]: directLink }));
         this.unlockingLink.set(null);
@@ -318,20 +341,32 @@ export class Torrents implements OnInit {
     if (pending.length === 0) return;
 
     this.resolvingAll.set(true);
-    from(pending).pipe(
+    let failed = false;
+    this.resolveAllRequest = from(pending).pipe(
       concatMap(file => {
         this.unlockingLink.set(file.link);
         return this.api.unlockLink(file.link).pipe(
           tap(({ directLink }) => this.resolved.update(map => ({ ...map, [file.link]: directLink }))),
-          catchError(() => of(null)),
+          catchError(() => { failed = true; return of(null); }),
         );
       }),
+      takeUntilDestroyed(this.destroyRef),
       finalize(() => {
         this.unlockingLink.set(null);
         this.resolvingAll.set(false);
-        if (this.hasUnresolved()) this.showError('Certains liens n’ont pas pu être obtenus.');
       }),
-    ).subscribe();
+    ).subscribe({
+      complete: () => {
+        if (failed && !this.destroyRef.destroyed) this.showError('Certains liens n’ont pas pu être obtenus.');
+      },
+    });
+  }
+
+  cancelLinkRequests() {
+    this.unlockRequest?.unsubscribe();
+    this.resolveAllRequest?.unsubscribe();
+    this.unlockingLink.set(null);
+    this.resolvingAll.set(false);
   }
 
   // Copie tous les liens directs déjà obtenus, un par ligne.
@@ -343,7 +378,8 @@ export class Torrents implements OnInit {
     if (links.length === 0) return;
 
     try {
-      await navigator.clipboard?.writeText(links.join('\n'));
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(links.join('\n'));
       this.messages.add({ severity: 'success', summary: 'Torrents', detail: `${links.length} lien(s) copié(s).`, life: 2500 });
     } catch {
       this.showError('Impossible de copier les liens.');
@@ -352,7 +388,8 @@ export class Torrents implements OnInit {
 
   async copyLink(link: string) {
     try {
-      await navigator.clipboard?.writeText(link);
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(link);
       this.messages.add({ severity: 'success', summary: 'Torrents', detail: 'Lien copié.', life: 2500 });
     } catch {
       this.showError('Impossible de copier le lien.');
@@ -362,7 +399,8 @@ export class Torrents implements OnInit {
   // Copie le lien magnet brut : toujours disponible, même quand le débridage échoue.
   async copyMagnet(torrent: TorrentResult) {
     try {
-      await navigator.clipboard?.writeText(torrent.magnetUrl);
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(torrent.magnetUrl);
       this.messages.add({ severity: 'success', summary: 'Torrents', detail: 'Lien magnet copié.', life: 2500 });
     } catch {
       this.showError('Impossible de copier le lien magnet.');
@@ -414,7 +452,7 @@ export class Torrents implements OnInit {
   }
 
   private messageFor(err: HttpErrorResponse, fallback: string): string {
-    return typeof err.error === 'string' && err.error.trim() ? err.error : fallback;
+    return errorMessage(err, fallback);
   }
 
   private showError(detail: string) {

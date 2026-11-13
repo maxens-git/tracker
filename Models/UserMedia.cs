@@ -29,6 +29,7 @@ public class UserMedia
     public bool Seen { get; set; } = false;
 
     /// <summary>Nombre de visionnages enregistrés (voir <see cref="WatchEvents"/> pour l'historique daté).</summary>
+    [ConcurrencyCheck]
     public int WatchCount { get; set; } = 0;
 
     public bool Liked { get; set; } = false;

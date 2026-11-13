@@ -31,11 +31,12 @@ public class ActivityService(ApiDbContext context)
         if (page < 1) page = 1;
 
         int total = await context.ActivityEvents.CountAsync();
+        long offset = (long)(page - 1) * PageSize;
 
-        List<ActivityEvent> events = await context.ActivityEvents
+        List<ActivityEvent> events = offset >= total ? [] : await context.ActivityEvents
             .OrderByDescending(e => e.CreatedAt)
             .ThenByDescending(e => e.Id)
-            .Skip((page - 1) * PageSize).Take(PageSize)
+            .Skip((int)offset).Take(PageSize)
             .ToListAsync();
 
         return new PaginatedResult<ActivityDto>

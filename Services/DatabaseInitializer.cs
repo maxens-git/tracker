@@ -77,7 +77,7 @@ public class DatabaseInitializer(
 
         await context.Database.MigrateAsync(cancellationToken);
 
-        await DbSeeder.SeedSystemListsAsync(context);
+        await DbSeeder.SeedSystemListsAsync(context, cancellationToken);
 
         if (configuration.GetValue<bool>("JustWatch:EnableImport"))
             await DbSeeder.SeedFromJustWatchAsync(context, environment.ContentRootPath);

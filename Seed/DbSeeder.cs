@@ -8,18 +8,18 @@ namespace Tracker;
 
 public static class DbSeeder
 {
-    public static async Task SeedSystemListsAsync(ApiDbContext context)
+    public static async Task SeedSystemListsAsync(ApiDbContext context, CancellationToken cancellationToken = default)
     {
         foreach (string name in SystemLists.Names)
         {
-            bool exists = await context.MediaLists.AnyAsync(l => l.Name == name);
+            bool exists = await context.MediaLists.AnyAsync(l => l.Name == name, cancellationToken);
             if (!exists)
             {
                 context.MediaLists.Add(new MediaList(name, isSystem: true));
             }
         }
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -157,11 +157,21 @@ public static class DbSeeder
         foreach (var (showId, eps) in episodesByShow)
             foreach (var (key, state) in eps)
                 if (state.Seen)
-                    context.UserEpisodes.Add(
-                        new UserEpisode(showId, key.Season, key.Episode, seen: true)
-                        {
-                            AddedAt = state.SeenAt ?? DateTime.UtcNow
-                        });
+                {
+                    var episode = new UserEpisode(showId, key.Season, key.Episode, seen: true)
+                    {
+                        AddedAt = state.SeenAt ?? DateTime.UtcNow,
+                        WatchCount = 1,
+                    };
+                    episode.WatchEvents.Add(new UserEpisodeWatchEvent(0, episode.AddedAt));
+                    context.UserEpisodes.Add(episode);
+                }
+
+        foreach (UserMedia media in mediaByKey.Values.Where(m => m.Seen))
+        {
+            media.WatchCount = 1;
+            media.WatchEvents.Add(new UserMediaWatchEvent(0, media.AddedAt));
+        }
 
         context.UserMedia.AddRange(mediaByKey.Values);
 

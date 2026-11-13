@@ -1,14 +1,15 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DatePickerModule } from 'primeng/datepicker';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { finalize, map, switchMap } from 'rxjs/operators';
 import { Api, TrackedMedia } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
-import { TmdbMovie, TmdbShow, TmdbSeasonSummary } from '../../../shared/interfaces/media';
+import { TmdbEpisode, TmdbMovie, TmdbShow, TmdbSeasonSummary } from '../../../shared/interfaces/media';
 import { posterUrl } from '../../../shared/services/tmdb-image';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { SelectButtonModule } from 'primeng/selectbutton';
@@ -40,6 +41,8 @@ interface ReleaseCalendarItem {
 export class ReleaseCalendar implements OnInit {
   private api = inject(Api);
   private tmdb = inject(TmdbService);
+  private destroyRef = inject(DestroyRef);
+  private loadSubscription?: Subscription;
 
   items = signal<ReleaseCalendarItem[]>([]);
   /** Saisons/films annoncés sans date confirmée sur TMDB (ex. série « terminée » avec une saison à venir). */
@@ -47,6 +50,8 @@ export class ReleaseCalendar implements OnInit {
   tracked = signal<TrackedMedia[]>([]);
   loading = signal(true);
   error = signal(false);
+  removeError = signal(false);
+  removing = signal<Set<string>>(new Set());
 
   view = signal<'list' | 'calendar'>('list');
   readonly viewOptions = [
@@ -75,16 +80,18 @@ export class ReleaseCalendar implements OnInit {
   }
 
   load() {
+    this.loadSubscription?.unsubscribe();
     this.loading.set(true);
     this.error.set(false);
 
-    this.api.trackedMedia().pipe(
+    this.loadSubscription = this.api.trackedMedia().pipe(
       switchMap(tracked => {
         this.tracked.set(tracked);
         if (tracked.length === 0) return of([] as ReleaseCalendarItem[]);
-        return forkJoin(tracked.map(item => this.releaseItemsFor(item).pipe(catchError(() => of([])))));
+        return forkJoin(tracked.map(item => this.releaseItemsFor(item)));
       }),
       map(groups => groups.flat()),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: all => {
         // Les items datés alimentent le calendrier/la liste ; ceux « à confirmer » leur section dédiée.
@@ -96,6 +103,8 @@ export class ReleaseCalendar implements OnInit {
         if (dated.length > 0) {
           this.selectedKey.set(dated[0].date);
           this.calendarDate = new Date(dated[0].date + 'T00:00:00');
+        } else {
+          this.selectedKey.set('');
         }
         this.loading.set(false);
       },
@@ -123,8 +132,20 @@ export class ReleaseCalendar implements OnInit {
   remove(item: ReleaseCalendarItem, event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.api.removeTrackedMedia(item.tmdbId, item.type).subscribe({
-      complete: () => this.load(),
+    const key = `${item.type}:${item.tmdbId}`;
+    if (this.removing().has(key)) return;
+    this.removeError.set(false);
+    this.removing.update(values => new Set(values).add(key));
+    this.api.removeTrackedMedia(item.tmdbId, item.type).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.removing.update(values => {
+        const next = new Set(values);
+        next.delete(key);
+        return next;
+      })),
+    ).subscribe({
+      next: () => this.load(),
+      error: () => this.removeError.set(true),
     });
   }
 
@@ -186,11 +207,15 @@ export class ReleaseCalendar implements OnInit {
 
     // Datées + annoncées-sans-date : ces dernières iront dans la section « à venir ».
     const undatedSeasons = this.undatedSeasons(tracked, show);
-    const baseItems = [...datedSeasons, ...undatedSeasons];
+    const nextEpisode = show.next_episode_to_air;
+    const nextItems = nextEpisode && isFuture(nextEpisode.air_date)
+      ? [this.episodeRelease(tracked, show, nextEpisode)] : [];
+    const baseItems = [...datedSeasons, ...undatedSeasons, ...nextItems];
 
+    const activeSeasons = new Set([nextEpisode?.season_number, show.last_episode_to_air?.season_number]);
     const seasonsToInspect = show.seasons
-      .filter(season => shouldInspectSeason(season))
-      .slice(-3);
+      .filter(season => season.season_number > 0 &&
+        (activeSeasons.has(season.season_number) || shouldInspectSeason(season)));
 
     const episodes$ = seasonsToInspect.length === 0
       ? of([] as ReleaseCalendarItem[])
@@ -198,17 +223,7 @@ export class ReleaseCalendar implements OnInit {
           this.tmdb.season(show.id, season.season_number).pipe(
             map(detail => detail.episodes
               .filter(ep => isFuture(ep.air_date))
-              .map((ep): ReleaseCalendarItem => ({
-                id: `tv-${show.id}-s${ep.season_number}-e${ep.episode_number}-${ep.air_date}`,
-                tmdbId: show.id,
-                type: 'tv' as const,
-                kind: 'Episode' as const,
-                title: show.name,
-                subtitle: `S${String(ep.season_number).padStart(2, '0')}E${String(ep.episode_number).padStart(2, '0')} - ${ep.name}`,
-                date: ep.air_date!,
-                posterPath: show.poster_path ?? tracked.posterPath,
-              }))),
-            catchError(() => of([] as ReleaseCalendarItem[])),
+              .map(ep => this.episodeRelease(tracked, show, ep))),
           )
         )).pipe(map(groups => groups.flat()));
 
@@ -219,12 +234,25 @@ export class ReleaseCalendar implements OnInit {
 
         // Rien de concret à venir mais TMDB indique la série en production (cas typique :
         // saison confirmée mais pas encore créée comme entrée TMDB) → carte « en préparation ».
-        if (datedSeasons.length === 0 && undatedSeasons.length === 0 && episodes.length === 0 && show.in_production) {
+        if (items.length === 0 && show.in_production) {
           items.push(this.inProductionPlaceholder(tracked, show));
         }
         return items;
       })
     );
+  }
+
+  private episodeRelease(tracked: TrackedMedia, show: TmdbShow, episode: TmdbEpisode): ReleaseCalendarItem {
+    return {
+      id: `tv-${show.id}-s${episode.season_number}-e${episode.episode_number}-${episode.air_date}`,
+      tmdbId: show.id,
+      type: 'tv',
+      kind: 'Episode',
+      title: show.name,
+      subtitle: `S${String(episode.season_number).padStart(2, '0')}E${String(episode.episode_number).padStart(2, '0')} - ${episode.name}`,
+      date: episode.air_date!,
+      posterPath: show.poster_path ?? tracked.posterPath,
+    };
   }
 
   /**
@@ -287,8 +315,10 @@ function dayKey(year: number, month0: number, day: number): string {
 
 /** Numéro de la dernière saison déjà diffusée (date passée), ou 0 si aucune. */
 function lastAiredSeason(show: TmdbShow): number {
+  const now = new Date();
+  const today = dayKey(now.getFullYear(), now.getMonth(), now.getDate());
   const aired = show.seasons
-    .filter(s => s.season_number > 0 && s.air_date && !isFuture(s.air_date))
+    .filter(s => s.season_number > 0 && s.air_date && s.air_date <= today)
     .map(s => s.season_number);
   return aired.length ? Math.max(...aired) : 0;
 }

@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +9,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import {
   Api, Showtime, Theater, TheaterShowtimes, FavoriteTheater,
 } from '../../../shared/services/api';
@@ -78,6 +79,8 @@ export class Showtimes implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
+  private showtimesRequest?: Subscription;
 
   // Jour consulté (lié au p-datepicker). Par défaut aujourd'hui.
   pickedDate: Date = new Date();
@@ -124,16 +127,21 @@ export class Showtimes implements OnInit {
   // ── Ajout / gestion des cinémas (dialog) ─────────────────────────────────
   manageOpen = signal(false);
   adding = signal(false);
+  updatingFavorites = signal(0);
   codeInput = '';
 
   ngOnInit() {
     const date = this.route.snapshot.queryParamMap.get('date');
     const parsed = date ? new Date(date + 'T00:00:00') : null;
-    if (parsed && !Number.isNaN(parsed.getTime())) this.pickedDate = parsed;
+    if (parsed && !Number.isNaN(parsed.getTime()) && this.isoDate(parsed) === date && parsed >= this.today)
+      this.pickedDate = parsed;
 
-    this.api.favoriteTheaters().subscribe({
+    this.api.favoriteTheaters().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: favorites => { this.favorites.set(favorites); this.load(); },
-      error: () => { this.loaded.set(true); },
+      error: err => {
+        this.loaded.set(true);
+        this.showError(errorMessage(err, 'Impossible de charger les cinémas favoris.'));
+      },
     });
   }
 
@@ -146,16 +154,19 @@ export class Showtimes implements OnInit {
   }
 
   load() {
+    this.showtimesRequest?.unsubscribe();
     const codes = this.codesToLoad();
-    if (this.loading()) return;
+    if (!(this.pickedDate instanceof Date) || Number.isNaN(this.pickedDate.getTime())) {
+      this.pickedDate = new Date(this.today);
+    }
     if (codes.length === 0) { this.data.set([]); this.loaded.set(true); return; }
 
     const date = this.isoDate(this.pickedDate);
     this.loading.set(true);
     this.syncQueryParams(date);
 
-    this.api.multiShowtimes(codes, date)
-      .pipe(finalize(() => {
+    this.showtimesRequest = this.api.multiShowtimes(codes, date)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => {
         this.loading.set(false);
         this.loaded.set(true);
       }))
@@ -196,6 +207,7 @@ export class Showtimes implements OnInit {
 
   /** Applique la sélection du multi-select : persiste chaque cinéma dont l'état a changé. */
   onActiveChange(ids: number[]) {
+    if (this.updatingFavorites()) return;
     const selected = new Set(ids);
     for (const fav of this.favorites()) {
       const shouldBeActive = selected.has(fav.id);
@@ -205,8 +217,12 @@ export class Showtimes implements OnInit {
 
   /** Coche / décoche un cinéma : affichage instantané, choix mémorisé côté serveur. */
   private setActive(fav: FavoriteTheater, active: boolean) {
+    this.updatingFavorites.update(count => count + 1);
     this.favorites.update(fs => fs.map(f => f.id === fav.id ? { ...f, isActive: active } : f));
-    this.api.setFavoriteTheaterActive(fav.id, active).subscribe({
+    this.api.setFavoriteTheaterActive(fav.id, active).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.updatingFavorites.update(count => count - 1)),
+    ).subscribe({
       error: err => {
         // Échec de persistance : on rétablit l'état précédent pour rester cohérent.
         this.favorites.update(fs => fs.map(f => f.id === fav.id ? { ...f, isActive: !active } : f));
@@ -230,7 +246,7 @@ export class Showtimes implements OnInit {
 
     this.adding.set(true);
     this.api.addFavoriteTheater(code)
-      .pipe(finalize(() => this.adding.set(false)))
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.adding.set(false)))
       .subscribe({
         next: fav => {
           this.favorites.update(fs => fs.some(f => f.id === fav.id) ? fs : [...fs, fav]);
@@ -242,7 +258,7 @@ export class Showtimes implements OnInit {
   }
 
   removeFavorite(fav: FavoriteTheater) {
-    this.api.removeFavoriteTheater(fav.id).subscribe({
+    this.api.removeFavoriteTheater(fav.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.favorites.update(fs => fs.filter(f => f.id !== fav.id));
         this.load();
@@ -298,9 +314,15 @@ export class Showtimes implements OnInit {
           merged.byTheater.push(group);
         }
         const seen = new Set(group.shows.map(showSignature));
-        for (const s of movie.shows) if (seen.add(showSignature(s))) group.shows.push(s);
+        for (const s of movie.shows) {
+          const signature = showSignature(s);
+          if (!seen.has(signature)) {
+            seen.add(signature);
+            group.shows.push(s);
+          }
+        }
         group.shows.sort((a, b) => a.iso.localeCompare(b.iso));
-        if (movie.shows[0].iso < merged.earliest) merged.earliest = movie.shows[0].iso;
+        if (group.shows[0].iso < merged.earliest) merged.earliest = group.shows[0].iso;
       }
     }
 
@@ -327,6 +349,7 @@ export class Showtimes implements OnInit {
   }
 
   dayLabel(): string {
+    if (!(this.pickedDate instanceof Date) || Number.isNaN(this.pickedDate.getTime())) return 'Choisir une date';
     return this.pickedDate.toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long',
     });
@@ -338,7 +361,8 @@ export class Showtimes implements OnInit {
 
   // Date sélectionnée au format YYYY-MM-DD (fuseau local).
   private isoDate(d: Date): string {
-    return d.toLocaleDateString('en-CA');
+    if (!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   // Reflète la date consultée dans l'URL sans empiler d'historique ni relancer le routeur

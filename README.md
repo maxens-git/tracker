@@ -27,3 +27,9 @@ Appli perso pour suivre les films et séries que je regarde (vu, envie de voir, 
 ## Déploiement
 
 `./deploy.sh` build et push l'image Docker (arm & x86)
+
+## Tests de l'API
+
+`dotnet test Tests/TrackerApi.Tests.csproj`
+
+Les tests de régression utilisent une base SQLite en mémoire et des réponses HTTP simulées : aucune base de production ni service externe n'est appelé. Ils couvrent notamment la restauration des sauvegardes, les visionnages concurrents, les notifications, les calendriers et la validation des entrées.

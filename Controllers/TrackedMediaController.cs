@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Data;
@@ -21,7 +22,9 @@ public class TrackedMediaController(ApiDbContext context, ILogger<TrackedMediaCo
     }
 
     [HttpGet("state")]
-    public async Task<ActionResult<TrackedMediaStateDto>> GetState([FromQuery] int tmdbId, [FromQuery] string type = "movie")
+    public async Task<ActionResult<TrackedMediaStateDto>> GetState(
+        [FromQuery, Range(1, int.MaxValue)] int tmdbId,
+        [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type = "movie")
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         bool tracked = await context.TrackedMediaReleases.AnyAsync(m => m.TmdbId == tmdbId && m.MediaType == mediaType);
@@ -60,7 +63,9 @@ public class TrackedMediaController(ApiDbContext context, ILogger<TrackedMediaCo
     }
 
     [HttpDelete("{tmdbId}")]
-    public async Task<IActionResult> Remove(int tmdbId, [FromQuery] string type = "movie")
+    public async Task<IActionResult> Remove(
+        [Range(1, int.MaxValue)] int tmdbId,
+        [FromQuery, RegularExpression("(?i)^(movie|show|tv)$")] string type = "movie")
     {
         MediaType mediaType = MediaTypeExtensions.Parse(type);
         TrackedMediaRelease? item = await context.TrackedMediaReleases

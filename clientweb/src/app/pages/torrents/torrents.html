@@ -103,7 +103,7 @@
               <button pButton type="button" icon="pi pi-trash" severity="danger" text rounded size="small"
                 aria-label="Retirer des marque-pages"
                 [loading]="bookmarking() === torrent.magnetUrl"
-                [disabled]="bookmarking() === torrent.magnetUrl"
+                [disabled]="bookmarking() !== null || bookmarksLoading()"
                 (click)="$event.stopPropagation(); removeBookmark(torrent)"></button>
             } @else {
               <i [class]="debriding() === torrent.magnetUrl ? 'pi pi-spin pi-spinner' : 'pi pi-bolt'"></i>
@@ -117,6 +117,7 @@
   <p-dialog
     header="Liens débridés"
     [(visible)]="dialogVisible"
+    (onHide)="cancelLinkRequests()"
     [modal]="true"
     [dismissableMask]="true"
     [draggable]="false"
@@ -134,7 +135,7 @@
           [icon]="isBookmarked(t.magnetUrl) ? 'pi pi-star-fill' : 'pi pi-star'"
           [label]="isBookmarked(t.magnetUrl) ? 'Retirer des marque-pages' : 'Mettre de côté'"
           [loading]="bookmarking() === t.magnetUrl"
-          [disabled]="bookmarking() === t.magnetUrl"
+          [disabled]="bookmarking() !== null || bookmarksLoading()"
           (click)="toggleBookmark(t)"
         ></button>
       </div>

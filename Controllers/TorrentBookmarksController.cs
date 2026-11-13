@@ -1,8 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.ModelsDTO;
@@ -15,7 +16,7 @@ namespace Tracker.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/torrent-bookmarks")]
-public partial class TorrentBookmarksController(ApiDbContext context) : ControllerBase
+public class TorrentBookmarksController(ApiDbContext context) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TorrentBookmarkDto>>> GetAll()
@@ -33,7 +34,11 @@ public partial class TorrentBookmarksController(ApiDbContext context) : Controll
         if (string.IsNullOrWhiteSpace(dto.MagnetUrl))
             return BadRequest("Le magnet est requis.");
 
-        string infoHash = DedupKey(dto.MagnetUrl);
+        string magnetUrl = dto.MagnetUrl.Trim();
+        if (!Uri.TryCreate(magnetUrl, UriKind.Absolute, out Uri? magnetUri) ||
+            !string.Equals(magnetUri.Scheme, "magnet", StringComparison.OrdinalIgnoreCase))
+            return BadRequest("Le lien doit être un magnet valide.");
+        string infoHash = DedupKey(magnetUrl);
 
         // Idempotent : un même torrent (même infohash) n'est mis de côté qu'une fois.
         TorrentBookmark? existing = await context.TorrentBookmarks
@@ -43,10 +48,20 @@ public partial class TorrentBookmarksController(ApiDbContext context) : Controll
 
         TorrentBookmark bookmark = new(
             dto.Title, dto.Size, dto.Seeders, dto.Leechers, dto.Indexer,
-            dto.MagnetUrl, infoHash, dto.Category, dto.PublishDate);
+            magnetUrl, infoHash, dto.Category, dto.PublishDate);
 
         context.TorrentBookmarks.Add(bookmark);
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is MySqlException { Number: 1062 })
+        {
+            context.Entry(bookmark).State = EntityState.Detached;
+            existing = await context.TorrentBookmarks.FirstOrDefaultAsync(b => b.InfoHash == infoHash);
+            if (existing is null) throw;
+            return Ok(new TorrentBookmarkDto(existing));
+        }
 
         return CreatedAtAction(nameof(GetAll), new { id = bookmark.Id }, new TorrentBookmarkDto(bookmark));
     }
@@ -70,14 +85,21 @@ public partial class TorrentBookmarksController(ApiDbContext context) : Controll
     /// </summary>
     private static string DedupKey(string magnetUrl)
     {
-        Match match = InfoHashRegex().Match(magnetUrl);
-        if (match.Success)
-            return match.Groups[1].Value.ToLowerInvariant();
+        if (Uri.TryCreate(magnetUrl, UriKind.Absolute, out Uri? uri) &&
+            QueryHelpers.ParseQuery(uri.Query).TryGetValue("xt", out var topics))
+        {
+            // Lire xt comme paramètre évite de confondre le nom du fichier (dn) avec
+            // l'infohash et prend également en charge les valeurs encodées en URL.
+            foreach (string? topic in topics)
+            {
+                if (topic?.StartsWith("urn:btih:", StringComparison.OrdinalIgnoreCase) != true) continue;
+                string infoHash = topic[9..];
+                if (infoHash.Length is > 0 and <= 64 && infoHash.All(char.IsAsciiLetterOrDigit))
+                    return infoHash.ToLowerInvariant();
+            }
+        }
 
         byte[] hash = SHA1.HashData(Encoding.UTF8.GetBytes(magnetUrl));
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
-
-    [GeneratedRegex(@"urn:btih:([A-Za-z0-9]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex InfoHashRegex();
 }

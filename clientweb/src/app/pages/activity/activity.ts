@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { of, map, switchMap } from 'rxjs';
 import { Api } from '../../../shared/services/api';
@@ -43,6 +44,7 @@ function actionLabel(a: Activity): string {
     case 'episodeUnseen':   return `Épisode S${a.seasonNumber}E${a.episodeNumber} non vu`;
     case 'rewatched':       return 'Revu';
     case 'episodeRewatched': return `Épisode S${a.seasonNumber}E${a.episodeNumber} revu`;
+    default: return 'Activité';
   }
 }
 
@@ -80,6 +82,7 @@ interface ActivityRow {
 export class ActivityPage implements OnInit {
   private api = inject(Api);
   private tmdb = inject(TmdbService);
+  private destroyRef = inject(DestroyRef);
 
   rows = signal<ActivityRow[]>([]);
   page = signal(0);
@@ -97,9 +100,10 @@ export class ActivityPage implements OnInit {
   }
 
   loadMore() {
-    if (this.loading()) return;
+    if (this.loading() || !this.hasMore) return;
     const next = this.page() + 1;
     this.loading.set(true);
+    this.error.set(false);
 
     this.api.activity(next).pipe(
       switchMap(result => {
@@ -112,11 +116,12 @@ export class ActivityPage implements OnInit {
         // pour les actions sans poster stocké (série/saison/épisode vus).
         return this.tmdb.fetchMany(uniqueRefs(result.items)).pipe(
           map(media => {
-            const mediaById = new Map(media.map(m => [m.id, m]));
-            return result.items.map(a => this.toRow(a, mediaById.get(a.tmdbId)));
+            const mediaById = new Map(media.map(m => [`${m.media_type}:${m.id}`, m]));
+            return result.items.map(a => this.toRow(a, mediaById.get(`${a.mediaType === 'movie' ? 'movie' : 'tv'}:${a.tmdbId}`)));
           }),
         );
       }),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: rows => {
         this.rows.update(list => [...list, ...rows]);
@@ -128,8 +133,8 @@ export class ActivityPage implements OnInit {
   }
 
   private toRow(a: Activity, media?: MediaItem): ActivityRow {
-    const type = a.mediaType === 'tv' ? 'tv' : 'movie';
-    const style = TYPE_STYLE[a.type];
+    const type = a.mediaType === 'movie' ? 'movie' : 'tv';
+    const style = TYPE_STYLE[a.type] ?? { icon: 'pi pi-history', severity: 'secondary' as const };
     const title = media?.title ?? media?.name ?? '';
     return {
       id: a.id,

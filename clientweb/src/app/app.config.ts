@@ -1,4 +1,4 @@
-import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { provideRouter, withRouterConfig, RouteReuseStrategy } from '@angular/router';
@@ -11,6 +11,7 @@ import Aura from '@primeuix/themes/aura';
 import { definePreset, palette } from '@primeuix/themes';
 
 import { routes } from './app.routes';
+import { initializeSettings } from '../shared/services/initialize-settings';
 
 // Sans cet enregistrement, le pipe `date` retombe sur en-US et sort des mois en
 // anglais (« 12 Aug 2026 ») dans une interface par ailleurs entièrement française.
@@ -51,6 +52,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload' })),
     { provide: RouteReuseStrategy, useClass: ReloadRouteReuseStrategy },
     provideHttpClient(),
+    provideAppInitializer(initializeSettings),
     provideAnimationsAsync(),
     MessageService,
     providePrimeNG({

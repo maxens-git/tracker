@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Tracker.Models;
 
 namespace Tracker.ModelsDTO;
@@ -20,6 +21,7 @@ public class EpisodeSeenDto
 
 public class AddEpisodeWatchDto
 {
+    [Range(typeof(DateTime), "1000-01-01", "9999-12-31T23:59:59.9999999", ParseLimitsInInvariantCulture = true)]
     public DateTime WatchedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -32,7 +34,9 @@ public class MarkSeasonSeenDto
 public class MarkShowSeenDto
 {
     public bool Seen { get; set; }
+    [MaxLength(500)]
     public string? PosterPath { get; set; }
+    [MaxLength(500)]
     public string? Title { get; set; }
     public List<MediaGenreDto> Genres { get; set; } = new();
     public List<SeasonEpisodesDto> Seasons { get; set; } = new();
@@ -40,6 +44,7 @@ public class MarkShowSeenDto
 
 public class SeasonEpisodesDto
 {
+    [Range(0, int.MaxValue)]
     public int SeasonNumber { get; set; }
     public List<int> EpisodeNumbers { get; set; } = new();
 }

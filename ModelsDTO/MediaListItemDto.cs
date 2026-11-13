@@ -18,7 +18,7 @@ public class MediaListItemDto
         TmdbId = item.TmdbId;
         MediaType = item.MediaType.ToApiString();
         PosterPath = item.PosterPath ?? um?.PosterPath;
-        Title = item.Title;
+        Title = item.Title ?? um?.Title;
         Seen = um?.Seen ?? false;
         WatchCount = um?.WatchCount ?? 0;
         Liked = um?.Liked ?? false;

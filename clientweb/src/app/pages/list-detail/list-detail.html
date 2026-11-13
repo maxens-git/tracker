@@ -1,6 +1,8 @@
 <div class="page">
   @if (loadingList()) {
     <app-spinner />
+  } @else if (listError(); as error) {
+    <p-message severity="error" [text]="error" />
   } @else if (list(); as l) {
 
     <a pButton routerLink="/lists" severity="secondary" text size="small"
@@ -40,6 +42,9 @@
 
     @if (loading()) {
       <app-spinner />
+    } @else if (pageError(); as error) {
+      <p-message severity="error" [text]="error" />
+      <button pButton type="button" text label="Réessayer" (click)="loadPage(page())"></button>
     } @else if (filteredItems.length === 0) {
       <p-message
         severity="secondary"
@@ -56,7 +61,7 @@
       </p>
 
       <div class="poster-grid">
-        @for (item of filteredItems; track item.id) {
+        @for (item of filteredItems; track item.media_type + ':' + item.id) {
           <app-poster-card [item]="item" />
         }
       </div>

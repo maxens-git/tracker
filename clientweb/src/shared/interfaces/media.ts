@@ -51,6 +51,8 @@ export interface TmdbShow {
   number_of_episodes: number;
   genres: TmdbGenre[];
   seasons: TmdbSeasonSummary[];
+  next_episode_to_air?: TmdbEpisode | null;
+  last_episode_to_air?: TmdbEpisode | null;
 }
 
 export interface TmdbSeasonSummary {

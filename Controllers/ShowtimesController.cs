@@ -32,6 +32,10 @@ public class ShowtimesController(AllocineService allocine, ILogger<ShowtimesCont
         {
             return BadRequest(ex.Message);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Récupération des séances Allociné échouée (cinéma {Theater}, date {Date}).", theater, date);

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Tracker.Data;
 using Tracker.Models;
 using Tracker.ModelsDTO;
@@ -24,6 +25,9 @@ public class SettingsController(
     [HttpPut]
     public async Task<ActionResult<SettingsDto>> Update(UpdateSettingsDto dto)
     {
+        if (!IsValidBaseUrl(dto.NtfyUrl) || !IsValidBaseUrl(dto.ProwlarrUrl) || !IsValidBaseUrl(dto.TmdbBaseUrl))
+            return BadRequest("Les URL des services doivent être des URL HTTP(S) absolues, sans paramètres ni fragment.");
+
         AppSettings settings = await EnsureSettings();
         settings.NtfyEnabled = dto.NtfyEnabled;
         settings.NtfyUrl = dto.NtfyUrl.NullIfBlank();
@@ -68,9 +72,32 @@ public class SettingsController(
         }
 
         logger.LogInformation("Notification ntfy de test demandée.");
-        await ntfy.SendTestNotification(settings, cancellationToken);
+        try
+        {
+            await ntfy.SendTestNotification(settings, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Notification ntfy de test échouée.");
+            return StatusCode(StatusCodes.Status502BadGateway, "ntfy est injoignable ou a refusé la notification.");
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(ex, "Délai d'envoi de la notification ntfy de test dépassé.");
+            return StatusCode(StatusCodes.Status502BadGateway, "ntfy n'a pas répondu à temps.");
+        }
         return NoContent();
     }
+
+    private static bool IsValidBaseUrl(string? value) =>
+        string.IsNullOrWhiteSpace(value) ||
+        (Uri.TryCreate(value.Trim(), UriKind.Absolute, out Uri? uri) &&
+         uri.Scheme is "http" or "https" &&
+         string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment));
 
     private async Task<AppSettings> EnsureSettings()
     {
@@ -79,7 +106,16 @@ public class SettingsController(
 
         settings = new AppSettings { Id = 1 };
         context.Settings.Add(settings);
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is MySqlException { Number: 1062 })
+        {
+            context.Entry(settings).State = EntityState.Detached;
+            settings = await context.Settings.FirstOrDefaultAsync(s => s.Id == 1);
+            if (settings is null) throw;
+        }
         return settings;
     }
 

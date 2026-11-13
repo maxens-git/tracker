@@ -1,11 +1,11 @@
 export interface MediaListSummary {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
   isSystem: boolean;
   itemsCount: number;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt?: string | null;
 }
 
 export interface PaginatedResult<T> {

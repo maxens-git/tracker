@@ -112,18 +112,19 @@
             [label]="currentSeen ? ('Déjà vu' + (currentWatchCount > 1 ? ' ×' + currentWatchCount : '')) : 'Pas vu'"
             [outlined]="!currentSeen"
             [severity]="currentSeen ? 'success' : 'secondary'"
-            [disabled]="seenPending()"
+            [disabled]="watchMutationPending || watchDialogOpen()"
             (click)="toggleSeen()"></button>
 
           <button pButton type="button" outlined severity="secondary"
             icon="pi pi-plus"
             label="Vu aujourd'hui"
             [loading]="quickAddPending()"
-            [disabled]="quickAddPending()"
+            [disabled]="watchMutationPending || watchDialogOpen()"
             (click)="quickAddWatch()"></button>
 
           <button pButton type="button" text rounded severity="secondary"
             icon="pi pi-history"
+            [disabled]="watchMutationPending"
             (click)="openWatchDialog()"
             aria-label="Gérer l'historique des visionnages"
           ></button>
@@ -255,7 +256,7 @@
                       [outlined]="!seasonSeen"
                       [severity]="seasonSeen ? 'success' : 'secondary'"
                       [loading]="seasonPending"
-                      [disabled]="seasonPending"
+                      [disabled]="watchMutationPending || watchDialogOpen()"
                       (click)="toggleSeasonSeen(season, $event)"></button>
                   }
                 </div>
@@ -265,7 +266,6 @@
                 } @else {
                   <ul class="episodes">
                     @for (ep of season.episodes; track ep.episode_number) {
-                      @let epPending = isEpisodePending(ep.season_number + '-' + ep.episode_number);
                       <li class="episode" [class.seen]="ep.seen">
                         <div class="ep-still">
                           @if (stillUrl(ep.still_path); as img) {
@@ -295,7 +295,7 @@
                               <p-checkbox
                                 [binary]="true"
                                 [ngModel]="ep.seen"
-                                [disabled]="epPending"
+                                [disabled]="watchMutationPending || watchDialogOpen()"
                                 [ariaLabel]="'Épisode ' + ep.episode_number + ' vu'"
                                 (onChange)="toggleEpisodeSeen(ep, $event.originalEvent)"
                               />

@@ -1,8 +1,10 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { errorMessage } from '../../../shared/services/http-error';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { of, from, map, switchMap, concatMap, reduce, firstValueFrom } from 'rxjs';
+import { of, from, map, switchMap, concatMap, reduce, firstValueFrom, Subscription } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { MediaListSummary } from '../../../shared/interfaces/list';
@@ -33,6 +35,8 @@ const CHUNK_SIZE = 20;
 })
 export class ListDetail implements OnInit {
   private api = inject(Api);
+  private destroyRef = inject(DestroyRef);
+  private pageRequest?: Subscription;
   private tmdb = inject(TmdbService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -42,6 +46,8 @@ export class ListDetail implements OnInit {
   listId: number | SystemListSlug = 0;
   list = signal<MediaListSummary | null>(null);
   loadingList = signal(true);
+  listError = signal<string | null>(null);
+  pageError = signal<string | null>(null);
 
   items = signal<MediaItem[]>([]);
   page = signal(1);
@@ -56,21 +62,28 @@ export class ListDetail implements OnInit {
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id')!;
     const numId = Number(idParam);
-    this.listId = isNaN(numId) ? (idParam as SystemListSlug) : numId;
+    const systemSlug = Object.hasOwn(SYSTEM_LIST_BY_SLUG, idParam);
+    if (!systemSlug && (!Number.isInteger(numId) || numId < 1 || numId > 2147483647)) {
+      this.loadingList.set(false);
+      this.listError.set('Liste introuvable.');
+      return;
+    }
+    this.listId = systemSlug ? idParam as SystemListSlug : numId;
 
     if (typeof this.listId === 'number') {
-      this.api.list(this.listId).subscribe({
+      this.api.list(this.listId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: data => { this.list.set(data); this.loadingList.set(false); },
-        error: () => this.loadingList.set(false),
+        error: err => { this.listError.set(errorMessage(err, 'Impossible de charger la liste.')); this.loadingList.set(false); },
       });
     } else {
       const name = SYSTEM_LIST_BY_SLUG[this.listId];
-      this.api.lists().subscribe({
+      this.api.lists().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: lists => {
-          this.list.set(lists.find(l => l.name === name) ?? null);
+          this.list.set(lists.find(l => l.isSystem && l.name === name) ?? null);
           this.loadingList.set(false);
+          if (!this.list()) this.listError.set('Liste introuvable.');
         },
-        error: () => this.loadingList.set(false),
+        error: err => { this.listError.set(errorMessage(err, 'Impossible de charger la liste.')); this.loadingList.set(false); },
       });
     }
 
@@ -80,8 +93,14 @@ export class ListDetail implements OnInit {
   }
 
   loadPage(p: number) {
+    this.pageRequest?.unsubscribe();
+    p = Number.isFinite(p) ? Math.min(2147483647, Math.max(1, Math.trunc(p))) : 1;
     this.loading.set(true);
-    this.api.listItems(this.listId, p).pipe(
+    this.pageError.set(null);
+    this.pageRequest = this.api.listItems(this.listId, p).pipe(
+      switchMap(result => result.totalPages > 0 && result.page > result.totalPages
+        ? this.api.listItems(this.listId, result.totalPages)
+        : of(result)),
       // La liste backend ne contient que des références (tmdbId + état) :
       // on charge les fiches TMDB correspondantes puis on recopie les états dessus.
       switchMap(result => {
@@ -94,22 +113,23 @@ export class ListDetail implements OnInit {
         if (result.items.length === 0) return of([] as MediaItem[]);
 
         const refs = result.items.map(i => ({ tmdbId: i.tmdbId, mediaType: i.mediaType }));
-        const stateByTmdbId = new Map(result.items.map(i => [i.tmdbId, i]));
+        const stateByTmdbId = new Map(result.items.map(i => [`${i.mediaType === 'movie' ? 'movie' : 'tv'}:${i.tmdbId}`, i]));
 
         return this.tmdb.fetchMany(refs).pipe(
           map(tmdbItems => tmdbItems.map(item => {
-            const state = stateByTmdbId.get(item.id);
+            const state = stateByTmdbId.get(`${item.media_type}:${item.id}`);
             return { ...item, seen: state?.seen ?? false, watchCount: state?.watchCount ?? 0, liked: state?.liked ?? false };
           })),
         );
       }),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: items => {
         this.items.set(items);
         this.loading.set(false);
         if (items.length > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
       },
-      error: () => this.loading.set(false),
+      error: err => { this.items.set([]); this.pageError.set(errorMessage(err, 'Impossible de charger les éléments.')); this.loading.set(false); },
     });
   }
 
@@ -190,13 +210,21 @@ export class ListDetail implements OnInit {
     const supportsAsyncClipboardItem =
       typeof ClipboardItem !== 'undefined' && typeof navigator.clipboard?.write === 'function';
 
-    const clipboardPromise = supportsAsyncClipboardItem
-      ? navigator.clipboard.write([
-          new ClipboardItem({
-            'text/plain': titlesPromise.then(titles => new Blob([titles.join('\n')], { type: 'text/plain' })),
-          }),
-        ])
-      : titlesPromise.then(titles => navigator.clipboard.writeText(titles.join('\n')));
+    let clipboardPromise: Promise<void>;
+    try {
+      clipboardPromise = supportsAsyncClipboardItem
+        ? navigator.clipboard.write([
+            new ClipboardItem({
+              'text/plain': titlesPromise.then(titles => new Blob([titles.join('\n')], { type: 'text/plain' })),
+            }),
+          ])
+        : titlesPromise.then(titles => navigator.clipboard.writeText(titles.join('\n')));
+    } catch {
+      titlesPromise.catch(() => {});
+      this.copying.set(false);
+      this.messages.add({ severity: 'error', summary: 'Listes', detail: 'Impossible de copier les titres.', life: 3500 });
+      return;
+    }
     clipboardPromise.catch(() => {}); // géré via titlesPromise ci-dessous ; évite un rejet non capté si le fetch échoue.
 
     titlesPromise.then(

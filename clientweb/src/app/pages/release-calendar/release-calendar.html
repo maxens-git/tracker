@@ -27,6 +27,7 @@
         </div>
 
         <button pButton type="button" icon="pi pi-times" severity="secondary" text rounded size="small"
+          [disabled]="removing().has(item.type + ':' + item.tmdbId)"
           aria-label="Ne plus suivre" (click)="remove(item, $event)"></button>
       </a>
     }
@@ -53,6 +54,10 @@
       <a pButton routerLink="/settings" severity="secondary" outlined icon="pi pi-cog" label="Réglages"></a>
     </div>
   </div>
+
+  @if (removeError()) {
+    <p-message severity="error" styleClass="state-message" text="Impossible d'arrêter le suivi. Réessayez." />
+  }
 
   @if (loading()) {
     <app-spinner />

@@ -34,11 +34,12 @@ public class SystemLogService(ApiDbContext context)
         }
 
         int total = await query.CountAsync();
+        long offset = (long)(page - 1) * PageSize;
 
-        List<SystemLogEntry> logs = await query
+        List<SystemLogEntry> logs = offset >= total ? [] : await query
             .OrderByDescending(log => log.CreatedAt)
             .ThenByDescending(log => log.Id)
-            .Skip((page - 1) * PageSize)
+            .Skip((int)offset)
             .Take(PageSize)
             .ToListAsync();
 

@@ -21,8 +21,13 @@ public class SystemLogWriterService(
         {
             try
             {
-                SystemLogWrite first = await queue.ReadAsync(stoppingToken);
-                batch.Add(first);
+                // En cas d'échec, réessayer le lot existant même si aucun nouveau
+                // log n'arrive. Ne pas laisser le lot grandir à chaque tentative.
+                if (batch.Count == 0)
+                {
+                    SystemLogWrite first = await queue.ReadAsync(stoppingToken);
+                    batch.Add(first);
+                }
 
                 while (batch.Count < BatchSize && queue.TryRead(out SystemLogWrite log))
                 {
@@ -50,12 +55,34 @@ public class SystemLogWriterService(
             }
             catch
             {
-                await Task.Delay(FlushInterval, stoppingToken);
+                try
+                {
+                    await Task.Delay(FlushInterval, stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 
-        if (batch.Count > 0)
-            await Flush(batch, CancellationToken.None);
+        // Une base indisponible ne doit pas bloquer ni faire échouer l'arrêt de l'hôte.
+        using var shutdownTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
+        {
+            while (!shutdownTimeout.IsCancellationRequested)
+            {
+                while (batch.Count < BatchSize && queue.TryRead(out var log))
+                    batch.Add(log);
+                if (batch.Count == 0)
+                    break;
+                await Flush(batch, shutdownTimeout.Token);
+            }
+        }
+        catch
+        {
+            // Best effort uniquement à l'arrêt ; la console garde les logs originaux.
+        }
     }
 
     private async Task Flush(List<SystemLogWrite> batch, CancellationToken cancellationToken)

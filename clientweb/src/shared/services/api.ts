@@ -221,16 +221,25 @@ export class Api {
   // ── User states ──────────────────────────────────────────────────────────
 
   states(tmdbIds: number[], type: 'movie' | 'tv'): Observable<UserState[]> {
-    return this.http.get<UserState[]>(`${API}/Media/states`, {
-      params: { tmdbIds: tmdbIds.join(','), type }
-    });
+    const ids = [...new Set(tmdbIds)].filter(id => Number.isInteger(id) && id > 0 && id <= 2147483647);
+    if (!ids.length) return of([]);
+
+    // Les filmographies peuvent dépasser la taille maximale d'une URL HTTP.
+    const batches: Observable<UserState[]>[] = [];
+    for (let start = 0; start < ids.length; start += 100) {
+      batches.push(this.http.get<UserState[]>(`${API}/Media/states`, {
+        params: { tmdbIds: ids.slice(start, start + 100).join(','), type }
+      }));
+    }
+    return forkJoin(batches).pipe(map(results => results.flat()));
   }
 
   /**
    * Charge en une fois les états utilisateur (vu / aimé / listes) des films et séries
-   * donnés, indexés par tmdbId. Une erreur réseau renvoie simplement une map vide.
+   * donnés, indexés par type et tmdbId (les deux catalogues partagent des IDs).
+   * Une erreur réseau conserve le chargement des métadonnées sans état personnel.
    */
-  statesByTmdbId(items: Pick<MediaItem, 'id' | 'media_type'>[]): Observable<Map<number, UserState>> {
+  statesByTmdbId(items: Pick<MediaItem, 'id' | 'media_type'>[]): Observable<Map<string, UserState>> {
     const movieIds = items.filter(i => i.media_type === 'movie').map(i => i.id);
     const showIds = items.filter(i => i.media_type === 'tv').map(i => i.id);
 
@@ -238,30 +247,35 @@ export class Api {
     const showStates$ = showIds.length ? this.states(showIds, 'tv').pipe(catchError(() => of([]))) : of([]);
 
     return forkJoin([movieStates$, showStates$]).pipe(
-      map(([movieStates, showStates]) =>
-        new Map([...movieStates, ...showStates].map(s => [s.tmdbId, s])))
+      map(([movieStates, showStates]) => new Map([
+        ...movieStates.map(s => [mediaStateKey({ id: s.tmdbId, media_type: 'movie' }), s] as const),
+        ...showStates.map(s => [mediaStateKey({ id: s.tmdbId, media_type: 'tv' }), s] as const),
+      ]))
     );
   }
 
   markSeen(tmdbId: number, type: 'movie' | 'tv', payload: MarkSeenPayload): Observable<unknown> {
-    return this.http.post(`${API}/Media/${tmdbId}/seen`, payload, { params: { type } });
+    return this.http.post(`${API}/Media/${tmdbId}/seen`, { ...payload, genres: payload.genres ?? [] }, { params: { type } });
   }
 
   getWatches(tmdbId: number, type: 'movie' | 'tv'): Observable<WatchEvent[]> {
-    return this.http.get<WatchEvent[]>(`${API}/Media/${tmdbId}/watches`, { params: { type } });
+    return this.http.get<WatchEvent[]>(`${API}/Media/${tmdbId}/watches`, { params: { type } })
+      .pipe(map(events => events.map(normalizeWatchDate)));
   }
 
   addWatch(tmdbId: number, type: 'movie' | 'tv', payload: AddWatchPayload): Observable<WatchEvent> {
-    return this.http.post<WatchEvent>(`${API}/Media/${tmdbId}/watches`, payload, { params: { type } });
+    return this.http.post<WatchEvent>(`${API}/Media/${tmdbId}/watches`, { ...payload, genres: payload.genres ?? [] }, { params: { type } })
+      .pipe(map(normalizeWatchDate));
   }
 
   deleteWatch(tmdbId: number, type: 'movie' | 'tv', watchId: number): Observable<unknown> {
     return this.http.delete(`${API}/Media/${tmdbId}/watches/${watchId}`, { params: { type } });
   }
 
-  markLiked(tmdbId: number, type: 'movie' | 'tv', liked: boolean, title?: string | null): Observable<unknown> {
+  markLiked(tmdbId: number, type: 'movie' | 'tv', liked: boolean, title?: string | null, posterPath?: string | null): Observable<unknown> {
     const params: Record<string, string> = { type };
     if (title) params['title'] = title;
+    if (posterPath) params['posterPath'] = posterPath;
     return this.http.post(`${API}/Media/${tmdbId}/liked`, liked, {
       headers: { 'Content-Type': 'application/json' },
       params
@@ -269,7 +283,7 @@ export class Api {
   }
 
   addToWatchlist(tmdbId: number, type: 'movie' | 'tv', payload: AddToWatchlistPayload = {}): Observable<unknown> {
-    return this.http.post(`${API}/Media/${tmdbId}/watchlist`, payload, { params: { type } });
+    return this.http.post(`${API}/Media/${tmdbId}/watchlist`, { ...payload, genres: payload.genres ?? [] }, { params: { type } });
   }
 
   removeFromWatchlist(tmdbId: number, type: 'movie' | 'tv'): Observable<unknown> {
@@ -283,7 +297,7 @@ export class Api {
   }
 
   markShowSeen(showTmdbId: number, payload: MarkShowSeenPayload): Observable<unknown> {
-    return this.http.post(`${API}/Shows/${showTmdbId}/seen`, payload);
+    return this.http.post(`${API}/Shows/${showTmdbId}/seen`, { ...payload, genres: payload.genres ?? [] });
   }
 
   markSeasonSeen(showTmdbId: number, seasonNumber: number, payload: MarkSeasonSeenPayload): Observable<unknown> {
@@ -302,12 +316,14 @@ export class Api {
   }
 
   getEpisodeWatches(showTmdbId: number, seasonNumber: number, episodeNumber: number): Observable<WatchEvent[]> {
-    return this.http.get<WatchEvent[]>(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`);
+    return this.http.get<WatchEvent[]>(`${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`)
+      .pipe(map(events => events.map(normalizeWatchDate)));
   }
 
   addEpisodeWatch(showTmdbId: number, seasonNumber: number, episodeNumber: number, watchedAt: string): Observable<WatchEvent> {
     return this.http.post<WatchEvent>(
-      `${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`, { watchedAt });
+      `${API}/Shows/${showTmdbId}/seasons/${seasonNumber}/episodes/${episodeNumber}/watches`, { watchedAt })
+      .pipe(map(normalizeWatchDate));
   }
 
   deleteEpisodeWatch(showTmdbId: number, seasonNumber: number, episodeNumber: number, watchId: number): Observable<unknown> {
@@ -501,16 +517,28 @@ export class Api {
   }
 }
 
+// MySQL restitue les DateTime UTC sans suffixe. Le navigateur les interpréterait
+// comme des heures locales, contrairement aux réponses d'ajout qui portent « Z ».
+function normalizeWatchDate(event: WatchEvent): WatchEvent {
+  const value = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(event.watchedAt) ? event.watchedAt : `${event.watchedAt}Z`;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? { ...event, watchedAt: date.toISOString() } : event;
+}
+
+export function mediaStateKey(item: Pick<MediaItem, 'id' | 'media_type'>): string {
+  return `${item.media_type}:${item.id}`;
+}
+
 /** Recopie les états utilisateur (vu / aimé / listes) sur chaque item, à partir de la map. */
-export function withUserStates(items: MediaItem[], states: Map<number, UserState>): MediaItem[] {
+export function withUserStates(items: MediaItem[], states: Map<string, UserState>): MediaItem[] {
   return items.map(item => {
-    const s = states.get(item.id);
+    const s = states.get(mediaStateKey(item));
     return {
       ...item,
-      seen: s?.seen ?? false,
-      watchCount: s?.watchCount ?? 0,
-      liked: s?.liked ?? false,
-      listIds: s?.listIds ?? [],
+      seen: s?.seen ?? item.seen ?? false,
+      watchCount: s?.watchCount ?? item.watchCount ?? 0,
+      liked: s?.liked ?? item.liked ?? false,
+      listIds: s?.listIds ?? item.listIds ?? [],
     };
   });
 }

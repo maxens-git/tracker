@@ -5,6 +5,11 @@
 
   @if (loading()) {
     <app-spinner />
+  } @else if (loadFailed()) {
+    <p-card header="Réglages indisponibles">
+      <p>Impossible de charger les réglages enregistrés.</p>
+      <button pButton type="button" label="Réessayer" icon="pi pi-refresh" (click)="loadSettings()"></button>
+    </p-card>
   } @else {
     <p-card header="Apparence">
       <p class="panel-hint">Choisir un thème ou suivre automatiquement le réglage du système.</p>
@@ -34,17 +39,17 @@
 
         <label class="field">
           <span>URL ntfy</span>
-          <input pInputText name="ntfyUrl" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
+          <input pInputText name="ntfyUrl" maxlength="500" type="url" [(ngModel)]="form.ntfyUrl" placeholder="https://ntfy.sh" />
         </label>
 
         <label class="field">
           <span>Topic</span>
-          <input pInputText name="ntfyTopic" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
+          <input pInputText name="ntfyTopic" maxlength="200" [(ngModel)]="form.ntfyTopic" placeholder="tracker-sorties" />
         </label>
 
         <label class="field">
           <span>Token</span>
-          <input pInputText name="ntfyToken" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
+          <input pInputText name="ntfyToken" maxlength="500" type="password" [(ngModel)]="form.ntfyToken" autocomplete="new-password" />
         </label>
 
         <div class="field-row">
@@ -60,11 +65,11 @@
         </div>
 
         <div class="form-actions">
-          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing() || importing()"
             [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
 
           <button pButton type="button" severity="secondary" outlined [loading]="testing()"
-            [disabled]="saving() || testing()" (click)="sendTestNotification()"
+            [disabled]="saving() || testing() || importing()" (click)="sendTestNotification()"
             [icon]="testSent() ? 'pi pi-check' : 'pi pi-send'" [label]="testSent() ? 'Envoyé' : 'Envoyer un test'"></button>
         </div>
       </form>
@@ -82,21 +87,21 @@
 
         <label class="field">
           <span>URL Prowlarr</span>
-          <input pInputText name="prowlarrUrl" type="url" [(ngModel)]="form.prowlarrUrl" placeholder="http://localhost:9696" />
+          <input pInputText name="prowlarrUrl" maxlength="500" type="url" [(ngModel)]="form.prowlarrUrl" placeholder="http://localhost:9696" />
         </label>
 
         <label class="field">
           <span>Clé API Prowlarr</span>
-          <input pInputText name="prowlarrApiKey" type="password" [(ngModel)]="form.prowlarrApiKey" autocomplete="new-password" />
+          <input pInputText name="prowlarrApiKey" maxlength="200" type="password" [(ngModel)]="form.prowlarrApiKey" autocomplete="new-password" />
         </label>
 
         <label class="field">
           <span>Clé API AllDebrid</span>
-          <input pInputText name="allDebridApiKey" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
+          <input pInputText name="allDebridApiKey" maxlength="200" type="password" [(ngModel)]="form.allDebridApiKey" autocomplete="new-password" />
         </label>
 
         <div class="form-actions">
-          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing() || importing()"
             [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
         </div>
       </form>
@@ -111,21 +116,21 @@
 
         <label class="field">
           <span>Clé API TMDB</span>
-          <input pInputText name="tmdbApiKey" type="password" [(ngModel)]="form.tmdbApiKey" autocomplete="new-password" />
+          <input pInputText name="tmdbApiKey" maxlength="200" type="password" [(ngModel)]="form.tmdbApiKey" autocomplete="new-password" />
         </label>
 
         <label class="field">
           <span>URL de base</span>
-          <input pInputText name="tmdbBaseUrl" type="url" [(ngModel)]="form.tmdbBaseUrl" placeholder="https://api.themoviedb.org/3" />
+          <input pInputText name="tmdbBaseUrl" maxlength="500" type="url" [(ngModel)]="form.tmdbBaseUrl" placeholder="https://api.themoviedb.org/3" />
         </label>
 
         <label class="field">
           <span>Langue</span>
-          <input pInputText name="tmdbLanguage" [(ngModel)]="form.tmdbLanguage" placeholder="fr-FR" />
+          <input pInputText name="tmdbLanguage" maxlength="20" [(ngModel)]="form.tmdbLanguage" placeholder="fr-FR" />
         </label>
 
         <div class="form-actions">
-          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing()"
+          <button pButton type="submit" [loading]="saving()" [disabled]="saving() || testing() || importing()"
             [icon]="saved() ? 'pi pi-check' : 'pi pi-save'" [label]="saved() ? 'Enregistré' : 'Enregistrer'"></button>
         </div>
       </form>
@@ -158,11 +163,11 @@
 
       <div class="form-actions">
         <button pButton type="button" icon="pi pi-download" label="Exporter"
-          [loading]="exporting()" [disabled]="exporting() || importing()"
+          [loading]="exporting()" [disabled]="exporting() || importing() || saving() || testing()"
           (click)="exportBackup()"></button>
 
         <button pButton type="button" severity="danger" outlined icon="pi pi-upload" label="Importer…"
-          [loading]="importing()" [disabled]="exporting() || importing()"
+          [loading]="importing()" [disabled]="exporting() || importing() || saving() || testing()"
           (click)="backupFile.click()"></button>
         <input #backupFile type="file" accept="application/json,.json" hidden (change)="importBackup(backupFile)" />
       </div>

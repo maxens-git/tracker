@@ -151,7 +151,7 @@ public class StatsService(ApiDbContext context)
             List<string>? names = DeserializeGenreNames(payload);
             if (names == null) continue;
 
-            foreach (string name in names.Select(n => n.Trim()).Where(n => n.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase))
+            foreach (string name in names.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n.Trim()).Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 counts[name] = counts.GetValueOrDefault(name) + 1;
                 labels.TryAdd(name, name);

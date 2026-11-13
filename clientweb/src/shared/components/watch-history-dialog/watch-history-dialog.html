@@ -19,12 +19,15 @@
       appendTo="body"
     />
     <button pButton type="button" icon="pi pi-plus" label="Ajouter"
-      [loading]="adding()" [disabled]="adding()"
+      [loading]="adding()" [disabled]="loading() || !!historyError() || mutationPending"
       (click)="addWatch()"></button>
   </div>
 
   @if (loading()) {
     <p class="hint">Chargement…</p>
+  } @else if (historyError(); as error) {
+    <p class="hint">{{ error }}</p>
+    <button pButton type="button" text label="Réessayer" (click)="loadHistory()"></button>
   } @else if (events().length === 0) {
     <p class="hint">Aucun visionnage enregistré.</p>
   } @else {
@@ -35,7 +38,7 @@
           <button pButton type="button" text rounded severity="danger"
             icon="pi pi-trash"
             [loading]="removingId() === event.id"
-            [disabled]="removingId() !== null"
+            [disabled]="loading() || mutationPending"
             (click)="removeWatch(event)"
             aria-label="Supprimer ce visionnage"
           ></button>

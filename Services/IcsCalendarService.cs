@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Tracker.Data;
@@ -20,28 +22,32 @@ public class IcsCalendarService(
     IMemoryCache cache,
     IConfiguration configuration)
 {
-    private const string CacheKey = "calendar:sorties:ics";
-
     private readonly int daysAhead = Math.Clamp(configuration.GetValue("Calendar:DaysAhead", 365), 1, 1000);
     private readonly int cacheMinutes = Math.Clamp(configuration.GetValue("Calendar:CacheMinutes", 180), 0, 1440);
 
     public async Task<string> BuildIcsAsync(CancellationToken cancellationToken)
     {
-        if (cacheMinutes == 0)
-            return await GenerateAsync(cancellationToken);
+        List<TrackedMediaRelease> tracked = await context.TrackedMediaReleases.AsNoTracking()
+            .OrderBy(m => m.Id).ToListAsync(cancellationToken);
+        DateOnly today = DateOnly.FromDateTime(DateTime.Now);
 
-        return await cache.GetOrCreateAsync(CacheKey, async entry =>
+        if (cacheMinutes == 0)
+            return await GenerateAsync(tracked, today, cancellationToken);
+
+        // Le cache doit refléter immédiatement les ajouts/retraits de suivi, y
+        // compris après une restauration de sauvegarde, et changer à minuit.
+        string fingerprint = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(
+            tracked.Select(m => new { m.TmdbId, m.MediaType, m.Title, m.PosterPath }))));
+        string cacheKey = $"calendar:sorties:ics:{today:yyyy-MM-dd}:{daysAhead}:{fingerprint}";
+        return await cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheMinutes);
-            return await GenerateAsync(cancellationToken);
+            return await GenerateAsync(tracked, today, cancellationToken);
         }) ?? string.Empty;
     }
 
-    private async Task<string> GenerateAsync(CancellationToken cancellationToken)
+    private async Task<string> GenerateAsync(List<TrackedMediaRelease> tracked, DateOnly today, CancellationToken cancellationToken)
     {
-        List<TrackedMediaRelease> tracked = await context.TrackedMediaReleases.ToListAsync(cancellationToken);
-        DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-
         List<ReleaseCandidate> candidates = [];
         foreach (TrackedMediaRelease media in tracked)
             candidates.AddRange(await releases.GetUpcomingReleases(media, today, daysAhead, cancellationToken));
@@ -92,13 +98,29 @@ public class IcsCalendarService(
         return sb.ToString();
     }
 
-    // RFC 5545 : chaque ligne de contenu se termine par CRLF.
-    private static void AppendLine(StringBuilder sb, string line) => sb.Append(line).Append("\r\n");
+    // RFC 5545 : CRLF et repli à 75 octets, sans couper un caractère UTF-8.
+    private static void AppendLine(StringBuilder sb, string line)
+    {
+        int octets = 0;
+        foreach (Rune rune in line.EnumerateRunes())
+        {
+            if (octets + rune.Utf8SequenceLength > 75)
+            {
+                sb.Append("\r\n ");
+                octets = 1;
+            }
+            sb.Append(rune.ToString());
+            octets += rune.Utf8SequenceLength;
+        }
+        sb.Append("\r\n");
+    }
 
     // RFC 5545 : échappement des caractères spéciaux dans les valeurs texte.
     private static string Escape(string value) => value
         .Replace("\\", "\\\\")
         .Replace(";", "\\;")
         .Replace(",", "\\,")
+        .Replace("\r\n", "\n")
+        .Replace("\r", "\n")
         .Replace("\n", "\\n");
 }

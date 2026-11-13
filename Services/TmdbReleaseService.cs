@@ -47,10 +47,14 @@ public class TmdbReleaseService(HttpClient http, ApiDbContext context, IConfigur
                 ? await GetMovieReleases(media, today, maxDate, cancellationToken)
                 : await GetShowReleases(media, today, maxDate, cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Impossible de récupérer les sorties TMDB pour {Type} {TmdbId}", media.MediaType, media.TmdbId);
-            return [];
+            throw;
         }
     }
 
@@ -105,10 +109,14 @@ public class TmdbReleaseService(HttpClient http, ApiDbContext context, IConfigur
             }
             return result;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Impossible de récupérer les saisons TMDB pour {TmdbId}", tmdbId);
-            return [];
+            throw;
         }
     }
 
@@ -124,8 +132,16 @@ public class TmdbReleaseService(HttpClient http, ApiDbContext context, IConfigur
         string? posterPath = ReadString(root, "poster_path") ?? media.PosterPath;
         List<ReleaseCandidate> releases = [];
 
+        HashSet<int> activeSeasons = [];
         if (root.TryGetProperty("next_episode_to_air", out JsonElement nextEpisode) && nextEpisode.ValueKind == JsonValueKind.Object)
+        {
             AddEpisodeRelease(media, showTitle, posterPath, nextEpisode, today, maxDate, releases);
+            if (ReadInt(nextEpisode, "season_number") is int nextSeason)
+                activeSeasons.Add(nextSeason);
+        }
+        if (root.TryGetProperty("last_episode_to_air", out JsonElement lastEpisode) && lastEpisode.ValueKind == JsonValueKind.Object
+            && ReadInt(lastEpisode, "season_number") is int lastSeason)
+            activeSeasons.Add(lastSeason);
 
         if (root.TryGetProperty("seasons", out JsonElement seasons) && seasons.ValueKind == JsonValueKind.Array)
         {
@@ -147,7 +163,11 @@ public class TmdbReleaseService(HttpClient http, ApiDbContext context, IConfigur
                         ReadString(season, "poster_path") ?? posterPath));
                 }
 
-                if (seasonAirDate.HasValue && seasonAirDate.Value >= today.AddDays(-30) && seasonAirDate.Value <= maxDate)
+                // Une saison hebdomadaire reste en cours bien après ses 30 premiers jours.
+                // Charger aussi les saisons des épisodes courant/suivant pour ne pas
+                // perdre tous les épisodes à venir après le prochain.
+                if (activeSeasons.Contains(seasonNumber)
+                    || (seasonAirDate.HasValue && seasonAirDate.Value >= today.AddDays(-30) && seasonAirDate.Value <= maxDate))
                 {
                     await AddSeasonEpisodes(media, showTitle, posterPath, seasonNumber, today, maxDate, releases, cancellationToken);
                 }
