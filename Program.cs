@@ -59,6 +59,7 @@ builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<WatchHistoryService>();
 builder.Services.AddScoped<SystemLogService>();
+builder.Services.AddScoped<BackupService>();
 builder.Services.AddSingleton<SystemLogQueue>();
 builder.Services.AddSingleton<ILoggerProvider, DatabaseLoggerProvider>();
 builder.Services.AddHostedService<SystemLogWriterService>();

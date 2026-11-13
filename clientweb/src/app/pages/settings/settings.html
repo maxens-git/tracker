@@ -145,6 +145,29 @@
       </div>
     </p-card>
 
+    <p-card header="Sauvegarde">
+      <p class="panel-hint">
+        Exporter toute la base (médias, visionnages, listes, activité, réglages…) dans un fichier JSON,
+        ou la remplacer entièrement par une sauvegarde.
+      </p>
+
+      <label class="checkbox-row">
+        <p-checkbox [(ngModel)]="exportIncludeLogs" [binary]="true" inputId="exportIncludeLogs" />
+        <span>Inclure les logs système</span>
+      </label>
+
+      <div class="form-actions">
+        <button pButton type="button" icon="pi pi-download" label="Exporter"
+          [loading]="exporting()" [disabled]="exporting() || importing()"
+          (click)="exportBackup()"></button>
+
+        <button pButton type="button" severity="danger" outlined icon="pi pi-upload" label="Importer…"
+          [loading]="importing()" [disabled]="exporting() || importing()"
+          (click)="backupFile.click()"></button>
+        <input #backupFile type="file" accept="application/json,.json" hidden (change)="importBackup(backupFile)" />
+      </div>
+    </p-card>
+
     <p-card header="À propos">
       <div class="info-row">
         <span>Date de build</span>

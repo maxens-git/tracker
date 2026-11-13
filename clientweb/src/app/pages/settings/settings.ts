@@ -8,15 +8,17 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CardModule } from 'primeng/card';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { CheckboxModule } from 'primeng/checkbox';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { ThemeMode, ThemeService } from '../../../shared/services/theme';
 import { SettingsState } from '../../../shared/services/settings-state';
 import { buildInfo } from '../../../environments/build-info';
+import { errorMessage } from '../../../shared/services/http-error';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner, CardModule, SelectButtonModule],
+  imports: [FormsModule, ButtonModule, InputTextModule, ToggleSwitchModule, Spinner, CardModule, SelectButtonModule, CheckboxModule],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })
@@ -34,6 +36,9 @@ export class SettingsPage implements OnInit {
   calendarSubscribeLoading = signal(false);
   calendarCopying = signal(false);
   calendarCopied = signal(false);
+  exporting = signal(false);
+  importing = signal(false);
+  exportIncludeLogs = false;
   readonly themeOptions: { label: string; icon: string; value: ThemeMode }[] = [
     { label: 'Clair', icon: 'pi pi-sun', value: 'light' },
     { label: 'Sombre', icon: 'pi pi-moon', value: 'dark' },
@@ -167,6 +172,54 @@ export class SettingsPage implements OnInit {
       error: () => {
         this.calendarCopying.set(false);
         this.showError('Impossible de récupérer le lien du calendrier.');
+      },
+    });
+  }
+
+  exportBackup() {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+
+    this.api.exportBackup(this.exportIncludeLogs).subscribe({
+      next: response => {
+        const disposition = response.headers.get('Content-Disposition') ?? '';
+        const fileName = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'tracker-backup.json';
+        const url = URL.createObjectURL(response.body!);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.exporting.set(false);
+        this.showSuccess('Sauvegarde téléchargée.');
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.showError('Impossible d’exporter la base.');
+      },
+    });
+  }
+
+  importBackup(input: HTMLInputElement) {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.importing()) return;
+
+    if (!confirm(`Remplacer toutes les données par le contenu de « ${file.name} » ? Les données actuelles seront définitivement perdues.`)) return;
+
+    this.importing.set(true);
+    this.api.importBackup(file).subscribe({
+      next: result => {
+        this.importing.set(false);
+        const media = result.counts['userMedia'] ?? 0;
+        const lists = result.counts['mediaLists'] ?? 0;
+        this.showSuccess(`Import terminé : ${media} médias, ${lists} listes. Rechargement…`);
+        // Réglages, listes, états vus… tout a changé : on repart d'une page propre.
+        window.setTimeout(() => window.location.reload(), 1500);
+      },
+      error: err => {
+        this.importing.set(false);
+        this.showError(errorMessage(err, 'Impossible d’importer la sauvegarde.'));
       },
     });
   }

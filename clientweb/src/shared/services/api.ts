@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { MediaItem, TmdbGenre, UserState } from '../interfaces/media';
@@ -71,6 +71,11 @@ export interface Settings {
   tmdbBaseUrl?: string | null;
   tmdbLanguage?: string | null;
   updatedAt: string;
+}
+
+export interface BackupImportResult {
+  exportedAt: string;
+  counts: Record<string, number>;
 }
 
 export interface Indexer {
@@ -383,6 +388,23 @@ export class Api {
 
   sendTestNotification(): Observable<unknown> {
     return this.http.post(`${API}/Settings/test`, null);
+  }
+
+  // ── Sauvegarde ─────────────────────────────────────────────────────────
+
+  exportBackup(includeLogs: boolean): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${API}/Backup/export`, {
+      params: { includeLogs },
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
+  /** Remplace toute la base par le contenu du fichier (envoyé tel quel). */
+  importBackup(file: Blob): Observable<BackupImportResult> {
+    return this.http.post<BackupImportResult>(`${API}/Backup/import`, file, {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // ── Recherche torrents & débridage ─────────────────────────────────────

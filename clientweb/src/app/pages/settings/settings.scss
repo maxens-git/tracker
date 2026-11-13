@@ -36,6 +36,15 @@
   flex-wrap: wrap;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
 .info-row {
   display: flex;
   align-items: center;
