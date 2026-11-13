@@ -14,6 +14,10 @@ struct MoreView: View {
     // lancement, puis rafraîchi depuis le serveur à l'apparition de l'écran.
     @AppStorage(AppStorageKeys.torrentsEnabled) private var torrentsEnabled = true
 
+    private enum Route: Hashable {
+        case stats
+    }
+
     var body: some View {
         List {
             Section {
@@ -49,8 +53,10 @@ struct MoreView: View {
                 row(icon: "clock.arrow.circlepath", tint: .indigo, title: "Activité",
                     subtitle: "Vos dernières actions") { ActivityView() }
 
-                row(icon: "chart.bar.fill", tint: .green, title: "Statistiques",
-                    subtitle: "Votre suivi en chiffres") { StatsView() }
+                NavigationLink(value: Route.stats) {
+                    rowLabel(icon: "chart.bar.fill", tint: .green, title: "Statistiques",
+                             subtitle: "Votre suivi en chiffres")
+                }
             }
 
             Section {
@@ -62,6 +68,11 @@ struct MoreView: View {
             }
         }
         .navigationTitle("Plus")
+        .navigationDestination(for: Route.self) { route in
+            switch route {
+            case .stats: StatsView()
+            }
+        }
         .task {
             if let settings = try? await APIService.shared.settings() {
                 torrentsEnabled = settings.torrentsEnabled
@@ -79,25 +90,31 @@ struct MoreView: View {
         NavigationLink {
             destination()
         } label: {
-            Label {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                // Icône en pastille colorée, comme dans les Réglages d'iOS.
-                Image(systemName: icon)
-                    .font(.footnote)
-                    .foregroundStyle(.white)
-                    .frame(width: 29, height: 29)
-                    .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            rowLabel(icon: icon, tint: tint, title: title, subtitle: subtitle)
+        }
+    }
+
+    private func rowLabel(icon: String, tint: Color, title: String, subtitle: String) -> some View {
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+        } icon: {
+            // Icône en pastille colorée, comme dans les Réglages d'iOS.
+            Image(systemName: icon)
+                .font(.footnote)
+                .foregroundStyle(.white)
+                .frame(width: 29, height: 29)
+                .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
     }
 }
 
 #Preview {
-    NavigationStack { MoreView() }
+    NavigationStack {
+        MoreView().trackerNavigationDestinations()
+    }
 }

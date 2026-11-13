@@ -8,6 +8,7 @@ import Charts
 
 struct StatsView: View {
     @State private var viewModel = StatsViewModel()
+    @Environment(\.zoomNamespace) private var zoomNamespace
 
     // Couleurs des catégories (alignées avec la légende).
     private let movieColor = Color.accentColor
@@ -83,10 +84,12 @@ struct StatsView: View {
             SectionHeader("Les plus revus")
             CardGroup {
                 ForEach(items) { item in
-                    NavigationLink(value: MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "stats")) {
+                    let route = MediaRoute(tmdbId: item.tmdbId, type: item.type, source: "stats-\(item.id)")
+                    NavigationLink(value: route) {
                         HStack(spacing: 12) {
                             PosterImage(path: item.posterPath, cornerRadius: 6)
                                 .frame(width: 36, height: 54)
+                                .zoomSource(route, in: zoomNamespace)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.title ?? "Sans titre")
                                     .font(.subheadline.weight(.semibold))
@@ -447,5 +450,7 @@ private struct ActivityChart: View {
 }
 
 #Preview {
-    NavigationStack { StatsView() }
+    NavigationStack {
+        StatsView().trackerNavigationDestinations()
+    }
 }
