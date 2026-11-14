@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Observation
 
 @Observable
 @MainActor
@@ -15,30 +16,29 @@ final class ListDetailViewModel {
     private(set) var isLoading = false
     private(set) var hasMore = true
     var errorMessage: String?
-
-    /// Recherche dans la liste (filtre par titre, appliqué aux éléments déjà chargés).
     var query = ""
 
-    /// Éléments visibles après filtre de recherche par titre.
+    var isSearching: Bool { !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
     var filteredItems: [MediaListItem] {
-        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !q.isEmpty else { return items }
-        return items.filter { title(for: $0).lowercased().contains(q) }
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return items }
+        return items.filter { title(for: $0).localizedStandardContains(text) }
     }
 
-    /// Métadonnées (affiche, titre, année) enrichies depuis TMDB, indexées par tmdbId.
-    private(set) var meta: [Int: ItemMeta] = [:]
+    /// TMDB utilise des identifiants distincts par type de média.
+    private(set) var meta: [String: ItemMeta] = [:]
 
-    struct ItemMeta {
+    struct ItemMeta: Sendable {
         let posterPath: String?
         let title: String
         let year: String?
     }
 
     private var page = 1
-    /// Évite de recharger (et de perdre la position de scroll) à chaque réapparition
-    /// de la vue, par exemple au retour depuis le détail d'un média.
-    private var hasLoaded = false
+    private var generation = 0
+    private var failedRequestWasRefresh = true
+    private var loadingTask: Task<Void, Never>?
     private let api = APIService.shared
     private let tmdb = TMDBService.shared
 
@@ -46,85 +46,143 @@ final class ListDetailViewModel {
         self.listId = listId
     }
 
-    /// Poster à afficher : celui stocké en base, sinon celui enrichi depuis TMDB.
     func posterPath(for item: MediaListItem) -> String? {
-        item.posterPath ?? meta[item.tmdbId]?.posterPath
+        item.posterPath ?? meta[item.id]?.posterPath
     }
 
-    /// Titre enrichi depuis TMDB (vide tant que non chargé).
     func title(for item: MediaListItem) -> String {
-        meta[item.tmdbId]?.title ?? ""
+        meta[item.id]?.title ?? ""
     }
 
-    /// Année enrichie depuis TMDB.
     func year(for item: MediaListItem) -> String? {
-        meta[item.tmdbId]?.year
+        meta[item.id]?.year
     }
 
-    /// Chargement initial : une seule fois sur la durée de vie de la vue.
-    func loadInitialIfNeeded() async {
-        guard !hasLoaded else { return }
-        hasLoaded = true
-        await loadFirstPage()
-    }
-
-    func loadFirstPage() async {
-        page = 1
-        items = []
-        hasMore = true
-        await loadMore()
+    /// Réconcilie toutes les pages déjà affichées au retour d'une fiche. Le contenu
+    /// reste en place pendant la requête, pour conserver la position de défilement.
+    func refresh() async {
+        loadingTask?.cancel()
+        generation += 1
+        await startLoading(refresh: true)
     }
 
     func loadMore() async {
-        guard hasMore, !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        do {
-            let result = try await api.listItems(listId: listId, page: page)
-            items.append(contentsOf: result.items)
-            hasMore = page < result.totalPages
-            page += 1
-            isLoading = false
-            await enrichItems(result.items)
-        } catch {
-            if !error.isCancellation { errorMessage = error.localizedDescription }
-            isLoading = false
+        guard hasMore, loadingTask == nil else { return }
+        await startLoading(refresh: false)
+    }
+
+    /// Rejoue la page en échec, sans perdre les pages déjà affichées.
+    func retry() async {
+        if failedRequestWasRefresh {
+            await refresh()
+        } else {
+            await loadMore()
         }
     }
 
-    /// Récupère en parallèle, depuis TMDB, les métadonnées (affiche, titre, année)
-    /// des items pas encore enrichis. Le backend ne stocke pas ces métadonnées.
-    private func enrichItems(_ newItems: [MediaListItem]) async {
-        let missing = newItems.filter { meta[$0.tmdbId] == nil }
-        guard !missing.isEmpty else { return }
-        let service = tmdb
+    /// Une recherche charge la suite même si le filtre masque la dernière carte.
+    /// Attend la requête précédente, notamment celle annulée par un changement de texte.
+    func loadSearchResults() async {
+        guard isSearching else { return }
+        if let loadingTask { await loadingTask.value }
+        guard !Task.isCancelled, isSearching, hasMore, errorMessage == nil else { return }
+        await loadMore()
+    }
 
-        let fetched = await withTaskGroup(of: (Int, ItemMeta)?.self) { group -> [(Int, ItemMeta)] in
+    private func startLoading(refresh: Bool) async {
+        let requestGeneration = generation
+        isLoading = true
+        errorMessage = nil
+        let task = Task { await fetchPages(refresh: refresh, generation: requestGeneration) }
+        loadingTask = task
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+    private func fetchPages(refresh: Bool, generation requestGeneration: Int) async {
+        defer {
+            if requestGeneration == generation {
+                loadingTask = nil
+                isLoading = false
+            }
+        }
+
+        let lastPageToRefresh = max(1, page - 1)
+        var nextPage = refresh ? 1 : page
+        var refreshedItems: [MediaListItem] = []
+        var more = hasMore
+        do {
+            repeat {
+                let result = try await api.listItems(listId: listId, page: nextPage, forceRefresh: refresh)
+                try Task.checkCancellation()
+                guard requestGeneration == generation else { return }
+                let metadata = await fetchMetadata(for: result.items)
+                try Task.checkCancellation()
+                guard requestGeneration == generation else { return }
+
+                meta.merge(metadata) { _, new in new }
+                if refresh {
+                    appendUnique(result.items, to: &refreshedItems)
+                } else {
+                    appendUnique(result.items, to: &items)
+                }
+                more = nextPage < result.totalPages
+                nextPage += 1
+                if !refresh {
+                    page = nextPage
+                    hasMore = more
+                }
+            } while more && ((refresh && nextPage <= lastPageToRefresh) || isSearching)
+
+            if refresh {
+                items = refreshedItems
+                page = nextPage
+                hasMore = more
+            }
+        } catch {
+            guard requestGeneration == generation else { return }
+            if !error.isCancellation {
+                failedRequestWasRefresh = refresh
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func appendUnique(_ newItems: [MediaListItem], to destination: inout [MediaListItem]) {
+        var ids = Set(destination.map(\.id))
+        destination.append(contentsOf: newItems.filter { ids.insert($0.id).inserted })
+    }
+
+    private func fetchMetadata(for newItems: [MediaListItem]) async -> [String: ItemMeta] {
+        let missing = newItems.filter { meta[$0.id] == nil }
+        let service = tmdb
+        return await withTaskGroup(of: (String, ItemMeta)?.self) { group in
             for item in missing {
                 let id = item.tmdbId
+                let key = item.id
                 let type = item.type
                 group.addTask {
                     switch type {
                     case .movie:
-                        guard let m = try? await service.movie(id) else { return nil }
-                        return (id, ItemMeta(posterPath: m.posterPath, title: m.title,
-                                             year: Self.yearString(m.releaseDate)))
+                        guard let movie = try? await service.movie(id) else { return nil }
+                        return (key, ItemMeta(posterPath: movie.posterPath, title: movie.title,
+                                              year: Self.yearString(movie.releaseDate)))
                     case .tv:
-                        guard let s = try? await service.show(id) else { return nil }
-                        return (id, ItemMeta(posterPath: s.posterPath, title: s.name,
-                                             year: Self.yearString(s.firstAirDate)))
+                        guard let show = try? await service.show(id) else { return nil }
+                        return (key, ItemMeta(posterPath: show.posterPath, title: show.name,
+                                              year: Self.yearString(show.firstAirDate)))
                     }
                 }
             }
-            var results: [(Int, ItemMeta)] = []
-            for await pair in group { if let pair { results.append(pair) } }
-            return results
+            var result: [String: ItemMeta] = [:]
+            for await pair in group { if let (key, value) = pair { result[key] = value } }
+            return result
         }
-
-        for (id, m) in fetched { meta[id] = m }
     }
 
-    /// Extrait l'année (4 premiers caractères) d'une date TMDB "yyyy-MM-dd".
     private nonisolated static func yearString(_ date: String?) -> String? {
         guard let date, date.count >= 4 else { return nil }
         return String(date.prefix(4))

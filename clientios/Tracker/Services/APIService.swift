@@ -256,11 +256,11 @@ struct APIService {
     }
 
     /// `listId` accepte un identifiant numérique ou un alias système ("seen", "liked", "watchlist").
-    func listItems(listId: String, page: Int = 1, type: String = "all") async throws -> PaginatedResult<MediaListItem> {
+    func listItems(listId: String, page: Int = 1, type: String = "all", forceRefresh: Bool = false) async throws -> PaginatedResult<MediaListItem> {
         try await request("/MediaLists/\(listId)/items", query: [
             URLQueryItem(name: "page", value: String(page)),
             URLQueryItem(name: "type", value: type),
-        ])
+        ], forceRefresh: forceRefresh)
     }
 
     func createList(name: String, description: String? = nil) async throws -> MediaListSummary {

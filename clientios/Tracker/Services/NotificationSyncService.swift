@@ -33,6 +33,8 @@ final class NotificationSyncService {
             language: settings.tmdbLanguage)
 
         let result = try await discovery.discover(forceRefresh: forceRefresh)
+        try Task.checkCancellation()
+        guard NotificationPreferences.delivery == .tracker else { return 0 }
         return try await notifications.schedule(
             items: result.items,
             daysAhead: settings.notifyDaysAhead,

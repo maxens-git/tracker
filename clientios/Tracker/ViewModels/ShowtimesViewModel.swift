@@ -44,6 +44,7 @@ final class ShowtimesViewModel {
 
     /// Noms de salles connus (code → nom), alimentés par les programmes chargés.
     private var theaterNames: [String: String] = [:]
+    private var loadGeneration = 0
 
     private let api = APIService.shared
     private let calendar = Calendar.current
@@ -86,26 +87,34 @@ final class ShowtimesViewModel {
     /// On charge tous les cinémas enregistrés en une requête ; le filtrage coché/décoché
     /// se fait à l'affichage, pour un basculement instantané sans rechargement.
     func load() async {
+        loadGeneration += 1
+        let generation = loadGeneration
         let codes = favorites.map(\.code)
-        guard !isLoading else { return }
-        guard !codes.isEmpty else { programs = []; loaded = true; return }
+        let date = isoDate(pickedDate)
+        // Une nouvelle date (ou liste de cinémas) remplace la requête précédente.
+        // Ne pas laisser les horaires de l'ancien jour sous le nouvel en-tête.
+        programs = []
+        guard !codes.isEmpty else { isLoading = false; loaded = true; return }
 
         isLoading = true
         errorMessage = nil
+        defer {
+            if generation == loadGeneration { isLoading = false }
+        }
         do {
-            let result = try await api.multiShowtimes(codes: codes, date: isoDate(pickedDate))
+            let result = try await api.multiShowtimes(codes: codes, date: date)
+            guard generation == loadGeneration, !Task.isCancelled else { return }
             for prog in result where prog.theater.name != nil {
                 theaterNames[prog.theater.code] = prog.theater.name
             }
             programs = result
         } catch {
+            guard generation == loadGeneration else { return }
             if !error.isCancellation {
-                programs = []
                 errorMessage = error.localizedDescription
             }
         }
         loaded = true
-        isLoading = false
     }
 
     /// Décale d'un jour (borné à aujourd'hui). Le rechargement est déclenché par

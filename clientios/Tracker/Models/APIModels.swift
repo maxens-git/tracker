@@ -115,7 +115,7 @@ struct MediaListItem: Decodable, Identifiable, Hashable {
     let liked: Bool
     let addedAt: Date?
 
-    var id: Int { tmdbId }
+    var id: String { "\(type.rawValue)-\(tmdbId)" }
 
     var type: MediaType { mediaType == "tv" ? .tv : .movie }
 }
@@ -168,6 +168,7 @@ struct AppSettingsDTO: Codable {
     var tmdbBaseUrl: String?
     var tmdbLanguage: String?
     var updatedAt: Date?
+    var iosLocalNotificationsEnabled: Bool? = nil
 }
 
 struct TrackedMedia: Codable, Identifiable, Hashable {

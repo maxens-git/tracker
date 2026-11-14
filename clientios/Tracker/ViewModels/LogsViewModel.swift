@@ -43,6 +43,15 @@ final class LogsViewModel {
 
     private var page = 0
     private var totalPages = 1
+    private var requestGeneration = 0
+
+    private struct Filters {
+        let level: LogLevelFilter
+        let search: String
+    }
+    // La pagination conserve les filtres de la liste affichée, même pendant
+    // la saisie d'une recherche qui n'a pas encore été validée.
+    private var appliedFilters = Filters(level: .all, search: "")
 
     private let api = APIService.shared
 
@@ -50,44 +59,39 @@ final class LogsViewModel {
 
     /// Premier chargement (ignoré si déjà rempli).
     func loadInitial() async {
-        guard logs.isEmpty else { return }
-        await loadMore()
+        guard logs.isEmpty, !isLoading else { return }
+        await loadFirstPage(clear: true)
     }
 
     /// Recharge depuis le début (pull-to-refresh). On ne vide pas `logs` avant la
     /// réponse : la liste reste montée, ce qui évite l'auto-annulation du refresh.
     func refresh() async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        do {
-            let result = try await api.logs(page: 1, level: level.rawValue, search: search)
-            apply(result, reset: true)
-        } catch {
-            if !error.isCancellation { errorMessage = error.localizedDescription }
-        }
-        isLoading = false
+        await loadFirstPage(clear: false)
     }
 
     func loadMore() async {
         guard !isLoading, page < totalPages else { return }
+        let generation = requestGeneration
+        let nextPage = page + 1
+        let filters = appliedFilters
         isLoading = true
         errorMessage = nil
+        defer {
+            if generation == requestGeneration { isLoading = false }
+        }
         do {
-            let result = try await api.logs(page: page + 1, level: level.rawValue, search: search)
-            apply(result, reset: false)
+            let result = try await api.logs(page: nextPage, level: filters.level.rawValue, search: filters.search)
+            guard generation == requestGeneration, !Task.isCancelled else { return }
+            apply(result, page: nextPage)
         } catch {
+            guard generation == requestGeneration else { return }
             if !error.isCancellation { errorMessage = error.localizedDescription }
         }
-        isLoading = false
     }
 
     /// Applique un nouveau filtre (niveau / recherche) : réinitialise puis recharge.
     func applyFilters() async {
-        page = 0
-        totalPages = 1
-        logs = []
-        await loadMore()
+        await loadFirstPage(clear: true)
     }
 
     func clear() async {
@@ -96,25 +100,47 @@ final class LogsViewModel {
         errorMessage = nil
         do {
             try await api.clearLogs()
-            page = 0
-            totalPages = 1
-            logs = []
-            totalCount = 0
-            await loadMore()
+            await loadFirstPage(clear: true)
         } catch {
             if !error.isCancellation { errorMessage = error.localizedDescription }
         }
         isClearing = false
     }
 
-    private func apply(_ result: PaginatedResult<SystemLog>, reset: Bool) {
-        if reset {
+    private func loadFirstPage(clear: Bool) async {
+        requestGeneration += 1
+        let generation = requestGeneration
+        let filters = Filters(level: level, search: search)
+        if clear {
+            logs = []
+            page = 0
+            totalPages = 1
+            totalCount = 0
+            appliedFilters = filters
+        }
+        isLoading = true
+        errorMessage = nil
+        defer {
+            if generation == requestGeneration { isLoading = false }
+        }
+        do {
+            let result = try await api.logs(page: 1, level: filters.level.rawValue, search: filters.search)
+            guard generation == requestGeneration, !Task.isCancelled else { return }
+            appliedFilters = filters
+            apply(result, page: 1)
+        } catch {
+            guard generation == requestGeneration else { return }
+            if !error.isCancellation { errorMessage = error.localizedDescription }
+        }
+    }
+
+    private func apply(_ result: PaginatedResult<SystemLog>, page loadedPage: Int) {
+        if loadedPage == 1 {
             logs = result.items
-            page = 1
         } else {
             logs.append(contentsOf: result.items)
-            page += 1
         }
+        page = loadedPage
         totalPages = result.totalPages
         totalCount = result.totalCount
     }

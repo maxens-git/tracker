@@ -49,6 +49,7 @@ final class LocalNotificationService {
         minute: Int
     ) async throws -> Int {
         guard await canSchedule else { throw LocalNotificationError.permissionRequired }
+        try Task.checkCancellation()
 
         await cancelAllReleases()
 

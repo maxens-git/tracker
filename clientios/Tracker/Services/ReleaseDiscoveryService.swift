@@ -26,15 +26,19 @@ final class ReleaseDiscoveryService {
         let tracked = try await api.trackedMedia(forceRefresh: forceRefresh)
         var result: [ReleaseCalendarItem] = []
         for item in tracked {
-            result += await releaseItems(for: item, forceRefresh: forceRefresh)
+            try Task.checkCancellation()
+            result += try await releaseItems(for: item, forceRefresh: forceRefresh)
         }
+        try Task.checkCancellation()
         return ReleaseDiscoveryResult(items: result, trackedCount: tracked.count)
     }
 
-    private func releaseItems(for tracked: TrackedMedia, forceRefresh: Bool) async -> [ReleaseCalendarItem] {
+    // Une réponse incomplète ne doit jamais remplacer les rappels déjà programmés.
+    // On propage les erreurs pour que les appelants conservent le dernier état valide.
+    private func releaseItems(for tracked: TrackedMedia, forceRefresh: Bool) async throws -> [ReleaseCalendarItem] {
         switch tracked.type {
         case .movie:
-            guard let movie = try? await tmdb.movie(tracked.tmdbId, forceRefresh: forceRefresh) else { return [] }
+            let movie = try await tmdb.movie(tracked.tmdbId, forceRefresh: forceRefresh)
             if isFuture(movie.releaseDate) {
                 return [ReleaseCalendarItem(
                     id: "movie-\(movie.id)-\(movie.releaseDate ?? "")",
@@ -59,7 +63,7 @@ final class ReleaseDiscoveryService {
                 pending: true)]
 
         case .tv:
-            guard let show = try? await tmdb.show(tracked.tmdbId, forceRefresh: forceRefresh) else { return [] }
+            let show = try await tmdb.show(tracked.tmdbId, forceRefresh: forceRefresh)
             let datedSeasons = show.seasons?
                 .filter { $0.seasonNumber > 0 && isFuture($0.airDate) }
                 .map { season in
@@ -83,21 +87,20 @@ final class ReleaseDiscoveryService {
             // notification, y compris lorsque plusieurs épisodes sortent le même jour.
             var episodes: [ReleaseCalendarItem] = []
             for season in seasonsToInspect {
-                if let detail = try? await tmdb.season(showId: show.id, seasonNumber: season.seasonNumber) {
-                    episodes += detail.episodes
-                        .filter { isFuture($0.airDate) }
-                        .map { episode in
-                            ReleaseCalendarItem(
-                                id: "tv-\(show.id)-s\(episode.seasonNumber)-e\(episode.episodeNumber)-\(episode.airDate ?? "")",
-                                tmdbId: show.id,
-                                type: .tv,
-                                kind: "Épisode",
-                                title: show.name,
-                                subtitle: "S\(String(format: "%02d", episode.seasonNumber))E\(String(format: "%02d", episode.episodeNumber)) - \(episode.name)",
-                                date: episode.airDate ?? "",
-                                posterPath: show.posterPath ?? tracked.posterPath)
-                        }
-                }
+                let detail = try await tmdb.season(showId: show.id, seasonNumber: season.seasonNumber)
+                episodes += detail.episodes
+                    .filter { isFuture($0.airDate) }
+                    .map { episode in
+                        ReleaseCalendarItem(
+                            id: "tv-\(show.id)-s\(episode.seasonNumber)-e\(episode.episodeNumber)-\(episode.airDate ?? "")",
+                            tmdbId: show.id,
+                            type: .tv,
+                            kind: "Épisode",
+                            title: show.name,
+                            subtitle: "S\(String(format: "%02d", episode.seasonNumber))E\(String(format: "%02d", episode.episodeNumber)) - \(episode.name)",
+                            date: episode.airDate ?? "",
+                            posterPath: show.posterPath ?? tracked.posterPath)
+                    }
             }
 
             var seen = Set<String>()

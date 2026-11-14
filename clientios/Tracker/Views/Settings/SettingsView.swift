@@ -30,7 +30,8 @@ struct SettingsView: View {
     @State private var tmdbApiKey = ""
     @State private var tmdbBaseUrl = ""
     @State private var tmdbLanguage = ""
-    @State private var isLoadingSettings = false
+    @State private var settingsLoad = SettingsLoadState()
+    @State private var settingsLoadError: String?
     @State private var isSavingSettings = false
     @State private var isSubscribingCalendar = false
     @State private var statusMessage: String?
@@ -68,14 +69,45 @@ struct SettingsView: View {
                 set: { appearance = $0 })
     }
 
+    private var canEditRemoteSettings: Bool {
+        settingsLoad.isReady(for: useDevServer) && !isSavingSettings
+    }
+
+    private var serverSelection: Binding<Bool> {
+        Binding(get: { useDevServer }, set: { server in
+            guard !isSavingSettings, server != useDevServer else { return }
+            // Invalide immédiatement le formulaire, avant le démarrage de la
+            // nouvelle tâche, y compris lors d'un aller-retour rapide prod/dev.
+            settingsLoad.invalidate()
+            settingsLoadError = nil
+            statusMessage = nil
+            useDevServer = server
+        })
+    }
+
     var body: some View {
         Form {
             Section {
-                Picker("Serveur", selection: $useDevServer) {
+                Picker("Serveur", selection: serverSelection) {
                     Text("Production").tag(false)
                     Text("Dev (localhost)").tag(true)
                 }
                 .pickerStyle(.segmented)
+                .disabled(isSavingSettings)
+
+                if !settingsLoad.isReady(for: useDevServer) {
+                    if settingsLoad.isLoading {
+                        ProgressView("Chargement des réglages…")
+                    } else {
+                        if let settingsLoadError {
+                            Text(settingsLoadError)
+                                .foregroundStyle(.secondary)
+                        }
+                        Button("Réessayer le chargement") {
+                            Task { await loadRemoteSettings() }
+                        }
+                    }
+                }
             } header: {
                 Text("Serveur")
             }
@@ -153,12 +185,13 @@ struct SettingsView: View {
                         Text("Enregistrer")
                     }
                 }
-                .disabled(isSavingSettings || isLoadingSettings)
+                .disabled(!canEditRemoteSettings)
             } header: {
                 Text("Notifications")
             } footer: {
                 Text(statusMessage ?? notificationHelp)
             }
+            .disabled(!canEditRemoteSettings)
 
             Section {
                 Toggle("Activer la recherche & le débridage", isOn: $torrentsEnabled)
@@ -178,12 +211,13 @@ struct SettingsView: View {
                         Text("Enregistrer")
                     }
                 }
-                .disabled(isSavingSettings || isLoadingSettings)
+                .disabled(!canEditRemoteSettings)
             } header: {
                 Text("Recherche & débridage")
             } footer: {
                 Text("Rechercher des torrents via Prowlarr et récupérer un lien direct via AllDebrid. Désactivé, l’onglet Torrents est masqué.")
             }
+            .disabled(!canEditRemoteSettings)
 
             Section {
                 SecureField("Clé API TMDB", text: $tmdbApiKey)
@@ -204,12 +238,13 @@ struct SettingsView: View {
                         Text("Enregistrer")
                     }
                 }
-                .disabled(isSavingSettings || isLoadingSettings)
+                .disabled(!canEditRemoteSettings)
             } header: {
                 Text("TMDB")
             } footer: {
                 Text("Clé, URL et langue utilisées pour interroger l’API TMDB. Laisser vide pour garder les valeurs par défaut.")
             }
+            .disabled(!canEditRemoteSettings)
 
             Section {
                 Button {
@@ -251,12 +286,11 @@ struct SettingsView: View {
         }
         .navigationTitle("Réglages")
         .onAppear { cacheSize = CacheManager.diskUsage }
-        .task {
+        .task(id: useDevServer) {
+            guard !settingsLoad.isReady(for: useDevServer) else { return }
             await loadRemoteSettings()
-            await refreshLocalAuthorizationStatus()
         }
-        // Rechargement des réglages distants après une bascule de serveur.
-        .onChange(of: useDevServer) { Task { await loadRemoteSettings() } }
+        .task { await refreshLocalAuthorizationStatus() }
         .onChange(of: notificationDelivery) { _, delivery in
             guard delivery == .tracker else { return }
             Task { _ = await ensureLocalAuthorization() }
@@ -268,11 +302,14 @@ struct SettingsView: View {
     }
 
     private func loadRemoteSettings() async {
-        guard !isLoadingSettings else { return }
-        isLoadingSettings = true
-        defer { isLoadingSettings = false }
+        let request = settingsLoad.begin(server: useDevServer)
+        settingsLoadError = nil
+        statusMessage = nil
+        defer { settingsLoad.finish(request, server: useDevServer, succeeded: false) }
         do {
             let settings = try await APIService.shared.settings(forceRefresh: true)
+            guard !Task.isCancelled,
+                  settingsLoad.isCurrent(request, server: useDevServer) else { return }
             if NotificationPreferences.savedDelivery == .tracker {
                 notificationDelivery = .tracker
             } else {
@@ -291,13 +328,15 @@ struct SettingsView: View {
             tmdbBaseUrl = settings.tmdbBaseUrl ?? ""
             tmdbLanguage = settings.tmdbLanguage ?? ""
             AppConfig.setTmdbOverrides(apiKey: settings.tmdbApiKey, baseURL: settings.tmdbBaseUrl, language: settings.tmdbLanguage)
+            settingsLoad.finish(request, server: useDevServer, succeeded: true)
         } catch {
-            if !error.isCancellation { statusMessage = error.localizedDescription }
+            guard settingsLoad.isCurrent(request, server: useDevServer) else { return }
+            if !error.isCancellation { settingsLoadError = error.localizedDescription }
         }
     }
 
     private func saveRemoteSettings(requireNotificationAuthorization: Bool = false) async {
-        guard !isSavingSettings else { return }
+        guard canEditRemoteSettings, let loadedRequest = settingsLoad.loadedRequest else { return }
         isSavingSettings = true
         defer { isSavingSettings = false }
 
@@ -308,6 +347,9 @@ struct SettingsView: View {
             Haptics.warning()
             return
         }
+
+        guard settingsLoad.loadedRequest == loadedRequest,
+              useDevServer == loadedRequest.useDevServer else { return }
 
         do {
             let components = Calendar.current.dateComponents([.hour, .minute], from: notificationTime)
@@ -326,7 +368,10 @@ struct SettingsView: View {
                 tmdbApiKey: tmdbApiKey.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
                 tmdbBaseUrl: tmdbBaseUrl.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
                 tmdbLanguage: tmdbLanguage.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
-                updatedAt: nil))
+                updatedAt: nil,
+                iosLocalNotificationsEnabled: notificationDelivery == .tracker))
+            guard settingsLoad.loadedRequest == loadedRequest,
+                  useDevServer == loadedRequest.useDevServer else { return }
             AppConfig.setTmdbOverrides(apiKey: tmdbApiKey, baseURL: tmdbBaseUrl, language: tmdbLanguage)
             NotificationPreferences.delivery = notificationDelivery
 
@@ -334,16 +379,22 @@ struct SettingsView: View {
                 let count = try await NotificationSyncService.shared.sync(
                     settings: savedSettings,
                     forceRefresh: true)
+                guard settingsLoad.loadedRequest == loadedRequest,
+                      useDevServer == loadedRequest.useDevServer else { return }
                 let plural = count == 1 ? "" : "s"
                 statusMessage = "Réglages enregistrés · \(count) notification\(plural) programmée\(plural)."
             } else if notificationDelivery == .tracker {
                 statusMessage = "Réglages enregistrés · notifications Tracker non autorisées dans iOS."
             } else {
                 await LocalNotificationService.shared.cancelAllReleases()
+                guard settingsLoad.loadedRequest == loadedRequest,
+                      useDevServer == loadedRequest.useDevServer else { return }
                 statusMessage = "Réglages enregistrés."
             }
             Haptics.success()
         } catch {
+            guard settingsLoad.loadedRequest == loadedRequest,
+                  useDevServer == loadedRequest.useDevServer else { return }
             if !error.isCancellation { statusMessage = error.localizedDescription }
             Haptics.error()
         }
@@ -442,6 +493,46 @@ struct SettingsView: View {
         components.hour = min(max(hour, 0), 23)
         components.minute = min(max(minute, 0), 59)
         return Calendar.current.date(from: components) ?? Date()
+    }
+}
+
+/// Associe chaque formulaire chargé à sa requête et à son serveur. Une ancienne
+/// réponse ne peut ni réactiver l'enregistrement ni terminer un nouveau chargement.
+private struct SettingsLoadState {
+    struct Request: Equatable {
+        let id = UUID()
+        let useDevServer: Bool
+    }
+
+    private(set) var loadedRequest: Request?
+    private var pendingRequest: Request?
+
+    var isLoading: Bool { pendingRequest != nil }
+
+    func isReady(for server: Bool) -> Bool {
+        !isLoading && loadedRequest?.useDevServer == server
+    }
+
+    mutating func invalidate() {
+        loadedRequest = nil
+        pendingRequest = nil
+    }
+
+    mutating func begin(server: Bool) -> Request {
+        let request = Request(useDevServer: server)
+        loadedRequest = nil
+        pendingRequest = request
+        return request
+    }
+
+    func isCurrent(_ request: Request, server: Bool) -> Bool {
+        pendingRequest == request && request.useDevServer == server
+    }
+
+    mutating func finish(_ request: Request, server: Bool, succeeded: Bool) {
+        guard isCurrent(request, server: server) else { return }
+        pendingRequest = nil
+        loadedRequest = succeeded ? request : nil
     }
 }
 

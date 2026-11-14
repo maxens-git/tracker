@@ -30,7 +30,9 @@ struct ListDetailView: View {
                                   watchCount: item.watchCount ?? 0)
                             .zoomSource(route, in: zoomNamespace)
                             .task {
-                                if item == viewModel.items.last { await viewModel.loadMore() }
+                                if !viewModel.isSearching, item.id == viewModel.items.last?.id {
+                                    await viewModel.loadMore()
+                                }
                             }
                     }
                     .buttonStyle(.pressableCard)
@@ -40,14 +42,32 @@ struct ListDetailView: View {
 
             if viewModel.isLoading {
                 ProgressView().padding()
+            } else if let error = viewModel.errorMessage, !viewModel.items.isEmpty {
+                VStack(spacing: 8) {
+                    Text(error).foregroundStyle(.secondary)
+                    Button("Réessayer") { Task { await viewModel.retry() } }
+                }
+                .padding()
+            } else if viewModel.hasMore && !viewModel.items.isEmpty {
+                Button("Charger la suite") { Task { await viewModel.loadMore() } }
+                    .buttonStyle(.bordered)
+                    .padding()
             }
         }
         .navigationTitle(title)
-        .errorToast($viewModel.errorMessage)
         .searchable(text: $viewModel.query, prompt: "Rechercher dans la liste")
         .overlay {
             if viewModel.filteredItems.isEmpty && !viewModel.isLoading {
-                if viewModel.items.isEmpty {
+                if let error = viewModel.errorMessage {
+                    ContentUnavailableView {
+                        Label("Erreur de chargement", systemImage: "wifi.exclamationmark")
+                    } description: {
+                        Text(error)
+                    } actions: {
+                        Button("Réessayer") { Task { await viewModel.retry() } }
+                            .buttonStyle(.glassProminent)
+                    }
+                } else if viewModel.items.isEmpty {
                     ContentUnavailableView("Liste vide", systemImage: "rectangle.stack",
                                            description: Text("Aucun média dans cette liste."))
                 } else {
@@ -55,6 +75,8 @@ struct ListDetailView: View {
                 }
             }
         }
-        .task { await viewModel.loadInitialIfNeeded() }
+        .task { await viewModel.refresh() }
+        .task(id: viewModel.query) { await viewModel.loadSearchResults() }
+        .refreshable { await viewModel.refresh() }
     }
 }
