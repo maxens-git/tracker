@@ -67,11 +67,48 @@
   } @else if (searched() && results().length === 0) {
     <p-message severity="secondary" styleClass="state-message" text="Aucun résultat." />
   } @else if (results().length > 0) {
-    <div class="poster-grid">
+    <ul class="search-results" role="list" aria-label="Résultats de recherche">
       @for (item of results(); track item.media_type + ':' + item.id) {
-        <app-poster-card [item]="item" />
+        @let titleId = 'search-title-' + item.media_type + '-' + item.id;
+        <li>
+          <a class="app-card search-result" [routerLink]="['/', item.media_type, item.id]"
+            [attr.aria-labelledby]="titleId">
+            <div class="result-poster" aria-hidden="true">
+              @if (posterUrl(item.poster_path, 'w185'); as poster) {
+                <img [src]="poster" alt="" loading="lazy" decoding="async" />
+              } @else {
+                <i class="pi pi-image"></i>
+              }
+            </div>
+
+            <div class="result-details">
+              <h2 class="result-title" [id]="titleId">{{ displayTitle(item) }}</h2>
+              <div class="result-meta">
+                <span>{{ item.media_type === 'movie' ? 'Film' : 'Série' }}</span>
+                @if (displayYear(item); as year) {
+                  <span>{{ year }}</span>
+                }
+                @if (item.vote_average) {
+                  <span class="result-rating">
+                    <i class="pi pi-star-fill" aria-hidden="true"></i>
+                    <span><strong>{{ item.vote_average | number:'1.1-1' }}</strong> / 10</span>
+                    <span class="rating-track" [style.--rating-fill]="(item.vote_average * 10) + '%'"
+                      aria-hidden="true"></span>
+                  </span>
+                }
+                @if (item.seen) {
+                  <p-tag severity="success" icon="pi pi-check"
+                    [value]="(item.watchCount ?? 0) > 1 ? 'Vu ×' + item.watchCount : 'Vu'" />
+                }
+              </div>
+              @if (item.overview?.trim(); as overview) {
+                <p class="result-overview">{{ overview }}</p>
+              }
+            </div>
+          </a>
+        </li>
       }
-    </div>
+    </ul>
   } @else if (history.recent().length > 0) {
     <section class="recent">
       <div class="recent-head">

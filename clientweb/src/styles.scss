@@ -186,7 +186,7 @@ img {
   letter-spacing: -0.01em;
 }
 
-/* Grille d'affiches, partagée par recherche, listes, personne et similaires. */
+/* Grille d'affiches, partagée par listes, personne et similaires. */
 .poster-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));

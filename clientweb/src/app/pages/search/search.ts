@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, distinctUntilChanged, switchMap, of, timer } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TmdbService } from '../../../shared/services/tmdb.service';
@@ -10,7 +10,7 @@ import { Api, withUserStates } from '../../../shared/services/api';
 import { SearchHistoryService } from '../../../shared/services/search-history';
 import { rank, deduplicate } from '../../../shared/services/search-ranking';
 import { MediaItem, TmdbGenre } from '../../../shared/interfaces/media';
-import { PosterCard } from '../../../shared/components/poster-card/poster-card';
+import { displayTitle, displayYear, posterUrl } from '../../../shared/services/tmdb-image';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -21,6 +21,7 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ChipModule } from 'primeng/chip';
 import { MessageModule } from 'primeng/message';
+import { TagModule } from 'primeng/tag';
 
 type SortKey = 'relevance' | 'rating' | 'date_desc' | 'date_asc' | 'popularity';
 
@@ -35,11 +36,15 @@ const PAGES_PER_SEARCH = 3;
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterCard, Spinner, ButtonModule, IconFieldModule, InputIconModule, InputTextModule, SelectButtonModule, SelectModule, MultiSelectModule, ChipModule, MessageModule],
+  imports: [CommonModule, FormsModule, RouterLink, Spinner, ButtonModule, IconFieldModule, InputIconModule, InputTextModule, SelectButtonModule, SelectModule, MultiSelectModule, ChipModule, MessageModule, TagModule],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })
 export class Search implements OnInit {
+  protected readonly displayTitle = displayTitle;
+  protected readonly displayYear = displayYear;
+  protected readonly posterUrl = posterUrl;
+
   private tmdb = inject(TmdbService);
   private api = inject(Api);
   private route = inject(ActivatedRoute);
