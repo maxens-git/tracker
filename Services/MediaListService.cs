@@ -9,11 +9,11 @@ public class MediaListService(ApiDbContext context)
 {
     public const int PageSize = 20;
 
-    public async Task<PaginatedResult<MediaListItemDto>> GetListItemsPaginated(int listId, int page, string type)
+    public async Task<PaginatedResult<MediaListItemDto>> GetListItemsPaginated(int listId, int page, string type, string? search = null)
     {
         page = Math.Max(1, page);
-        IQueryable<MediaListItem> query = ApplyTypeFilter(
-            context.MediaListItems.Where(i => i.MediaListId == listId), type);
+        IQueryable<MediaListItem> query = ApplySearchFilter(ApplyTypeFilter(
+            context.MediaListItems.Where(i => i.MediaListId == listId), type), search);
 
         int total = await query.CountAsync();
         long offset = ((long)page - 1) * PageSize;
@@ -68,6 +68,29 @@ public class MediaListService(ApiDbContext context)
             "show" or "tv" => query.Where(i => i.MediaType == MediaType.Show),
             _ => query
         };
+
+    public static IQueryable<UserMedia> ApplySearchFilter(IQueryable<UserMedia> query, string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+            return query;
+
+        string term = search.Trim().ToLowerInvariant();
+        return query.Where(m => m.Title != null && m.Title.ToLower().Contains(term));
+    }
+
+    public IQueryable<MediaListItem> ApplySearchFilter(IQueryable<MediaListItem> query, string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+            return query;
+
+        string term = search.Trim().ToLowerInvariant();
+        // Match the same title fallback used by MediaListItemDto, before pagination.
+        return query.Where(i =>
+            (i.Title != null && i.Title.ToLower().Contains(term)) ||
+            (i.Title == null && context.UserMedia.Any(m =>
+                m.TmdbId == i.TmdbId && m.MediaType == i.MediaType &&
+                m.Title != null && m.Title.ToLower().Contains(term))));
+    }
 
     public static MediaListItemDto ToDto(UserMedia m) => new(m);
 

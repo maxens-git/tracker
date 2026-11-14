@@ -37,7 +37,8 @@
 
     <p-iconfield iconPosition="left" styleClass="search-bar">
       <p-inputicon styleClass="pi pi-search" />
-      <input pInputText type="search" placeholder="Rechercher dans cette liste…" [(ngModel)]="query" />
+      <input pInputText type="search" placeholder="Rechercher dans cette liste…"
+        aria-label="Rechercher dans cette liste" [ngModel]="query" (ngModelChange)="onQueryChange($event)" />
     </p-iconfield>
 
     @if (loading()) {
@@ -45,28 +46,28 @@
     } @else if (pageError(); as error) {
       <p-message severity="error" [text]="error" />
       <button pButton type="button" text label="Réessayer" (click)="loadPage(page())"></button>
-    } @else if (filteredItems.length === 0) {
+    } @else if (items().length === 0) {
       <p-message
         severity="secondary"
         styleClass="state-message"
-        [text]="query ? 'Aucun résultat pour « ' + query + ' »' : 'Cette liste est vide.'"
+        [text]="query.trim() ? 'Aucun résultat pour « ' + query.trim() + ' »' : 'Cette liste est vide.'"
       />
     } @else {
       <p class="results-meta">
         @if (query.trim()) {
-          {{ filteredItems.length }} résultat{{ filteredItems.length !== 1 ? 's' : '' }} sur cette page
+          {{ totalCount() }} résultat{{ totalCount() !== 1 ? 's' : '' }} dans cette liste
         } @else {
           {{ totalCount() }} élément{{ totalCount() !== 1 ? 's' : '' }}
         }
       </p>
 
       <div class="poster-grid">
-        @for (item of filteredItems; track item.media_type + ':' + item.id) {
+        @for (item of items(); track item.media_type + ':' + item.id) {
           <app-poster-card [item]="item" />
         }
       </div>
 
-      @if (totalPages() > 1 && !query.trim()) {
+      @if (totalPages() > 1) {
         <p-paginator
           [first]="firstRecord()"
           [rows]="pageSize()"

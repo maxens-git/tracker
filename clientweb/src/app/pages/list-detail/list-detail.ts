@@ -4,7 +4,7 @@ import { errorMessage } from '../../../shared/services/http-error';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { of, from, map, switchMap, concatMap, reduce, firstValueFrom, Subscription } from 'rxjs';
+import { of, from, map, switchMap, concatMap, reduce, firstValueFrom, Subscription, Subject, debounceTime } from 'rxjs';
 import { Api } from '../../../shared/services/api';
 import { TmdbService } from '../../../shared/services/tmdb.service';
 import { MediaListSummary } from '../../../shared/interfaces/list';
@@ -37,6 +37,7 @@ export class ListDetail implements OnInit {
   private api = inject(Api);
   private destroyRef = inject(DestroyRef);
   private pageRequest?: Subscription;
+  private searchChanges = new Subject<void>();
   private tmdb = inject(TmdbService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -58,6 +59,13 @@ export class ListDetail implements OnInit {
 
   query = '';
   copying = signal(false);
+
+  constructor() {
+    this.searchChanges.pipe(
+      debounceTime(300),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.loadPage(1));
+  }
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id')!;
@@ -87,19 +95,34 @@ export class ListDetail implements OnInit {
       });
     }
 
-    // Restaure la page depuis l'URL (partage/rechargement), 1 par défaut.
+    // Restaure la recherche et sa page depuis l'URL (partage/rechargement).
+    this.query = (this.route.snapshot.queryParamMap.get('search') ?? '').trim();
     const initialPage = Number(this.route.snapshot.queryParamMap.get('page')) || 1;
     this.loadPage(initialPage);
+  }
+
+  onQueryChange(value: string) {
+    const previous = this.query.trim();
+    this.query = value;
+    if (value.trim() === previous) return;
+
+    // Annule aussi l'enrichissement TMDB en cours dès la saisie, avant le délai.
+    this.pageRequest?.unsubscribe();
+    this.page.set(1);
+    this.loading.set(true);
+    this.pageError.set(null);
+    this.searchChanges.next();
   }
 
   loadPage(p: number) {
     this.pageRequest?.unsubscribe();
     p = Number.isFinite(p) ? Math.min(2147483647, Math.max(1, Math.trunc(p))) : 1;
+    const search = this.query.trim();
     this.loading.set(true);
     this.pageError.set(null);
-    this.pageRequest = this.api.listItems(this.listId, p).pipe(
+    this.pageRequest = this.api.listItems(this.listId, p, 'all', search).pipe(
       switchMap(result => result.totalPages > 0 && result.page > result.totalPages
-        ? this.api.listItems(this.listId, result.totalPages)
+        ? this.api.listItems(this.listId, result.totalPages, 'all', search)
         : of(result)),
       // La liste backend ne contient que des références (tmdbId + état) :
       // on charge les fiches TMDB correspondantes puis on recopie les états dessus.
@@ -108,7 +131,7 @@ export class ListDetail implements OnInit {
         this.pageSize.set(result.pageSize);
         this.totalPages.set(result.totalPages);
         this.totalCount.set(result.totalCount);
-        this.syncPageParam(result.page);
+        this.syncPageParam(result.page, search);
 
         if (result.items.length === 0) return of([] as MediaItem[]);
 
@@ -133,26 +156,18 @@ export class ListDetail implements OnInit {
     });
   }
 
-  // Reflète la page courante dans l'URL (page 1 → param retiré), sans empiler d'historique.
+  // Reflète la recherche et sa page dans l'URL, sans empiler d'historique.
   // On met à jour l'URL via Location.replaceState plutôt que router.navigate : une
   // navigation relancerait le cycle du routeur, or ReloadRouteReuseStrategy
   // (shouldReuseRoute=false) détruirait puis recréerait ce composant → nouvel ngOnInit
   // → loadPage → syncPageParam → … boucle infinie d'appels API.
-  private syncPageParam(p: number) {
+  private syncPageParam(p: number, search: string) {
     const urlTree = this.router.createUrlTree([], {
       relativeTo: this.route,
-      queryParams: { page: p > 1 ? p : null },
+      queryParams: { page: p > 1 ? p : null, search: search || null },
       queryParamsHandling: 'merge',
     });
     this.location.replaceState(this.router.serializeUrl(urlTree));
-  }
-
-  get filteredItems(): MediaItem[] {
-    const q = this.query.trim().toLowerCase();
-    if (!q) return this.items();
-    return this.items().filter(i =>
-      (i.title ?? i.name ?? '').toLowerCase().includes(q)
-    );
   }
 
   /**

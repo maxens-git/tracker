@@ -17,6 +17,16 @@ describe('API user-state contract', () => {
 
   afterEach(() => http.verify());
 
+  it('sends list searches alongside the page and media type', async () => {
+    const result = firstValueFrom(api.listItems('seen', 2, 'movie', 'Dune & 100%'));
+    const request = http.expectOne(request => request.url === '/api/MediaLists/seen/items');
+    expect(request.request.params.get('page')).toBe('2');
+    expect(request.request.params.get('type')).toBe('movie');
+    expect(request.request.params.get('search')).toBe('Dune & 100%');
+    request.flush({ items: [], page: 2, pageSize: 20, totalCount: 25, totalPages: 2 });
+    expect((await result).totalCount).toBe(25);
+  });
+
   it('keeps a movie and show with the same TMDB ID separate', async () => {
     const items = [item(42, 'movie'), item(42, 'tv')];
     const result = firstValueFrom(api.statesByTmdbId(items));

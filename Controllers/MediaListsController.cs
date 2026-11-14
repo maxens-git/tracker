@@ -58,44 +58,48 @@ public class MediaListsController(
 
     [HttpGet("seen/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetSeenItems(
-        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all") =>
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all",
+        [FromQuery] string? search = null) =>
         GetUserMediaItems(context.UserMedia.Where(m => m.Seen), page, type,
             q => q.OrderByDescending(m => m.WatchEvents.Max(w => (DateTime?)w.WatchedAt) ?? m.AddedAt)
-                  .ThenByDescending(m => m.Id));
+                  .ThenByDescending(m => m.Id), search);
 
     [HttpGet("liked/items")]
     public Task<PaginatedResult<MediaListItemDto>> GetLikedItems(
-        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all") =>
-        GetUserMediaItems(context.UserMedia.Where(m => m.Liked), page, type);
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all",
+        [FromQuery] string? search = null) =>
+        GetUserMediaItems(context.UserMedia.Where(m => m.Liked), page, type, search: search);
 
     [HttpGet("watchlist/items")]
     public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetWatchlistItems(
-        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all")
+        [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all",
+        [FromQuery] string? search = null)
     {
         MediaList? watchlist = await userMediaService.FindWatchlist();
 
         if (watchlist == null)
             return MediaListService.Paginate(new List<MediaListItemDto>(), page, 0);
 
-        return await mediaListService.GetListItemsPaginated(watchlist.Id, page, type);
+        return await mediaListService.GetListItemsPaginated(watchlist.Id, page, type, search);
     }
 
     // ── Custom list item endpoints ─────────────────────────────────────────
 
     [HttpGet("{id:int}/items")]
     public async Task<ActionResult<PaginatedResult<MediaListItemDto>>> GetItems(
-        int id, [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all")
+        int id, [FromQuery] int page = 1, [FromQuery, RegularExpression("(?i)^(all|movie|show|tv)$")] string type = "all",
+        [FromQuery] string? search = null)
     {
         MediaList? list = await context.MediaLists.FindAsync(id);
         if (list == null)
             return NotFound("Liste introuvable");
 
         if (list.IsSystem && list.Name == SystemLists.Seen)
-            return await GetSeenItems(page, type);
+            return await GetSeenItems(page, type, search);
         if (list.IsSystem && list.Name == SystemLists.Liked)
-            return await GetLikedItems(page, type);
+            return await GetLikedItems(page, type, search);
 
-        return await mediaListService.GetListItemsPaginated(id, page, type);
+        return await mediaListService.GetListItemsPaginated(id, page, type, search);
     }
 
     [HttpPost("{id:int}/items")]
@@ -215,10 +219,11 @@ public class MediaListsController(
     /// <summary>Pagine une requête sur <see cref="UserMedia"/> (listes virtuelles "Vu"/"J'aime").</summary>
     private async Task<PaginatedResult<MediaListItemDto>> GetUserMediaItems(
         IQueryable<UserMedia> source, int page, string type,
-        Func<IQueryable<UserMedia>, IOrderedQueryable<UserMedia>>? orderBy = null)
+        Func<IQueryable<UserMedia>, IOrderedQueryable<UserMedia>>? orderBy = null, string? search = null)
     {
         page = Math.Max(1, page);
-        IQueryable<UserMedia> query = MediaListService.ApplyTypeFilter(source, type);
+        IQueryable<UserMedia> query = MediaListService.ApplySearchFilter(
+            MediaListService.ApplyTypeFilter(source, type), search);
         int total = await query.CountAsync();
         long offset = ((long)page - 1) * MediaListService.PageSize;
         if (offset >= total)

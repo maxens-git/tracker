@@ -343,8 +343,8 @@ export class Api {
     return this.http.get<MediaListSummary>(`${API}/MediaLists/${id}`);
   }
 
-  listItems(id: number | 'seen' | 'liked' | 'watchlist', page = 1, type = 'all'): Observable<PaginatedResult<MediaListItem>> {
-    return this.http.get<PaginatedResult<MediaListItem>>(`${API}/MediaLists/${id}/items`, { params: { page, type } });
+  listItems(id: number | 'seen' | 'liked' | 'watchlist', page = 1, type = 'all', search = ''): Observable<PaginatedResult<MediaListItem>> {
+    return this.http.get<PaginatedResult<MediaListItem>>(`${API}/MediaLists/${id}/items`, { params: { page, type, search } });
   }
 
   addItemToList(listId: number, payload: AddListItemPayload): Observable<unknown> {
