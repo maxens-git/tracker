@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Api, Settings } from '../../../shared/services/api';
+import { Api, Settings, WebSettingsUpdate } from '../../../shared/services/api';
 import { switchMap } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -39,6 +39,7 @@ export class SettingsPage implements OnInit {
   calendarCopied = signal(false);
   exporting = signal(false);
   importing = signal(false);
+  readonly iosLocalNotificationsEnabled = signal<boolean | null>(null);
   exportIncludeLogs = false;
   readonly themeOptions: { label: string; icon: string; value: ThemeMode }[] = [
     { label: 'Clair', icon: 'pi pi-sun', value: 'light' },
@@ -46,7 +47,7 @@ export class SettingsPage implements OnInit {
     { label: 'Auto', icon: 'pi pi-desktop', value: 'system' },
   ];
 
-  form: Omit<Settings, 'updatedAt'> = {
+  form: WebSettingsUpdate = {
     ntfyEnabled: false,
     ntfyUrl: '',
     ntfyTopic: '',
@@ -88,6 +89,7 @@ export class SettingsPage implements OnInit {
           tmdbBaseUrl: settings.tmdbBaseUrl ?? '',
           tmdbLanguage: settings.tmdbLanguage ?? '',
         };
+        this.iosLocalNotificationsEnabled.set(settings.iosLocalNotificationsEnabled ?? null);
         this.settingsState.apply(settings);
         this.loading.set(false);
       },
@@ -277,7 +279,7 @@ export class SettingsPage implements OnInit {
     };
   }
 
-  private normalizedSettings(): Omit<Settings, 'updatedAt'> {
+  private normalizedSettings(): WebSettingsUpdate {
     const time = this.notificationTimeParts();
     return {
       ...this.form,
@@ -291,6 +293,7 @@ export class SettingsPage implements OnInit {
     this.form.notifyDaysAhead = settings.notifyDaysAhead;
     this.form.notificationHour = settings.notificationHour;
     this.form.notificationMinute = settings.notificationMinute;
+    this.iosLocalNotificationsEnabled.set(settings.iosLocalNotificationsEnabled ?? null);
     this.settingsState.apply(settings);
   }
 

@@ -23,6 +23,18 @@
   gap: 1rem;
 }
 
+.notification-row .panel-hint {
+  margin: 0;
+}
+
+.notification-row .notification-note {
+  margin-top: 0.25rem;
+}
+
+.notification-status {
+  white-space: nowrap;
+}
+
 .field-row {
   display: grid;
   gap: 1rem;

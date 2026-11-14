@@ -52,6 +52,17 @@ describe('SettingsPage API consistency', () => {
     }));
   });
 
+  it('shows the last iOS notification choice without sending it back in a web save', () => {
+    api.settings.mockReturnValue(of({ ...saved, iosLocalNotificationsEnabled: true }));
+    page.ngOnInit();
+    expect(page.iosLocalNotificationsEnabled()).toBe(true);
+
+    api.updateSettings.mockReturnValue(of({ ...saved, iosLocalNotificationsEnabled: false }));
+    page.save();
+    expect(api.updateSettings.mock.calls[0][0]).not.toHaveProperty('iosLocalNotificationsEnabled');
+    expect(page.iosLocalNotificationsEnabled()).toBe(false);
+  });
+
   it('shows the API validation message when settings are rejected', () => {
     page.ngOnInit();
     api.updateSettings.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 400, error: 'URL HTTP(S) requise.' })));

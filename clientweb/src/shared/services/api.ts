@@ -71,7 +71,10 @@ export interface Settings {
   tmdbBaseUrl?: string | null;
   tmdbLanguage?: string | null;
   updatedAt: string;
+  iosLocalNotificationsEnabled?: boolean | null;
 }
+
+export type WebSettingsUpdate = Omit<Settings, 'updatedAt' | 'iosLocalNotificationsEnabled'>;
 
 export interface BackupImportResult {
   exportedAt: string;
@@ -398,7 +401,7 @@ export class Api {
     return this.http.get<Settings>(`${API}/Settings`);
   }
 
-  updateSettings(settings: Omit<Settings, 'updatedAt'>): Observable<Settings> {
+  updateSettings(settings: WebSettingsUpdate): Observable<Settings> {
     return this.http.put<Settings>(`${API}/Settings`, settings);
   }
 

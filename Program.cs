@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Tracker;
 using Tracker.Data;
 using Tracker.Options;
@@ -38,9 +39,15 @@ var startupLogger = startupLoggerFactory.CreateLogger("Tracker.Startup");
 var serverVersion = await DatabaseServerVersionResolver.ResolveAsync(
     connectionString, connectionStringsOptions?.ServerVersion, startupLogger);
 
+// Les migrations MySQL peuvent utiliser une variable de session pour leur DDL conditionnel.
+var migrationCompatibleConnectionString = new MySqlConnectionStringBuilder(connectionString)
+{
+    AllowUserVariables = true
+}.ConnectionString;
+
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseMySql(
-        connectionString,
+        migrationCompatibleConnectionString,
         serverVersion,
         // Coupure réseau ou redémarrage de MySQL : on retente la commande au lieu de
         // faire remonter l'erreur jusqu'au client.

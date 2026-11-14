@@ -30,6 +30,7 @@ public class SettingsController(
 
         AppSettings settings = await EnsureSettings();
         settings.NtfyEnabled = dto.NtfyEnabled;
+        settings.IosLocalNotificationsEnabled = dto.IosLocalNotificationsEnabled ?? settings.IosLocalNotificationsEnabled;
         settings.NtfyUrl = dto.NtfyUrl.NullIfBlank();
         settings.NtfyTopic = dto.NtfyTopic.NullIfBlank();
         settings.NtfyToken = dto.NtfyToken.NullIfBlank();
@@ -135,5 +136,6 @@ public class SettingsController(
             settings.TmdbApiKey,
             settings.TmdbBaseUrl,
             settings.TmdbLanguage,
-            settings.UpdatedAt);
+            settings.UpdatedAt,
+            settings.IosLocalNotificationsEnabled);
 }

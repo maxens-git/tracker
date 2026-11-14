@@ -17,7 +17,8 @@ public record SettingsDto(
     string? TmdbApiKey,
     string? TmdbBaseUrl,
     string? TmdbLanguage,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool? IosLocalNotificationsEnabled = null);
 
 public record UpdateSettingsDto(
     bool NtfyEnabled,
@@ -35,4 +36,5 @@ public record UpdateSettingsDto(
     [StringLength(200)] string? AllDebridApiKey,
     [StringLength(200)] string? TmdbApiKey,
     [StringLength(500)] string? TmdbBaseUrl,
-    [StringLength(20)] string? TmdbLanguage);
+    [StringLength(20)] string? TmdbLanguage,
+    bool? IosLocalNotificationsEnabled = null);

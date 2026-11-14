@@ -11,6 +11,9 @@ public class AppSettings
 
     public bool NtfyEnabled { get; set; } = false;
 
+    // Dernier choix enregistré depuis iOS. Null tant qu'aucun appareil ne l'a partagé.
+    public bool? IosLocalNotificationsEnabled { get; set; }
+
     [MaxLength(500)]
     public string? NtfyUrl { get; set; }
 

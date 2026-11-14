@@ -6,10 +6,13 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Tracker.Controllers;
+using Tracker.Data;
 using Tracker.Models;
 using Tracker.ModelsDTO;
 using Tracker.Services;
@@ -155,6 +158,46 @@ public class IntegrationRegressionTests
         Assert.Null(result.Result);
         Assert.Equal("http://ntfy:80/prefix/", result.Value!.NtfyUrl);
         Assert.Null(result.Value.ProwlarrUrl);
+    }
+
+    [Fact]
+    public void IosNotificationMigrationGuardsTheColumnBeforeRecordingItsHistory()
+    {
+        var options = new DbContextOptionsBuilder<ApiDbContext>()
+            .UseMySql("Server=localhost;Database=tracker", new MySqlServerVersion(new Version(8, 0, 36)))
+            .Options;
+        using var context = new ApiDbContext(options);
+
+        var script = context.GetService<IMigrator>().GenerateScript(
+            "20260927205003_AddWatchHistory", "20261114000000_AddIosNotificationPreference");
+
+        Assert.Contains("FROM INFORMATION_SCHEMA.COLUMNS", script);
+        Assert.Contains("TABLE_SCHEMA = DATABASE()", script);
+        Assert.Contains("TABLE_NAME = 'Settings'", script);
+        Assert.Contains("COLUMN_NAME = 'IosLocalNotificationsEnabled'", script);
+        Assert.Contains("'SELECT 1',", script);
+        Assert.Contains("'ALTER TABLE `Settings` ADD `IosLocalNotificationsEnabled` tinyint(1) NULL'", script);
+        var execution = script.IndexOf("EXECUTE tracker_ios_notification_stmt;", StringComparison.Ordinal);
+        var history = script.IndexOf("INSERT INTO `__EFMigrationsHistory`", StringComparison.Ordinal);
+        Assert.True(execution >= 0 && history > execution);
+    }
+
+    [Fact]
+    public async Task WebSettingsUpdatePreservesTheLastIosNotificationChoice()
+    {
+        await using var db = new TestDatabase();
+        using var http = new HttpClient();
+        var controller = SettingsController(http, db);
+
+        Assert.Null((await controller.Get()).Value!.IosLocalNotificationsEnabled);
+
+        await controller.Update(Settings() with { IosLocalNotificationsEnabled = true });
+        var webSettings = (await controller.Update(Settings() with { NtfyEnabled = true })).Value!;
+        Assert.Equal(true, webSettings.IosLocalNotificationsEnabled);
+        Assert.True(webSettings.NtfyEnabled);
+
+        await controller.Update(Settings() with { IosLocalNotificationsEnabled = false });
+        Assert.Equal(false, (await controller.Get()).Value!.IosLocalNotificationsEnabled);
     }
 
     [Fact]

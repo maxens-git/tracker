@@ -78,6 +78,9 @@ namespace TrackerApi.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<bool?>("IosLocalNotificationsEnabled")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<int>("NotificationHour")
                         .HasColumnType("int");
 

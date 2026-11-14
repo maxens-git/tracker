@@ -30,10 +30,28 @@
       </p-selectbutton>
     </p-card>
 
-    <p-card header="Notifications ntfy">
+    <p-card header="Notifications">
       <form class="panel-form" (ngSubmit)="save()">
-        <div class="toggle-row">
-          <p class="panel-hint">Envoyer une notification quand une sortie suivie approche.</p>
+        <div class="toggle-row notification-row">
+          <div>
+            <p class="panel-hint">Canal Tracker sur iOS</p>
+            @if (iosLocalNotificationsEnabled() !== null) {
+              <p class="panel-hint notification-note">
+                Dernier choix enregistré depuis iOS. Les rappels sont programmés sur l’appareil.
+              </p>
+            }
+          </div>
+          <span class="panel-hint notification-status">
+            @switch (iosLocalNotificationsEnabled()) {
+              @case (true) { Sélectionné }
+              @case (false) { Désactivé }
+              @default { État inconnu }
+            }
+          </span>
+        </div>
+
+        <div class="toggle-row notification-row">
+          <p class="panel-hint">Envoyer les rappels de sorties depuis le serveur via ntfy.</p>
           <p-toggleswitch name="ntfyEnabled" [(ngModel)]="form.ntfyEnabled" ariaLabel="Notifications ntfy" />
         </div>
 
